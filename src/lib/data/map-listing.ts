@@ -40,6 +40,11 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   domain_age: "domain_age",
   domain_expires: "domain_expires",
   domain_registrar: "domain_registrar",
+  // Not a real column — Websites listings compute this from
+  // listing_seo_data.semrush_authority_score in mapListing below instead of
+  // reading a flat column. Kept here only so this map stays exhaustive over
+  // QuickStatKey.
+  authority_score: "authority_score",
 };
 
 // Row shapes are intentionally loose (`Record<string, any>` via a minimal
@@ -179,6 +184,39 @@ export function mapListing(
     images?: Row[];
   } = {}
 ): Listing {
+  const monthlyStats = mapMonthlyStats(related.monthlyStats ?? []);
+  const seo = mapSeo(related.seo);
+  const quickStats = buildQuickStats(row, quickStatKeys);
+
+  // Websites listings don't collect Monthly Income, Monthly Views or
+  // Authority Score as flat manually-typed columns — they're computed from
+  // data the seller already provided elsewhere: the 12-month Proof of
+  // Income entries, the Google Analytics snapshot, and the SEMrush
+  // snapshot. Override (rather than read) those three quick-stat keys here,
+  // scoped to this category only, so no other category's manual-entry
+  // behavior changes. When the source data isn't available (e.g. a card
+  // fetch that didn't load `seo`), the stat is simply left unset.
+  if (row.category_id === "websites") {
+    const incomeValues = monthlyStats.map((m) => m.income).filter((v): v is number => typeof v === "number");
+    if (incomeValues.length > 0) {
+      quickStats.monthly_income = Math.round(incomeValues.reduce((a, b) => a + b, 0) / incomeValues.length);
+    } else {
+      delete quickStats.monthly_income;
+    }
+
+    if (seo?.gaTotalPageViews !== undefined) {
+      quickStats.monthly_views = seo.gaTotalPageViews;
+    } else {
+      delete quickStats.monthly_views;
+    }
+
+    if (seo?.semrushAuthorityScore !== undefined) {
+      quickStats.authority_score = seo.semrushAuthorityScore;
+    } else {
+      delete quickStats.authority_score;
+    }
+  }
+
   return {
     id: row.id,
     categoryId: row.category_id,
@@ -198,9 +236,9 @@ export function mapListing(
     views: row.views ?? 0,
     createdAt: row.created_at ? String(row.created_at).slice(0, 10) : "",
 
-    quickStats: buildQuickStats(row, quickStatKeys),
-    monthlyStats: mapMonthlyStats(related.monthlyStats ?? []),
-    seo: mapSeo(related.seo),
+    quickStats,
+    monthlyStats,
+    seo,
     socialStats: mapSocialStats(related.socialStats ?? []),
     faqs: mapFaqs(related.faqs ?? []),
     comments: mapComments(related.comments ?? [], related.authorNames ?? {}),
