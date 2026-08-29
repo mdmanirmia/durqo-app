@@ -62,9 +62,17 @@ export async function POST(request: Request) {
         // The listings the buyer just paid for no longer belong in their
         // cart — clear just those, not the whole cart, in case something
         // else was added mid-checkout.
-        if (buyerId && paidOrders && paidOrders.length > 0) {
+        if (paidOrders && paidOrders.length > 0) {
           const listingIds = paidOrders.map((o) => o.listing_id);
-          await admin.from("cart_items").delete().eq("user_id", buyerId).in("listing_id", listingIds);
+          if (buyerId) {
+            await admin.from("cart_items").delete().eq("user_id", buyerId).in("listing_id", listingIds);
+          }
+          // Mark the listing(s) sold so the catalog/detail pages show a
+          // "Sold" badge and lock further Add to Cart / Buy Now clicks.
+          // Scoped to still-published rows so this never overwrites a
+          // listing some other event already moved to a different state
+          // (e.g. a seller who archived it in the meantime).
+          await admin.from("listings").update({ status: "sold" }).in("id", listingIds).eq("status", "published");
         }
       }
     }
