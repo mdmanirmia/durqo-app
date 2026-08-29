@@ -10,6 +10,7 @@ import BarList from "@/components/BarList";
 import FaqAccordion from "@/components/FaqAccordion";
 import ProofGalleryButton from "@/components/ProofGalleryButton";
 import CartButton from "@/components/CartButton";
+import BuyNowButton from "@/components/BuyNowButton";
 import WishlistButton from "@/components/WishlistButton";
 import ChatWithSellerButton from "@/components/ChatWithSellerButton";
 
@@ -57,6 +58,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
         <span className="mono rounded-lg bg-brand-soft px-2 py-1 text-[0.65rem] uppercase tracking-wide text-brand-strong">{category?.name}</span>
         {listing.isVerified && (
           <span className="flex items-center gap-1 text-xs font-semibold text-gold"><BadgeCheck size={14} /> Verified</span>
+        )}
+        {listing.status === "sold" && (
+          <span className="mono rounded-lg bg-ink px-2 py-1 text-[0.65rem] uppercase tracking-wide text-paper-raised">Sold</span>
         )}
       </div>
 
@@ -283,8 +287,8 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
           <div className="rounded-lg border border-rule bg-paper-raised p-5">
             <div className="mono mb-4 text-2xl font-semibold text-brand-strong">{fmtUSD(price)}</div>
             <div className="flex flex-col gap-2">
-              <button className="rounded-lg bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised hover:bg-brand">Buy Now</button>
-              <CartButton listingId={listing.id} />
+              <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
+              <CartButton listingId={listing.id} sold={listing.status === "sold"} />
               <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
               <WishlistButton listingId={listing.id} variant="full" />
             </div>
