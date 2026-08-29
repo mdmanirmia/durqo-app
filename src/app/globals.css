@@ -1,26 +1,82 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #F5F9F7;
+  --paper-raised: #FFFFFF;
+  --paper-sunk: #EDF5F1;
+  --ink: #10151C;
+  --ink-soft: #545F78;
+  --ink-faint: #8B93A6;
+  --rule: #E3EAE6;
+  --rule-strong: #CBD6CF;
+  --brand: #4FAF83;
+  --brand-strong: #1C2454;
+  --brand-soft: #E4F4EC;
+  --gold: #8B6FE0;
+  --gold-soft: #F0ECFB;
+  --danger: #D33A2C;
+  --danger-soft: #FBE1DD;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root[data-theme="dark"],
+:root:not([data-theme="light"]) {
+  @media (prefers-color-scheme: dark) {
+    --paper: #0B1116;
+    --paper-raised: #121A22;
+    --paper-sunk: #0A1219;
+    --ink: #E9EEEC;
+    --ink-soft: #A4AEB9;
+    --ink-faint: #67717F;
+    --rule: #223028;
+    --rule-strong: #2E4136;
+    --brand: #6FCBA0;
+    --brand-strong: #A6B0F5;
+    --brand-soft: #16261E;
+    --gold: #B39AF0;
+    --gold-soft: #241D38;
+    --danger: #EB8A7C;
+    --danger-soft: #3A211D;
   }
 }
 
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-raised: var(--paper-raised);
+  --color-paper-sunk: var(--paper-sunk);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-display: "Fredoka", "Public Sans", -apple-system, sans-serif;
+  --font-sans: "Public Sans", -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", "SFMono-Regular", monospace;
+}
+
+* { box-sizing: border-box; }
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.mono { font-family: var(--font-mono); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
 }
