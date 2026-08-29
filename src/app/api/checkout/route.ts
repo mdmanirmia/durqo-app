@@ -2,18 +2,23 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe";
 
-// Turns the signed-in buyer's cart into real `orders` rows (status
-// "awaiting_payment") and a Stripe Checkout Session that collects payment
-// for all of them in one charge, straight into Durqo's own Stripe balance
-// (no Stripe Connect / seller onboarding — payouts to sellers stay a manual
-// admin step, per the withdrawal flow already planned in the project docs).
+// Turns either the signed-in buyer's cart, or (when the request body
+// includes a `listingId`) a single listing bought directly via "Buy Now",
+// into real `orders` rows (status "awaiting_payment") and a Stripe Checkout
+// Session that collects payment in one charge, straight into Durqo's own
+// Stripe balance (no Stripe Connect / seller onboarding — payouts to
+// sellers stay a manual admin step, per the withdrawal flow already
+// planned in the project docs).
 //
-// Called from the /cart page's "Request to purchase" button. On success the
-// client redirects the browser to the returned Stripe-hosted checkout URL.
-// The webhook at /api/webhooks/stripe (not this route) is what actually
-// marks the orders paid — this route only ever creates "awaiting_payment"
-// rows, so a buyer who abandons checkout just leaves orphaned
-// awaiting_payment rows rather than anything that looks paid.
+// Called from the /cart page's "Request to purchase" button (no body — the
+// buyer's cart_items decide what's being bought) and from BuyNowButton on
+// the listing detail page (`{ listingId }` body — skips the cart entirely
+// for a direct single-item purchase). On success the client redirects the
+// browser to the returned Stripe-hosted checkout URL. The webhook at
+// /api/webhooks/stripe (not this route) is what actually marks the orders
+// paid — this route only ever creates "awaiting_payment" rows, so a buyer
+// who abandons checkout just leaves orphaned awaiting_payment rows rather
+// than anything that looks paid.
 export async function POST(request: Request) {
   const supabase = await createClient();
   if (!supabase) {
@@ -26,24 +31,51 @@ export async function POST(request: Request) {
   }
   const buyerId = userData.user.id;
 
-  const { data: cartRows, error: cartError } = await supabase
-    .from("cart_items")
-    .select("listing_id")
-    .eq("user_id", buyerId);
-  if (cartError) {
-    return NextResponse.json({ error: cartError.message }, { status: 500 });
-  }
-  if (!cartRows || cartRows.length === 0) {
-    return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
+  // Buy Now sends `{ listingId }` as a JSON body to buy just that one
+  // listing directly; the cart flow sends no body at all, so a missing/
+  // unparsable body is expected there, not an error.
+  let directListingId: string | undefined;
+  try {
+    const body = await request.json();
+    if (body && typeof body.listingId === "string") directListingId = body.listingId;
+  } catch {
+    // no body — cart checkout, fall through to the cart_items lookup below
   }
 
-  const listingIds = cartRows.map((r) => r.listing_id);
+  let listingIds: string[];
+  if (directListingId) {
+    listingIds = [directListingId];
+  } else {
+    const { data: cartRows, error: cartError } = await supabase
+      .from("cart_items")
+      .select("listing_id")
+      .eq("user_id", buyerId);
+    if (cartError) {
+      return NextResponse.json({ error: cartError.message }, { status: 500 });
+    }
+    if (!cartRows || cartRows.length === 0) {
+      return NextResponse.json({ error: "Your cart is empty." }, { status: 400 });
+    }
+    listingIds = cartRows.map((r) => r.listing_id);
+  }
+
+  // Only "published" listings can be bought — this is what stops a sold
+  // (or draft/archived) listing from being purchased again, whether via
+  // Buy Now or a stale cart entry for something that sold out from under
+  // the buyer while they were browsing.
   const { data: listings, error: listingsError } = await supabase
     .from("listings")
     .select("id, title, price, discounted_price, seller_id")
-    .in("id", listingIds);
-  if (listingsError || !listings || listings.length === 0) {
-    return NextResponse.json({ error: "Couldn't load your cart items." }, { status: 500 });
+    .in("id", listingIds)
+    .eq("status", "published");
+  if (listingsError) {
+    return NextResponse.json({ error: listingsError.message }, { status: 500 });
+  }
+  if (!listings || listings.length === 0) {
+    return NextResponse.json(
+      { error: directListingId ? "This listing has already been sold." : "The items in your cart aren't available anymore." },
+      { status: 400 }
+    );
   }
 
   const orderRows = listings.map((l) => ({
