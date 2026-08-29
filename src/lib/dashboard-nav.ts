@@ -15,3 +15,10 @@ export const SELLER_NAV: DashboardNavItem[] = [
   { href: "/dashboard/seller/messages", label: "Messages" },
   { href: "/dashboard/seller/verification", label: "Verification" },
 ];
+
+export const ADMIN_NAV: DashboardNavItem[] = [
+  { href: "/dashboard/admin", label: "Overview" },
+  { href: "/dashboard/admin/listings", label: "Listings" },
+  { href: "/dashboard/admin/users", label: "Users" },
+  { href: "/dashboard/admin/orders", label: "Orders" },
+];
