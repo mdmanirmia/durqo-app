@@ -44,6 +44,9 @@ export default function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
+          <Link href="/dashboard/admin" className="hidden rounded-full px-3 py-2 text-sm font-medium text-ink-faint hover:text-ink sm:inline-block">
+            Admin
+          </Link>
           <Link href="/login" className="hidden rounded-full border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
             Log in
           </Link>
@@ -77,6 +80,9 @@ export default function Header() {
             <Link href="/login" className="flex-1 rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold">Log in</Link>
             <Link href="/register" className="flex-1 rounded-full bg-brand px-4 py-2 text-center text-sm font-semibold text-white">Register</Link>
           </div>
+          <Link href="/dashboard/admin" className="mt-2 block px-2 py-1 text-center text-xs font-medium text-ink-faint" onClick={() => setOpen(false)}>
+            Admin
+          </Link>
         </nav>
       )}
     </header>
