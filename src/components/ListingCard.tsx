@@ -9,14 +9,19 @@ import WishlistButton from "./WishlistButton";
 export default function ListingCard({ listing }: { listing: Listing }) {
   const category = CATEGORY_MAP[listing.categoryId];
   const trend = listing.monthlyStats.map((m) => m.income ?? 0).filter((v) => v > 0);
+  const isWebsites = listing.categoryId === "websites";
 
   // Show the first 2 quick stats that are actually meaningful for THIS
   // listing's category (e.g. Domains shows Domain Age / Expires, YouTube
   // shows Monthly Income / Monthly Views) rather than a fixed pair —
   // "location" is skipped here since it's text, not a compact stat.
-  const cardStats = (category?.quickStats ?? [])
-    .filter((key: QuickStatKey) => key !== "location" && listing.quickStats[key] !== undefined)
-    .slice(0, 2);
+  // Websites listings don't show this row at all — they get a dedicated
+  // Business Age / Articles Posted row below the price instead.
+  const cardStats = isWebsites
+    ? []
+    : (category?.quickStats ?? [])
+        .filter((key: QuickStatKey) => key !== "location" && listing.quickStats[key] !== undefined)
+        .slice(0, 2);
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-rule bg-paper-raised p-5 shadow-[0_1px_2px_rgba(15,23,41,0.04)] transition hover:-translate-y-0.5 hover:border-brand hover:shadow-[0_12px_24px_-12px_rgba(15,23,41,0.18)]">
@@ -36,21 +41,23 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
       {trend.length > 1 && <Sparkline values={trend} />}
 
-      <div className="mono flex gap-4 text-sm">
-        {cardStats.length > 0 ? (
-          cardStats.map((key) => (
-            <div key={key}>
-              <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">{QUICK_STAT_LABELS[key]}</span>
-              {formatQuickStat(key, listing.quickStats[key])}
+      {!isWebsites && (
+        <div className="mono flex gap-4 text-sm">
+          {cardStats.length > 0 ? (
+            cardStats.map((key) => (
+              <div key={key}>
+                <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">{QUICK_STAT_LABELS[key]}</span>
+                {formatQuickStat(key, listing.quickStats[key])}
+              </div>
+            ))
+          ) : (
+            <div>
+              <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Business Age</span>
+              {listing.businessAgeYears ? `${listing.businessAgeYears} yrs` : "New"}
             </div>
-          ))
-        ) : (
-          <div>
-            <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Business Age</span>
-            {listing.businessAgeYears ? `${listing.businessAgeYears} yrs` : "New"}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center justify-between border-t border-rule pt-3">
         <span className="mono text-base font-bold text-brand">{fmtUSD(listing.discountedPrice ?? listing.price)}</span>
@@ -61,6 +68,19 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           </Link>
         </div>
       </div>
+
+      {isWebsites && (
+        <div className="mono flex gap-4 text-sm">
+          <div>
+            <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Business Age</span>
+            {listing.businessAgeYears ? `${listing.businessAgeYears} yrs` : "New"}
+          </div>
+          <div>
+            <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Articles Posted</span>
+            {formatQuickStat("articles_posted", listing.quickStats.articles_posted)}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
