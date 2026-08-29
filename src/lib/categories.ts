@@ -9,6 +9,7 @@ export type QuickStatKey =
   | "domain_authority"
   | "income_multiple"
   | "articles_posted"
+  | "authority_score"
   | "subscribers"
   | "monthly_views"
   | "total_videos"
@@ -45,7 +46,12 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "websites",
     name: "Websites",
     description: "Content sites, blogs and affiliate properties.",
-    quickStats: ["monthly_income", "monthly_visitors", "age", "domain_authority", "income_multiple", "articles_posted"],
+    // Monthly Income, Monthly Views and Authority Score are computed
+    // automatically for this category (see mapListing in map-listing.ts) —
+    // averaged from the 12-month Proof of Income entries, and pulled from
+    // the seller's Google Analytics / SEMrush data — rather than typed in
+    // manually. Income Multiple is intentionally not shown for Websites.
+    quickStats: ["monthly_income", "monthly_views", "age", "articles_posted", "authority_score"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -200,4 +206,5 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   domain_age: "Domain Age",
   domain_expires: "Expires",
   domain_registrar: "Registrar",
+  authority_score: "Authority Score",
 };
