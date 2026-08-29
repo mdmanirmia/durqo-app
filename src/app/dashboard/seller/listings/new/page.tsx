@@ -19,6 +19,14 @@ const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "d
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+// For the Websites category, Monthly Income, Monthly Views and Authority
+// Score are computed automatically (from Proof of Income, Google Analytics
+// and SEMrush data collected further down this form) rather than typed in
+// here — see mapListing() in map-listing.ts. Hide them from the generic
+// Quick Statistics inputs so sellers aren't asked to enter values that are
+// ignored.
+const WEBSITES_COMPUTED_QUICK_STAT_KEYS = new Set<QuickStatKey>(["monthly_income", "monthly_views", "authority_score"]);
+
 // Public bucket sellers' verification screenshots are uploaded to — buyers
 // can view these directly (see the "View Images" lightbox on listing pages),
 // so this must be a public bucket, not a private/signed-URL one.
@@ -356,16 +364,23 @@ export default function AddNewBusinessPage() {
         {/* Category-specific quick stats */}
         <Section title="Quick Statistics" hint={`Fields shown are specific to ${category.name}.`}>
           <div className="grid gap-4 sm:grid-cols-2">
-            {category.quickStats.map((key: QuickStatKey) => (
-              <Field key={key} label={QUICK_STAT_LABELS[key]}>
-                <input
-                  value={quickStats[key] ?? ""}
-                  onChange={(e) => setQuickStats((prev) => ({ ...prev, [key]: e.target.value }))}
-                  className={inputCls}
-                />
-              </Field>
-            ))}
+            {category.quickStats
+              .filter((key: QuickStatKey) => !(categoryId === "websites" && WEBSITES_COMPUTED_QUICK_STAT_KEYS.has(key)))
+              .map((key: QuickStatKey) => (
+                <Field key={key} label={QUICK_STAT_LABELS[key]}>
+                  <input
+                    value={quickStats[key] ?? ""}
+                    onChange={(e) => setQuickStats((prev) => ({ ...prev, [key]: e.target.value }))}
+                    className={inputCls}
+                  />
+                </Field>
+              ))}
           </div>
+          {categoryId === "websites" && (
+            <p className="mt-3 text-xs text-ink-faint">
+              Monthly Income, Monthly Views and Authority Score aren&rsquo;t entered here — they&rsquo;re calculated automatically from the Proof of Income, Google Analytics and SEMrush data below.
+            </p>
+          )}
         </Section>
 
         <Section title="Overview of the Business">
