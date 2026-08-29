@@ -6,15 +6,17 @@ import { isInCart, toggleCart } from "@/lib/data/cart.client";
 import { isRealListingId } from "@/lib/is-demo-listing";
 
 // "Add to Cart" / "In Cart — Remove" toggle for the listing detail sidebar.
-export default function CartButton({ listingId }: { listingId: string }) {
+// Locks (and relabels to "Sold") once the listing has been bought.
+export default function CartButton({ listingId, sold }: { listingId: string; sold?: boolean }) {
   const router = useRouter();
   const [inCart, setInCart] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
   const isDemo = !isRealListingId(listingId);
+  const locked = isDemo || sold;
 
   useEffect(() => {
-    if (isDemo) return; // demo/mock listing — nothing in the DB to look up
+    if (locked) return; // demo/mock listing or already sold — nothing to look up
     let cancelled = false;
     isInCart(listingId).then((v) => {
       if (!cancelled) setInCart(v);
@@ -22,10 +24,10 @@ export default function CartButton({ listingId }: { listingId: string }) {
     return () => {
       cancelled = true;
     };
-  }, [listingId, isDemo]);
+  }, [listingId, locked]);
 
   async function handleClick() {
-    if (busy) return;
+    if (busy || locked) return;
     setBusy(true);
     setError(false);
     try {
@@ -52,11 +54,11 @@ export default function CartButton({ listingId }: { listingId: string }) {
       <button
         type="button"
         onClick={handleClick}
-        disabled={busy || isDemo}
-        title={isDemo ? "This is a sample listing — cart opens up once real listings are live." : undefined}
+        disabled={busy || locked}
+        title={sold ? "This listing has already been sold." : isDemo ? "This is a sample listing — cart opens up once real listings are live." : undefined}
         className="rounded-lg border border-rule-strong py-2.5 text-sm font-semibold hover:border-brand-strong disabled:opacity-60"
       >
-        {isDemo ? "Sample listing" : inCart ? "In Cart — Remove" : "Add to Cart"}
+        {sold ? "Sold" : isDemo ? "Sample listing" : inCart ? "In Cart — Remove" : "Add to Cart"}
       </button>
       {error && <span className="text-xs text-red-600">Couldn&apos;t save — please try again.</span>}
     </div>

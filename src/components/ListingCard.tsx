@@ -29,11 +29,16 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         <span className="mono rounded-full bg-brand-soft px-2.5 py-1 text-[0.65rem] uppercase tracking-wide text-brand">
           {category?.name ?? listing.categoryId}
         </span>
-        {listing.isVerified && (
-          <span className="flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
-            <BadgeCheck size={13} /> Verified
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {listing.isVerified && (
+            <span className="flex items-center gap-1 rounded-full bg-brand px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-white">
+              <BadgeCheck size={13} /> Verified
+            </span>
+          )}
+          {listing.status === "sold" && (
+            <span className="rounded-full bg-ink px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wide text-paper-raised">Sold</span>
+          )}
+        </div>
       </div>
 
       <h4 className="text-lg font-semibold">{listing.title}</h4>
