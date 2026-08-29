@@ -19,7 +19,10 @@ export async function getPublishedListings(limit?: number): Promise<Listing[]> {
     let query = supabase
       .from("listings")
       .select("*")
-      .eq("status", "published")
+      // Sold listings stay visible (with a Sold badge, handled by the UI)
+      // rather than disappearing from the catalog the instant they're
+      // bought — only draft/pending_review/archived rows are excluded.
+      .in("status", ["published", "sold"])
       .order("created_at", { ascending: false });
     if (limit) query = query.limit(limit);
 

@@ -17,7 +17,10 @@ export async function fetchPublishedListings(): Promise<Listing[]> {
     const { data: rows, error } = await supabase
       .from("listings")
       .select("*")
-      .eq("status", "published")
+      // Sold listings stay visible (with a Sold badge) instead of vanishing
+      // the moment they're bought — see the matching comment in
+      // listings.server.ts.
+      .in("status", ["published", "sold"])
       .order("created_at", { ascending: false });
     if (error || !rows || rows.length === 0) {
       if (error) console.warn("[listings] fetchPublishedListings falling back to mock data:", error.message);
