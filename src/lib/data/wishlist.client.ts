@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CATEGORY_MAP } from "@/lib/categories";
 import type { Listing } from "@/lib/types";
 import { mapListing } from "./map-listing";
+import { emitCountsChanged } from "@/lib/count-events";
 
 // Wishlist is per-signed-in-user (RLS on public.wishlists restricts rows to
 // auth.uid() = user_id), so every function here needs a logged-in session —
@@ -39,12 +40,29 @@ export async function toggleWishlist(listingId: string): Promise<boolean | null>
   if (already) {
     const { error } = await supabase.from("wishlists").delete().eq("user_id", userId).eq("listing_id", listingId);
     if (error) throw new Error(error.message);
+    emitCountsChanged();
     return false;
   } else {
     const { error } = await supabase.from("wishlists").insert({ user_id: userId, listing_id: listingId });
     if (error) throw new Error(error.message);
+    emitCountsChanged();
     return true;
   }
+}
+
+// Badge count for the Header's wishlist icon. `head: true` avoids pulling
+// back any rows — Postgres just returns the count.
+export async function getWishlistCount(): Promise<number> {
+  const supabase = createClient();
+  if (!supabase) return 0;
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return 0;
+  const { count, error } = await supabase
+    .from("wishlists")
+    .select("listing_id", { count: "exact", head: true })
+    .eq("user_id", userData.user.id);
+  if (error || count === null) return 0;
+  return count;
 }
 
 export async function getWishlistedListings(): Promise<Listing[]> {

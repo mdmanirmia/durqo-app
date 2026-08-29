@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 import { CATEGORY_MAP } from "@/lib/categories";
 import type { Listing } from "@/lib/types";
 import { mapListing } from "./map-listing";
+import { emitCountsChanged } from "@/lib/count-events";
 
 export async function isInCart(listingId: string): Promise<boolean> {
   const supabase = createClient();
@@ -32,10 +33,12 @@ export async function toggleCart(listingId: string): Promise<boolean | null> {
   if (already) {
     const { error } = await supabase.from("cart_items").delete().eq("user_id", userId).eq("listing_id", listingId);
     if (error) throw new Error(error.message);
+    emitCountsChanged();
     return false;
   } else {
     const { error } = await supabase.from("cart_items").insert({ user_id: userId, listing_id: listingId });
     if (error) throw new Error(error.message);
+    emitCountsChanged();
     return true;
   }
 }
@@ -47,6 +50,21 @@ export async function removeFromCart(listingId: string): Promise<void> {
   if (!userData.user) return;
   const { error } = await supabase.from("cart_items").delete().eq("user_id", userData.user.id).eq("listing_id", listingId);
   if (error) throw new Error(error.message);
+  emitCountsChanged();
+}
+
+// Badge count for the Header's cart icon.
+export async function getCartCount(): Promise<number> {
+  const supabase = createClient();
+  if (!supabase) return 0;
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return 0;
+  const { count, error } = await supabase
+    .from("cart_items")
+    .select("listing_id", { count: "exact", head: true })
+    .eq("user_id", userData.user.id);
+  if (error || count === null) return 0;
+  return count;
 }
 
 export async function getCartListings(): Promise<Listing[]> {
@@ -98,6 +116,7 @@ export async function requestPurchase(listings: Listing[]): Promise<void> {
     .eq("user_id", buyerId)
     .in("listing_id", listings.map((l) => l.id));
   if (clearError) throw new Error(clearError.message);
+  emitCountsChanged();
 }
 
 // Counts for the buyer dashboard's stat tiles. "Open" is anything not yet
