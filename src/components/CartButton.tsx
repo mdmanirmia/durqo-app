@@ -35,6 +35,10 @@ export default function CartButton({ listingId }: { listingId: string }) {
         return;
       }
       setInCart(result);
+      // Only redirect on the add (not the remove) — matches the "Add to
+      // Cart" click taking the buyer straight to checkout, while "In Cart
+      // — Remove" should just update in place so they can keep browsing.
+      if (result) router.push("/cart");
     } catch {
       // A real (non-demo) listing failed to save — see WishlistButton.
       setError(true);
