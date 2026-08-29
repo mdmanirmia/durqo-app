@@ -6,6 +6,9 @@ import { Heart, ShoppingCart, Menu, X, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
+import { getWishlistCount } from "@/lib/data/wishlist.client";
+import { getCartCount } from "@/lib/data/cart.client";
+import { COUNTS_CHANGED_EVENT } from "@/lib/count-events";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -20,6 +23,51 @@ export default function Header() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState<string | null | undefined>(undefined); // undefined = still checking, null = logged out
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [cartCount, setCartCount] = useState(0);
+
+  // Wishlist/cart badge counts. Refetched on mount, on auth changes, and
+  // whenever any component reports a wishlist/cart mutation via the shared
+  // COUNTS_CHANGED_EVENT (see src/lib/count-events.ts) — WishlistButton,
+  // CartButton, and the /cart page's own remove/checkout actions all fire
+  // it, so the header stays in sync no matter where the change happened.
+  useEffect(() => {
+    const supabase = createClient();
+    if (!supabase) return;
+    let cancelled = false;
+
+    async function refreshCounts(signedIn: boolean) {
+      if (!signedIn) {
+        if (!cancelled) {
+          setWishlistCount(0);
+          setCartCount(0);
+        }
+        return;
+      }
+      const [wishlist, cart] = await Promise.all([getWishlistCount(), getCartCount()]);
+      if (!cancelled) {
+        setWishlistCount(wishlist);
+        setCartCount(cart);
+      }
+    }
+
+    supabase.auth.getUser().then(({ data }) => refreshCounts(!!data.user));
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      refreshCounts(!!session?.user);
+    });
+
+    function handleCountsChanged() {
+      supabase!.auth.getUser().then(({ data }) => refreshCounts(!!data.user));
+    }
+    window.addEventListener(COUNTS_CHANGED_EVENT, handleCountsChanged);
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+      window.removeEventListener(COUNTS_CHANGED_EVENT, handleCountsChanged);
+    };
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -111,11 +159,21 @@ export default function Header() {
               </Link>
             </>
           ) : null}
-          <Link href="/dashboard/buyer/wishlist" aria-label="Wishlist" className="grid h-9 w-9 place-items-center rounded-full border border-rule-strong text-ink-soft hover:border-brand-strong hover:text-ink">
+          <Link href="/dashboard/buyer/wishlist" aria-label="Wishlist" className="relative grid h-9 w-9 place-items-center rounded-full border border-rule-strong text-ink-soft hover:border-brand-strong hover:text-ink">
             <Heart size={17} />
+            {wishlistCount > 0 && (
+              <span className="mono absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-strong px-1 text-[0.62rem] font-semibold leading-none text-white ring-2 ring-paper-raised">
+                {wishlistCount > 99 ? "99+" : wishlistCount}
+              </span>
+            )}
           </Link>
-          <Link href="/cart" aria-label="Cart" className="grid h-9 w-9 place-items-center rounded-full bg-brand text-white hover:bg-brand/90">
+          <Link href="/cart" aria-label="Cart" className="relative grid h-9 w-9 place-items-center rounded-full bg-brand text-white hover:bg-brand/90">
             <ShoppingCart size={17} />
+            {cartCount > 0 && (
+              <span className="mono absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-ink px-1 text-[0.62rem] font-semibold leading-none text-white ring-2 ring-paper-raised">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
           </Link>
           <button
             aria-label="Menu"
