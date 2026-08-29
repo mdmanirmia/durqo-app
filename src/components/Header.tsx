@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Heart, ShoppingCart, Menu, X } from "lucide-react";
-import { useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { Heart, ShoppingCart, Menu, X, User } from "lucide-react";
+import { useEffect, useState } from "react";
 import clsx from "clsx";
+import { createClient } from "@/lib/supabase/client";
 
 const NAV = [
   { href: "/", label: "Home" },
@@ -16,7 +17,53 @@ const NAV = [
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState<string | null | undefined>(undefined); // undefined = still checking, null = logged out
+
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+
+    async function loadName(userId: string, fallback: string) {
+      const { data: profile } = await supabase!.from("profiles").select("full_name").eq("id", userId).single();
+      if (!cancelled) setName(profile?.full_name ?? fallback);
+    }
+
+    if (!supabase) {
+      Promise.resolve().then(() => {
+        if (!cancelled) setName(null);
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    supabase.auth.getUser().then(({ data }) => {
+      if (cancelled) return;
+      if (data.user) loadName(data.user.id, data.user.email ?? "Account");
+      else setName(null);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) loadName(session.user.id, session.user.email ?? "Account");
+      else setName(null);
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
+  async function handleLogOut() {
+    const supabase = createClient();
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setOpen(false);
+    router.push("/");
+    router.refresh();
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-rule bg-paper-raised/95 backdrop-blur">
@@ -44,15 +91,26 @@ export default function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2 md:ml-0">
-          <Link href="/dashboard/admin" className="hidden rounded-full px-3 py-2 text-sm font-medium text-ink-faint hover:text-ink sm:inline-block">
-            Admin
-          </Link>
-          <Link href="/login" className="hidden rounded-full border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
-            Log in
-          </Link>
-          <Link href="/register" className="hidden rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90 sm:inline-block">
-            Register
-          </Link>
+          {name ? (
+            <>
+              <Link href="/dashboard/buyer" className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink sm:flex">
+                <User size={15} />
+                Hi, {name}
+              </Link>
+              <button type="button" onClick={handleLogOut} className="hidden rounded-full border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
+                Log out
+              </button>
+            </>
+          ) : name === null ? (
+            <>
+              <Link href="/login" className="hidden rounded-full border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
+                Log in
+              </Link>
+              <Link href="/register" className="hidden rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90 sm:inline-block">
+                Register
+              </Link>
+            </>
+          ) : null}
           <Link href="/dashboard/buyer/wishlist" aria-label="Wishlist" className="grid h-9 w-9 place-items-center rounded-full border border-rule-strong text-ink-soft hover:border-brand-strong hover:text-ink">
             <Heart size={17} />
           </Link>
@@ -76,13 +134,21 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
-          <div className="mt-2 flex gap-2">
-            <Link href="/login" className="flex-1 rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold">Log in</Link>
-            <Link href="/register" className="flex-1 rounded-full bg-brand px-4 py-2 text-center text-sm font-semibold text-white">Register</Link>
-          </div>
-          <Link href="/dashboard/admin" className="mt-2 block px-2 py-1 text-center text-xs font-medium text-ink-faint" onClick={() => setOpen(false)}>
-            Admin
-          </Link>
+          {name ? (
+            <div className="mt-2 flex flex-col gap-2">
+              <Link href="/dashboard/buyer" className="rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold" onClick={() => setOpen(false)}>
+                Hi, {name}
+              </Link>
+              <button type="button" onClick={handleLogOut} className="rounded-full bg-brand px-4 py-2 text-center text-sm font-semibold text-white">
+                Log out
+              </button>
+            </div>
+          ) : name === null ? (
+            <div className="mt-2 flex gap-2">
+              <Link href="/login" className="flex-1 rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold" onClick={() => setOpen(false)}>Log in</Link>
+              <Link href="/register" className="flex-1 rounded-full bg-brand px-4 py-2 text-center text-sm font-semibold text-white" onClick={() => setOpen(false)}>Register</Link>
+            </div>
+          ) : null}
         </nav>
       )}
     </header>
