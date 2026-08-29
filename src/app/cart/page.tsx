@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
-import { getCartListings, removeFromCart, requestPurchase } from "@/lib/data/cart.client";
+import { getCartListings, removeFromCart } from "@/lib/data/cart.client";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { fmtUSD } from "@/lib/format";
 import type { Listing } from "@/lib/types";
@@ -12,7 +12,6 @@ export default function CartPage() {
   const [items, setItems] = useState<Listing[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [requested, setRequested] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -41,12 +40,22 @@ export default function CartPage() {
     setBusy(true);
     setError(null);
     try {
-      await requestPurchase(items);
-      setRequested(true);
-      setItems([]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
-    } finally {
+      const res = await fetch("/api/checkout", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        setError(data.error ?? "Something went wrong. Please try again.");
+        setBusy(false);
+        return;
+      }
+      // Full browser navigation to Stripe's hosted checkout page — the
+      // buyer pays there, then Stripe redirects back to /checkout/success
+      // (or straight back here on cancel). Deliberately not resetting
+      // `busy` on success: this component is about to be torn down by the
+      // navigation, and staying disabled avoids a flash of the enabled
+      // button in the moment before that happens.
+      window.location.href = data.url;
+    } catch {
+      setError("Something went wrong. Please try again.");
       setBusy(false);
     }
   }
@@ -57,14 +66,6 @@ export default function CartPage() {
 
       {items === null ? (
         <p className="text-ink-faint">Loading your cart&hellip;</p>
-      ) : requested ? (
-        <div className="rounded-lg border border-rule bg-paper-raised p-6 text-center">
-          <p className="font-semibold">Purchase request sent.</p>
-          <p className="mt-1 text-sm text-ink-soft">We&rsquo;ll connect you with each seller to open escrow. Track progress from your dashboard.</p>
-          <Link href="/dashboard/buyer" className="mt-4 inline-block text-sm font-semibold text-brand-strong">
-            Go to dashboard &rarr;
-          </Link>
-        </div>
       ) : items.length === 0 ? (
         <p className="text-ink-faint">Your cart is empty. <Link href="/buy" className="font-semibold text-brand-strong">Browse listings &rarr;</Link></p>
       ) : (
@@ -104,11 +105,11 @@ export default function CartPage() {
               disabled={busy}
               className="w-full rounded-lg bg-brand-strong py-3 text-sm font-semibold text-paper-raised hover:bg-brand disabled:opacity-60"
             >
-              {busy ? "Sending…" : "Request to purchase"}
+              {busy ? "Redirecting to checkout…" : "Request to purchase"}
             </button>
             {error && <p className="mt-3 text-center text-sm text-danger">{error}</p>}
             <p className="mt-3 text-center text-xs text-ink-faint">
-              We&rsquo;ll connect you with each seller to open escrow — no payment is collected here.
+              You&rsquo;ll pay securely via Stripe, then we&rsquo;ll connect you with each seller to release escrow.
             </p>
           </div>
         </div>
