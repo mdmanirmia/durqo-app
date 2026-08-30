@@ -70,7 +70,7 @@ export default async function Home() {
                 The trusted digital asset marketplace
               </span>
 
-              <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[1.03] tracking-tight sm:text-6xl lg:text-[4.5rem]">
+              <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.4rem]">
                 Great businesses deserve a{" "}
                 <span className="animate-gradient-text bg-gradient-to-r from-brand via-brand-strong to-brand bg-clip-text text-transparent">
                   great exit
