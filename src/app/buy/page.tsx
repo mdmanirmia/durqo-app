@@ -39,7 +39,10 @@ function BuyContent() {
   }
 
   const results = useMemo(() => {
-    let list = (listings ?? []).filter((l) => l.status === "published");
+    // fetchPublishedListings already scopes this to published + sold (sold
+    // listings stay visible with a Sold badge instead of vanishing) — no
+    // extra status filter needed here.
+    let list = listings ?? [];
 
     if (keyword.trim()) {
       const k = keyword.toLowerCase();
