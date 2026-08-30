@@ -55,8 +55,8 @@
   --color-gold-soft: var(--gold-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
-  --font-display: "Fredoka", "Public Sans", -apple-system, sans-serif;
-  --font-sans: "Public Sans", -apple-system, sans-serif;
+  --font-display: "Inter", "Public Sans", -apple-system, sans-serif;
+  --font-sans: "Inter", "Public Sans", -apple-system, sans-serif;
   --font-mono: "IBM Plex Mono", "SFMono-Regular", monospace;
 }
 
@@ -66,17 +66,48 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
+  font-feature-settings: "ss01" 1, "cv05" 1;
 }
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   text-wrap: balance;
 }
 
-.mono { font-family: var(--font-mono); }
+.mono { font-family: var(--font-mono); letter-spacing: -0.01em; }
+
+/* Scroll-reveal: elements start hidden/offset, JS (useScrollReveal) flips
+   data-revealed once they enter the viewport. Motion-safe only — reduced
+   motion below shows everything immediately with no transition. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-reveal="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(2%, -3%) scale(1.05); }
+}
+.animate-drift { animation: drift 14s ease-in-out infinite; }
+.animate-drift-slow { animation: drift 20s ease-in-out infinite reverse; }
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+.animate-gradient-text {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
 }

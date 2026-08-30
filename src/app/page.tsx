@@ -59,7 +59,8 @@ export default async function Home() {
     <main className="overflow-x-hidden">
       {/* HERO */}
       <section className="relative overflow-hidden bg-gradient-to-b from-brand-soft via-[color-mix(in_srgb,var(--brand-soft)_45%,var(--paper))] to-paper py-20 sm:py-28">
-        <div aria-hidden className="pointer-events-none absolute -right-40 -top-24 -z-0 h-[34rem] w-[34rem] rounded-full bg-brand/15 blur-[130px]" />
+        <div aria-hidden className="animate-drift pointer-events-none absolute -right-40 -top-24 -z-0 h-[34rem] w-[34rem] rounded-full bg-brand/15 blur-[130px]" />
+        <div aria-hidden className="animate-drift-slow pointer-events-none absolute -left-32 bottom-0 -z-0 h-[24rem] w-[24rem] rounded-full bg-brand-strong/10 blur-[110px]" />
 
         <div className="relative mx-auto max-w-6xl px-5 sm:px-7">
           <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-10">
@@ -71,7 +72,7 @@ export default async function Home() {
 
               <h1 className="mt-6 text-[2.75rem] font-extrabold leading-[1.03] tracking-tight sm:text-6xl lg:text-[4.5rem]">
                 Great businesses deserve a{" "}
-                <span className="bg-gradient-to-r from-brand to-brand-strong bg-clip-text text-transparent">
+                <span className="animate-gradient-text bg-gradient-to-r from-brand via-brand-strong to-brand bg-clip-text text-transparent">
                   great exit
                 </span>
                 .
@@ -105,6 +106,10 @@ export default async function Home() {
                   </span>
                 ))}
               </div>
+
+              <p className="mono mt-5 text-[0.68rem] text-ink-faint">
+                Payments secured by <span className="font-semibold text-ink-soft">Stripe</span> · funds held in escrow until transfer
+              </p>
             </div>
 
             {/* floating overview card */}
@@ -214,8 +219,8 @@ export default async function Home() {
       {/* CATEGORIES */}
       <section className="border-t border-rule py-20 sm:py-28">
         <div className="mx-auto max-w-6xl px-5 sm:px-7">
-          <p className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">Categories</p>
-          <h2 className="mb-10 text-4xl sm:text-5xl">Fourteen kinds of digital assets, one trusted marketplace</h2>
+          <p data-reveal className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">Categories</p>
+          <h2 data-reveal style={{ transitionDelay: "60ms" }} className="mb-10 text-4xl sm:text-5xl">Fourteen kinds of digital assets, one trusted marketplace</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             {CATEGORIES.map((c, i) => {
               const Icon = categoryIcon(c.id);
@@ -223,6 +228,8 @@ export default async function Home() {
                 <Link
                   key={c.id}
                   href={`/buy?category=${c.id}`}
+                  data-reveal
+                  style={{ transitionDelay: `${(i % 6) * 60}ms` }}
                   className="group relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(15,23,41,0.04)] transition hover:-translate-y-1 hover:border-brand hover:shadow-[0_20px_40px_-20px_rgba(15,23,41,0.25)]"
                 >
                   <div className={`absolute inset-0 -z-10 bg-gradient-to-br opacity-0 transition group-hover:opacity-100 ${CATEGORY_TINTS[i % CATEGORY_TINTS.length]}`} />
@@ -242,18 +249,20 @@ export default async function Home() {
       <section className="border-t border-rule py-20 sm:py-28">
         <div className="mx-auto max-w-6xl px-5 sm:px-7">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <div>
+            <div data-reveal>
               <p className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">Latest listings</p>
               <h2 className="text-4xl sm:text-5xl">On the market this week</h2>
             </div>
-            <Link href="/buy" className="group inline-flex items-center gap-1.5 rounded-full border border-rule-strong px-5 py-2.5 text-sm font-semibold hover:border-brand hover:text-brand">
+            <Link href="/buy" data-reveal className="group inline-flex items-center gap-1.5 rounded-full border border-rule-strong px-5 py-2.5 text-sm font-semibold hover:border-brand hover:text-brand">
               View all listings
               <ArrowRight size={15} className="transition group-hover:translate-x-0.5" />
             </Link>
           </div>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((l) => (
-              <ListingCard key={l.id} listing={l} />
+            {featured.map((l, i) => (
+              <div key={l.id} data-reveal style={{ transitionDelay: `${(i % 3) * 80}ms` }}>
+                <ListingCard listing={l} />
+              </div>
             ))}
           </div>
         </div>
@@ -263,14 +272,14 @@ export default async function Home() {
       <section className="relative overflow-hidden border-t border-rule bg-brand-soft/50 py-20 sm:py-28">
         <div aria-hidden className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-brand/15 blur-[100px]" />
         <div className="relative mx-auto max-w-6xl px-5 sm:px-7">
-          <p className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">How it works</p>
-          <h2 className="mb-10 text-4xl sm:text-5xl">
+          <p data-reveal className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">How it works</p>
+          <h2 data-reveal style={{ transitionDelay: "60ms" }} className="mb-10 text-4xl sm:text-5xl">
             From browsing to close, in{" "}
             <span className="bg-gradient-to-r from-brand to-brand-strong bg-clip-text text-transparent">three steps</span>
           </h2>
           <div className="grid gap-6 sm:grid-cols-3">
             {STEPS.map(({ icon: Icon, title, body }, i) => (
-              <div key={title} className="relative rounded-2xl border border-rule bg-paper-raised p-7 pt-9 shadow-[0_1px_2px_rgba(15,23,41,0.04)] transition hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(15,23,41,0.25)]">
+              <div key={title} data-reveal style={{ transitionDelay: `${i * 90}ms` }} className="relative rounded-2xl border border-rule bg-paper-raised p-7 pt-9 shadow-[0_1px_2px_rgba(15,23,41,0.04)] transition hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(15,23,41,0.25)]">
                 <span className="mono absolute -top-4 left-6 grid h-9 w-9 place-items-center rounded-xl bg-brand text-sm font-bold text-white shadow-[0_10px_20px_-8px_rgba(79,175,131,0.7)]">
                   0{i + 1}
                 </span>
@@ -288,7 +297,7 @@ export default async function Home() {
       {/* WHY DURQO */}
       <section className="border-t border-rule py-20 sm:py-28">
         <div className="mx-auto grid max-w-6xl gap-14 px-5 sm:px-7 md:grid-cols-2 md:items-center">
-          <div>
+          <div data-reveal>
             <p className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">Why Durqo</p>
             <h2 className="mb-8 text-4xl sm:text-5xl">Built for people who read the fine print</h2>
             <div className="flex flex-col gap-6">
@@ -307,7 +316,7 @@ export default async function Home() {
           </div>
 
           {/* decorative premium panel */}
-          <div className="relative hidden md:block">
+          <div data-reveal style={{ transitionDelay: "120ms" }} className="relative hidden md:block">
             <div aria-hidden className="pointer-events-none absolute -inset-8 -z-10 rounded-[2.5rem] bg-gradient-to-br from-brand-soft to-transparent blur-2xl" />
             <div className="relative overflow-hidden rounded-[1.75rem] border border-rule bg-gradient-to-br from-paper-raised to-brand-soft/40 p-6 shadow-[0_32px_64px_-28px_rgba(15,23,41,0.28)]">
               <div className="mb-5 flex items-center gap-1.5">
@@ -349,7 +358,7 @@ export default async function Home() {
       {/* CTA */}
       <section className="border-t border-rule py-20 sm:py-28">
         <div className="mx-auto max-w-6xl px-5 sm:px-7">
-          <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-strong to-[#0f1638] p-10 text-white sm:p-16">
+          <div data-reveal className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-strong to-[#0f1638] p-10 text-white sm:p-16">
             <div aria-hidden className="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand/25 blur-[100px]" />
             <div aria-hidden className="pointer-events-none absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-white/10 blur-[100px]" />
             <div className="relative flex flex-wrap items-center justify-between gap-8">
