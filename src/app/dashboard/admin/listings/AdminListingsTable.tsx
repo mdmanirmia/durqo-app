@@ -89,6 +89,12 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
                 <td className="mono px-4 py-3 text-ink-faint">{l.createdAt}</td>
                 <td className="px-4 py-3">
                   <div className="flex flex-wrap justify-end gap-2">
+                    <Link
+                      href={`/dashboard/admin/listings/${l.id}/edit`}
+                      className="rounded-lg border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+                    >
+                      Edit
+                    </Link>
                     {l.status === "pending_review" && (
                       <>
                         <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")}
@@ -102,21 +108,33 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
                       </>
                     )}
                     {l.status === "published" && (
-                      <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "draft")}
+                      <>
+                        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "sold")}
+                          className="rounded-lg border border-blue-300 px-3 py-1.5 text-xs font-semibold text-blue-700 disabled:opacity-60">
+                          Mark as Sold
+                        </button>
+                        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "draft")}
+                          className="rounded-lg border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft disabled:opacity-60">
+                          Unpublish
+                        </button>
+                      </>
+                    )}
+                    {l.status === "sold" && (
+                      <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")}
                         className="rounded-lg border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft disabled:opacity-60">
-                        Unpublish
+                        Revert to Published
                       </button>
                     )}
                     {l.status !== "archived" && (
                       <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "archived")}
                         className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 disabled:opacity-60">
-                        Archive
+                        Delete
                       </button>
                     )}
                     {l.status === "archived" && (
                       <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "draft")}
                         className="rounded-lg border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft disabled:opacity-60">
-                        Restore to draft
+                        Restore
                       </button>
                     )}
                   </div>
