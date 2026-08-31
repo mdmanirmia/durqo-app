@@ -199,7 +199,7 @@ function BuyContent() {
           ) : (
             <div className="overflow-x-auto rounded-lg border border-rule bg-paper-raised">
               <table className="w-full min-w-[720px] border-collapse text-sm">
-                <thead className="sticky top-20 z-10 bg-paper-raised md:top-24">
+                <thead className="bg-paper-raised">
                   <tr className="border-b border-rule-strong text-left">
                     <th className="px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Title</th>
                     <th className="px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Category</th>
