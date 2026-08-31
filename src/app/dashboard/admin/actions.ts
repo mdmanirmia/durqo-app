@@ -14,6 +14,9 @@ type UserRole = (typeof USER_ROLES)[number];
 const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
 type OrderStatus = (typeof ORDER_STATUSES)[number];
 
+const ORDER_PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway"] as const;
+type OrderPaymentChannel = (typeof ORDER_PAYMENT_CHANNELS)[number];
+
 // Every action re-verifies the caller is an admin on its own — the page
 // that renders the button that calls this isn't a security boundary, per
 // Next.js's Server Actions guidance. Only a listing/user id and the single
@@ -110,6 +113,25 @@ export async function setOrderStatus(orderId: string, status: OrderStatus) {
   if (!supabaseAdmin) throw new Error("Admin client unavailable");
 
   const { error } = await supabaseAdmin.from("orders").update({ status }).eq("id", orderId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/orders");
+  revalidatePath("/dashboard/admin");
+}
+
+// Which rail an order was actually paid through — a manual admin-set label
+// (migration 009), same "label only" spirit as setOrderStatus() above:
+// nothing here talks to Stripe or any gateway, it just records how the
+// money actually moved so admin can tell Stripe orders apart from ones
+// settled directly on the Durqo platform or via a Bangladesh gateway.
+export async function setOrderPaymentChannel(orderId: string, channel: OrderPaymentChannel) {
+  await requireAdmin();
+  if (!ORDER_PAYMENT_CHANNELS.includes(channel)) throw new Error("Invalid payment channel");
+
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const { error } = await supabaseAdmin.from("orders").update({ payment_channel: channel }).eq("id", orderId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/admin/orders");
