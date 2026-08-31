@@ -12,6 +12,7 @@ import {
   Lock,
   Sparkles,
   BadgeCheck,
+  User,
 } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { categoryIcon } from "@/lib/category-icons";
@@ -70,7 +71,7 @@ export default async function Home() {
                 The trusted digital asset marketplace
               </span>
 
-              <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.4rem]">
+              <h1 className="mt-6 text-5xl font-extrabold leading-[1.02] tracking-[-0.03em] sm:text-6xl lg:text-[4.75rem]">
                 Great businesses deserve a{" "}
                 <span className="animate-gradient-text bg-gradient-to-r from-brand via-brand-strong to-brand bg-clip-text text-transparent">
                   great exit
@@ -115,20 +116,47 @@ export default async function Home() {
             {/* floating overview card */}
             <div className="relative mx-auto w-full max-w-md lg:mx-0 lg:ml-auto">
               <div aria-hidden className="pointer-events-none absolute -inset-6 -z-10 rounded-[2.5rem] bg-brand/10 blur-2xl" />
-              <div className="rounded-[1.75rem] border border-rule bg-paper-raised p-7 pb-10 shadow-[0_32px_64px_-24px_rgba(15,23,41,0.28)] ring-1 ring-black/[0.02]">
-                <p className="mono text-[0.65rem] uppercase tracking-wide text-ink-faint">How your deal is protected</p>
-                <div className="mt-5 flex flex-col gap-5">
-                  {OVERVIEW_POINTS.map(({ icon: Icon, title, body }) => (
-                    <div key={title} className="flex items-start gap-3">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
-                        <Icon size={17} />
+              <div className="overflow-hidden rounded-[1.75rem] border border-rule bg-paper-raised shadow-[0_32px_64px_-24px_rgba(15,23,41,0.28)] ring-1 ring-black/[0.02]">
+                {/* window chrome header, so the panel reads as a live product screen rather than a marketing card */}
+                <div className="flex items-center justify-between bg-brand-strong px-6 py-3.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full bg-white/25" />
+                    <span className="h-2 w-2 rounded-full bg-white/25" />
+                    <span className="h-2 w-2 rounded-full bg-white/25" />
+                  </div>
+                  <span className="mono text-[0.62rem] uppercase tracking-wide text-white/60">Deal room</span>
+                </div>
+
+                <div className="p-7 pb-10">
+                  <div className="mb-5 flex items-center gap-3 border-b border-rule pb-5">
+                    <div className="flex -space-x-2.5">
+                      <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-paper-raised bg-brand-soft text-brand-strong">
+                        <User size={15} />
                       </span>
-                      <div>
-                        <div className="text-sm font-semibold leading-tight">{title}</div>
-                        <p className="mt-0.5 text-xs leading-relaxed text-ink-faint">{body}</p>
-                      </div>
+                      <span className="grid h-9 w-9 place-items-center rounded-full border-2 border-paper-raised bg-gold-soft text-brand-strong">
+                        <User size={15} />
+                      </span>
                     </div>
-                  ))}
+                    <div className="leading-tight">
+                      <div className="text-sm font-semibold text-ink">Buyer &amp; seller, connected</div>
+                      <div className="text-[0.65rem] text-ink-faint">Messaging happens inside Durqo</div>
+                    </div>
+                  </div>
+
+                  <p className="mono text-[0.65rem] uppercase tracking-wide text-ink-faint">How your deal is protected</p>
+                  <div className="mt-5 flex flex-col gap-5">
+                    {OVERVIEW_POINTS.map(({ icon: Icon, title, body }) => (
+                      <div key={title} className="flex items-start gap-3">
+                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
+                          <Icon size={17} />
+                        </span>
+                        <div>
+                          <div className="text-sm font-semibold leading-tight">{title}</div>
+                          <p className="mt-0.5 text-xs leading-relaxed text-ink-faint">{body}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -269,8 +297,8 @@ export default async function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="relative overflow-hidden border-t border-rule bg-brand-soft/50 py-20 sm:py-28">
-        <div aria-hidden className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-brand/15 blur-[100px]" />
+      <section className="relative overflow-hidden border-t border-rule bg-paper-sunk py-20 sm:py-28">
+        <div aria-hidden className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-brand/10 blur-[100px]" />
         <div className="relative mx-auto max-w-6xl px-5 sm:px-7">
           <p data-reveal className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">How it works</p>
           <h2 data-reveal style={{ transitionDelay: "60ms" }} className="mb-10 text-4xl sm:text-5xl">
