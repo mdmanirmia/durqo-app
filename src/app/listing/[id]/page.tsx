@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { BadgeCheck, ShieldCheck } from "lucide-react";
+import { ShieldCheck, ChevronRight, Lock } from "lucide-react";
 import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
@@ -13,6 +13,8 @@ import CartButton from "@/components/CartButton";
 import BuyNowButton from "@/components/BuyNowButton";
 import WishlistButton from "@/components/WishlistButton";
 import ChatWithSellerButton from "@/components/ChatWithSellerButton";
+import Container from "@/components/ui/Container";
+import { Badge, StatusBadge } from "@/components/ui/Badge";
 
 // Listings are now real, changing data from Supabase (with a mock-data
 // fallback baked into getListingById) rather than a fixed set known at
@@ -24,7 +26,7 @@ function StatTile({ label, value }: { label: string; value: string | number | un
   if (value === undefined || value === "") return null;
   return (
     <div className="rounded-lg border border-rule bg-paper-raised p-4">
-      <div className="mono text-lg font-semibold">{typeof value === "number" ? fmtNumber(value) : value}</div>
+      <div className="mono text-lg font-semibold text-ink">{typeof value === "number" ? fmtNumber(value) : value}</div>
       <div className="mono text-[0.65rem] uppercase tracking-wide text-ink-faint">{label}</div>
     </div>
   );
@@ -52,265 +54,280 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const ahrefsImageUrls = imagesByKind("ahrefs");
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-10 sm:px-7">
-      <p className="mono mb-1 text-xs text-ink-faint">LISTING NO. {listing.id}</p>
-      <div className="mb-8 flex flex-wrap items-center gap-3">
-        <span className="mono rounded-lg bg-brand-soft px-2 py-1 text-[0.65rem] uppercase tracking-wide text-brand-strong">{category?.name}</span>
-        {listing.isVerified && (
-          <span className="flex items-center gap-1 text-xs font-semibold text-gold"><BadgeCheck size={14} /> Verified</span>
-        )}
-        {listing.status === "sold" && (
-          <span className="mono rounded-lg bg-ink px-2 py-1 text-[0.65rem] uppercase tracking-wide text-paper-raised">Sold</span>
-        )}
-      </div>
+    <main className="py-8 sm:py-10">
+      <Container>
+        {/* Breadcrumbs */}
+        <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-ink-faint">
+          <Link href="/" className="hover:text-ink">Home</Link>
+          <ChevronRight size={12} />
+          <Link href="/buy" className="hover:text-ink">Marketplace</Link>
+          <ChevronRight size={12} />
+          <Link href={`/buy?category=${listing.categoryId}`} className="hover:text-ink">{category?.name ?? listing.categoryId}</Link>
+          <ChevronRight size={12} />
+          <span className="text-ink-soft">{listing.title}</span>
+        </nav>
 
-      <div className="grid gap-10 lg:grid-cols-[1fr_340px]">
-        {/* MAIN CONTENT */}
-        <div className="flex flex-col gap-12">
-          <div>
-            <h1 className="mb-2 text-3xl sm:text-4xl">{listing.title}</h1>
-            {listing.businessUrl && <p className="mono text-sm text-brand-strong">{listing.businessUrl}</p>}
-          </div>
+        <div className="mb-8 flex flex-wrap items-center gap-2">
+          <Badge tone="neutral">{category?.name ?? listing.categoryId}</Badge>
+          {listing.isVerified && <Badge tone="brand">Verified</Badge>}
+          {listing.status === "sold" && <StatusBadge status="sold" />}
+        </div>
 
-          {/* Quick Stats */}
-          <section>
-            <h2 className="mb-4 text-xl">Quick Statistics</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {category?.quickStats.map((key: QuickStatKey) => (
-                <StatTile key={key} label={QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
-              ))}
-              <StatTile label="Asking Price" value={fmtUSD(price)} />
+        <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
+          {/* MAIN CONTENT */}
+          <div className="flex flex-col gap-12">
+            <div>
+              <h1 className="mb-2 text-3xl sm:text-4xl">{listing.title}</h1>
+              {listing.businessUrl && <p className="mono text-sm text-brand-strong">{listing.businessUrl}</p>}
             </div>
-          </section>
 
-          {/* Overview */}
-          <section>
-            <h2 className="mb-3 text-xl">Overview of the Business</h2>
-            <p className="max-w-[70ch] text-ink-soft">{listing.overview}</p>
-            {category?.note && (
-              <p className="mt-3 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
+            {/* Quick Stats */}
+            <section>
+              <h2 className="mb-4 text-xl">Quick Statistics</h2>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {category?.quickStats.map((key: QuickStatKey) => (
+                  <StatTile key={key} label={QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
+                ))}
+                <StatTile label="Asking Price" value={fmtUSD(price)} />
+              </div>
+            </section>
+
+            {/* Overview */}
+            <section>
+              <h2 className="mb-3 text-xl">Overview of the Business</h2>
+              <p className="max-w-[70ch] text-ink-soft">{listing.overview}</p>
+              {category?.note && (
+                <p className="mt-3 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
+              )}
+            </section>
+
+            {/* Proof of Income */}
+            {incomeSeries.some((s) => s.income) && (
+              <section>
+                <h2 className="mb-1 text-xl">Proof of Income</h2>
+                <p className="mb-4 text-sm text-ink-faint">Monthly income, last 12 months</p>
+                <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                  <TrendChart data={incomeSeries} dataKey="income" color="#10B981" format="usd" />
+                </div>
+                <ProofGalleryButton label="Proof of Income" images={incomeImageUrls} count={4} />
+              </section>
             )}
-          </section>
 
-          {/* Proof of Income */}
-          {incomeSeries.some((s) => s.income) && (
-            <section>
-              <h2 className="mb-1 text-xl">Proof of Income</h2>
-              <p className="mb-4 text-sm text-ink-faint">Monthly income, last 12 months</p>
-              <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                <TrendChart data={incomeSeries} dataKey="income" format="usd" />
-              </div>
-              <ProofGalleryButton label="Proof of Income" images={incomeImageUrls} count={4} />
-            </section>
-          )}
-
-          {/* Monthly Expenses */}
-          {listing.monthlyExpenses.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-xl">Monthly Expenses</h2>
-              <div className="flex flex-col rounded-lg border border-rule bg-paper-raised">
-                {listing.monthlyExpenses.map((e) => (
-                  <div key={e.label} className="mono flex justify-between border-b border-rule px-4 py-2.5 text-sm last:border-b-0">
-                    <span className="text-ink-soft">{e.label}</span>
-                    <span>{fmtUSD(e.amount)}</span>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Monetization Methods */}
-          {listing.monetizationTypeIds.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-xl">Monetization Methods</h2>
-              <div className="flex flex-wrap gap-2">
-                {listing.monetizationTypeIds.map((id) => (
-                  <span key={id} className="rounded-full border border-rule-strong px-3 py-1 text-sm text-ink-soft">
-                    {MONETIZATION_MAP[id] ?? id}
-                  </span>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* SEO / Analytics data block */}
-          {category?.hasSeoData && listing.seo && (
-            <>
+            {/* Monthly Expenses */}
+            {listing.monthlyExpenses.length > 0 && (
               <section>
-                <h2 className="mb-4 text-xl">Google Analytics Data</h2>
-                <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
-                  <StatTile label="New Users" value={listing.seo.gaNewUsers} />
-                  <StatTile label="Total Page Views" value={listing.seo.gaTotalPageViews} />
-                  <StatTile
-                    label="Avg. Engagement Time"
-                    value={listing.seo.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
-                  />
-                  <StatTile label="Engagement Rate" value={listing.seo.gaEngagementRate ? `${listing.seo.gaEngagementRate}%` : undefined} />
-                </div>
-                <div className="mb-6 grid gap-4 sm:grid-cols-2">
-                  <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                    <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Users trend</p>
-                    <TrendChart data={usersSeries} dataKey="users" color="#8B6FE0" format="number" />
-                  </div>
-                  <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                    <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Page views trend</p>
-                    <TrendChart data={viewsSeries} dataKey="views" format="number" />
-                  </div>
-                </div>
-                <div className="grid gap-6 sm:grid-cols-3">
-                  <BarList title="Top Channels" items={listing.seo.gaTopChannels ?? []} />
-                  <BarList title="Top Countries" items={listing.seo.gaTopCountries ?? []} />
-                  <BarList title="Device Category" items={listing.seo.gaTopDevices ?? []} />
-                </div>
-                <ProofGalleryButton label="Google Analytics Data" images={gaImageUrls} count={3} />
-              </section>
-
-              <section>
-                <h2 className="mb-4 text-xl">Google Search Console Data</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <StatTile label="Total Clicks" value={listing.seo.gscTotalClicks} />
-                  <StatTile label="Total Impressions" value={listing.seo.gscTotalImpressions} />
-                  <StatTile label="Indexed Pages" value={listing.seo.gscIndexedPages} />
-                  <StatTile label="Non-Indexed Pages" value={listing.seo.gscNonIndexedPages} />
-                  <StatTile label="Average CTR" value={listing.seo.gscAvgCtr ? `${listing.seo.gscAvgCtr}%` : undefined} />
-                </div>
-                <ProofGalleryButton label="Google Search Console Data" images={gscImageUrls} count={2} />
-              </section>
-
-              <section>
-                <h2 className="mb-4 text-xl">SEMrush Data</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <StatTile label="Authority Score" value={listing.seo.semrushAuthorityScore} />
-                  <StatTile label="Total Traffic" value={listing.seo.semrushTotalTraffic} />
-                  <StatTile label="Total Keywords" value={listing.seo.semrushTotalKeywords} />
-                  <StatTile label="Top 10 Keywords" value={listing.seo.semrushTop10Keywords} />
-                  <StatTile label="Total Backlinks" value={listing.seo.semrushTotalBacklinks} />
-                </div>
-                <ProofGalleryButton label="SEMrush Data" images={semrushImageUrls} count={2} />
-              </section>
-
-              <section>
-                <h2 className="mb-4 text-xl">Ahrefs Data</h2>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  <StatTile label="DR Rating" value={listing.seo.ahrefsDr} />
-                  <StatTile label="UR Rating" value={listing.seo.ahrefsUr} />
-                  <StatTile label="Referring Domains" value={listing.seo.ahrefsReferringDomains} />
-                  <StatTile label="Total Keywords" value={listing.seo.ahrefsTotalKeywords} />
-                  <StatTile label="Total Backlinks" value={listing.seo.ahrefsTotalBacklinks} />
-                </div>
-                <ProofGalleryButton label="Ahrefs Data" images={ahrefsImageUrls} count={2} />
-              </section>
-            </>
-          )}
-
-          {/* Social Media */}
-          {listing.socialStats.length > 0 && (
-            <section>
-              <h2 className="mb-3 text-xl">Social Media Accounts</h2>
-              <div className="flex flex-wrap gap-3">
-                {listing.socialStats.map((s) => (
-                  <div key={s.platform} className="rounded-lg border border-rule bg-paper-raised px-4 py-3">
-                    <div className="mono text-base font-semibold">{fmtNumber(s.followers)}</div>
-                    <div className="text-xs text-ink-faint">{s.platform}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* Sales Includes */}
-          <section>
-            <h2 className="mb-3 text-xl">Sale Includes</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                <h5 className="mono mb-1 text-xs uppercase tracking-wide text-ink-faint">Assets</h5>
-                <p className="text-sm text-ink-soft">{listing.saleIncludesAssets}</p>
-              </div>
-              <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                <h5 className="mono mb-1 text-xs uppercase tracking-wide text-ink-faint">Post-sale support</h5>
-                <p className="text-sm text-ink-soft">{listing.saleIncludesSupport}</p>
-              </div>
-            </div>
-          </section>
-
-          {/* Payment Terms */}
-          <section>
-            <h2 className="mb-3 text-xl">Payment Terms</h2>
-            <p className="max-w-[65ch] text-sm text-ink-soft">
-              {price > 2000
-                ? `To purchase this business, Durqo requires an initial payment of $2,000 via the website, followed by the remainder ($${(price - 2000).toLocaleString()}) via wire transfer, credit card or debit card, released from escrow once assets transfer.`
-                : "To purchase this business, full payment is made via the website and held in escrow until assets transfer is confirmed."}
-            </p>
-          </section>
-
-          {/* FAQ */}
-          <section>
-            <h2 className="mb-2 text-xl">FAQ with Seller</h2>
-            <FaqAccordion items={listing.faqs} />
-          </section>
-
-          {/* Comments */}
-          <section>
-            <h2 className="mb-4 text-xl">Comments</h2>
-            <div className="flex flex-col gap-5">
-              {listing.comments.length === 0 && <p className="text-sm text-ink-faint">No comments yet — be the first to ask a question.</p>}
-              {listing.comments.map((c) => (
-                <div key={c.id} className="rounded-lg border border-rule bg-paper-raised p-4">
-                  <div className="mb-1 flex items-baseline justify-between">
-                    <span className="text-sm font-semibold">{c.author}</span>
-                    <span className="text-xs text-ink-faint">{c.createdAt}</span>
-                  </div>
-                  <p className="text-sm text-ink-soft">{c.body}</p>
-                  {c.replies?.map((r) => (
-                    <div key={r.id} className="mt-3 ml-4 border-l-2 border-rule pl-4">
-                      <div className="mb-1 flex items-baseline justify-between">
-                        <span className="text-sm font-semibold">{r.author}</span>
-                        <span className="text-xs text-ink-faint">{r.createdAt}</span>
-                      </div>
-                      <p className="text-sm text-ink-soft">{r.body}</p>
+                <h2 className="mb-3 text-xl">Monthly Expenses</h2>
+                <div className="flex flex-col rounded-lg border border-rule bg-paper-raised">
+                  {listing.monthlyExpenses.map((e) => (
+                    <div key={e.label} className="mono flex justify-between border-b border-rule px-4 py-2.5 text-sm last:border-b-0">
+                      <span className="text-ink-soft">{e.label}</span>
+                      <span className="text-ink">{fmtUSD(e.amount)}</span>
                     </div>
                   ))}
                 </div>
-              ))}
-              <Link href="/login" className="text-sm font-semibold text-brand-strong">
-                Log in to leave a comment &rarr;
-              </Link>
-            </div>
-          </section>
-        </div>
-
-        {/* SIDEBAR */}
-        <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24">
-          <div className="aspect-video rounded-lg border border-rule bg-paper-sunk" />
-
-          <div className="rounded-lg border border-rule bg-paper-raised p-5">
-            <div className="mono mb-4 text-2xl font-semibold text-brand-strong">{fmtUSD(price)}</div>
-            <div className="flex flex-col gap-2">
-              <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
-              <CartButton listingId={listing.id} sold={listing.status === "sold"} />
-              <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
-              <WishlistButton listingId={listing.id} variant="full" />
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-rule bg-paper-raised p-5">
-            <h5 className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Seller</h5>
-            <div className="mb-1 font-semibold">{listing.seller.name}</div>
-            {listing.seller.location && <div className="mb-2 text-sm text-ink-soft">{listing.seller.location}</div>}
-            {listing.seller.isVerified ? (
-              <div className="mb-2 flex items-center gap-1.5 text-sm text-gold">
-                <ShieldCheck size={15} />
-                Verified {listing.seller.verificationMethod?.replace("_", " ")}
-              </div>
-            ) : (
-              <div className="mb-2 text-sm text-ink-faint">Identity not yet verified</div>
+              </section>
             )}
-            <div className="mono text-sm text-ink-soft">{listing.seller.totalSales} completed sale{listing.seller.totalSales === 1 ? "" : "s"}</div>
-            <div className="text-xs text-ink-faint">Member since {listing.seller.memberSince}</div>
+
+            {/* Monetization Methods */}
+            {listing.monetizationTypeIds.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-xl">Monetization Methods</h2>
+                <div className="flex flex-wrap gap-2">
+                  {listing.monetizationTypeIds.map((id) => (
+                    <span key={id} className="rounded-md border border-rule-strong px-3 py-1 text-sm text-ink-soft">
+                      {MONETIZATION_MAP[id] ?? id}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* SEO / Analytics data block */}
+            {category?.hasSeoData && listing.seo && (
+              <>
+                <section>
+                  <h2 className="mb-4 text-xl">Google Analytics Data</h2>
+                  <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
+                    <StatTile label="New Users" value={listing.seo.gaNewUsers} />
+                    <StatTile label="Total Page Views" value={listing.seo.gaTotalPageViews} />
+                    <StatTile
+                      label="Avg. Engagement Time"
+                      value={listing.seo.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
+                    />
+                    <StatTile label="Engagement Rate" value={listing.seo.gaEngagementRate ? `${listing.seo.gaEngagementRate}%` : undefined} />
+                  </div>
+                  <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                      <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Users trend</p>
+                      <TrendChart data={usersSeries} dataKey="users" color="#14213D" format="number" />
+                    </div>
+                    <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                      <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Page views trend</p>
+                      <TrendChart data={viewsSeries} dataKey="views" color="#10B981" format="number" />
+                    </div>
+                  </div>
+                  <div className="grid gap-6 sm:grid-cols-3">
+                    <BarList title="Top Channels" items={listing.seo.gaTopChannels ?? []} />
+                    <BarList title="Top Countries" items={listing.seo.gaTopCountries ?? []} />
+                    <BarList title="Device Category" items={listing.seo.gaTopDevices ?? []} />
+                  </div>
+                  <ProofGalleryButton label="Google Analytics Data" images={gaImageUrls} count={3} />
+                </section>
+
+                <section>
+                  <h2 className="mb-4 text-xl">Google Search Console Data</h2>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <StatTile label="Total Clicks" value={listing.seo.gscTotalClicks} />
+                    <StatTile label="Total Impressions" value={listing.seo.gscTotalImpressions} />
+                    <StatTile label="Indexed Pages" value={listing.seo.gscIndexedPages} />
+                    <StatTile label="Non-Indexed Pages" value={listing.seo.gscNonIndexedPages} />
+                    <StatTile label="Average CTR" value={listing.seo.gscAvgCtr ? `${listing.seo.gscAvgCtr}%` : undefined} />
+                  </div>
+                  <ProofGalleryButton label="Google Search Console Data" images={gscImageUrls} count={2} />
+                </section>
+
+                <section>
+                  <h2 className="mb-4 text-xl">SEMrush Data</h2>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <StatTile label="Authority Score" value={listing.seo.semrushAuthorityScore} />
+                    <StatTile label="Total Traffic" value={listing.seo.semrushTotalTraffic} />
+                    <StatTile label="Total Keywords" value={listing.seo.semrushTotalKeywords} />
+                    <StatTile label="Top 10 Keywords" value={listing.seo.semrushTop10Keywords} />
+                    <StatTile label="Total Backlinks" value={listing.seo.semrushTotalBacklinks} />
+                  </div>
+                  <ProofGalleryButton label="SEMrush Data" images={semrushImageUrls} count={2} />
+                </section>
+
+                <section>
+                  <h2 className="mb-4 text-xl">Ahrefs Data</h2>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    <StatTile label="DR Rating" value={listing.seo.ahrefsDr} />
+                    <StatTile label="UR Rating" value={listing.seo.ahrefsUr} />
+                    <StatTile label="Referring Domains" value={listing.seo.ahrefsReferringDomains} />
+                    <StatTile label="Total Keywords" value={listing.seo.ahrefsTotalKeywords} />
+                    <StatTile label="Total Backlinks" value={listing.seo.ahrefsTotalBacklinks} />
+                  </div>
+                  <ProofGalleryButton label="Ahrefs Data" images={ahrefsImageUrls} count={2} />
+                </section>
+              </>
+            )}
+
+            {/* Social Media */}
+            {listing.socialStats.length > 0 && (
+              <section>
+                <h2 className="mb-3 text-xl">Social Media Accounts</h2>
+                <div className="flex flex-wrap gap-3">
+                  {listing.socialStats.map((s) => (
+                    <div key={s.platform} className="rounded-lg border border-rule bg-paper-raised px-4 py-3">
+                      <div className="mono text-base font-semibold text-ink">{fmtNumber(s.followers)}</div>
+                      <div className="text-xs text-ink-faint">{s.platform}</div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Sales Includes */}
+            <section>
+              <h2 className="mb-3 text-xl">Sale Includes</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                  <h5 className="mono mb-1 text-xs uppercase tracking-wide text-ink-faint">Assets</h5>
+                  <p className="text-sm text-ink-soft">{listing.saleIncludesAssets}</p>
+                </div>
+                <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                  <h5 className="mono mb-1 text-xs uppercase tracking-wide text-ink-faint">Post-sale support</h5>
+                  <p className="text-sm text-ink-soft">{listing.saleIncludesSupport}</p>
+                </div>
+              </div>
+            </section>
+
+            {/* Payment Terms */}
+            <section>
+              <h2 className="mb-3 text-xl">Payment Terms</h2>
+              <p className="max-w-[65ch] text-sm text-ink-soft">
+                {price > 2000
+                  ? `To purchase this business, Durqo requires an initial payment of $2,000 via the website, followed by the remainder ($${(price - 2000).toLocaleString()}) via wire transfer, credit card or debit card, released from escrow once assets transfer.`
+                  : "To purchase this business, full payment is made via the website and held in escrow until assets transfer is confirmed."}
+              </p>
+            </section>
+
+            {/* FAQ */}
+            <section>
+              <h2 className="mb-2 text-xl">FAQ with Seller</h2>
+              <FaqAccordion items={listing.faqs} />
+            </section>
+
+            {/* Comments */}
+            <section>
+              <h2 className="mb-4 text-xl">Comments</h2>
+              <div className="flex flex-col gap-5">
+                {listing.comments.length === 0 && <p className="text-sm text-ink-faint">No comments yet — be the first to ask a question.</p>}
+                {listing.comments.map((c) => (
+                  <div key={c.id} className="rounded-lg border border-rule bg-paper-raised p-4">
+                    <div className="mb-1 flex items-baseline justify-between">
+                      <span className="text-sm font-semibold text-ink">{c.author}</span>
+                      <span className="text-xs text-ink-faint">{c.createdAt}</span>
+                    </div>
+                    <p className="text-sm text-ink-soft">{c.body}</p>
+                    {c.replies?.map((r) => (
+                      <div key={r.id} className="mt-3 ml-4 border-l-2 border-rule pl-4">
+                        <div className="mb-1 flex items-baseline justify-between">
+                          <span className="text-sm font-semibold text-ink">{r.author}</span>
+                          <span className="text-xs text-ink-faint">{r.createdAt}</span>
+                        </div>
+                        <p className="text-sm text-ink-soft">{r.body}</p>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+                <Link href="/login" className="text-sm font-semibold text-brand-hover">
+                  Log in to leave a comment &rarr;
+                </Link>
+              </div>
+            </section>
           </div>
-        </aside>
-      </div>
+
+          {/* SIDEBAR — acquisition panel, sticky */}
+          <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24">
+            <div className="aspect-video rounded-xl border border-rule bg-paper-sunk" />
+
+            <div className="rounded-xl border border-rule bg-paper-raised p-5">
+              {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
+                <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
+              )}
+              <div className="mono mb-4 text-2xl font-bold text-ink">{fmtUSD(price)}</div>
+              <div className="flex flex-col gap-2">
+                <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
+                <CartButton listingId={listing.id} sold={listing.status === "sold"} />
+                <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
+                <WishlistButton listingId={listing.id} variant="full" />
+              </div>
+              <p className="mt-4 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
+                <Lock size={12} className="mt-0.5 shrink-0" />
+                Your identity and message stay confidential to the seller until you choose to share more.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-rule bg-paper-raised p-5">
+              <h5 className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Seller</h5>
+              <div className="mb-1 font-semibold text-ink">{listing.seller.name}</div>
+              {listing.seller.location && <div className="mb-2 text-sm text-ink-soft">{listing.seller.location}</div>}
+              {listing.seller.isVerified ? (
+                <div className="mb-2 flex items-center gap-1.5 text-sm text-brand-hover">
+                  <ShieldCheck size={15} />
+                  Verified {listing.seller.verificationMethod?.replace("_", " ")}
+                </div>
+              ) : (
+                <div className="mb-2 text-sm text-ink-faint">Identity not yet verified</div>
+              )}
+              <div className="mono text-sm text-ink-soft">{listing.seller.totalSales} completed sale{listing.seller.totalSales === 1 ? "" : "s"}</div>
+              <div className="text-xs text-ink-faint">Member since {listing.seller.memberSince}</div>
+            </div>
+          </aside>
+        </div>
+      </Container>
     </main>
   );
 }
