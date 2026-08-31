@@ -1,14 +1,9 @@
 import Link from "next/link";
-import { Lock, ShieldCheck, Mail, ArrowUpRight } from "lucide-react";
-import { CATEGORIES } from "@/lib/categories";
+import { Lock, ShieldCheck, Mail } from "lucide-react";
+import Container from "./ui/Container";
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h4 className="mono mb-4 flex items-center gap-2 text-xs uppercase tracking-wider text-white/45">
-      <span className="h-1.5 w-1.5 rounded-sm bg-brand" />
-      {children}
-    </h4>
-  );
+  return <h4 className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-white/45">{children}</h4>;
 }
 
 const TRUST_BAR = [
@@ -16,21 +11,14 @@ const TRUST_BAR = [
   { icon: ShieldCheck, label: "Payments secured by Stripe" },
 ];
 
+// Every href below points to a route that actually exists in this app —
+// no Fees/Seller Guide/Cookie Policy links, since those pages don't exist
+// yet and a footer link to nothing is worse than a shorter footer.
 export default function Footer() {
   return (
-    <footer className="relative mt-16 overflow-hidden bg-gradient-to-b from-brand-strong to-[#0b1030] text-white/80">
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/60 to-transparent" />
-      <div aria-hidden className="pointer-events-none absolute -left-24 top-0 h-72 w-72 rounded-full bg-brand/10 blur-[110px]" />
-      <div aria-hidden className="pointer-events-none absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-brand-strong/20 blur-[100px]" />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
-        style={{ backgroundImage: "radial-gradient(white 1px, transparent 1px)", backgroundSize: "24px 24px" }}
-      />
-
-      {/* trust bar */}
-      <div className="relative border-b border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-5 sm:px-7">
+    <footer className="mt-16 bg-brand-strong text-white/80">
+      <div className="border-b border-white/10">
+        <Container className="flex flex-wrap items-center justify-between gap-4 py-5">
           <div className="flex flex-wrap items-center gap-x-7 gap-y-2">
             {TRUST_BAR.map(({ icon: Icon, label }) => (
               <span key={label} className="mono flex items-center gap-2 text-xs text-white/70">
@@ -39,66 +27,57 @@ export default function Footer() {
               </span>
             ))}
           </div>
-          <Link href="/buy" className="group inline-flex items-center gap-1.5 text-xs font-semibold text-white/80 transition hover:text-white">
-            Explore the marketplace
-            <ArrowUpRight size={13} className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <Link href="/buy" className="text-xs font-semibold text-white/80 hover:text-white">
+            Explore the marketplace →
           </Link>
-        </div>
+        </Container>
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-5 py-16 sm:px-7">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
-          <div className="col-span-2 md:col-span-2">
-            <Link href="/" className="font-display text-2xl font-bold tracking-tight text-white">
-              durqo<span className="text-brand">.</span>
+      <Container className="py-14">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+          <div className="col-span-2 md:col-span-1">
+            <Link href="/" className="text-xl font-bold tracking-tight text-white">
+              DURQO<span className="text-brand">.</span>
             </Link>
-            <p className="mt-3 max-w-[34ch] text-sm leading-relaxed text-white/55">
-              The verified marketplace for buying and selling online businesses — every listing checked, every deal escrowed.
+            <p className="mt-3 max-w-[30ch] text-sm leading-relaxed text-white/55">
+              The verified marketplace for buying and selling digital businesses.
             </p>
-            <a href="mailto:support@durqo.com" className="mt-5 inline-flex items-center gap-2 text-sm text-white/65 transition hover:text-white">
+            <a href="mailto:support@durqo.com" className="mt-5 inline-flex items-center gap-2 text-sm text-white/65 hover:text-white">
               <Mail size={15} className="text-brand" />
               support@durqo.com
             </a>
           </div>
 
           <div>
-            <ColumnHeading>Quick links</ColumnHeading>
+            <ColumnHeading>Marketplace</ColumnHeading>
             <ul className="flex flex-col gap-2.5 text-sm text-white/65">
-              <li><Link href="/buy" className="transition hover:text-white">How to Buy</Link></li>
-              <li><Link href="/faq/buyer" className="transition hover:text-white">Buyer&rsquo;s FAQ</Link></li>
-              <li><Link href="/sell" className="transition hover:text-white">How to Sell</Link></li>
-              <li><Link href="/faq/seller" className="transition hover:text-white">Seller&rsquo;s FAQ</Link></li>
-              <li><Link href="/contact" className="transition hover:text-white">Contact Us</Link></li>
+              <li><Link href="/buy" className="hover:text-white">Browse listings</Link></li>
+              <li><Link href="/sell" className="hover:text-white">Sell a business</Link></li>
             </ul>
           </div>
 
           <div>
-            <ColumnHeading>Features</ColumnHeading>
+            <ColumnHeading>Company</ColumnHeading>
             <ul className="flex flex-col gap-2.5 text-sm text-white/65">
-              <li><Link href="/buy" className="transition hover:text-white">Buy a business</Link></li>
-              <li><Link href="/sell" className="transition hover:text-white">Sell a business</Link></li>
-              <li><Link href="/sell#valuation" className="transition hover:text-white">Get a free valuation</Link></li>
-              <li><Link href="/affiliate" className="transition hover:text-white">Affiliate program</Link></li>
+              <li><Link href="/about" className="hover:text-white">About Durqo</Link></li>
+              <li><Link href="/contact" className="hover:text-white">Contact</Link></li>
             </ul>
           </div>
 
           <div>
-            <ColumnHeading>Categories</ColumnHeading>
+            <ColumnHeading>Legal</ColumnHeading>
             <ul className="flex flex-col gap-2.5 text-sm text-white/65">
-              {CATEGORIES.slice(0, 6).map((c) => (
-                <li key={c.id}>
-                  <Link href={`/buy?category=${c.id}`} className="transition hover:text-white">{c.name}</Link>
-                </li>
-              ))}
+              <li><Link href="/terms" className="hover:text-white">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="hover:text-white">Privacy Policy</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="mt-14 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/45">
+        <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/45">
           <p>&copy; {new Date().getFullYear()} Durqo. All rights reserved.</p>
           <p>St. John&rsquo;s, NL, Canada</p>
         </div>
-      </div>
+      </Container>
     </footer>
   );
 }
