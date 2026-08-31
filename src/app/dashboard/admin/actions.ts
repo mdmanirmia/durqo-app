@@ -11,6 +11,9 @@ type ListingStatus = (typeof LISTING_STATUSES)[number];
 const USER_ROLES = ["buyer", "seller", "admin"] as const;
 type UserRole = (typeof USER_ROLES)[number];
 
+const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
+type OrderStatus = (typeof ORDER_STATUSES)[number];
+
 // Every action re-verifies the caller is an admin on its own — the page
 // that renders the button that calls this isn't a security boundary, per
 // Next.js's Server Actions guidance. Only a listing/user id and the single
@@ -45,6 +48,123 @@ export async function setUserRole(userId: string, role: UserRole) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/admin/users");
+  revalidatePath("/dashboard/admin");
+}
+
+// "Delete" a user, product-decision-wise, means deactivate rather than
+// remove: profiles.is_active (migration 008) gates login in src/proxy.ts
+// and the client-side login check — a blocked account's listings, orders
+// and history all stay exactly as they were, and this can be reversed at
+// any time. Never actually deletes the auth.users row.
+export async function setUserActive(userId: string, active: boolean) {
+  const admin = await requireAdmin();
+  if (userId === admin.id && !active) {
+    throw new Error("You can't deactivate your own account.");
+  }
+
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const { error } = await supabaseAdmin.from("profiles").update({ is_active: active }).eq("id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/users");
+  revalidatePath("/dashboard/admin");
+}
+
+// "Add user" from the admin dashboard invites by email — Supabase sends its
+// own auth invite/magic-link email (a separate mechanism from the Resend
+// integration used elsewhere in this app), so no password ever passes
+// through this code. handle_new_user() (schema.sql) auto-creates the
+// profiles row from auth.users on insert, seeded with full_name from the
+// user metadata below; the update afterward covers the role (and re-sets
+// full_name defensively in case the trigger runs with different data).
+export async function inviteUser(email: string, fullName: string, role: UserRole) {
+  await requireAdmin();
+  if (!USER_ROLES.includes(role)) throw new Error("Invalid role");
+
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+    data: { full_name: fullName || undefined },
+  });
+  if (error) throw new Error(error.message);
+  if (!data.user) throw new Error("Invite sent, but no user record was returned.");
+
+  const { error: profileError } = await supabaseAdmin
+    .from("profiles")
+    .update({ role, ...(fullName ? { full_name: fullName } : {}) })
+    .eq("id", data.user.id);
+  if (profileError) throw new Error(profileError.message);
+
+  revalidatePath("/dashboard/admin/users");
+  revalidatePath("/dashboard/admin");
+}
+
+export async function setOrderStatus(orderId: string, status: OrderStatus) {
+  await requireAdmin();
+  if (!ORDER_STATUSES.includes(status)) throw new Error("Invalid status");
+
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const { error } = await supabaseAdmin.from("orders").update({ status }).eq("id", orderId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/orders");
+  revalidatePath("/dashboard/admin");
+}
+
+// Core-field edit for a listing — title, category, price and the other
+// fields most likely to need an admin correction, plus the category's
+// quick-stat columns (already pre-mapped to real column names by the
+// caller via QUICK_STAT_COLUMNS, same helper the seller "new listing" form
+// uses). Deep proof-data (the 12-month income calendar, GA/GSC/SEMrush/
+// Ahrefs numbers, social stats, image galleries) isn't editable from this
+// form — those stay seller-submitted and admin-reviewed via
+// approve/reject, not silently rewritten by an admin.
+export async function updateListing(
+  listingId: string,
+  fields: {
+    title: string;
+    categoryId: string;
+    businessUrl: string | null;
+    location: string | null;
+    price: number;
+    discountedPrice: number | null;
+    overview: string;
+    saleIncludesAssets: string;
+    saleIncludesSupport: string;
+    quickStatColumns: Record<string, unknown>;
+  }
+) {
+  await requireAdmin();
+  if (!fields.title.trim()) throw new Error("Title is required.");
+  if (!Number.isFinite(fields.price) || fields.price < 0) throw new Error("Invalid price.");
+
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const { error } = await supabaseAdmin
+    .from("listings")
+    .update({
+      title: fields.title,
+      category_id: fields.categoryId,
+      business_url: fields.businessUrl,
+      location: fields.location,
+      price: fields.price,
+      discounted_price: fields.discountedPrice,
+      overview: fields.overview,
+      sale_includes_assets: fields.saleIncludesAssets,
+      sale_includes_support: fields.saleIncludesSupport,
+      ...fields.quickStatColumns,
+    })
+    .eq("id", listingId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/listings");
+  revalidatePath(`/listing/${listingId}`);
   revalidatePath("/dashboard/admin");
 }
 
