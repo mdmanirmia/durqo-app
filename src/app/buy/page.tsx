@@ -2,10 +2,13 @@
 
 import { useMemo, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { CATEGORIES } from "@/lib/categories";
+import Link from "next/link";
+import { LayoutGrid, List, BadgeCheck } from "lucide-react";
+import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { MONETIZATION_TYPES } from "@/lib/monetization-types";
 import { fetchPublishedListings } from "@/lib/data/listings.client";
 import type { Listing } from "@/lib/types";
+import { fmtUSD } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
 
 function BuyContent() {
@@ -33,6 +36,7 @@ function BuyContent() {
   const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [monetizationId, setMonetizationId] = useState("");
   const [sort, setSort] = useState("featured");
+  const [view, setView] = useState<"cards" | "table">("cards");
 
   function toggleCategory(id: string) {
     setCategoryIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
@@ -152,21 +156,86 @@ function BuyContent() {
         <div>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm text-ink-soft">{results.length} listing{results.length === 1 ? "" : "s"}</p>
-            <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg border border-rule-strong bg-paper-raised px-3 py-2 text-sm">
-              <option value="featured">Sort: Featured</option>
-              <option value="price-asc">Price: low to high</option>
-              <option value="price-desc">Price: high to low</option>
-              <option value="income-desc">Income: high to low</option>
-            </select>
+            <div className="flex items-center gap-3">
+              <div className="inline-flex items-center gap-0.5 rounded-lg border border-rule-strong bg-paper-raised p-0.5">
+                <button
+                  type="button"
+                  onClick={() => setView("cards")}
+                  aria-pressed={view === "cards"}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                    view === "cards" ? "bg-brand-strong text-white" : "text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  <LayoutGrid size={13} /> Cards
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setView("table")}
+                  aria-pressed={view === "table"}
+                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                    view === "table" ? "bg-brand-strong text-white" : "text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  <List size={13} /> Table
+                </button>
+              </div>
+              <select value={sort} onChange={(e) => setSort(e.target.value)} className="rounded-lg border border-rule-strong bg-paper-raised px-3 py-2 text-sm">
+                <option value="featured">Sort: Featured</option>
+                <option value="price-asc">Price: low to high</option>
+                <option value="price-desc">Price: high to low</option>
+                <option value="income-desc">Income: high to low</option>
+              </select>
+            </div>
           </div>
 
           {listings === null ? (
             <p className="py-16 text-center text-ink-faint">Loading listings…</p>
-          ) : results.length ? (
+          ) : results.length ? view === "cards" ? (
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {results.map((l) => (
                 <ListingCard key={l.id} listing={l} />
               ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-rule bg-paper-raised">
+              <table className="w-full min-w-[720px] border-collapse text-sm">
+                <thead className="sticky top-20 z-10 bg-paper-raised md:top-24">
+                  <tr className="border-b border-rule-strong text-left">
+                    <th className="px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Title</th>
+                    <th className="px-4 py-3 text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Category</th>
+                    <th className="px-4 py-3 text-right text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Asking price</th>
+                    <th className="px-4 py-3 text-right text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Business age</th>
+                    <th className="px-4 py-3 text-right text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Monthly income</th>
+                    <th className="px-4 py-3 text-center text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">Verified</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.map((l) => {
+                    const category = CATEGORY_MAP[l.categoryId];
+                    const income = l.quickStats.monthly_income as number | undefined;
+                    return (
+                      <tr key={l.id} className="border-b border-rule last:border-0 hover:bg-paper-sunk">
+                        <td className="px-4 py-3">
+                          <Link href={`/listing/${l.id}`} className="font-semibold text-ink hover:text-brand-strong hover:underline">
+                            {l.title}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3 text-ink-soft">{category?.name ?? l.categoryId}</td>
+                        <td className="mono px-4 py-3 text-right tabular-nums">{fmtUSD(l.discountedPrice ?? l.price)}</td>
+                        <td className="mono px-4 py-3 text-right tabular-nums">{l.businessAgeYears ? `${l.businessAgeYears} yrs` : "New"}</td>
+                        <td className="mono px-4 py-3 text-right tabular-nums">{income ? fmtUSD(income) : "—"}</td>
+                        <td className="px-4 py-3 text-center">
+                          {l.isVerified ? (
+                            <BadgeCheck size={16} className="mx-auto text-brand" aria-label="Verified" />
+                          ) : (
+                            <span className="text-ink-faint">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
             <p className="py-16 text-center text-ink-faint">No listings match those filters.</p>
