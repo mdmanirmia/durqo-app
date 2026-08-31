@@ -11,7 +11,7 @@ export default async function AdminUsers() {
   let rows: AdminUserRow[] = [];
   if (admin) {
     const [{ data: profiles }, { data: authUsers }] = await Promise.all([
-      admin.from("profiles").select("id, full_name, role, is_verified, total_purchases, total_sales, created_at"),
+      admin.from("profiles").select("id, full_name, role, is_verified, is_active, total_purchases, total_sales, created_at"),
       admin.auth.admin.listUsers({ perPage: 200 }),
     ]);
 
@@ -24,6 +24,7 @@ export default async function AdminUsers() {
         fullName: p.full_name ?? "—",
         role: p.role,
         isVerified: p.is_verified,
+        isActive: p.is_active ?? true,
         totalPurchases: p.total_purchases,
         totalSales: p.total_sales,
         createdAt: (p.created_at as string).slice(0, 10),
