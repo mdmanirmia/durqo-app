@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { fmtUSD } from "@/lib/format";
-import { setOrderStatus } from "../actions";
+import { setOrderStatus, setOrderPaymentChannel } from "../actions";
 
 export interface AdminOrderRow {
   id: string;
@@ -11,6 +11,7 @@ export interface AdminOrderRow {
   sellerName: string;
   amount: number;
   status: string;
+  paymentChannel: string;
   createdAt: string;
 }
 
@@ -32,6 +33,19 @@ const STATUS_STYLE: Record<string, string> = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+// Which rail the order was actually paid through — a manual admin-set
+// label (migration 009, payment_channel column), same "tracking only"
+// spirit as status above. "In Bangladesh Payment Gateway" doesn't mean a
+// gateway is actually wired up yet — it's just a bucket admin can pick
+// for a sale settled that way outside Stripe.
+const PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway"] as const;
+
+const PAYMENT_CHANNEL_LABEL: Record<string, string> = {
+  stripe: "In Stripe",
+  durqo_platform: "In Durqo Platform",
+  bangladesh_gateway: "In Bangladesh Payment Gateway",
+};
+
 // Status here is a manual admin override of the tracking label only — it
 // does not touch Stripe or move any money. A real refund for a cancelled
 // order still has to be issued separately from the Stripe dashboard; see
@@ -40,6 +54,10 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const [pendingChannelId, setPendingChannelId] = useState<string | null>(null);
+  const [errorChannelId, setErrorChannelId] = useState<string | null>(null);
+  const [isChannelPending, startChannelTransition] = useTransition();
 
   function changeStatus(id: string, status: string) {
     setPendingId(id);
@@ -51,6 +69,20 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
         setErrorId(id);
       } finally {
         setPendingId(null);
+      }
+    });
+  }
+
+  function changeChannel(id: string, channel: string) {
+    setPendingChannelId(id);
+    setErrorChannelId(null);
+    startChannelTransition(async () => {
+      try {
+        await setOrderPaymentChannel(id, channel as never);
+      } catch {
+        setErrorChannelId(id);
+      } finally {
+        setPendingChannelId(null);
       }
     });
   }
@@ -69,12 +101,14 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
             <th className="px-4 py-3 font-medium">Seller</th>
             <th className="px-4 py-3 font-medium">Amount</th>
             <th className="px-4 py-3 font-medium">Status</th>
+            <th className="px-4 py-3 font-medium">Payment Channel</th>
             <th className="px-4 py-3 font-medium">Date</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((o) => {
             const busy = isPending && pendingId === o.id;
+            const channelBusy = isChannelPending && pendingChannelId === o.id;
             return (
               <tr key={o.id} className="border-b border-rule align-top last:border-b-0">
                 <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
@@ -96,6 +130,19 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                     ))}
                   </select>
                   {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+                </td>
+                <td className="px-4 py-3">
+                  <select
+                    value={o.paymentChannel}
+                    disabled={channelBusy}
+                    onChange={(e) => changeChannel(o.id, e.target.value)}
+                    className="mono block rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
+                  >
+                    {PAYMENT_CHANNELS.map((c) => (
+                      <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
+                    ))}
+                  </select>
+                  {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
                 </td>
                 <td className="mono px-4 py-3 text-ink-faint">{o.createdAt}</td>
               </tr>

@@ -13,7 +13,7 @@ export default async function AdminOrders() {
   if (admin) {
     const { data: orders } = await admin
       .from("orders")
-      .select("id, listing_id, buyer_id, seller_id, amount, status, created_at")
+      .select("id, listing_id, buyer_id, seller_id, amount, status, payment_channel, created_at")
       .order("created_at", { ascending: false });
 
     const listingIds = [...new Set((orders ?? []).map((o) => o.listing_id))];
@@ -32,6 +32,7 @@ export default async function AdminOrders() {
       sellerName: nameById.get(o.seller_id) ?? "—",
       amount: Number(o.amount),
       status: o.status,
+      paymentChannel: o.payment_channel ?? "stripe",
       createdAt: (o.created_at as string).slice(0, 10),
     }));
   }
