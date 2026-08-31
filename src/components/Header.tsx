@@ -11,11 +11,10 @@ import { getCartCount } from "@/lib/data/cart.client";
 import { COUNTS_CHANGED_EVENT } from "@/lib/count-events";
 
 const NAV = [
-  { href: "/", label: "Home" },
-  { href: "/buy", label: "Buy" },
-  { href: "/sell", label: "Sell" },
-  { href: "/about", label: "About Us" },
-  { href: "/contact", label: "Contact Us" },
+  { href: "/buy", label: "Marketplace" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/sell", label: "Sell a Business" },
+  { href: "/about", label: "About" },
 ];
 
 export default function Header() {
@@ -114,9 +113,9 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-rule bg-paper-raised/95 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center gap-7 px-5 py-4 sm:px-7">
-        <Link href="/" className="flex items-baseline gap-1 font-display text-2xl font-semibold text-ink shrink-0">
+    <header className="sticky top-0 z-40 h-[72px] border-b border-rule bg-paper-raised/95 backdrop-blur">
+      <div className="mx-auto flex h-full max-w-[1280px] items-center gap-8 px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="flex items-baseline gap-1 font-display text-xl font-bold text-ink shrink-0">
           durqo<span className="text-brand">.</span>
         </Link>
 
@@ -128,8 +127,8 @@ export default function Header() {
                 key={item.href}
                 href={item.href}
                 className={clsx(
-                  "rounded-full border-b-2 px-3 py-2 text-sm font-medium transition",
-                  active ? "border-brand text-ink" : "border-transparent text-ink-soft hover:text-ink"
+                  "rounded-md px-3 py-2 text-sm font-medium transition",
+                  active ? "text-ink" : "text-ink-soft hover:text-ink"
                 )}
               >
                 {item.label}
@@ -141,25 +140,25 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           {name ? (
             <>
-              <Link href="/dashboard/buyer" className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink sm:flex">
+              <Link href="/dashboard/buyer" className="hidden items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink sm:flex">
                 <User size={15} />
                 Hi, {name}
               </Link>
-              <button type="button" onClick={handleLogOut} className="hidden rounded-full border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
+              <button type="button" onClick={handleLogOut} className="hidden rounded-md border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
                 Log out
               </button>
             </>
           ) : name === null ? (
             <>
-              <Link href="/login" className="hidden rounded-full border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
+              <Link href="/login" className="hidden rounded-md border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
                 Log in
               </Link>
-              <Link href="/register" className="hidden rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90 sm:inline-block">
+              <Link href="/register" className="hidden rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover sm:inline-block">
                 Register
               </Link>
             </>
           ) : null}
-          <Link href="/dashboard/buyer/wishlist" aria-label="Wishlist" className="relative grid h-9 w-9 place-items-center rounded-full border border-rule-strong text-ink-soft hover:border-brand-strong hover:text-ink">
+          <Link href="/dashboard/buyer/wishlist" aria-label="Wishlist" className="relative grid h-9 w-9 place-items-center rounded-md border border-rule-strong text-ink-soft hover:border-brand-strong hover:text-ink">
             <Heart size={17} />
             {wishlistCount > 0 && (
               <span className="mono absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand-strong px-1 text-[0.62rem] font-semibold leading-none text-white ring-2 ring-paper-raised">
@@ -167,7 +166,7 @@ export default function Header() {
               </span>
             )}
           </Link>
-          <Link href="/cart" aria-label="Cart" className="relative grid h-9 w-9 place-items-center rounded-full bg-brand text-white hover:bg-brand/90">
+          <Link href="/cart" aria-label="Cart" className="relative grid h-9 w-9 place-items-center rounded-md bg-brand text-white hover:bg-brand-hover">
             <ShoppingCart size={17} />
             {cartCount > 0 && (
               <span className="mono absolute -right-1.5 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-ink px-1 text-[0.62rem] font-semibold leading-none text-white ring-2 ring-paper-raised">
@@ -177,7 +176,7 @@ export default function Header() {
           </Link>
           <button
             aria-label="Menu"
-            className="grid h-9 w-9 place-items-center rounded-full border border-rule-strong text-ink md:hidden"
+            className="grid h-9 w-9 place-items-center rounded-md border border-rule-strong text-ink md:hidden"
             onClick={() => setOpen((v) => !v)}
           >
             {open ? <X size={17} /> : <Menu size={17} />}
