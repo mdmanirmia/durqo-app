@@ -1,23 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #F5F9F7;
+  --paper: #F7F8FA;
   --paper-raised: #FFFFFF;
-  --paper-sunk: #EDF5F1;
-  --ink: #10151C;
-  --ink-soft: #545F78;
-  --ink-faint: #8B93A6;
-  --rule: #E3EAE6;
-  --rule-strong: #CBD6CF;
-  --brand: #4FAF83;
-  --brand-strong: #1C2454;
-  --brand-soft: #E4F4EC;
-  --gold: #8B6FE0;
-  --gold-soft: #F0ECFB;
+  --paper-sunk: #EEF1F4;
+  --ink: #111827;
+  --ink-soft: #64748B;
+  --ink-faint: #94A3B8;
+  --rule: #E2E8F0;
+  --rule-strong: #CBD5E1;
+  --brand: #10B981;
+  --brand-hover: #059669;
+  --brand-strong: #0B1324;
+  --navy-secondary: #14213D;
+  --brand-soft: #E3F7EF;
+  --gold: #D4A72C;
+  --gold-soft: #FBF3DD;
   --sky: #3B82C4;
   --sky-soft: #E7F1FA;
-  --danger: #D33A2C;
-  --danger-soft: #FBE1DD;
+  --danger: #DC2626;
+  --danger-soft: #FEE2E2;
 }
 
 :root[data-theme="dark"],
@@ -31,11 +33,13 @@
     --ink-faint: #67717F;
     --rule: #223028;
     --rule-strong: #2E4136;
-    --brand: #6FCBA0;
-    --brand-strong: #A6B0F5;
-    --brand-soft: #16261E;
-    --gold: #B39AF0;
-    --gold-soft: #241D38;
+    --brand: #34D399;
+    --brand-hover: #10B981;
+    --brand-strong: #0B1324;
+    --navy-secondary: #1B2B52;
+    --brand-soft: #123527;
+    --gold: #E0BA55;
+    --gold-soft: #2B2312;
     --sky: #6FA8DC;
     --sky-soft: #16232E;
     --danger: #EB8A7C;
@@ -53,7 +57,9 @@
   --color-rule: var(--rule);
   --color-rule-strong: var(--rule-strong);
   --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
   --color-brand-strong: var(--brand-strong);
+  --color-navy-secondary: var(--navy-secondary);
   --color-brand-soft: var(--brand-soft);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
@@ -83,72 +89,62 @@ h1, h2, h3, h4 {
 }
 
 h1 {
-  font-weight: 800;
-  letter-spacing: -0.025em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.mono { font-family: var(--font-mono); letter-spacing: -0.01em; }
+.mono {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
 
-/* Pill badge with a small leading dot, used above section headings
-   (e.g. "● Why Durqo") so every major section gets the same punchy
-   eyebrow treatment instead of a plain uppercase label. */
-.section-badge {
+/* Small pill-with-dot label used above section headings ("● Categories"),
+   restrained rather than the oversized gradient badges of earlier passes —
+   one consistent, quiet way to mark the start of a section. */
+.eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   border-radius: 9999px;
   background: var(--brand-soft);
   color: var(--brand-strong);
-  padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+  padding: 0.35rem 0.85rem 0.35rem 0.65rem;
   font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.section-badge::before {
+.eyebrow::before {
   content: "";
   display: block;
-  height: 0.42rem;
-  width: 0.42rem;
+  height: 0.4rem;
+  width: 0.4rem;
   border-radius: 9999px;
   background: var(--brand);
 }
-.section-badge--on-dark {
+.eyebrow--on-dark {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
 }
-.section-badge--on-dark::before {
+.eyebrow--on-dark::before {
   background: var(--brand);
 }
 
 /* Scroll-reveal: elements start hidden/offset, JS (useScrollReveal) flips
-   data-revealed once they enter the viewport. Motion-safe only — reduced
-   motion below shows everything immediately with no transition. */
+   data-revealed once they enter the viewport. Kept short (200ms, 8px) to
+   stay inside the design system's animation budget — a light settle, not a
+   showpiece — and motion-safe only: reduced motion shows everything
+   immediately with no transition. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(8px);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out;
 }
 [data-reveal="true"] {
   opacity: 1;
   transform: translateY(0);
-}
-
-@keyframes drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(2%, -3%) scale(1.05); }
-}
-.animate-drift { animation: drift 14s ease-in-out infinite; }
-.animate-drift-slow { animation: drift 20s ease-in-out infinite reverse; }
-
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-.animate-gradient-text {
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
