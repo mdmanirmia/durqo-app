@@ -17,11 +17,16 @@ export interface AdminOrderRow {
 
 const STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
 
+// Display labels only — the underlying status values (requested,
+// awaiting_payment, in_escrow, completed, cancelled) are unchanged in the
+// database; these are just friendlier wording for the same lifecycle:
+// buyer hasn't paid yet -> paid and held in escrow -> released to the
+// seller.
 const STATUS_LABEL: Record<string, string> = {
   requested: "Requested",
-  awaiting_payment: "Awaiting payment",
-  in_escrow: "In escrow",
-  completed: "Completed",
+  awaiting_payment: "Awaiting for Payment",
+  in_escrow: "Payment Completed",
+  completed: "Released Payment",
   cancelled: "Cancelled",
 };
 
