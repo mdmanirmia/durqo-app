@@ -25,7 +25,24 @@ export async function proxy(request: NextRequest) {
   });
 
   // Touching getUser() is what actually triggers a token refresh when needed.
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Admin "deactivate user" enforcement (profiles.is_active — see migration
+  // 008 and setUserActive() in dashboard/admin/actions.ts). Checked here,
+  // on every request for a signed-in user, rather than only at the login
+  // form, so an account deactivated mid-session is signed out on its very
+  // next navigation rather than staying valid until the JWT expires.
+  if (user && !request.nextUrl.pathname.startsWith("/login")) {
+    const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", user.id).single();
+    if (profile && profile.is_active === false) {
+      await supabase.auth.signOut();
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("error", "account_deactivated");
+      return NextResponse.redirect(loginUrl);
+    }
+  }
 
   return response;
 }
