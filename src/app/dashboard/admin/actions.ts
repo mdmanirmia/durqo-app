@@ -14,7 +14,7 @@ type UserRole = (typeof USER_ROLES)[number];
 const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
 type OrderStatus = (typeof ORDER_STATUSES)[number];
 
-const ORDER_PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway"] as const;
+const ORDER_PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway", "escrow"] as const;
 type OrderPaymentChannel = (typeof ORDER_PAYMENT_CHANNELS)[number];
 
 // Every action re-verifies the caller is an admin on its own — the page
