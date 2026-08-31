@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 const CALLBACK_ERRORS: Record<string, string> = {
   backend_not_connected: "Backend isn't connected yet — this is a preview build.",
   confirmation_failed: "That confirmation link is invalid or has expired — try registering again, or resend the email.",
+  account_deactivated: "Your account has been deactivated. Contact support if you think this is a mistake.",
 };
 
 function LoginForm() {
@@ -33,9 +34,24 @@ function LoginForm() {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) { setLoading(false); setError(error.message); return; }
+
+    // Deactivated accounts (admin "Block" — profiles.is_active) are also
+    // caught on every subsequent request by proxy.ts, but checking right
+    // here avoids a confusing flash of the dashboard before being bounced
+    // back to /login.
+    if (data.user) {
+      const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", data.user.id).single();
+      if (profile && profile.is_active === false) {
+        await supabase.auth.signOut();
+        setLoading(false);
+        setError(CALLBACK_ERRORS.account_deactivated);
+        return;
+      }
+    }
+
     setLoading(false);
-    if (error) { setError(error.message); return; }
     router.push("/dashboard/buyer");
   }
 
