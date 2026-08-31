@@ -20,5 +20,6 @@ export const ADMIN_NAV: DashboardNavItem[] = [
   { href: "/dashboard/admin", label: "Overview" },
   { href: "/dashboard/admin/listings", label: "Listings" },
   { href: "/dashboard/admin/users", label: "Users" },
+  { href: "/dashboard/admin/verification", label: "Verification" },
   { href: "/dashboard/admin/orders", label: "Orders" },
 ];
