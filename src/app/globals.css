@@ -14,6 +14,8 @@
   --brand-soft: #E4F4EC;
   --gold: #8B6FE0;
   --gold-soft: #F0ECFB;
+  --sky: #3B82C4;
+  --sky-soft: #E7F1FA;
   --danger: #D33A2C;
   --danger-soft: #FBE1DD;
 }
@@ -34,6 +36,8 @@
     --brand-soft: #16261E;
     --gold: #B39AF0;
     --gold-soft: #241D38;
+    --sky: #6FA8DC;
+    --sky-soft: #16232E;
     --danger: #EB8A7C;
     --danger-soft: #3A211D;
   }
@@ -53,6 +57,8 @@
   --color-brand-soft: var(--brand-soft);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --font-display: "Inter", "Public Sans", -apple-system, sans-serif;
@@ -82,6 +88,39 @@ h1 {
 }
 
 .mono { font-family: var(--font-mono); letter-spacing: -0.01em; }
+
+/* Pill badge with a small leading dot, used above section headings
+   (e.g. "● Why Durqo") so every major section gets the same punchy
+   eyebrow treatment instead of a plain uppercase label. */
+.section-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  background: var(--brand-soft);
+  color: var(--brand-strong);
+  padding: 0.4rem 0.9rem 0.4rem 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.section-badge::before {
+  content: "";
+  display: block;
+  height: 0.42rem;
+  width: 0.42rem;
+  border-radius: 9999px;
+  background: var(--brand);
+}
+.section-badge--on-dark {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.section-badge--on-dark::before {
+  background: var(--brand);
+}
 
 /* Scroll-reveal: elements start hidden/offset, JS (useScrollReveal) flips
    data-revealed once they enter the viewport. Motion-safe only — reduced

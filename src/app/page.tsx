@@ -21,6 +21,17 @@ import ListingCard from "@/components/ListingCard";
 import Sparkline from "@/components/Sparkline";
 import { fmtUSD, formatQuickStat } from "@/lib/format";
 
+// Rotating icon-badge tints — durqo.com gives every feature icon its own
+// pastel colour rather than repeating one brand tint everywhere, which is
+// part of what makes it feel richer/less flat. bg/fg share a hue so the
+// icon always reads as "colour-on-its-own-pale-tint", never brand-navy on
+// a mismatched pastel.
+const TINTS = [
+  { bg: "bg-brand-soft", fg: "text-brand" },
+  { bg: "bg-sky-soft", fg: "text-sky" },
+  { bg: "bg-gold-soft", fg: "text-gold" },
+];
+
 const WHY = [
   { icon: ShieldCheck, title: "Escrow-protected payments", body: "Every transaction runs through a licensed escrow partner — funds release only after assets transfer." },
   { icon: LineChart, title: "Independent financial verification", body: "Revenue, traffic and SEO figures are checked against Google Analytics, Search Console, SEMrush and Ahrefs before a listing goes live." },
@@ -145,17 +156,20 @@ export default async function Home() {
 
                   <p className="mono text-[0.65rem] uppercase tracking-wide text-ink-faint">How your deal is protected</p>
                   <div className="mt-5 flex flex-col gap-5">
-                    {OVERVIEW_POINTS.map(({ icon: Icon, title, body }) => (
-                      <div key={title} className="flex items-start gap-3">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
-                          <Icon size={17} />
-                        </span>
-                        <div>
-                          <div className="text-sm font-semibold leading-tight">{title}</div>
-                          <p className="mt-0.5 text-xs leading-relaxed text-ink-faint">{body}</p>
+                    {OVERVIEW_POINTS.map(({ icon: Icon, title, body }, i) => {
+                      const tint = TINTS[i % TINTS.length];
+                      return (
+                        <div key={title} className="flex items-start gap-3">
+                          <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl ${tint.bg} ${tint.fg}`}>
+                            <Icon size={17} />
+                          </span>
+                          <div>
+                            <div className="text-sm font-semibold leading-tight">{title}</div>
+                            <p className="mt-0.5 text-xs leading-relaxed text-ink-faint">{body}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -247,11 +261,12 @@ export default async function Home() {
       {/* CATEGORIES */}
       <section className="border-t border-rule py-20 sm:py-28">
         <div className="mx-auto max-w-6xl px-5 sm:px-7">
-          <p data-reveal className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">Categories</p>
-          <h2 data-reveal style={{ transitionDelay: "60ms" }} className="mb-10 text-4xl sm:text-5xl">Fourteen kinds of digital assets, one trusted marketplace</h2>
+          <span data-reveal className="section-badge">Categories</span>
+          <h2 data-reveal style={{ transitionDelay: "60ms" }} className="mb-10 mt-4 text-4xl sm:text-5xl">Fourteen kinds of digital assets, one trusted marketplace</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
             {CATEGORIES.map((c, i) => {
               const Icon = categoryIcon(c.id);
+              const tint = TINTS[i % TINTS.length];
               return (
                 <Link
                   key={c.id}
@@ -261,7 +276,7 @@ export default async function Home() {
                   className="group relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(15,23,41,0.04)] transition hover:-translate-y-1 hover:border-brand hover:shadow-[0_20px_40px_-20px_rgba(15,23,41,0.25)]"
                 >
                   <div className={`absolute inset-0 -z-10 bg-gradient-to-br opacity-0 transition group-hover:opacity-100 ${CATEGORY_TINTS[i % CATEGORY_TINTS.length]}`} />
-                  <span className="grid h-12 w-12 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:bg-brand group-hover:text-white">
+                  <span className={`grid h-12 w-12 place-items-center rounded-xl ${tint.bg} ${tint.fg} transition group-hover:bg-brand group-hover:text-white`}>
                     <Icon size={22} />
                   </span>
                   <span className="text-lg font-semibold">{c.name}</span>
@@ -278,8 +293,8 @@ export default async function Home() {
         <div className="mx-auto max-w-6xl px-5 sm:px-7">
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
             <div data-reveal>
-              <p className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">Latest listings</p>
-              <h2 className="text-4xl sm:text-5xl">On the market this week</h2>
+              <span className="section-badge">Latest listings</span>
+              <h2 className="mt-4 text-4xl sm:text-5xl">On the market this week</h2>
             </div>
             <Link href="/buy" data-reveal className="group inline-flex items-center gap-1.5 rounded-full border border-rule-strong px-5 py-2.5 text-sm font-semibold hover:border-brand hover:text-brand">
               View all listings
@@ -296,28 +311,38 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section className="relative overflow-hidden border-t border-rule bg-paper-sunk py-20 sm:py-28">
-        <div aria-hidden className="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-brand/10 blur-[100px]" />
+      {/* HOW IT WORKS — deliberately dark, full-bleed: a contrast beat against
+          the pale sections above/below it, independent of light/dark theme
+          (hardcoded navy, same pattern the closing CTA band already uses). */}
+      <section className="relative overflow-hidden bg-[#0B1220] py-20 sm:py-28">
+        <div aria-hidden className="pointer-events-none absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-brand/20 blur-[130px]" />
+        <div aria-hidden className="pointer-events-none absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-sky/15 blur-[110px]" />
         <div className="relative mx-auto max-w-6xl px-5 sm:px-7">
-          <p data-reveal className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">How it works</p>
-          <h2 data-reveal style={{ transitionDelay: "60ms" }} className="mb-10 text-4xl sm:text-5xl">
-            From browsing to close, in{" "}
-            <span className="bg-gradient-to-r from-brand to-brand-strong bg-clip-text text-transparent">three steps</span>
+          <span data-reveal className="section-badge section-badge--on-dark">How it works</span>
+          <h2 data-reveal style={{ transitionDelay: "60ms" }} className="mb-10 mt-4 text-4xl text-white sm:text-5xl">
+            From browsing to close, in <span className="text-brand">three steps</span>
           </h2>
           <div className="grid gap-6 sm:grid-cols-3">
-            {STEPS.map(({ icon: Icon, title, body }, i) => (
-              <div key={title} data-reveal style={{ transitionDelay: `${i * 90}ms` }} className="relative rounded-2xl border border-rule bg-paper-raised p-7 pt-9 shadow-[0_1px_2px_rgba(15,23,41,0.04)] transition hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(15,23,41,0.25)]">
-                <span className="mono absolute -top-4 left-6 grid h-9 w-9 place-items-center rounded-xl bg-brand text-sm font-bold text-white shadow-[0_10px_20px_-8px_rgba(79,175,131,0.7)]">
-                  0{i + 1}
-                </span>
-                <span className="mb-4 grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-strong">
-                  <Icon size={20} />
-                </span>
-                <h4 className="text-lg font-semibold">{title}</h4>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
-              </div>
-            ))}
+            {STEPS.map(({ icon: Icon, title, body }, i) => {
+              const tint = TINTS[i % TINTS.length];
+              return (
+                <div
+                  key={title}
+                  data-reveal
+                  style={{ transitionDelay: `${i * 90}ms` }}
+                  className="relative rounded-2xl border border-white/10 bg-white/[0.06] p-7 pt-9 backdrop-blur-sm transition hover:-translate-y-1 hover:bg-white/[0.09]"
+                >
+                  <span className="mono absolute -top-4 left-6 grid h-9 w-9 place-items-center rounded-xl bg-brand text-sm font-bold text-white shadow-[0_10px_20px_-8px_rgba(79,175,131,0.7)]">
+                    0{i + 1}
+                  </span>
+                  <span className={`mb-4 grid h-11 w-11 place-items-center rounded-xl ${tint.bg} ${tint.fg}`}>
+                    <Icon size={20} />
+                  </span>
+                  <h4 className="text-lg font-semibold text-white">{title}</h4>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/60">{body}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -326,26 +351,30 @@ export default async function Home() {
       <section className="border-t border-rule py-20 sm:py-28">
         <div className="mx-auto grid max-w-6xl gap-14 px-5 sm:px-7 md:grid-cols-2 md:items-center">
           <div data-reveal>
-            <p className="mono mb-2 text-xs uppercase tracking-wider text-ink-faint">Why Durqo</p>
-            <h2 className="mb-8 text-4xl sm:text-5xl">Built for people who read the fine print</h2>
+            <span className="section-badge">Why Durqo</span>
+            <h2 className="mb-8 mt-4 text-4xl sm:text-5xl">Built for people who read the fine print</h2>
             <div className="flex flex-col gap-6">
-              {WHY.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="flex gap-4">
-                  <span className="mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
-                    <Icon size={20} />
-                  </span>
-                  <div>
-                    <h4 className="text-base font-semibold">{title}</h4>
-                    <p className="mt-1 max-w-[56ch] text-sm leading-relaxed text-ink-soft">{body}</p>
+              {WHY.map(({ icon: Icon, title, body }, i) => {
+                const tint = TINTS[i % TINTS.length];
+                return (
+                  <div key={title} className="flex gap-4">
+                    <span className={`mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl ${tint.bg} ${tint.fg}`}>
+                      <Icon size={20} />
+                    </span>
+                    <div>
+                      <h4 className="text-base font-semibold">{title}</h4>
+                      <p className="mt-1 max-w-[56ch] text-sm leading-relaxed text-ink-soft">{body}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
           {/* decorative premium panel */}
           <div data-reveal style={{ transitionDelay: "120ms" }} className="relative hidden md:block">
-            <div aria-hidden className="pointer-events-none absolute -inset-8 -z-10 rounded-[2.5rem] bg-gradient-to-br from-brand-soft to-transparent blur-2xl" />
+            <div aria-hidden className="pointer-events-none absolute -inset-10 -z-10 rounded-[3rem] bg-gradient-to-br from-brand/20 via-brand-soft to-transparent blur-[70px]" />
+            <div aria-hidden className="pointer-events-none absolute -bottom-10 -left-10 -z-10 h-40 w-40 rounded-full bg-gold/15 blur-[80px]" />
             <div className="relative overflow-hidden rounded-[1.75rem] border border-rule bg-gradient-to-br from-paper-raised to-brand-soft/40 p-6 shadow-[0_32px_64px_-28px_rgba(15,23,41,0.28)]">
               <div className="mb-5 flex items-center gap-1.5">
                 <span className="h-2.5 w-2.5 rounded-full bg-danger/60" />
@@ -359,12 +388,16 @@ export default async function Home() {
                   <div className="h-3 w-1/2 rounded-full bg-rule-strong/70" />
                   <div className="flex items-end gap-1.5 pt-1">
                     {[40, 65, 50, 80, 60, 95].map((h, i) => (
-                      <div key={i} className="w-4 rounded-t-sm bg-brand/70" style={{ height: `${h * 0.5}px` }} />
+                      <div
+                        key={i}
+                        className={`w-4 rounded-t-sm ${i % 3 === 0 ? "bg-brand/70" : i % 3 === 1 ? "bg-sky/60" : "bg-gold/60"}`}
+                        style={{ height: `${h * 0.5}px` }}
+                      />
                     ))}
                   </div>
                 </div>
                 <div className="grid h-24 w-24 shrink-0 place-items-center self-center rounded-full border-[6px] border-brand/25">
-                  <span className="grid h-14 w-14 place-items-center rounded-full bg-brand text-white">
+                  <span className="grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-brand to-brand-strong text-white shadow-[0_12px_24px_-10px_rgba(79,175,131,0.7)]">
                     <Sparkles size={22} />
                   </span>
                 </div>
