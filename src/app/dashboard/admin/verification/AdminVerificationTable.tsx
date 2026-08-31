@@ -104,8 +104,8 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                 </td>
                 <td className="px-4 py-3 text-ink-soft">{r.submittedAt ?? "—"}</td>
                 <td className="px-4 py-3">
-                  {r.status === "pending" && (
-                    <div className="flex gap-2">
+                  <div className="flex gap-2">
+                    {r.status !== "verified" && (
                       <button
                         onClick={() => decide(r.id, "verified")}
                         disabled={busy}
@@ -113,6 +113,8 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                       >
                         Approve
                       </button>
+                    )}
+                    {r.status !== "rejected" && (
                       <button
                         onClick={() => decide(r.id, "rejected")}
                         disabled={busy}
@@ -120,9 +122,9 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                       >
                         Reject
                       </button>
-                      {errorId === r.id && <span className="self-center text-xs text-red-600">Failed — retry</span>}
-                    </div>
-                  )}
+                    )}
+                    {errorId === r.id && <span className="self-center text-xs text-red-600">Failed — retry</span>}
+                  </div>
                 </td>
               </tr>
             );
