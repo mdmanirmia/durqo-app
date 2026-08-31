@@ -23,11 +23,11 @@ const STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "ca
 // buyer hasn't paid yet -> paid and held in escrow -> released to the
 // seller.
 const STATUS_LABEL: Record<string, string> = {
-  requested: "Requested",
-  awaiting_payment: "Awaiting for Payment",
-  in_escrow: "Payment Completed",
-  completed: "Released Payment",
-  cancelled: "Cancelled",
+  requested: "Payment Requested",
+  awaiting_payment: "Awaiting Payment",
+  in_escrow: "Payment Received from Buyer",
+  completed: "Payment Released to Seller",
+  cancelled: "Payment Cancelled",
 };
 
 const STATUS_STYLE: Record<string, string> = {
@@ -39,16 +39,18 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 // Which rail the order was actually paid through — a manual admin-set
-// label (migration 009, payment_channel column), same "tracking only"
-// spirit as status above. "In Bangladesh Payment Gateway" doesn't mean a
-// gateway is actually wired up yet — it's just a bucket admin can pick
-// for a sale settled that way outside Stripe.
-const PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway"] as const;
+// label (migration 009 + 010, payment_channel column), same "tracking
+// only" spirit as status above. "In Bangladesh Payment Gateway" doesn't
+// mean a gateway is actually wired up yet — it's just a bucket admin can
+// pick for a sale settled that way outside Stripe. "In Escrow" is for a
+// payment currently held (not yet released) rather than a rail of its own.
+const PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway", "escrow"] as const;
 
 const PAYMENT_CHANNEL_LABEL: Record<string, string> = {
   stripe: "In Stripe",
   durqo_platform: "In Durqo Platform",
   bangladesh_gateway: "In Bangladesh Payment Gateway",
+  escrow: "In Escrow",
 };
 
 // Status here is a manual admin override of the tracking label only — it
