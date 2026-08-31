@@ -95,6 +95,12 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
                     >
                       Edit
                     </Link>
+                    {l.status === "draft" && (
+                      <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")}
+                        className="rounded-lg bg-brand-strong px-3 py-1.5 text-xs font-semibold text-paper-raised disabled:opacity-60">
+                        Publish
+                      </button>
+                    )}
                     {l.status === "pending_review" && (
                       <>
                         <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")}
