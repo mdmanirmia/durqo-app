@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
-import { updateListing } from "../../../actions";
+import { updateListing, setListingStatus } from "../../../actions";
 
 // Same text/date-vs-numeric split as the seller "new listing" form
 // (dashboard/seller/listings/new/page.tsx) — kept in sync deliberately so a
@@ -55,6 +55,8 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [publishing, setPublishing] = useState(false);
+  const [status, setStatus] = useState<string>(listing.status);
 
   function handleCategoryChange(id: string) {
     setCategoryId(id);
@@ -106,6 +108,19 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
       setError(err instanceof Error ? err.message : "Something went wrong saving the listing.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handlePublish() {
+    setError(null);
+    setPublishing(true);
+    try {
+      await setListingStatus(listing.id, "published" as never);
+      setStatus("published");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't publish this listing.");
+    } finally {
+      setPublishing(false);
     }
   }
 
@@ -197,10 +212,21 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
         <button type="submit" disabled={saving} className="rounded-lg bg-brand-strong px-8 py-3 text-sm font-semibold text-paper-raised hover:bg-brand disabled:opacity-60">
           {saving ? "Saving…" : "Save Changes"}
         </button>
+        {(status === "draft" || status === "pending_review") && (
+          <button
+            type="button"
+            disabled={publishing}
+            onClick={handlePublish}
+            className="rounded-lg border border-brand-strong px-6 py-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft disabled:opacity-60"
+          >
+            {publishing ? "Publishing…" : "Publish"}
+          </button>
+        )}
         <Link href="/dashboard/admin/listings" className="text-sm font-semibold text-ink-soft hover:text-ink">
           Cancel
         </Link>
       </div>
+      {status === "published" && <p className="text-sm text-brand-strong">This listing is live and published.</p>}
       {saved && <p className="text-sm text-brand-strong">Saved — redirecting…</p>}
       {error && <p className="text-sm text-danger">{error}</p>}
     </form>
