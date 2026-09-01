@@ -6,6 +6,7 @@ import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories"
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber } from "@/lib/format";
 import TrendChart from "@/components/charts/TrendChart";
+import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import BarList from "@/components/BarList";
 import FaqAccordion from "@/components/FaqAccordion";
 import ProofGalleryButton from "@/components/ProofGalleryButton";
@@ -42,6 +43,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const incomeSeries = listing.monthlyStats.map((m) => ({ month: m.month, income: m.income }));
   const usersSeries = listing.monthlyStats.map((m) => ({ month: m.month, users: m.gaTotalUsers }));
   const viewsSeries = listing.monthlyStats.map((m) => ({ month: m.month, views: m.gaPageViews }));
+
+  // Websites-category-only Quick Stat label overrides (Design & Development
+  // .docx, Sep 1, 2026 revision): "Monthly Income"/"Monthly Views" are
+  // computed averages for this category (see mapListing), so the label
+  // clarifies that — scoped here rather than in the shared QUICK_STAT_LABELS
+  // map since every other category still shows a manually-entered value
+  // under the plain "Monthly Income"/"Monthly Views" label.
+  const quickStatLabelOverrides: Partial<Record<QuickStatKey, string>> =
+    listing.categoryId === "websites"
+      ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views" }
+      : {};
 
   // Real uploaded verification screenshots, grouped by which data section
   // they belong to — empty when this listing predates real Storage uploads
@@ -86,7 +98,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               <h2 className="mb-4 text-xl">Quick Statistics</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {category?.quickStats.map((key: QuickStatKey) => (
-                  <StatTile key={key} label={QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
+                  <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
                 ))}
                 <StatTile label="Asking Price" value={fmtUSD(price)} />
               </div>
@@ -106,9 +118,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               <section>
                 <h2 className="mb-1 text-xl">Proof of Income</h2>
                 <p className="mb-4 text-sm text-ink-faint">Monthly income, last 12 months</p>
-                <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                  <TrendChart data={incomeSeries} dataKey="income" color="#10B981" format="usd" />
-                </div>
+                <IncomeHistoryPanel data={incomeSeries} />
                 <ProofGalleryButton label="Proof of Income" images={incomeImageUrls} count={4} />
               </section>
             )}
@@ -176,7 +186,8 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 </section>
 
                 <section>
-                  <h2 className="mb-4 text-xl">Google Search Console Data</h2>
+                  <h2 className="mb-1 text-xl">Google Search Console Data</h2>
+                  <p className="mb-4 text-sm text-ink-faint">Engagement statistics, last 12 months</p>
                   <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     <StatTile label="Total Clicks" value={listing.seo.gscTotalClicks} />
                     <StatTile label="Total Impressions" value={listing.seo.gscTotalImpressions} />
@@ -246,11 +257,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             {/* Payment Terms */}
             <section>
               <h2 className="mb-3 text-xl">Payment Terms</h2>
-              <p className="max-w-[65ch] text-sm text-ink-soft">
-                {price > 2000
-                  ? `To purchase this business, Durqo requires an initial payment of $2,000 via the website, followed by the remainder ($${(price - 2000).toLocaleString()}) via wire transfer, credit card or debit card, released from escrow once assets transfer.`
-                  : "To purchase this business, full payment is made via the website and held in escrow until assets transfer is confirmed."}
-              </p>
+              <div className="rounded-xl border border-rule bg-paper-raised p-5">
+                <p className="max-w-[65ch] text-justify text-sm leading-relaxed text-ink-soft">
+                  {price > 2000
+                    ? "To purchase this business, we require a payment of $2,000 via the website, followed by the remainder via wire transfer/credit card/debit card."
+                    : "To purchase this business, we require full payment via the website."}
+                </p>
+              </div>
             </section>
 
             {/* FAQ */}
