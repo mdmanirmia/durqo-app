@@ -7,6 +7,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { MONETIZATION_TYPES } from "@/lib/monetization-types";
+import { NICHES } from "@/lib/niches";
 import { createClient } from "@/lib/supabase/client";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 
@@ -19,13 +20,15 @@ const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "d
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-// For the Websites category, Monthly Income, Monthly Views and Authority
-// Score are computed automatically (from Proof of Income, Google Analytics
-// and SEMrush data collected further down this form) rather than typed in
-// here — see mapListing() in map-listing.ts. Hide them from the generic
-// Quick Statistics inputs so sellers aren't asked to enter values that are
-// ignored.
-const WEBSITES_COMPUTED_QUICK_STAT_KEYS = new Set<QuickStatKey>(["monthly_income", "monthly_views", "authority_score"]);
+// Every category's Quick Statistics (income, traffic, authority score,
+// follower counts, income multiple, etc.) are computed automatically after
+// publish from data collected elsewhere on this form — see
+// computeAutoQuickStats() in map-listing.ts — so sellers are never asked to
+// type them in directly here. "Domains" is the one exception: its three
+// stats (domain age/expiry/registrar) are facts about the domain itself
+// with no other data collected anywhere on this form, so it keeps a plain
+// manual Quick Statistics section, same as before this change.
+const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
 
 // Public bucket sellers' verification screenshots are uploaded to — buyers
 // can view these directly (see the "View Images" lightbox on listing pages),
@@ -147,6 +150,7 @@ export default function AddNewBusinessPage() {
   const [saleIncludesSupport, setSaleIncludesSupport] = useState("");
 
   const [quickStats, setQuickStats] = useState<Record<string, string>>({});
+  const [niches, setNiches] = useState<string[]>([]);
   const [monthlyIncome, setMonthlyIncome] = useState<string[]>(Array(12).fill(""));
   const [loomVideoUrl, setLoomVideoUrl] = useState("");
   const [expenses, setExpenses] = useState([{ label: "", amount: "" }]);
@@ -253,6 +257,7 @@ export default function AddNewBusinessPage() {
           status: "pending_review",
           ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
           loom_video_url: loomVideoUrl || null,
+          niches,
           ...quickStatColumns,
         })
         .select()
@@ -365,12 +370,16 @@ export default function AddNewBusinessPage() {
           </Field>
         </div>
 
-        {/* Category-specific quick stats */}
-        <Section title="Quick Statistics" hint={`Fields shown are specific to ${category.name}.`}>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {category.quickStats
-              .filter((key: QuickStatKey) => !(categoryId === "websites" && WEBSITES_COMPUTED_QUICK_STAT_KEYS.has(key)))
-              .map((key: QuickStatKey) => (
+        {/* Quick Statistics: computed automatically after publish for every
+            category except Domains (see NO_AUTO_QUICK_STAT_CATEGORY above) —
+            so there's no manual "Quick Statistics" block here for those.
+            Business Age has no other source anywhere on this form, so it
+            stays a plain input (not grouped under a Quick Statistics
+            heading); Articles Posted is the same for Websites specifically. */}
+        {categoryId === NO_AUTO_QUICK_STAT_CATEGORY ? (
+          <Section title="Quick Statistics" hint={`Fields shown are specific to ${category.name}.`}>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {category.quickStats.map((key: QuickStatKey) => (
                 <Field key={key} label={QUICK_STAT_LABELS[key]}>
                   <input
                     value={quickStats[key] ?? ""}
@@ -379,12 +388,57 @@ export default function AddNewBusinessPage() {
                   />
                 </Field>
               ))}
+            </div>
+          </Section>
+        ) : (
+          category.quickStats.includes("age") && (
+            <div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Business Age (years)">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={quickStats.age ?? ""}
+                    onChange={(e) => setQuickStats((prev) => ({ ...prev, age: e.target.value }))}
+                    className={inputCls}
+                  />
+                </Field>
+                {category.quickStats.includes("articles_posted") && (
+                  <Field label="Articles Posted">
+                    <input
+                      type="number"
+                      min="0"
+                      value={quickStats.articles_posted ?? ""}
+                      onChange={(e) => setQuickStats((prev) => ({ ...prev, articles_posted: e.target.value }))}
+                      className={inputCls}
+                    />
+                  </Field>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-ink-faint">
+                The rest of this category&rsquo;s Quick Statistics (income, traffic, authority score, follower counts, income multiple, etc.) aren&rsquo;t entered here — they&rsquo;re calculated automatically once your listing is published, from the Proof of Income, Analytics and other data below.
+              </p>
+            </div>
+          )
+        )}
+
+        <Section title="Niche" hint="Select every niche this business fits — shown on your published listing.">
+          <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+            {NICHES.map((n) => (
+              <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={niches.includes(n.id)}
+                  onChange={() =>
+                    setNiches((prev) => (prev.includes(n.id) ? prev.filter((id) => id !== n.id) : [...prev, n.id]))
+                  }
+                  className="accent-brand-strong"
+                />
+                {n.name}
+              </label>
+            ))}
           </div>
-          {categoryId === "websites" && (
-            <p className="mt-3 text-xs text-ink-faint">
-              Monthly Income, Monthly Views and Authority Score aren&rsquo;t entered here — they&rsquo;re calculated automatically from the Proof of Income, Google Analytics and SEMrush data below.
-            </p>
-          )}
         </Section>
 
         <Section title="Overview of the Business">
