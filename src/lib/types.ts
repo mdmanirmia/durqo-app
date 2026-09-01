@@ -108,6 +108,9 @@ export interface Listing {
   gaAccessConfirmed: boolean;
   loomVideoUrl?: string;
   gaVerified: boolean;
+  // Seller-picked niche tags (src/lib/niches.ts) — shown as an extra tile in
+  // the published listing's Quick Statistics grid when non-empty.
+  niches: string[];
 
   quickStats: Partial<Record<string, number | string>>;
   monthlyStats: MonthlyStat[];
