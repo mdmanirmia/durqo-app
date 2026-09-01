@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ShieldCheck, ChevronRight, Lock } from "lucide-react";
 import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
+import { NICHE_MAP } from "@/lib/niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber } from "@/lib/format";
 import TrendChart from "@/components/charts/TrendChart";
@@ -101,6 +102,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 {category?.quickStats.map((key: QuickStatKey) => (
                   <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
                 ))}
+                {listing.niches.length > 0 && (
+                  <StatTile label="Niche" value={listing.niches.map((id) => NICHE_MAP[id] ?? id).join(", ")} />
+                )}
                 <StatTile label="Asking Price" value={fmtUSD(price)} />
               </div>
             </section>
