@@ -128,7 +128,7 @@ export default function MessagesPanel({
       ) : conversations.length === 0 && !selected ? (
         <p className="text-sm text-ink-faint">No conversations yet — message a seller from any listing page to start one.</p>
       ) : (
-        <div className="grid gap-4 overflow-hidden rounded-lg border border-rule sm:grid-cols-[240px_1fr] sm:h-[520px]">
+        <div className="grid overflow-hidden rounded-xl border border-rule sm:grid-cols-[240px_1fr] sm:h-[520px]">
           {/* Conversation list */}
           <div className="flex flex-col overflow-y-auto border-b border-rule bg-paper-raised sm:border-b-0 sm:border-r">
             {conversations.map((c) => {
@@ -146,7 +146,9 @@ export default function MessagesPanel({
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-sm font-semibold">{c.otherUserName}</span>
                     {c.unreadCount > 0 && (
-                      <span className="mono rounded-full bg-brand px-1.5 py-0.5 text-[0.65rem] text-white">{c.unreadCount}</span>
+                      <span className="mono grid h-4 min-w-4 shrink-0 place-items-center rounded-full bg-brand px-1 text-[0.62rem] font-semibold leading-none text-white">
+                        {c.unreadCount}
+                      </span>
                     )}
                   </div>
                   <span className="text-xs text-ink-faint">{c.listingTitle}</span>
@@ -179,7 +181,7 @@ export default function MessagesPanel({
                         <div key={m.id} className={clsx("flex flex-col", mine ? "items-end" : "items-start")}>
                           <div
                             className={clsx(
-                              "max-w-[80%] rounded-lg px-3 py-2 text-sm",
+                              "max-w-[80%] rounded-xl px-3 py-2 text-sm",
                               mine ? "bg-brand-strong text-paper-raised" : "bg-paper-sunk text-ink"
                             )}
                           >
@@ -205,14 +207,14 @@ export default function MessagesPanel({
                         }
                       }}
                       placeholder="Write a message…"
-                      className="flex-grow rounded-lg border border-rule-strong bg-paper px-3 py-2 text-sm outline-none focus:border-brand-strong"
+                      className="flex-grow rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink outline-none focus:border-brand-strong"
                     />
                     <button
                       type="button"
                       onClick={handleSend}
                       disabled={sending || !draft.trim()}
                       aria-label="Send"
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-strong text-paper-raised hover:bg-brand disabled:opacity-60"
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-brand-strong text-paper-raised hover:bg-brand disabled:opacity-60"
                     >
                       <Send size={15} />
                     </button>
