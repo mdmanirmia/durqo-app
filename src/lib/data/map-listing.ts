@@ -45,6 +45,10 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   // reading a flat column. Kept here only so this map stays exhaustive over
   // QuickStatKey.
   authority_score: "authority_score",
+  // Not a real column either — computed from listing_seo_data.gsc_indexed_pages
+  // in mapListing below (see computeAutoQuickStats). Kept here only so this
+  // map stays exhaustive over QuickStatKey.
+  indexed_pages: "indexed_pages",
 };
 
 // Row shapes are intentionally loose (`Record<string, any>` via a minimal
@@ -235,6 +239,12 @@ function computeAutoQuickStats(
   if (has("domain_authority")) {
     if (authority !== undefined) quickStats.domain_authority = authority;
     else delete quickStats.domain_authority;
+  }
+
+  // Indexed Pages (Websites) — Google Search Console's indexed-page count.
+  if (has("indexed_pages")) {
+    if (seo?.gscIndexedPages !== undefined) quickStats.indexed_pages = seo.gscIndexedPages;
+    else delete quickStats.indexed_pages;
   }
 
   // Income Multiple = asking price ÷ annualized average monthly income —
