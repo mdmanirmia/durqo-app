@@ -22,9 +22,9 @@ const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
 
 const inputCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`flex flex-col gap-1.5 ${className ?? ""}`}>
       <label className="text-sm font-semibold text-ink-soft">{label}</label>
       {children}
     </div>
@@ -98,7 +98,7 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
         title,
         categoryId,
         businessUrl: businessUrl || null,
-        location: location || null,
+        location: categoryId === "websites" ? null : location || null,
         price: Number(price),
         discountedPrice: discountedPrice ? Number(discountedPrice) : null,
         overview,
@@ -154,13 +154,18 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
         </Field>
       </div>
 
+      {/* Business Location: not collected for Websites (Sep 2026 revision) —
+          mirrors the same category-scoped hiding on the seller "new listing"
+          form. */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Business URL">
+        <Field label="Business URL" className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
           <input type="url" value={businessUrl} onChange={(e) => setBusinessUrl(e.target.value)} placeholder="https://" className={inputCls} />
         </Field>
-        <Field label="Business location">
-          <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
-        </Field>
+        {categoryId !== "websites" && (
+          <Field label="Business location">
+            <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
+          </Field>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
