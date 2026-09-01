@@ -124,4 +124,22 @@ export interface Listing {
   // the bundled mock listings (which predate real Storage uploads) don't all
   // need updating — absent/empty just means the lightbox shows a placeholder.
   images?: ListingImage[];
+  // Real, live Google Analytics 4 connection (OAuth-based — see
+  // src/lib/google-analytics.ts), the Flippa-style feature on top of the
+  // Motion-Invest-style manual fields above. Present only once a seller has
+  // connected and a sync has completed at least once; the listing page
+  // falls back to the manual GA section above when this is absent.
+  gaLiveStats?: GaLiveStats;
+}
+
+export interface GaLiveStats {
+  dateRangeLabel: string;
+  pageViews: number;
+  uniqueVisitors: number;
+  sessions: number;
+  bounceRate: number; // percent, 0-100
+  avgSessionSeconds: number;
+  dailyPageViews: { date: string; value: number }[];
+  trafficAcquisition: { channel: string; sessions: number }[];
+  lastSyncedAt: string;
 }
