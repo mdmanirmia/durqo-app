@@ -75,6 +75,7 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       { data: faqs },
       { data: comments },
       { data: images },
+      { data: gaLiveStats },
     ] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", row.seller_id).maybeSingle(),
       supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
@@ -83,6 +84,11 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       supabase.from("listing_faqs").select("*").eq("listing_id", id),
       supabase.from("comments").select("*").eq("listing_id", id),
       supabase.from("listing_images").select("*").eq("listing_id", id),
+      // Real, live Google Analytics connection (src/lib/google-analytics.ts)
+      // — a separate table gated by its own RLS (public for published
+      // listings), so a missing/errored query here just means "not
+      // connected," never a reason to fail the whole page.
+      supabase.from("listing_ga_public_stats").select("*").eq("listing_id", id).maybeSingle(),
     ]);
 
     let authorNames: Record<string, string> = {};
@@ -101,6 +107,7 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       comments: comments ?? [],
       authorNames,
       images: images ?? [],
+      gaLiveStats,
     });
   } catch (err) {
     console.warn("[listings] getListingById falling back to mock data (unexpected error):", err);

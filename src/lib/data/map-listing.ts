@@ -291,6 +291,7 @@ export function mapListing(
     comments?: Row[];
     authorNames?: Record<string, string>;
     images?: Row[];
+    gaLiveStats?: Row | null;
   } = {}
 ): Listing {
   const monthlyStats = mapMonthlyStats(related.monthlyStats ?? []);
@@ -333,5 +334,21 @@ export function mapListing(
     comments: mapComments(related.comments ?? [], related.authorNames ?? {}),
     seller: mapSeller(related.seller),
     images: mapImages(related.images ?? []),
+    gaLiveStats: mapGaLiveStats(related.gaLiveStats),
+  };
+}
+
+function mapGaLiveStats(row?: Row | null): Listing["gaLiveStats"] {
+  if (!row) return undefined;
+  return {
+    dateRangeLabel: row.date_range_label ?? "Last 90 days",
+    pageViews: row.page_views ?? 0,
+    uniqueVisitors: row.unique_visitors ?? 0,
+    sessions: row.sessions ?? 0,
+    bounceRate: row.bounce_rate != null ? Number(row.bounce_rate) : 0,
+    avgSessionSeconds: row.avg_session_seconds ?? 0,
+    dailyPageViews: Array.isArray(row.daily_page_views) ? row.daily_page_views : [],
+    trafficAcquisition: Array.isArray(row.traffic_acquisition) ? row.traffic_acquisition : [],
+    lastSyncedAt: row.last_synced_at ?? "",
   };
 }
