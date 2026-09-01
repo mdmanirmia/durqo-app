@@ -7,6 +7,7 @@ import { getCartListings, removeFromCart } from "@/lib/data/cart.client";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { fmtUSD } from "@/lib/format";
 import type { Listing } from "@/lib/types";
+import Container from "@/components/ui/Container";
 
 export default function CartPage() {
   const [items, setItems] = useState<Listing[] | null>(null);
@@ -61,7 +62,7 @@ export default function CartPage() {
   }
 
   return (
-    <main className="mx-auto max-w-4xl px-5 py-12 sm:px-7">
+    <Container className="max-w-3xl py-12">
       <h1 className="mb-8 text-3xl">Your cart</h1>
 
       {items === null ? (
@@ -74,7 +75,7 @@ export default function CartPage() {
             {items.map((l) => {
               const category = CATEGORY_MAP[l.categoryId];
               return (
-                <div key={l.id} className="flex items-center gap-4 rounded-lg border border-rule bg-paper-raised p-4">
+                <div key={l.id} className="flex items-center gap-4 rounded-xl border border-rule bg-paper-raised p-4">
                   <div className="h-16 w-16 shrink-0 rounded-lg bg-paper-sunk" />
                   <div className="flex-grow">
                     <p className="mono text-[0.65rem] uppercase tracking-wide text-brand-strong">{category?.name}</p>
@@ -85,7 +86,7 @@ export default function CartPage() {
                     type="button"
                     aria-label="Remove from cart"
                     onClick={() => handleRemove(l.id)}
-                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-ink-faint hover:bg-paper-sunk hover:text-danger"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-md border border-rule-strong text-ink-faint hover:border-danger hover:text-danger"
                   >
                     <X size={15} />
                   </button>
@@ -94,7 +95,7 @@ export default function CartPage() {
             })}
           </div>
 
-          <div className="rounded-lg border border-rule bg-paper-raised p-5">
+          <div className="rounded-xl border border-rule bg-paper-raised p-5">
             <div className="mono mb-4 flex justify-between text-lg">
               <span>Total</span>
               <span className="font-semibold">{fmtUSD(total)}</span>
@@ -103,7 +104,7 @@ export default function CartPage() {
               type="button"
               onClick={handleRequest}
               disabled={busy}
-              className="w-full rounded-lg bg-brand-strong py-3 text-sm font-semibold text-paper-raised hover:bg-brand disabled:opacity-60"
+              className="w-full rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
             >
               {busy ? "Redirecting to checkout…" : "Request to purchase"}
             </button>
@@ -114,6 +115,6 @@ export default function CartPage() {
           </div>
         </div>
       )}
-    </main>
+    </Container>
   );
 }
