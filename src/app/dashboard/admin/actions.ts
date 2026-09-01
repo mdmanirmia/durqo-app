@@ -190,6 +190,28 @@ export async function updateListing(
   revalidatePath("/dashboard/admin");
 }
 
+// Listing-level Google Analytics verification (Motion Invest / Flippa style
+// — an admin manually logs into the seller's GA4 property using the
+// support@durqo.com Viewer access the seller confirmed granting on the
+// listing form, cross-checks it against the numbers the seller typed in,
+// then flips this flag. This is the ONLY place ga_verified is ever allowed
+// to become true — the seller's own listing-creation flow can only set
+// ga_access_confirmed (their self-declared "I granted access" checkbox),
+// never ga_verified itself.
+export async function setListingGaVerified(listingId: string, verified: boolean) {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const { error } = await admin.from("listings").update({ ga_verified: verified }).eq("id", listingId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/listings");
+  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/dashboard/admin");
+}
+
 const VERIFICATION_DECISIONS = ["verified", "rejected"] as const;
 type VerificationDecision = (typeof VERIFICATION_DECISIONS)[number];
 
