@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck, Clock, CheckCircle2, XCircle, Upload } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import Button from "@/components/ui/Button";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { getMyVerification, uploadVerificationDocuments, type VerificationStatus } from "@/lib/data/verification.client";
 import { submitVerification } from "./actions";
@@ -57,11 +58,11 @@ export default function VerificationPage() {
       {status === null && <p className="text-sm text-ink-faint">Loading&hellip;</p>}
 
       {status === "pending" && (
-        <div className="flex max-w-md items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
-          <Clock size={20} className="mt-0.5 shrink-0 text-amber-600" />
+        <div className="flex max-w-md items-start gap-3 rounded-xl border border-gold/30 bg-gold-soft px-5 py-4">
+          <Clock size={20} className="mt-0.5 shrink-0 text-gold" />
           <div>
-            <div className="font-semibold text-amber-900">Under review</div>
-            <p className="mt-1 text-sm text-amber-800">
+            <div className="font-semibold text-ink">Under review</div>
+            <p className="mt-1 text-sm text-ink-soft">
               Your documents were submitted and are being reviewed by our team. We&rsquo;ll email you as soon as a decision is made — usually within 1–2 business days.
             </p>
           </div>
@@ -81,11 +82,11 @@ export default function VerificationPage() {
       {(status === "unverified" || status === "rejected") && (
         <div className="max-w-md">
           {status === "rejected" && (
-            <div className="mb-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-              <XCircle size={20} className="mt-0.5 shrink-0 text-red-600" />
+            <div className="mb-5 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-5 py-4">
+              <XCircle size={20} className="mt-0.5 shrink-0 text-danger" />
               <div>
-                <div className="font-semibold text-red-800">Not approved</div>
-                <p className="mt-1 text-sm text-red-700">Your last submission wasn&rsquo;t approved. Please double-check the document is clear and legible, then resubmit below.</p>
+                <div className="font-semibold text-ink">Not approved</div>
+                <p className="mt-1 text-sm text-ink-soft">Your last submission wasn&rsquo;t approved. Please double-check the document is clear and legible, then resubmit below.</p>
               </div>
             </div>
           )}
@@ -97,7 +98,7 @@ export default function VerificationPage() {
                 key={m.id}
                 type="button"
                 onClick={() => setMethodId(m.id)}
-                className={`flex items-center justify-between rounded-lg border px-4 py-3.5 text-left transition ${
+                className={`flex items-center justify-between rounded-xl border px-4 py-3.5 text-left transition ${
                   methodId === m.id ? "border-brand-strong bg-brand-soft" : "border-rule bg-paper-raised hover:border-rule-strong"
                 }`}
               >
@@ -115,7 +116,7 @@ export default function VerificationPage() {
           </div>
 
           <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">2. Upload document photos</p>
-          <label className="mb-1 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-rule-strong bg-paper-raised px-4 py-8 text-center hover:border-brand-strong">
+          <label className="mb-1 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule-strong bg-paper-raised px-4 py-8 text-center hover:border-brand-strong">
             <Upload size={20} className="text-ink-faint" />
             <span className="text-sm font-medium text-ink">Click to upload one or more photos</span>
             <span className="text-xs text-ink-faint">Front &amp; back if applicable — JPG, PNG or PDF</span>
@@ -135,16 +136,11 @@ export default function VerificationPage() {
             </ul>
           )}
 
-          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+          {error && <p className="mb-4 text-sm text-danger">{error}</p>}
 
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={submitting}
-            className="rounded-lg bg-brand-strong px-5 py-2.5 text-sm font-semibold text-paper-raised hover:bg-brand disabled:opacity-60"
-          >
+          <Button type="button" onClick={handleSubmit} disabled={submitting}>
             {submitting ? "Submitting…" : "Submit for review"}
-          </button>
+          </Button>
         </div>
       )}
     </DashboardShell>
