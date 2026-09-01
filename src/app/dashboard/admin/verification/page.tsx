@@ -56,7 +56,7 @@ export default async function AdminVerification({
     <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl">Seller Verification{status ? ` — ${status}` : ""}</h2>
-        {!admin && <span className="text-sm text-red-600">Admin data source unavailable.</span>}
+        {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       {!status && pendingCount > 0 && (
         <p className="mb-4 text-sm text-ink-soft">{pendingCount} submission{pendingCount === 1 ? "" : "s"} waiting for review.</p>

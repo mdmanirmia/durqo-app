@@ -27,9 +27,9 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-800",
-  verified: "bg-brand-soft text-brand-strong",
-  rejected: "bg-red-100 text-red-700",
+  pending: "border border-gold/30 bg-gold-soft text-[#92730F]",
+  verified: "border border-brand/30 bg-brand-soft text-brand-strong",
+  rejected: "border border-danger/30 bg-danger-soft text-danger",
 };
 
 export default function AdminVerificationTable({ rows }: { rows: AdminVerificationRow[] }) {
@@ -56,7 +56,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-rule">
+    <div className="overflow-x-auto rounded-xl border border-rule">
       <table className="w-full min-w-[820px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -98,7 +98,11 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                   )}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[r.status] ?? ""}`}>
+                  <span
+                    className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
+                      STATUS_STYLE[r.status] ?? "border border-rule bg-paper-sunk text-ink-soft"
+                    }`}
+                  >
                     {STATUS_LABEL[r.status] ?? r.status}
                   </span>
                 </td>
@@ -109,7 +113,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                       <button
                         onClick={() => decide(r.id, "verified")}
                         disabled={busy}
-                        className="rounded-md bg-brand-strong px-3 py-1.5 text-xs font-semibold text-paper-raised hover:bg-brand disabled:opacity-60"
+                        className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
                       >
                         Approve
                       </button>
@@ -118,12 +122,12 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                       <button
                         onClick={() => decide(r.id, "rejected")}
                         disabled={busy}
-                        className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-red-400 hover:text-red-600 disabled:opacity-60"
+                        className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
                       >
                         Reject
                       </button>
                     )}
-                    {errorId === r.id && <span className="self-center text-xs text-red-600">Failed — retry</span>}
+                    {errorId === r.id && <span className="self-center text-xs text-danger">Failed — retry</span>}
                   </div>
                 </td>
               </tr>
