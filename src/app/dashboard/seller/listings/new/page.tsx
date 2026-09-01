@@ -45,9 +45,9 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className={`flex flex-col gap-1.5 ${className ?? ""}`}>
       <label className="text-sm font-semibold text-ink-soft">{label}</label>
       {children}
     </div>
@@ -246,7 +246,9 @@ export default function AddNewBusinessPage() {
           category_id: categoryId,
           title,
           business_url: businessUrl || null,
-          location: location || null,
+          // Websites doesn't collect location (field is hidden above), so
+          // never submit a stale value left over from switching categories.
+          location: categoryId === "websites" ? null : location || null,
           price: Number(price),
           discounted_price: discountedPrice ? Number(discountedPrice) : null,
           overview,
@@ -352,13 +354,19 @@ export default function AddNewBusinessPage() {
           </Field>
         </div>
 
+        {/* Business Location: not collected for Websites (Sep 2026 revision —
+            the user asked for it to be dropped from this category, unlike
+            E-commerce and every other category where it's still shown and
+            still feeds the "Business Location" Quick Stat). */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Business URL">
+          <Field label="Business URL" className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
             <input type="url" value={businessUrl} onChange={(e) => setBusinessUrl(e.target.value)} placeholder="https://" className={inputCls} />
           </Field>
-          <Field label="Business location">
-            <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
-          </Field>
+          {categoryId !== "websites" && (
+            <Field label="Business location">
+              <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
+            </Field>
+          )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
