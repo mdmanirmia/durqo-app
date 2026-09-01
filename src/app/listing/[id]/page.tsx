@@ -45,14 +45,15 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const usersSeries = listing.monthlyStats.map((m) => ({ month: m.month, users: m.gaTotalUsers }));
   const viewsSeries = listing.monthlyStats.map((m) => ({ month: m.month, views: m.gaPageViews }));
 
-  // Websites-category-only Quick Stat label overrides (Design & Development
+  // Websites/E-commerce Quick Stat label overrides (Business Page Layout
   // .docx, Sep 1, 2026 revision): "Monthly Income"/"Monthly Views" are
-  // computed averages for this category (see mapListing), so the label
-  // clarifies that — scoped here rather than in the shared QUICK_STAT_LABELS
-  // map since every other category still shows a manually-entered value
-  // under the plain "Monthly Income"/"Monthly Views" label.
+  // computed averages for these two categories (see mapListing), so the
+  // label clarifies that — scoped here rather than in the shared
+  // QUICK_STAT_LABELS map since every other category still shows a
+  // manually-entered value under the plain "Monthly Income"/"Monthly Views"
+  // label.
   const quickStatLabelOverrides: Partial<Record<QuickStatKey, string>> =
-    listing.categoryId === "websites"
+    listing.categoryId === "websites" || listing.categoryId === "e-commerce"
       ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views" }
       : {};
 
