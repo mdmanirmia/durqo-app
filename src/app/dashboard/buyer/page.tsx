@@ -29,15 +29,15 @@ export default function BuyerOverview() {
   return (
     <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-rule bg-paper-raised p-5">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{counts ? counts.open : "…"}</div>
           <div className="text-sm text-ink-faint">Open orders</div>
         </div>
-        <div className="rounded-lg border border-rule bg-paper-raised p-5">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{wishlisted ? wishlisted.length : "…"}</div>
           <div className="text-sm text-ink-faint">Wishlisted listings</div>
         </div>
-        <div className="rounded-lg border border-rule bg-paper-raised p-5">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{counts ? counts.completed : "…"}</div>
           <div className="text-sm text-ink-faint">Completed purchases</div>
         </div>
