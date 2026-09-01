@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { StatusBadge } from "@/components/ui/Badge";
 import { fmtUSD } from "@/lib/format";
 import { setOrderStatus, setOrderPaymentChannel } from "../actions";
 
@@ -28,14 +29,6 @@ const STATUS_LABEL: Record<string, string> = {
   in_escrow: "Payment Received from Buyer",
   completed: "Payment Released to Seller",
   cancelled: "Payment Cancelled",
-};
-
-const STATUS_STYLE: Record<string, string> = {
-  requested: "bg-paper-raised text-ink-faint",
-  awaiting_payment: "bg-amber-100 text-amber-800",
-  in_escrow: "bg-blue-100 text-blue-800",
-  completed: "bg-brand-soft text-brand-strong",
-  cancelled: "bg-red-100 text-red-700",
 };
 
 // Which rail the order was actually paid through — a manual admin-set
@@ -99,7 +92,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-rule">
+    <div className="overflow-x-auto rounded-xl border border-rule">
       <table className="w-full min-w-[780px] border-collapse text-sm">
         <thead>
           <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -123,9 +116,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                 <td className="px-4 py-3 text-ink-soft">{o.sellerName}</td>
                 <td className="mono px-4 py-3">{fmtUSD(o.amount)}</td>
                 <td className="px-4 py-3">
-                  <span className={`mb-1 inline-block rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[o.status] ?? "bg-paper-raised text-ink-faint"}`}>
-                    {STATUS_LABEL[o.status] ?? o.status}
-                  </span>
+                  <StatusBadge status={o.status} className="mb-1" />
                   <select
                     value={o.status}
                     disabled={busy}
