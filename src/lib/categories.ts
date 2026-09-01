@@ -28,7 +28,8 @@ export type QuickStatKey =
   | "active_clients"
   | "domain_age"
   | "domain_expires"
-  | "domain_registrar";
+  | "domain_registrar"
+  | "indexed_pages";
 
 export interface CategoryConfig {
   id: string;
@@ -46,12 +47,14 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "websites",
     name: "Websites",
     description: "Content sites, blogs and affiliate properties.",
-    // Monthly Income, Monthly Views and Authority Score are computed
-    // automatically for this category (see mapListing in map-listing.ts) —
-    // averaged from the 12-month Proof of Income entries, and pulled from
-    // the seller's Google Analytics / SEMrush data — rather than typed in
-    // manually. Income Multiple is intentionally not shown for Websites.
-    quickStats: ["monthly_income", "monthly_views", "age", "articles_posted", "authority_score"],
+    // Monthly Income, Monthly Views, Authority Score and Indexed Pages are
+    // computed automatically for this category (see mapListing in
+    // map-listing.ts) — averaged from the 12-month Proof of Income entries,
+    // and pulled from the seller's Google Analytics / SEMrush / Search
+    // Console data — rather than typed in manually. Income Multiple is
+    // intentionally not shown for Websites. (Business Page Layout.docx,
+    // Sep 1, 2026 revision.)
+    quickStats: ["monthly_income", "monthly_views", "age", "authority_score", "articles_posted", "indexed_pages"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -60,7 +63,11 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "e-commerce",
     name: "E-commerce",
     description: "Online stores selling physical or digital products.",
-    quickStats: ["location", "monthly_income", "monthly_visitors", "age", "domain_authority", "income_multiple"],
+    // Same auto-computed model as Websites (Sep 1, 2026 revision): Monthly
+    // Income, Monthly Views and Authority Score are computed automatically
+    // rather than typed in manually. Income Multiple is intentionally not
+    // shown for E-commerce.
+    quickStats: ["location", "monthly_income", "monthly_views", "age", "authority_score", "articles_posted"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -207,4 +214,5 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   domain_expires: "Expires",
   domain_registrar: "Registrar",
   authority_score: "Authority Score",
+  indexed_pages: "Indexed Pages",
 };
