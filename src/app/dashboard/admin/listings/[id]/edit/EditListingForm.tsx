@@ -14,7 +14,11 @@ import { updateListing, setListingStatus } from "../../../actions";
 const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar"]);
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const WEBSITES_COMPUTED_QUICK_STAT_KEYS = new Set<QuickStatKey>(["monthly_income", "monthly_views", "authority_score"]);
+// Kept in sync with NO_AUTO_QUICK_STAT_CATEGORY in the seller "new listing"
+// form — every category's Quick Statistics are computed automatically after
+// publish (see computeAutoQuickStats() in map-listing.ts) except Domains,
+// whose stats have no other data source at all.
+const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
 
 const inputCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
 
@@ -168,13 +172,12 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
         </Field>
       </div>
 
-      <section className="border-t border-rule pt-8">
-        <h3 className="text-lg">Quick Statistics</h3>
-        <p className="mb-4 mt-1 text-sm text-ink-faint">Fields shown are specific to {category.name}.</p>
-        <div className="grid gap-4 sm:grid-cols-2">
-          {category.quickStats
-            .filter((key: QuickStatKey) => !(categoryId === "websites" && WEBSITES_COMPUTED_QUICK_STAT_KEYS.has(key)))
-            .map((key: QuickStatKey) => (
+      {categoryId === NO_AUTO_QUICK_STAT_CATEGORY ? (
+        <section className="border-t border-rule pt-8">
+          <h3 className="text-lg">Quick Statistics</h3>
+          <p className="mb-4 mt-1 text-sm text-ink-faint">Fields shown are specific to {category.name}.</p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {category.quickStats.map((key: QuickStatKey) => (
               <Field key={key} label={QUICK_STAT_LABELS[key]}>
                 <input
                   value={quickStats[key] ?? ""}
@@ -183,13 +186,41 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
                 />
               </Field>
             ))}
-        </div>
-        {categoryId === "websites" && (
-          <p className="mt-3 text-xs text-ink-faint">
-            Monthly Income, Monthly Views and Authority Score are computed automatically from the seller&rsquo;s Proof of Income / Google Analytics / SEMrush data and aren&rsquo;t editable here.
-          </p>
-        )}
-      </section>
+          </div>
+        </section>
+      ) : (
+        category.quickStats.includes("age") && (
+          <section className="border-t border-rule pt-8">
+            <h3 className="text-lg">Business Age</h3>
+            <p className="mb-4 mt-1 text-sm text-ink-faint">
+              The rest of this category&rsquo;s Quick Statistics are computed automatically from the seller&rsquo;s Proof of Income / Analytics data and aren&rsquo;t editable here.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Business Age (years)">
+                <input
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  value={quickStats.age ?? ""}
+                  onChange={(e) => setQuickStats((prev) => ({ ...prev, age: e.target.value }))}
+                  className={inputCls}
+                />
+              </Field>
+              {category.quickStats.includes("articles_posted") && (
+                <Field label="Articles Posted">
+                  <input
+                    type="number"
+                    min="0"
+                    value={quickStats.articles_posted ?? ""}
+                    onChange={(e) => setQuickStats((prev) => ({ ...prev, articles_posted: e.target.value }))}
+                    className={inputCls}
+                  />
+                </Field>
+              )}
+            </div>
+          </section>
+        )
+      )}
 
       <section className="border-t border-rule pt-8">
         <h3 className="text-lg">Overview of the Business</h3>
