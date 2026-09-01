@@ -82,6 +82,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
         <div className="mb-8 flex flex-wrap items-center gap-2">
           <Badge tone="neutral">{category?.name ?? listing.categoryId}</Badge>
           {listing.isVerified && <Badge tone="brand">Verified</Badge>}
+          {listing.gaVerified && <Badge tone="brand">Google Analytics Verified</Badge>}
           {listing.status === "sold" && <StatusBadge status="sold" />}
         </div>
 
@@ -156,7 +157,14 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             {category?.hasSeoData && listing.seo && (
               <>
                 <section>
-                  <h2 className="mb-4 text-xl">Google Analytics Data</h2>
+                  <div className="mb-4 flex flex-wrap items-center gap-2">
+                    <h2 className="text-xl">Google Analytics Data</h2>
+                    {listing.gaVerified && (
+                      <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand-hover">
+                        <ShieldCheck size={12} /> Reviewed by Durqo
+                      </span>
+                    )}
+                  </div>
                   <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
                     <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
                     <StatTile label="New Users" value={listing.seo.gaNewUsers} />
