@@ -238,6 +238,9 @@ export function mapListing(
     status: row.status === "sold" ? "sold" : "published",
     views: row.views ?? 0,
     createdAt: row.created_at ? String(row.created_at).slice(0, 10) : "",
+    gaAccessConfirmed: !!row.ga_access_confirmed,
+    loomVideoUrl: row.loom_video_url ?? undefined,
+    gaVerified: !!row.ga_verified,
 
     quickStats,
     monthlyStats,
