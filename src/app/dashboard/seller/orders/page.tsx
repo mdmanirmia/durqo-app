@@ -2,17 +2,10 @@
 
 import { useEffect, useState } from "react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
+import { StatusBadge } from "@/components/ui/Badge";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD } from "@/lib/format";
 import { getSellerOrders, type OrderRow } from "@/lib/data/orders.client";
-
-const STATUS_LABEL: Record<string, string> = {
-  requested: "Offer received",
-  awaiting_payment: "Awaiting payment",
-  in_escrow: "In escrow",
-  completed: "Completed",
-  cancelled: "Cancelled",
-};
 
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
@@ -35,7 +28,7 @@ export default function SellerOrdersPage() {
       ) : orders.length === 0 ? (
         <p className="text-sm text-ink-faint">No orders yet — purchase requests from buyers will show up here.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-rule">
+        <div className="overflow-x-auto rounded-xl border border-rule">
           <table className="w-full min-w-[560px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -55,7 +48,7 @@ export default function SellerOrdersPage() {
                   <td className="px-4 py-3 text-ink-soft">{o.counterpartyName}</td>
                   <td className="mono px-4 py-3">{fmtUSD(o.amount)}</td>
                   <td className="px-4 py-3">
-                    <span className="rounded-full bg-brand-soft px-2.5 py-1 text-xs font-semibold text-brand-strong">{STATUS_LABEL[o.status]}</span>
+                    <StatusBadge status={o.status} />
                   </td>
                   <td className="mono px-4 py-3 text-ink-faint">{o.date}</td>
                 </tr>
