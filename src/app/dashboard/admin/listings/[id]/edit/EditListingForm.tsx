@@ -16,7 +16,7 @@ const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const WEBSITES_COMPUTED_QUICK_STAT_KEYS = new Set<QuickStatKey>(["monthly_income", "monthly_views", "authority_score"]);
 
-const inputCls = "rounded-lg border border-rule-strong bg-paper-raised px-3 py-2.5 text-sm";
+const inputCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -209,7 +209,7 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
       </section>
 
       <div className="flex items-center gap-4 border-t border-rule pt-8">
-        <button type="submit" disabled={saving} className="rounded-lg bg-brand-strong px-8 py-3 text-sm font-semibold text-paper-raised hover:bg-brand disabled:opacity-60">
+        <button type="submit" disabled={saving} className="rounded-md bg-brand px-8 py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
           {saving ? "Saving…" : "Save Changes"}
         </button>
         {(status === "draft" || status === "pending_review") && (
@@ -217,7 +217,7 @@ export default function EditListingForm({ listing }: { listing: ListingRow }) {
             type="button"
             disabled={publishing}
             onClick={handlePublish}
-            className="rounded-lg border border-brand-strong px-6 py-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft disabled:opacity-60"
+            className="rounded-md border border-rule-strong px-6 py-3 text-sm font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong disabled:opacity-60"
           >
             {publishing ? "Publishing…" : "Publish"}
           </button>

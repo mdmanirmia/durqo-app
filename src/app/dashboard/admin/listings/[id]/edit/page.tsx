@@ -20,7 +20,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
   if (!admin) {
     return (
       <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-        <p className="text-sm text-red-600">Admin data source unavailable.</p>
+        <p className="text-sm text-danger">Admin data source unavailable.</p>
       </DashboardShell>
     );
   }
