@@ -43,27 +43,27 @@ export default async function AdminOverview() {
   return (
     <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       {!admin && (
-        <p className="mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="mb-6 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-5 py-4 text-sm text-danger">
           Admin data source is unavailable — the service role key isn&rsquo;t configured for this deployment.
         </p>
       )}
 
       <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-lg border border-rule p-4">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{userCount}</div>
           <div className="text-sm text-ink-faint">Total users</div>
         </div>
-        <div className="rounded-lg border border-rule p-4">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{listingCounts["published"] ?? 0}</div>
           <div className="text-sm text-ink-faint">Published listings</div>
         </div>
-        <div className="rounded-lg border border-rule p-4">
-          <Link href="/dashboard/admin/listings?status=pending_review" className="mono block text-2xl font-semibold text-brand-strong">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
+          <Link href="/dashboard/admin/listings?status=pending_review" className="mono block text-2xl font-semibold text-brand-strong hover:text-brand">
             {pendingCount}
           </Link>
           <div className="text-sm text-ink-faint">Pending review</div>
         </div>
-        <div className="rounded-lg border border-rule p-4">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{fmtUSD(gmv)}</div>
           <div className="text-sm text-ink-faint">Completed GMV</div>
         </div>
@@ -72,7 +72,7 @@ export default async function AdminOverview() {
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
           <h2 className="mb-3 text-lg">Listings by status</h2>
-          <div className="overflow-hidden rounded-lg border border-rule text-sm">
+          <div className="overflow-hidden rounded-xl border border-rule text-sm">
             {LISTING_STATUSES.map((s) => (
               <div key={s} className="flex items-center justify-between border-b border-rule px-4 py-2.5 last:border-b-0">
                 <span className="text-ink-soft capitalize">{s.replace("_", " ")}</span>
@@ -83,7 +83,7 @@ export default async function AdminOverview() {
         </div>
         <div>
           <h2 className="mb-3 text-lg">Orders by status</h2>
-          <div className="overflow-hidden rounded-lg border border-rule text-sm">
+          <div className="overflow-hidden rounded-xl border border-rule text-sm">
             {ORDER_STATUSES.map((s) => (
               <div key={s} className="flex items-center justify-between border-b border-rule px-4 py-2.5 last:border-b-0">
                 <span className="text-ink-soft capitalize">{s.replace("_", " ")}</span>
