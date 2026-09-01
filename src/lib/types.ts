@@ -101,6 +101,13 @@ export interface Listing {
   status: "published" | "sold";
   views: number;
   createdAt: string;
+  // Google Analytics verification (Motion Invest / Flippa style — manual GA
+  // "Viewer" access review, not an OAuth/API integration). The seller still
+  // types in every GA/GSC/SEMrush/Ahrefs number below as before; these three
+  // fields are a trust layer on top of that data, not a replacement for it.
+  gaAccessConfirmed: boolean;
+  loomVideoUrl?: string;
+  gaVerified: boolean;
 
   quickStats: Partial<Record<string, number | string>>;
   monthlyStats: MonthlyStat[];

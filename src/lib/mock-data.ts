@@ -23,7 +23,12 @@ function months(from: string, n: number) {
   });
 }
 
-export const MOCK_LISTINGS: Listing[] = [
+// These bundled mock listings predate GA verification (Motion Invest /
+// Flippa style manual GA "Viewer" access review — see migration 011) — none
+// of them have real GA access granted or reviewed, so every one defaults to
+// unconfirmed/unverified rather than repeating those two fields on each
+// literal below.
+const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified">[] = [
   {
     id: "DQ-0412",
     categoryId: "saas",
@@ -295,6 +300,12 @@ export const MOCK_LISTINGS: Listing[] = [
     seller: seller3,
   },
 ];
+
+export const MOCK_LISTINGS: Listing[] = RAW_MOCK_LISTINGS.map((l) => ({
+  ...l,
+  gaAccessConfirmed: false,
+  gaVerified: false,
+}));
 
 export function getListingById(id: string) {
   return MOCK_LISTINGS.find((l) => l.id === id);
