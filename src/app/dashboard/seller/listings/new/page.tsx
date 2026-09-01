@@ -148,9 +148,11 @@ export default function AddNewBusinessPage() {
 
   const [quickStats, setQuickStats] = useState<Record<string, string>>({});
   const [monthlyIncome, setMonthlyIncome] = useState<string[]>(Array(12).fill(""));
+  const [loomVideoUrl, setLoomVideoUrl] = useState("");
   const [expenses, setExpenses] = useState([{ label: "", amount: "" }]);
   const [monetization, setMonetization] = useState<string[]>([]);
 
+  const [gaAccessConfirmed, setGaAccessConfirmed] = useState(false);
   const [gaTotalUsers, setGaTotalUsers] = useState("");
   const [gaNewUsers, setGaNewUsers] = useState("");
   const [gaPageViews, setGaPageViews] = useState("");
@@ -249,6 +251,8 @@ export default function AddNewBusinessPage() {
           sale_includes_assets: saleIncludesAssets,
           sale_includes_support: saleIncludesSupport,
           status: "pending_review",
+          ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
+          loom_video_url: loomVideoUrl || null,
           ...quickStatColumns,
         })
         .select()
@@ -407,6 +411,20 @@ export default function AddNewBusinessPage() {
             files={incomeImages}
             setFiles={setIncomeImages}
           />
+          <div className="mt-5">
+            <Field label="Loom video walkthrough (optional)">
+              <input
+                type="url"
+                placeholder="https://www.loom.com/share/..."
+                value={loomVideoUrl}
+                onChange={(e) => setLoomVideoUrl(e.target.value)}
+                className={inputCls}
+              />
+            </Field>
+            <p className="mt-1.5 text-xs text-ink-faint">
+              A short screen recording of your live income dashboard (Loom or similar) speeds up review — it&rsquo;s much harder to fake than a static screenshot. Shared with our review team only, not shown publicly.
+            </p>
+          </div>
         </Section>
 
         <Section title="Monthly Expenses">
@@ -476,6 +494,17 @@ export default function AddNewBusinessPage() {
                 files={gaImages}
                 setFiles={setGaImages}
               />
+              <label className="mt-4 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={gaAccessConfirmed}
+                  onChange={(e) => setGaAccessConfirmed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+                />
+                <span>
+                  I&rsquo;ve added <span className="mono text-ink">support@durqo.com</span> as a Viewer on this site&rsquo;s Google Analytics 4 property (Admin &rarr; Property Access Management &rarr; Add users). Our team will check it before publishing — access can be removed once your listing is live.
+                </span>
+              </label>
             </Section>
 
             <Section title="Google Search Console Data">
