@@ -51,7 +51,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const inputCls = "rounded-lg border border-rule-strong bg-paper-raised px-3 py-2.5 text-sm";
+const inputCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
 
 function NamedValueRows({
   rows,
@@ -73,7 +73,7 @@ function NamedValueRows({
         <div key={i} className="flex gap-2">
           <input placeholder={nameLabel} value={r.name} onChange={(e) => update(i, "name", e.target.value)} className={`${inputCls} flex-grow`} />
           <input placeholder={valueLabel} value={r.value} onChange={(e) => update(i, "value", e.target.value)} className={`${inputCls} w-32`} />
-          <button type="button" onClick={() => setRows(rows.filter((_, idx) => idx !== i))} className="grid w-9 shrink-0 place-items-center rounded-lg border border-rule-strong text-ink-faint hover:border-danger hover:text-danger">
+          <button type="button" onClick={() => setRows(rows.filter((_, idx) => idx !== i))} className="grid w-9 shrink-0 place-items-center rounded-md border border-rule-strong text-ink-faint hover:border-danger hover:text-danger">
             <Trash2 size={14} />
           </button>
         </div>
@@ -100,14 +100,14 @@ function ImageGallery({
   setFiles: (files: File[]) => void;
 }) {
   return (
-    <div className="mt-5 rounded-lg border border-rule bg-paper-raised p-4">
+    <div className="mt-5 rounded-xl border border-rule bg-paper-raised p-4">
       <h5 className="text-sm font-semibold text-ink">{label}</h5>
       {hint && <p className="mt-1 text-xs text-ink-faint">{hint}</p>}
 
       {files.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
           {files.map((f, i) => (
-            <span key={i} className="flex items-center gap-1.5 rounded-full border border-rule-strong bg-paper px-3 py-1 text-xs text-ink-soft">
+            <span key={i} className="flex items-center gap-1.5 rounded-md border border-rule-strong bg-paper px-3 py-1 text-xs text-ink-soft">
               {f.name}
               <button type="button" onClick={() => setFiles(files.filter((_, idx) => idx !== i))} className="text-ink-faint hover:text-danger">
                 <Trash2 size={11} />
@@ -117,7 +117,7 @@ function ImageGallery({
         </div>
       )}
 
-      <label className="mt-3 flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-dashed border-rule-strong px-3 py-2 text-sm text-ink-soft hover:border-brand-strong">
+      <label className="mt-3 flex w-fit cursor-pointer items-center gap-2 rounded-md border border-dashed border-rule-strong px-3 py-2 text-sm text-ink-soft hover:border-brand-strong">
         <Upload size={14} className="shrink-0 text-ink-faint" />
         Add to gallery
         <input
@@ -415,7 +415,7 @@ export default function AddNewBusinessPage() {
               <div key={i} className="flex gap-2">
                 <input placeholder="Label (e.g. Hosting)" value={row.label} onChange={(e) => setExpenses(expenses.map((r, idx) => (idx === i ? { ...r, label: e.target.value } : r)))} className={`${inputCls} flex-grow`} />
                 <input placeholder="Amount" type="number" value={row.amount} onChange={(e) => setExpenses(expenses.map((r, idx) => (idx === i ? { ...r, amount: e.target.value } : r)))} className={`${inputCls} w-32`} />
-                <button type="button" onClick={() => setExpenses(expenses.filter((_, idx) => idx !== i))} className="grid w-9 shrink-0 place-items-center rounded-lg border border-rule-strong text-ink-faint hover:border-danger hover:text-danger">
+                <button type="button" onClick={() => setExpenses(expenses.filter((_, idx) => idx !== i))} className="grid w-9 shrink-0 place-items-center rounded-md border border-rule-strong text-ink-faint hover:border-danger hover:text-danger">
                   <Trash2 size={14} />
                 </button>
               </div>
@@ -428,7 +428,7 @@ export default function AddNewBusinessPage() {
 
         {category.hasMonetization && (
           <Section title="Monetization Methods">
-            <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-lg border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+            <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
               {MONETIZATION_TYPES.map((m) => (
                 <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                   <input
@@ -536,7 +536,7 @@ export default function AddNewBusinessPage() {
         </Section>
 
         <div className="border-t border-rule pt-8">
-          <button type="submit" disabled={saving} className="rounded-lg bg-brand-strong px-8 py-3 text-sm font-semibold text-paper-raised hover:bg-brand disabled:opacity-60">
+          <button type="submit" disabled={saving} className="rounded-md bg-brand px-8 py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
             {saving ? "Creating…" : "Create Business"}
           </button>
           {submitted && <p className="mt-3 text-sm text-brand-strong">Submitted for review — a Durqo team member verifies every listing before it goes live. Redirecting…</p>}
