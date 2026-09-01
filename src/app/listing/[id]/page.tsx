@@ -8,6 +8,7 @@ import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber } from "@/lib/format";
 import TrendChart from "@/components/charts/TrendChart";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
+import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import BarList from "@/components/BarList";
 import FaqAccordion from "@/components/FaqAccordion";
 import ProofGalleryButton from "@/components/ProofGalleryButton";
@@ -155,6 +156,18 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                     </span>
                   ))}
                 </div>
+              </section>
+            )}
+
+            {/* Live, OAuth-connected Google Analytics (Flippa-style — see
+                src/components/GoogleAnalyticsLivePanel.tsx) takes priority
+                over the manual/self-declared section below when a seller
+                has connected it. The manual section still renders
+                underneath regardless, since it also carries GSC/SEMrush/
+                Ahrefs data this panel doesn't cover. */}
+            {category?.hasSeoData && listing.gaLiveStats && (
+              <section>
+                <GoogleAnalyticsLivePanel stats={listing.gaLiveStats} />
               </section>
             )}
 
