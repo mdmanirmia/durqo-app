@@ -22,7 +22,7 @@ export default function WishlistPage() {
 
   return (
     <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
-      <h2 className="mb-4 text-xl">Wishlist</h2>
+      <h2 className="mb-4 text-xl text-ink">Wishlist</h2>
       {wishlisted === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : wishlisted.length ? (
