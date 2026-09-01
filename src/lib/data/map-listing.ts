@@ -204,8 +204,11 @@ export function mapListing(
       delete quickStats.monthly_income;
     }
 
+    // Design & Development.docx (Sep 1, 2026 revision): Monthly Views is now
+    // an *average* — the last-12-months GA total page views divided by 12 —
+    // not the raw 12-month total.
     if (seo?.gaTotalPageViews !== undefined) {
-      quickStats.monthly_views = seo.gaTotalPageViews;
+      quickStats.monthly_views = Math.round(seo.gaTotalPageViews / 12);
     } else {
       delete quickStats.monthly_views;
     }
