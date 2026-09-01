@@ -1,9 +1,10 @@
 "use client";
 
 import { Suspense } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { CheckCircle2 } from "lucide-react";
+import Container from "@/components/ui/Container";
+import Button from "@/components/ui/Button";
 
 // Where Stripe Checkout's success_url sends the buyer back after a
 // successful payment (see src/app/api/checkout/route.ts). This page is
@@ -19,31 +20,41 @@ function CheckoutSuccessContent() {
   const sessionId = searchParams.get("session_id");
 
   return (
-    <main className="mx-auto flex max-w-lg flex-col items-center gap-4 px-5 py-20 text-center sm:px-7">
-      <div className="grid h-14 w-14 place-items-center rounded-full bg-brand-soft text-brand-strong">
-        <CheckCircle2 size={28} />
-      </div>
-      <h1 className="text-2xl font-semibold">Payment received</h1>
-      <p className="text-sm text-ink-soft">
-        Thanks — your payment went through and your order is moving into escrow. We&rsquo;ll connect you with the seller
-        to coordinate the handover, and you can track progress from your orders page.
-      </p>
-      {sessionId && <p className="mono text-xs text-ink-faint">Reference: {sessionId.slice(0, 24)}&hellip;</p>}
-      <div className="mt-4 flex gap-3">
-        <Link href="/dashboard/buyer/orders" className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand/90">
-          View my orders
-        </Link>
-        <Link href="/buy" className="rounded-full border border-rule-strong px-5 py-2.5 text-sm font-semibold text-ink hover:border-brand-strong">
-          Keep browsing
-        </Link>
-      </div>
+    <main className="py-20">
+      <Container className="max-w-lg">
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-rule bg-paper-raised px-6 py-10 text-center sm:px-8">
+          <div className="grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-brand-strong">
+            <CheckCircle2 size={24} />
+          </div>
+          <h1 className="text-2xl font-semibold text-ink">Payment received</h1>
+          <p className="text-sm text-ink-soft">
+            Thanks — your payment went through and your order is moving into escrow. We&rsquo;ll connect you with the seller
+            to coordinate the handover, and you can track progress from your orders page.
+          </p>
+          {sessionId && <p className="mono text-xs text-ink-faint">Reference: {sessionId.slice(0, 24)}&hellip;</p>}
+          <div className="mt-4 flex gap-3">
+            <Button href="/dashboard/buyer/orders" variant="primary">
+              View my orders
+            </Button>
+            <Button href="/buy" variant="secondary">
+              Keep browsing
+            </Button>
+          </div>
+        </div>
+      </Container>
     </main>
   );
 }
 
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={<main className="mx-auto max-w-lg px-5 py-20 text-center text-ink-faint">Loading&hellip;</main>}>
+    <Suspense
+      fallback={
+        <main className="py-20">
+          <Container className="max-w-lg text-center text-sm text-ink-faint">Loading&hellip;</Container>
+        </main>
+      }
+    >
       <CheckoutSuccessContent />
     </Suspense>
   );
