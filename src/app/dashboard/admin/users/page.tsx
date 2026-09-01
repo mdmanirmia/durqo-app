@@ -36,7 +36,7 @@ export default async function AdminUsers() {
     <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl">All Users</h2>
-        {!admin && <span className="text-sm text-red-600">Admin data source unavailable.</span>}
+        {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       <AdminUsersTable rows={rows} selfId={me.id} />
     </DashboardShell>

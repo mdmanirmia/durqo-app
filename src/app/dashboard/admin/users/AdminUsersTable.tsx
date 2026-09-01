@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { UserPlus } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
 import { setUserRole, setUserActive, inviteUser } from "../actions";
 
 export interface AdminUserRow {
@@ -137,7 +138,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
       {rows.length === 0 ? (
         <p className="text-sm text-ink-faint">No users found.</p>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-rule">
+        <div className="overflow-x-auto rounded-xl border border-rule">
           <table className="w-full min-w-[860px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -170,7 +171,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                         ))}
                       </select>
                       {isSelf && <div className="mt-1 text-xs text-ink-faint">This is you</div>}
-                      {errorId === u.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+                      {errorId === u.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
                     </td>
                     <td className="px-4 py-3 text-ink-soft">{u.isVerified ? "Yes" : "No"}</td>
                     <td className="mono px-4 py-3 text-ink-soft">{u.totalPurchases} / {u.totalSales}</td>
@@ -182,18 +183,18 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                           disabled={busy || isSelf}
                           onClick={() => toggleActive(u.id, false)}
                           title={isSelf ? "You can't deactivate your own account" : "Block this user's login"}
-                          className="rounded-md border border-red-300 px-3 py-1.5 text-xs font-semibold text-red-700 disabled:opacity-60"
+                          className="rounded-md border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger-soft disabled:opacity-60"
                         >
                           Block
                         </button>
                       ) : (
                         <div className="flex flex-col gap-1">
-                          <span className="w-fit rounded-full bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700">Blocked</span>
+                          <Badge tone="danger" className="w-fit">Blocked</Badge>
                           <button
                             type="button"
                             disabled={busy}
                             onClick={() => toggleActive(u.id, true)}
-                            className="w-fit rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft disabled:opacity-60"
+                            className="w-fit rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong disabled:opacity-60"
                           >
                             Unblock
                           </button>
