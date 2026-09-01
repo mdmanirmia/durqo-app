@@ -170,6 +170,105 @@ export function mapComments(rows: Row[], authorNames: Record<string, string>): C
   return top;
 }
 
+// The "domains" category is the one exception to auto-computed Quick Stats:
+// all three of its stats (domain_age, domain_expires, domain_registrar) are
+// facts about the domain itself with no other data collected anywhere else
+// on the form (hasSeoData/hasMonetization/hasSocialStats are all false for
+// this category) — so it keeps its manual Quick Statistics inputs on the
+// seller form (see src/app/dashboard/seller/listings/new/page.tsx) and its
+// flat-column values here, unlike every other category.
+const NO_AUTO_QUICK_STAT_CATEGORIES = new Set(["domains"]);
+
+// Sellers no longer type in per-category "Quick Statistics" values directly
+// (Sep 1, 2026 revision, extended to every category) — instead each stat is
+// computed from data already collected elsewhere on the same form: the
+// 12-month Proof of Income entries, the Google Analytics / SEMrush / Ahrefs
+// snapshot, the Social Stats rows, and a straightforward price/income
+// formula for Income Multiple. "location" and "age" mirror the top-level
+// Business Location / Business Age fields (same flat columns as before —
+// only *where* they're entered in the form changed, not the column). A key
+// with no viable source here (e.g. Channel Age, Total Downloads, Rating —
+// categories that have no real listings yet) is simply left unset, same as
+// any other quick stat whose source data hasn't been provided.
+function computeAutoQuickStats(
+  row: Row,
+  quickStatKeys: QuickStatKey[],
+  quickStats: Partial<Record<string, number | string>>,
+  monthlyStats: MonthlyStat[],
+  seo: SeoData | undefined,
+  socialStats: SocialStat[]
+) {
+  const has = (key: QuickStatKey) => quickStatKeys.includes(key);
+
+  const incomeValues = monthlyStats.map((m) => m.income).filter((v): v is number => typeof v === "number");
+  const avgMonthlyIncome = incomeValues.length > 0 ? Math.round(incomeValues.reduce((a, b) => a + b, 0) / incomeValues.length) : undefined;
+
+  if (has("monthly_income")) {
+    if (avgMonthlyIncome !== undefined) quickStats.monthly_income = avgMonthlyIncome;
+    else delete quickStats.monthly_income;
+  }
+
+  // Design & Development.docx (Sep 1, 2026 revision): Monthly Views is an
+  // *average* — the last-12-months GA total page views divided by 12.
+  if (has("monthly_views")) {
+    if (seo?.gaTotalPageViews !== undefined) quickStats.monthly_views = Math.round(seo.gaTotalPageViews / 12);
+    else delete quickStats.monthly_views;
+  }
+
+  // "Monthly Visitors" (E-commerce, SaaS, Crypto, Agencies) is the GA
+  // Total Users average, distinct from "Monthly Views" (GA Total Page
+  // Views average, used by Websites).
+  if (has("monthly_visitors")) {
+    if (seo?.gaTotalUsers !== undefined) quickStats.monthly_visitors = Math.round(seo.gaTotalUsers / 12);
+    else delete quickStats.monthly_visitors;
+  }
+
+  // Authority Score (Websites) and Domain Authority (E-commerce, SaaS,
+  // Crypto, Agencies) are the same underlying signal — SEMrush's Authority
+  // Score, falling back to Ahrefs Domain Rating when SEMrush wasn't
+  // provided.
+  const authority = seo?.semrushAuthorityScore ?? seo?.ahrefsDr;
+  if (has("authority_score")) {
+    if (authority !== undefined) quickStats.authority_score = authority;
+    else delete quickStats.authority_score;
+  }
+  if (has("domain_authority")) {
+    if (authority !== undefined) quickStats.domain_authority = authority;
+    else delete quickStats.domain_authority;
+  }
+
+  // Income Multiple = asking price ÷ annualized average monthly income —
+  // a straightforward formula, not sourced from any additional seller
+  // input. Rounded to one decimal (e.g. "3.2").
+  if (has("income_multiple")) {
+    const price = Number(row.price);
+    if (avgMonthlyIncome !== undefined && avgMonthlyIncome > 0 && Number.isFinite(price)) {
+      quickStats.income_multiple = Math.round((price / (avgMonthlyIncome * 12)) * 10) / 10;
+    } else {
+      delete quickStats.income_multiple;
+    }
+  }
+
+  // Followers (Social Media Accounts) / Subscribers (YouTube, Newsletters)
+  // — the total across every platform/entry the seller logged in Social
+  // Stats.
+  const totalFollowers = socialStats.reduce((sum, s) => sum + (s.followers ?? 0), 0);
+  if (has("followers")) {
+    if (totalFollowers > 0) quickStats.followers = totalFollowers;
+    else delete quickStats.followers;
+  }
+  if (has("subscribers")) {
+    if (totalFollowers > 0) quickStats.subscribers = totalFollowers;
+    else delete quickStats.subscribers;
+  }
+
+  // Business Location / Business Age mirror the same top-level fields the
+  // rest of the app already reads (row.location / row.business_age_years)
+  // — buildQuickStats() already picked these up via QUICK_STAT_COLUMNS, so
+  // there's nothing to override here; they're listed in this comment only
+  // to make clear the omission is intentional, not an oversight.
+}
+
 export function mapListing(
   row: Row,
   quickStatKeys: QuickStatKey[],
@@ -186,38 +285,11 @@ export function mapListing(
 ): Listing {
   const monthlyStats = mapMonthlyStats(related.monthlyStats ?? []);
   const seo = mapSeo(related.seo);
+  const socialStats = mapSocialStats(related.socialStats ?? []);
   const quickStats = buildQuickStats(row, quickStatKeys);
 
-  // Websites listings don't collect Monthly Income, Monthly Views or
-  // Authority Score as flat manually-typed columns — they're computed from
-  // data the seller already provided elsewhere: the 12-month Proof of
-  // Income entries, the Google Analytics snapshot, and the SEMrush
-  // snapshot. Override (rather than read) those three quick-stat keys here,
-  // scoped to this category only, so no other category's manual-entry
-  // behavior changes. When the source data isn't available (e.g. a card
-  // fetch that didn't load `seo`), the stat is simply left unset.
-  if (row.category_id === "websites") {
-    const incomeValues = monthlyStats.map((m) => m.income).filter((v): v is number => typeof v === "number");
-    if (incomeValues.length > 0) {
-      quickStats.monthly_income = Math.round(incomeValues.reduce((a, b) => a + b, 0) / incomeValues.length);
-    } else {
-      delete quickStats.monthly_income;
-    }
-
-    // Design & Development.docx (Sep 1, 2026 revision): Monthly Views is now
-    // an *average* — the last-12-months GA total page views divided by 12 —
-    // not the raw 12-month total.
-    if (seo?.gaTotalPageViews !== undefined) {
-      quickStats.monthly_views = Math.round(seo.gaTotalPageViews / 12);
-    } else {
-      delete quickStats.monthly_views;
-    }
-
-    if (seo?.semrushAuthorityScore !== undefined) {
-      quickStats.authority_score = seo.semrushAuthorityScore;
-    } else {
-      delete quickStats.authority_score;
-    }
+  if (!NO_AUTO_QUICK_STAT_CATEGORIES.has(row.category_id)) {
+    computeAutoQuickStats(row, quickStatKeys, quickStats, monthlyStats, seo, socialStats);
   }
 
   return {
@@ -241,11 +313,12 @@ export function mapListing(
     gaAccessConfirmed: !!row.ga_access_confirmed,
     loomVideoUrl: row.loom_video_url ?? undefined,
     gaVerified: !!row.ga_verified,
+    niches: Array.isArray(row.niches) ? row.niches : [],
 
     quickStats,
     monthlyStats,
     seo,
-    socialStats: mapSocialStats(related.socialStats ?? []),
+    socialStats,
     faqs: mapFaqs(related.faqs ?? []),
     comments: mapComments(related.comments ?? [], related.authorNames ?? {}),
     seller: mapSeller(related.seller),
