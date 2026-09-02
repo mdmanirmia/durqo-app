@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { BarChart3, CheckCircle2, Plus, Trash2, Upload } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
@@ -185,6 +185,11 @@ export default function AddNewBusinessPage() {
 
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Set once the listing insert below succeeds, for categories that carry
+  // Google Analytics data — swaps the form for a one-time "connect GA live
+  // now?" screen instead of redirecting straight to the dashboard, since
+  // OAuth connect needs a real listing id that only exists post-insert.
+  const [createdListingId, setCreatedListingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   function handleCategoryChange(id: string) {
@@ -327,12 +332,53 @@ export default function AddNewBusinessPage() {
       await uploadGallery(supabase, sellerId, listingId, ahrefsImages, "ahrefs");
 
       setSubmitted(true);
-      setTimeout(() => router.push("/dashboard/seller"), 1500);
+      if (category.hasSeoData) {
+        setCreatedListingId(listingId);
+      } else {
+        setTimeout(() => router.push("/dashboard/seller"), 1500);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong creating the listing.");
     } finally {
       setSaving(false);
     }
+  }
+
+  // Shown once instead of the form, right after a successful submit, for
+  // categories that carry Google Analytics data — a one-time chance to
+  // connect the live OAuth panel (see GoogleAnalyticsLivePanel.tsx) in the
+  // same flow as listing creation, rather than making the seller find the
+  // Connect button on the dashboard's listings table afterward.
+  if (createdListingId) {
+    return (
+      <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+        <div className="mx-auto max-w-lg rounded-xl border border-rule bg-paper-raised p-8 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft text-brand-hover">
+            <CheckCircle2 size={24} />
+          </span>
+          <h2 className="mb-2 text-xl text-ink">Listing submitted for review</h2>
+          <p className="mb-6 text-sm text-ink-faint">
+            A Durqo team member verifies every listing before it goes live. While you wait, want to connect Google
+            Analytics now so live stats are ready as soon as it&rsquo;s approved?
+          </p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href={`/api/google-analytics/connect?listingId=${createdListingId}`}
+              className="flex items-center gap-1.5 rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+            >
+              <BarChart3 size={15} /> Connect Google Analytics now
+            </a>
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard/seller")}
+              className="rounded-md border border-rule-strong px-5 py-2.5 text-sm font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+            >
+              Skip, do it later
+            </button>
+          </div>
+        </div>
+      </DashboardShell>
+    );
   }
 
   return (
