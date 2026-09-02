@@ -167,7 +167,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 Ahrefs data this panel doesn't cover. */}
             {category?.hasSeoData && listing.gaLiveStats && (
               <section>
-                <GoogleAnalyticsLivePanel stats={listing.gaLiveStats} />
+                <GoogleAnalyticsLivePanel listingId={listing.id} initialStats={listing.gaLiveStats} />
               </section>
             )}
 
