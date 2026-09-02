@@ -1,6 +1,6 @@
 import Container from "@/components/ui/Container";
 
-export const metadata = { title: "Privacy Policy — Durqo" };
+export const metadata = { title: "Privacy Policy | Durqo" };
 
 const EFFECTIVE_DATE = "September 2, 2026";
 
@@ -36,7 +36,7 @@ function Section({
         <span className="mono text-xs font-semibold text-brand-strong">{num}</span>
         <h2 className="text-xl sm:text-2xl">{title}</h2>
       </div>
-      <div className="flex max-w-[70ch] flex-col gap-3.5 leading-relaxed text-ink-soft">{children}</div>
+      <div className="flex max-w-[70ch] flex-col gap-3.5 text-justify leading-relaxed text-ink-soft">{children}</div>
     </section>
   );
 }
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             <div>
               <p className="eyebrow mb-3">Legal</p>
               <h1 className="mb-4 text-4xl">Privacy Policy</h1>
-              <p className="max-w-[52ch] text-ink-soft">
+              <p className="max-w-[52ch] text-justify text-ink-soft">
                 At Durqo, we know you&rsquo;re trusting us with sensitive business and financial information. This
                 policy explains, in plain language, what we collect, how we use it, and the choices you have.
               </p>
@@ -100,7 +100,7 @@ export default function PrivacyPage() {
             <div className="rounded-xl border border-rule-strong bg-paper-raised p-8">
               <p className="mono mb-2 text-xs text-ink-faint">EFFECTIVE {EFFECTIVE_DATE.toUpperCase()}</p>
               <h3 className="mb-1 text-2xl">Questions about your data?</h3>
-              <p className="mb-4 text-ink-soft">Reach out any time — we&rsquo;ll answer directly, no ticket queue.</p>
+              <p className="mb-4 text-justify text-ink-soft">Reach out any time; we&rsquo;ll answer directly, no ticket queue.</p>
               <a href="mailto:support@durqo.com" className="inline-block text-sm font-semibold text-brand-hover">
                 support@durqo.com
               </a>
@@ -135,7 +135,7 @@ export default function PrivacyPage() {
                   collects, uses, shares, and protects information when you visit our website, create an
                   account, list a business for sale, or purchase a business through our marketplace (together,
                   the &ldquo;Platform&rdquo;). It applies to Buyers, Sellers, and visitors alike. By using the
-                  Platform, you agree to the collection and use of information as described here — if you
+                  Platform, you agree to the collection and use of information as described here; if you
                   don&rsquo;t agree, please don&rsquo;t use the Platform.
                 </p>
               </Section>
@@ -145,7 +145,7 @@ export default function PrivacyPage() {
                 <DataTable />
                 <p>
                   Where you connect a Google Analytics 4 property to a Listing, we only ever access aggregated,
-                  read-only traffic metrics through Google&rsquo;s own authorization flow — we never request
+                  read-only traffic metrics through Google&rsquo;s own authorization flow; we never request
                   access to edit your property, and you can revoke that access from your Google Account at any
                   time.
                 </p>
@@ -160,7 +160,7 @@ export default function PrivacyPage() {
                     "Display listing data accurately to prospective Buyers, and independently verify figures a Seller has submitted.",
                     "Maintain and improve the security, reliability, and performance of the Platform.",
                     "Respond to support requests and send you service communications, such as order updates or verification results.",
-                    "Send occasional product updates or promotional content — always with the option to opt out.",
+                    "Send occasional product updates or promotional content, always with the option to opt out.",
                   ]}
                 />
               </Section>
@@ -173,20 +173,20 @@ export default function PrivacyPage() {
                 <List
                   items={[
                     <>
-                      <strong className="text-ink">Payment and escrow providers</strong> (such as Stripe and our
-                      Escrow Provider) — to process payments and hold funds securely during a transaction.
+                      <strong className="text-ink">Payment and escrow providers:</strong> such as Stripe and our
+                      Escrow Provider, to process payments and hold funds securely during a transaction.
                     </>,
                     <>
-                      <strong className="text-ink">Infrastructure and hosting providers</strong> (such as
-                      Supabase) — to securely store account, listing, and messaging data.
+                      <strong className="text-ink">Infrastructure and hosting providers:</strong> such as
+                      Supabase, to securely store account, listing, and messaging data.
                     </>,
                     <>
-                      <strong className="text-ink">Other Platform users</strong> — a Buyer and Seller in an
+                      <strong className="text-ink">Other Platform users:</strong> a Buyer and Seller in an
                       active transaction see the information reasonably necessary to complete that transaction
                       (for example, contact details once a deal is agreed).
                     </>,
                     <>
-                      <strong className="text-ink">Legal and regulatory authorities</strong> — when required to
+                      <strong className="text-ink">Legal and regulatory authorities:</strong> when required to
                       comply with the law, enforce these policies, or protect the rights and safety of Durqo or
                       our users.
                     </>,
@@ -199,16 +199,16 @@ export default function PrivacyPage() {
                 <List
                   items={[
                     <>
-                      <strong className="text-ink">Essential cookies</strong> — required for core functionality
+                      <strong className="text-ink">Essential cookies:</strong> required for core functionality
                       such as staying logged in and securing your session; the Platform will not work correctly
                       without these.
                     </>,
                     <>
-                      <strong className="text-ink">Functional cookies</strong> — remember preferences such as
+                      <strong className="text-ink">Functional cookies:</strong> remember preferences such as
                       your saved searches or wishlist.
                     </>,
                     <>
-                      <strong className="text-ink">Analytics cookies</strong> — help us understand how the
+                      <strong className="text-ink">Analytics cookies:</strong> help us understand how the
                       Platform is used, so we can improve it.
                     </>,
                   ]}
@@ -219,8 +219,8 @@ export default function PrivacyPage() {
               <Section id="security" num="06" title="Data Security">
                 <p>
                   We use encryption in transit and at rest, secure hosting infrastructure, and authentication
-                  safeguards to protect your data. Access to sensitive information — such as payment details and
-                  connected analytics credentials — is restricted to what is strictly necessary to operate the
+                  safeguards to protect your data. Access to sensitive information, such as payment details and
+                  connected analytics credentials, is restricted to what is strictly necessary to operate the
                   Platform. However, no method of transmission or storage is 100% secure, and we cannot guarantee
                   absolute security.
                 </p>
@@ -240,12 +240,12 @@ export default function PrivacyPage() {
                 <p>Depending on where you live, you may have some or all of the following rights over your personal data:</p>
                 <List
                   items={[
-                    "Access — request a copy of the personal data we hold about you.",
-                    "Correction — ask us to correct inaccurate or incomplete data.",
-                    "Deletion — ask us to delete your personal data, subject to our legal and contractual retention needs.",
-                    "Restriction & objection — ask us to limit how we use your data, or object to certain uses.",
-                    "Portability — request your data in a portable format.",
-                    "Opt-out — unsubscribe from marketing communications at any time using the link in any email, or by contacting us directly.",
+                    "Access: request a copy of the personal data we hold about you.",
+                    "Correction: ask us to correct inaccurate or incomplete data.",
+                    "Deletion: ask us to delete your personal data, subject to our legal and contractual retention needs.",
+                    "Restriction & objection: ask us to limit how we use your data, or object to certain uses.",
+                    "Portability: request your data in a portable format.",
+                    "Opt-out: unsubscribe from marketing communications at any time using the link in any email, or by contacting us directly.",
                   ]}
                 />
                 <p>
@@ -253,7 +253,7 @@ export default function PrivacyPage() {
                   <a href="mailto:support@durqo.com" className="font-semibold text-brand-hover">
                     support@durqo.com
                   </a>{" "}
-                  — we&rsquo;ll respond as quickly as we can.
+                  and we&rsquo;ll respond as quickly as we can.
                 </p>
               </Section>
 
@@ -282,7 +282,7 @@ export default function PrivacyPage() {
 
               <Section id="third-party-links" num="11" title="Third-Party Links">
                 <p>
-                  The Platform may contain links to third-party websites — including a Seller&rsquo;s own
+                  The Platform may contain links to third-party websites, including a Seller&rsquo;s own
                   business or website. We are not responsible for the privacy practices or content of any
                   third-party site, and we encourage you to review the privacy policy of any site you visit.
                 </p>
@@ -294,7 +294,7 @@ export default function PrivacyPage() {
                   applicable law. When we make material changes, we will update the effective date at the top of
                   this page, and where appropriate, notify you directly.
                 </p>
-                <p>If you have any questions about this policy or how your data is handled, reach out — we&rsquo;re glad to explain.</p>
+                <p>If you have any questions about this policy or how your data is handled, reach out; we&rsquo;re glad to explain.</p>
                 <a href="mailto:support@durqo.com" className="inline-block w-fit font-semibold text-brand-hover">
                   support@durqo.com
                 </a>
