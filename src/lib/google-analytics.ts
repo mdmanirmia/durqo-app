@@ -156,14 +156,28 @@ export interface Ga4ReportSummary {
   trafficAcquisition: { channel: string; sessions: number }[];
 }
 
+export interface Ga4DateRange {
+  // GA4's runReport accepts either a relative expression ("7daysAgo",
+  // "90daysAgo", "today") or an absolute "YYYY-MM-DD" — both pass straight
+  // through untouched, which is what lets the same function serve both the
+  // named presets and an arbitrary custom range from the live panel's date
+  // picker.
+  startDate: string;
+  endDate: string;
+}
+
+const DEFAULT_DATE_RANGE: Ga4DateRange = { startDate: "90daysAgo", endDate: "today" };
+
 // One runReport call for the summary tiles + daily page-views series, one
 // for the channel breakdown — matches the metrics Flippa's own integration
 // docs list (Users, Page Views, Pages/Session, Avg. Session Duration,
 // Bounce Rate) plus the "Traffic Acquisition" panel from the reference
 // screenshot.
-export async function runGa4Report(propertyId: string, accessToken: string, days = 90): Promise<Ga4ReportSummary> {
-  const dateRange = { startDate: `${days}daysAgo`, endDate: "today" };
-
+export async function runGa4Report(
+  propertyId: string,
+  accessToken: string,
+  dateRange: Ga4DateRange = DEFAULT_DATE_RANGE
+): Promise<Ga4ReportSummary> {
   async function runReport(body: Record<string, unknown>) {
     const res = await fetch(`${GA_DATA_API}/${propertyId}:runReport`, {
       method: "POST",
