@@ -9,7 +9,6 @@ import { fmtUSD, fmtNumber } from "@/lib/format";
 import TrendChart from "@/components/charts/TrendChart";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
-import BarList from "@/components/BarList";
 import FaqAccordion from "@/components/FaqAccordion";
 import ProofGalleryButton from "@/components/ProofGalleryButton";
 import CartButton from "@/components/CartButton";
@@ -159,79 +158,57 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               </section>
             )}
 
-            {/* Live, OAuth-connected Google Analytics (Flippa-style — see
-                src/components/GoogleAnalyticsLivePanel.tsx) takes priority
-                over the manual/self-declared section below when a seller
-                has connected it. The manual section's own primary metrics,
-                trend charts, and channel breakdown are hidden in that case
-                (see the !listing.gaLiveStats checks below) so the page
-                never shows two different numbers for the same thing; its
-                Top Countries, Device Category, and verification
-                screenshots still render regardless, since this panel
-                doesn't cover those, and neither does GSC/SEMrush/Ahrefs
-                below. */}
-            {category?.hasSeoData && listing.gaLiveStats && (
+            {/* Google Analytics Data — one heading covers both cases. A
+                seller who has connected their real GA4 account live (see
+                src/components/GoogleAnalyticsLivePanel.tsx) gets that live,
+                auto-updating panel here; the self-declared manual numbers
+                and verification screenshots are hidden in that case so the
+                page never shows two different sets of numbers for the same
+                thing. A seller who hasn't connected live GA gets the
+                manual data + screenshots instead. */}
+            {category?.hasSeoData && (listing.gaLiveStats || listing.seo) && (
               <section>
-                <GoogleAnalyticsLivePanel listingId={listing.id} initialStats={listing.gaLiveStats} />
+                <div className="mb-4 flex flex-wrap items-center gap-2">
+                  <h2 className="text-xl">Google Analytics Data</h2>
+                  {!listing.gaLiveStats && listing.gaVerified && (
+                    <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand-hover">
+                      <ShieldCheck size={12} /> Reviewed by Durqo
+                    </span>
+                  )}
+                </div>
+
+                {listing.gaLiveStats ? (
+                  <GoogleAnalyticsLivePanel listingId={listing.id} initialStats={listing.gaLiveStats} />
+                ) : listing.seo ? (
+                  <>
+                    <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
+                      <StatTile label="New Users" value={listing.seo.gaNewUsers} />
+                      <StatTile label="Total Page Views" value={listing.seo.gaTotalPageViews} />
+                      <StatTile
+                        label="Avg. Engagement Time"
+                        value={listing.seo.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
+                      />
+                    </div>
+                    <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                        <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Users trend</p>
+                        <TrendChart data={usersSeries} dataKey="users" color="#14213D" format="number" />
+                      </div>
+                      <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                        <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Page views trend</p>
+                        <TrendChart data={viewsSeries} dataKey="views" color="#10B981" format="number" />
+                      </div>
+                    </div>
+                    <ProofGalleryButton label="Google Analytics Data" images={gaImageUrls} count={3} />
+                  </>
+                ) : null}
               </section>
             )}
 
             {/* SEO / Analytics data block */}
             {category?.hasSeoData && listing.seo && (
               <>
-                <section>
-                  <div className="mb-4 flex flex-wrap items-center gap-2">
-                    <h2 className="text-xl">Google Analytics Data</h2>
-                    {listing.gaVerified && (
-                      <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand-hover">
-                        <ShieldCheck size={12} /> Reviewed by Durqo
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Primary metrics, trend charts, and the channel
-                      breakdown are already covered by the live OAuth panel
-                      above once a seller has connected it (Page Views,
-                      Unique Visitors, Sessions, Bounce Rate, Avg. Session,
-                      Traffic Acquisition) — showing this self-declared set
-                      too would put two different numbers for the same
-                      thing on the page, which reads as inconsistent to
-                      buyers. Skipped in that case; Top Countries and
-                      Device Category aren't covered by the live panel, so
-                      those still render either way, alongside the
-                      verification screenshots. */}
-                  {!listing.gaLiveStats && (
-                    <>
-                      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                        <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
-                        <StatTile label="New Users" value={listing.seo.gaNewUsers} />
-                        <StatTile label="Total Page Views" value={listing.seo.gaTotalPageViews} />
-                        <StatTile
-                          label="Avg. Engagement Time"
-                          value={listing.seo.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
-                        />
-                        <StatTile label="Engagement Rate" value={listing.seo.gaEngagementRate ? `${listing.seo.gaEngagementRate}%` : undefined} />
-                      </div>
-                      <div className="mb-6 grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                          <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Users trend</p>
-                          <TrendChart data={usersSeries} dataKey="users" color="#14213D" format="number" />
-                        </div>
-                        <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                          <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Page views trend</p>
-                          <TrendChart data={viewsSeries} dataKey="views" color="#10B981" format="number" />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  <div className="grid gap-6 sm:grid-cols-3">
-                    {!listing.gaLiveStats && <BarList title="Top Channels" items={listing.seo.gaTopChannels ?? []} />}
-                    <BarList title="Top Countries" items={listing.seo.gaTopCountries ?? []} />
-                    <BarList title="Device Category" items={listing.seo.gaTopDevices ?? []} />
-                  </div>
-                  <ProofGalleryButton label="Google Analytics Data" images={gaImageUrls} count={3} />
-                </section>
-
                 <section>
                   <h2 className="mb-1 text-xl">Google Search Console Data</h2>
                   <p className="mb-4 text-sm text-ink-faint">Engagement statistics, last 12 months</p>
