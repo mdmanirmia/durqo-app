@@ -1,6 +1,6 @@
 import Container from "@/components/ui/Container";
 
-export const metadata = { title: "Terms and Conditions — Durqo" };
+export const metadata = { title: "Terms and Conditions | Durqo" };
 
 const EFFECTIVE_DATE = "September 2, 2026";
 
@@ -37,7 +37,7 @@ function Section({
         <span className="mono text-xs font-semibold text-brand-strong">{num}</span>
         <h2 className="text-xl sm:text-2xl">{title}</h2>
       </div>
-      <div className="flex max-w-[70ch] flex-col gap-3.5 leading-relaxed text-ink-soft">{children}</div>
+      <div className="flex max-w-[70ch] flex-col gap-3.5 text-justify leading-relaxed text-ink-soft">{children}</div>
     </section>
   );
 }
@@ -58,9 +58,9 @@ function List({ items }: { items: React.ReactNode[] }) {
 
 function FeeTable() {
   const rows = [
-    ["$1 – $50,000", "10%"],
-    ["$50,000 – $100,000", "8%"],
-    ["$100,000 – $500,000", "5%"],
+    ["$1 to $50,000", "10%"],
+    ["$50,000 to $100,000", "8%"],
+    ["$100,000 to $500,000", "5%"],
     ["Over $500,000", "3%"],
   ];
   return (
@@ -94,7 +94,7 @@ export default function TermsPage() {
             <div>
               <p className="eyebrow mb-3">Legal</p>
               <h1 className="mb-4 text-4xl">Terms and Conditions</h1>
-              <p className="max-w-[52ch] text-ink-soft">
+              <p className="max-w-[52ch] text-justify text-ink-soft">
                 These Terms and Conditions (&ldquo;Terms&rdquo;) govern your access to and use of Durqo&rsquo;s
                 website, marketplace, and related services (together, the &ldquo;Platform&rdquo;). Please read
                 them carefully before you create an account, list a business, or make a purchase.
@@ -103,7 +103,7 @@ export default function TermsPage() {
             <div className="rounded-xl border border-rule-strong bg-paper-raised p-8">
               <p className="mono mb-2 text-xs text-ink-faint">EFFECTIVE {EFFECTIVE_DATE.toUpperCase()}</p>
               <h3 className="mb-1 text-2xl">Questions about these Terms?</h3>
-              <p className="mb-4 text-ink-soft">Our team is happy to walk through any clause before you sign off on a listing or a purchase.</p>
+              <p className="mb-4 text-justify text-ink-soft">Our team is happy to walk through any clause before you sign off on a listing or a purchase.</p>
               <a href="mailto:support@durqo.com" className="inline-block text-sm font-semibold text-brand-hover">
                 support@durqo.com
               </a>
@@ -154,27 +154,27 @@ export default function TermsPage() {
                 <List
                   items={[
                     <>
-                      <strong className="text-ink">Platform</strong> — the Durqo website, marketplace, and any
+                      <strong className="text-ink">Platform:</strong> the Durqo website, marketplace, and any
                       associated apps, APIs, or services operated by Durqo.
                     </>,
                     <>
-                      <strong className="text-ink">Listing</strong> — a business, website, or digital asset
+                      <strong className="text-ink">Listing:</strong> a business, website, or digital asset
                       offered for sale by a Seller on the Platform.
                     </>,
                     <>
-                      <strong className="text-ink">Seller</strong> — a user who creates a Listing to sell a
+                      <strong className="text-ink">Seller:</strong> a user who creates a Listing to sell a
                       business, website, or digital asset.
                     </>,
                     <>
-                      <strong className="text-ink">Buyer</strong> — a user who browses, inquires about, or
+                      <strong className="text-ink">Buyer:</strong> a user who browses, inquires about, or
                       purchases a Listing.
                     </>,
                     <>
-                      <strong className="text-ink">Escrow Provider</strong> — the independent third-party
+                      <strong className="text-ink">Escrow Provider:</strong> the independent third-party
                       escrow or payment service used to hold and release funds for a transaction.
                     </>,
                     <>
-                      <strong className="text-ink">Success Fee</strong> — the commission Durqo charges a Seller
+                      <strong className="text-ink">Success Fee:</strong> the commission Durqo charges a Seller
                       when a Listing successfully sells, calculated as set out in Section 5.
                     </>,
                   ]}
@@ -195,7 +195,7 @@ export default function TermsPage() {
               <Section id="buying-selling" num="04" title="The Buying and Selling Process">
                 <p>
                   Durqo provides a marketplace that connects Sellers of online businesses, websites, and digital
-                  assets with prospective Buyers. Durqo is not a party to the underlying sale — the agreement to
+                  assets with prospective Buyers. Durqo is not a party to the underlying sale; the agreement to
                   buy or sell a business is between the Buyer and the Seller. Durqo facilitates discovery,
                   verification, communication, and payment through the Platform.
                 </p>
@@ -205,14 +205,14 @@ export default function TermsPage() {
                     "Sellers must provide accurate, complete, and non-misleading details about the business being listed, including financial data, website traffic, and revenue.",
                     "Listings must not contain false, exaggerated, or misleading claims, and any supporting screenshots or documents submitted for verification must genuinely belong to the listed business.",
                     "Once a sale is agreed and payment has cleared through the Escrow Provider, the Seller must transfer all assets, accounts, and access included in the sale within the timeframe agreed with the Buyer.",
-                    "A Success Fee is charged only when a sale is completed — there is no charge simply for creating or maintaining a listing.",
+                    "A Success Fee is charged only when a sale is completed; there is no charge simply for creating or maintaining a listing.",
                   ]}
                 />
                 <SubHeading>4.2 Buyers</SubHeading>
                 <List
                   items={[
                     "Buyers are responsible for conducting their own due diligence on a business before committing to purchase it, including independently verifying any figures or claims that matter to their decision.",
-                    "Payments must be made only through the payment methods approved on the Platform (for example, escrow or another Durqo-approved processor) — never by paying a Seller directly outside the Platform.",
+                    "Payments must be made only through the payment methods approved on the Platform (for example, escrow or another Durqo-approved processor), never by paying a Seller directly outside the Platform.",
                     "Buyers acknowledge that acquiring an online business carries inherent risk, and that Durqo does not guarantee the future performance of any business purchased through the Platform.",
                   ]}
                 />
@@ -220,7 +220,7 @@ export default function TermsPage() {
 
               <Section id="payment-fees" num="05" title="Payment, Fees & Escrow">
                 <p>
-                  There are no listing fees for Sellers — creating and publishing a Listing is always free. Durqo
+                  There are no listing fees for Sellers: creating and publishing a Listing is always free. Durqo
                   earns its Success Fee only when a Listing actually sells, calculated as a percentage of the
                   final sale price:
                 </p>
@@ -244,7 +244,7 @@ export default function TermsPage() {
                     "Once a business has been transferred and the Buyer has confirmed receipt, the sale is final.",
                     "Refunds are granted only in cases of confirmed fraud, material misrepresentation, or a Seller's breach of the agreed transfer terms.",
                     "Any dispute relating to a transaction must be reported to Durqo within 7 days of the transaction's completion; disputes reported after this window may not be eligible for resolution through the Platform.",
-                    "Where a dispute cannot be resolved directly between the Buyer and Seller, Durqo may — at its discretion, and without obligation to do so — review the available evidence and help mediate a resolution, including via the Escrow Provider's own dispute process.",
+                    "Where a dispute cannot be resolved directly between the Buyer and Seller, Durqo may, at its discretion and without obligation to do so, review the available evidence and help mediate a resolution, including via the Escrow Provider's own dispute process.",
                   ]}
                 />
               </Section>
@@ -265,8 +265,8 @@ export default function TermsPage() {
 
               <Section id="ip" num="08" title="Intellectual Property">
                 <p>
-                  All content on the Platform — including the Durqo name, logo, trademarks, design, text, and
-                  underlying software — is the property of Durqo or its licensors, and is protected by
+                  All content on the Platform, including the Durqo name, logo, trademarks, design, text, and
+                  underlying software, is the property of Durqo or its licensors, and is protected by
                   applicable intellectual property laws. Nothing in these Terms grants you any right to use
                   Durqo&rsquo;s branding or content beyond what is necessary to use the Platform as intended, and
                   none of it may be copied, reproduced, or distributed without our prior written permission.
@@ -327,11 +327,11 @@ export default function TermsPage() {
                   These Terms are governed by the laws applicable to Durqo&rsquo;s place of business, without
                   regard to conflict-of-law principles, except where mandatory local consumer-protection law
                   provides otherwise. If any provision of these Terms is found unenforceable, the remaining
-                  provisions will continue in full force, and these Terms — together with our Privacy Policy —
+                  provisions will continue in full force, and these Terms, together with our Privacy Policy,
                   constitute the entire agreement between you and Durqo regarding your use of the Platform.
                 </p>
                 <p>
-                  If you have any questions about these Terms, please reach out — we&rsquo;re glad to explain any
+                  If you have any questions about these Terms, please reach out; we&rsquo;re glad to explain any
                   clause in plain language before you rely on it.
                 </p>
                 <a href="mailto:support@durqo.com" className="inline-block w-fit font-semibold text-brand-hover">
