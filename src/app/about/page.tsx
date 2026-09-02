@@ -27,71 +27,6 @@ const PROCESS = [
   },
 ] as const;
 
-// Abstract, on-brand illustration of a distributed team, a central hub node
-// connected to several satellite nodes, each drawn as a simple circle +
-// person glyph. Used in place of a stock or fabricated "team" photo, since
-// no real team photography exists yet. Colors resolve via currentColor from
-// the Tailwind text-* classes on each wrapping element, so it follows the
-// site's design tokens (and dark mode) automatically.
-function TeamIllustration() {
-  return (
-    <svg viewBox="0 0 440 260" fill="none" className="h-auto w-full" aria-hidden="true">
-      {/* texture dots */}
-      <g className="text-rule-strong" fill="currentColor">
-        <circle cx="18" cy="18" r="2.5" />
-        <circle cx="422" cy="240" r="2.5" />
-        <circle cx="404" cy="34" r="2" />
-        <circle cx="30" cy="230" r="2" />
-      </g>
-
-      {/* connecting lines from hub to each satellite */}
-      <g className="text-rule-strong" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" strokeLinecap="round">
-        <path d="M198 112 L 118 78" />
-        <path d="M246 108 L 326 66" />
-        <path d="M204 158 L 158 208" />
-        <path d="M242 160 L 312 202" />
-      </g>
-
-      {/* satellite node: top left */}
-      <circle cx="106" cy="70" r="26" className="text-paper-sunk" fill="currentColor" stroke="currentColor" strokeOpacity="0" />
-      <circle cx="106" cy="70" r="26" className="text-rule-strong" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <g className="text-ink-faint" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round">
-        <circle cx="106" cy="61" r="7" />
-        <path d="M90 84 c0 -11 7 -18 16 -18 s16 7 16 18" />
-      </g>
-
-      {/* satellite node: top right */}
-      <circle cx="342" cy="58" r="22" className="text-rule-strong" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <g className="text-ink-faint" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round">
-        <circle cx="342" cy="50" r="6" />
-        <path d="M328 70 c0 -9.5 6 -15.5 14 -15.5 s14 6 14 15.5" />
-      </g>
-
-      {/* satellite node: bottom left */}
-      <circle cx="140" cy="222" r="24" className="text-rule-strong" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <g className="text-ink-faint" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round">
-        <circle cx="140" cy="213" r="6.5" />
-        <path d="M125 236 c0 -10 6.5 -17 15 -17 s15 7 15 17" />
-      </g>
-
-      {/* satellite node: bottom right */}
-      <circle cx="326" cy="216" r="21" className="text-rule-strong" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <g className="text-ink-faint" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round">
-        <circle cx="326" cy="208" r="5.5" />
-        <path d="M313 228 c0 -9 5.5 -14.5 13 -14.5 s13 5.5 13 14.5" />
-      </g>
-
-      {/* hub node: center, brand */}
-      <circle cx="222" cy="134" r="46" className="text-brand-soft" fill="currentColor" />
-      <circle cx="222" cy="134" r="46" className="text-brand" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <g className="text-brand-strong" stroke="currentColor" strokeWidth="2.5" fill="none" strokeLinecap="round">
-        <circle cx="222" cy="121" r="11" />
-        <path d="M198 158 c0 -17.5 10.5 -28.5 24 -28.5 s24 11 24 28.5" />
-      </g>
-    </svg>
-  );
-}
-
 const OFFERINGS = [
   {
     icon: ShieldCheck,
@@ -145,27 +80,19 @@ export default function AboutPage() {
       <section className="border-b border-rule py-16 sm:py-20">
         <Container>
           <SectionHeader eyebrow="Who we are" title="A team built around digital acquisitions" className="mb-8" />
-          <div className="grid gap-10 md:grid-cols-2 md:items-center">
-            <div className="text-justify leading-relaxed text-ink-soft">
-              <p>
-                Durqo is built by a team of experienced professionals specializing in digital acquisitions, online
-                business valuation, and marketplace transactions. Our backgrounds span escrow and payments,
-                financial verification, and building software that removes friction from a deal rather than adding
-                to it.
-              </p>
-              <p className="mt-3.5">
-                We built Durqo to simplify buying and selling digital assets: a platform where a seller can list a
-                business without friction, a buyer can evaluate it with real data, and both sides can complete a
-                transaction knowing the process is simple, secure, and efficient from the first message to the
-                final transfer.
-              </p>
-            </div>
-            <div className="rounded-xl border border-rule-strong bg-paper-raised p-8">
-              <TeamIllustration />
-              <p className="mono mt-5 text-center text-xs text-ink-faint">
-                A DISTRIBUTED TEAM ACROSS ESCROW, PAYMENTS &amp; PRODUCT
-              </p>
-            </div>
+          <div className="max-w-[70ch] text-justify leading-relaxed text-ink-soft">
+            <p>
+              Durqo is built by a team of experienced professionals specializing in digital acquisitions, online
+              business valuation, and marketplace transactions. Our backgrounds span escrow and payments,
+              financial verification, and building software that removes friction from a deal rather than adding
+              to it.
+            </p>
+            <p className="mt-3.5">
+              We built Durqo to simplify buying and selling digital assets: a platform where a seller can list a
+              business without friction, a buyer can evaluate it with real data, and both sides can complete a
+              transaction knowing the process is simple, secure, and efficient from the first message to the
+              final transfer.
+            </p>
           </div>
         </Container>
       </section>
