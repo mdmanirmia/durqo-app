@@ -56,7 +56,7 @@ export async function submitVerification(method: Method, documentPaths: string[]
 
   const hdrs = await headers();
   const host = hdrs.get("host");
-  const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.steeltechproductsltd.com";
+  const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
 
   const admin = createAdminClient();
   let adminEmails: string[] = [];
