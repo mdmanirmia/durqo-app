@@ -162,9 +162,14 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             {/* Live, OAuth-connected Google Analytics (Flippa-style — see
                 src/components/GoogleAnalyticsLivePanel.tsx) takes priority
                 over the manual/self-declared section below when a seller
-                has connected it. The manual section still renders
-                underneath regardless, since it also carries GSC/SEMrush/
-                Ahrefs data this panel doesn't cover. */}
+                has connected it. The manual section's own primary metrics,
+                trend charts, and channel breakdown are hidden in that case
+                (see the !listing.gaLiveStats checks below) so the page
+                never shows two different numbers for the same thing; its
+                Top Countries, Device Category, and verification
+                screenshots still render regardless, since this panel
+                doesn't cover those, and neither does GSC/SEMrush/Ahrefs
+                below. */}
             {category?.hasSeoData && listing.gaLiveStats && (
               <section>
                 <GoogleAnalyticsLivePanel listingId={listing.id} initialStats={listing.gaLiveStats} />
@@ -183,28 +188,44 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                       </span>
                     )}
                   </div>
-                  <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
-                    <StatTile label="New Users" value={listing.seo.gaNewUsers} />
-                    <StatTile label="Total Page Views" value={listing.seo.gaTotalPageViews} />
-                    <StatTile
-                      label="Avg. Engagement Time"
-                      value={listing.seo.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
-                    />
-                    <StatTile label="Engagement Rate" value={listing.seo.gaEngagementRate ? `${listing.seo.gaEngagementRate}%` : undefined} />
-                  </div>
-                  <div className="mb-6 grid gap-4 sm:grid-cols-2">
-                    <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                      <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Users trend</p>
-                      <TrendChart data={usersSeries} dataKey="users" color="#14213D" format="number" />
-                    </div>
-                    <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                      <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Page views trend</p>
-                      <TrendChart data={viewsSeries} dataKey="views" color="#10B981" format="number" />
-                    </div>
-                  </div>
+
+                  {/* Primary metrics, trend charts, and the channel
+                      breakdown are already covered by the live OAuth panel
+                      above once a seller has connected it (Page Views,
+                      Unique Visitors, Sessions, Bounce Rate, Avg. Session,
+                      Traffic Acquisition) — showing this self-declared set
+                      too would put two different numbers for the same
+                      thing on the page, which reads as inconsistent to
+                      buyers. Skipped in that case; Top Countries and
+                      Device Category aren't covered by the live panel, so
+                      those still render either way, alongside the
+                      verification screenshots. */}
+                  {!listing.gaLiveStats && (
+                    <>
+                      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                        <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
+                        <StatTile label="New Users" value={listing.seo.gaNewUsers} />
+                        <StatTile label="Total Page Views" value={listing.seo.gaTotalPageViews} />
+                        <StatTile
+                          label="Avg. Engagement Time"
+                          value={listing.seo.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
+                        />
+                        <StatTile label="Engagement Rate" value={listing.seo.gaEngagementRate ? `${listing.seo.gaEngagementRate}%` : undefined} />
+                      </div>
+                      <div className="mb-6 grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                          <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Users trend</p>
+                          <TrendChart data={usersSeries} dataKey="users" color="#14213D" format="number" />
+                        </div>
+                        <div className="rounded-lg border border-rule bg-paper-raised p-4">
+                          <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Page views trend</p>
+                          <TrendChart data={viewsSeries} dataKey="views" color="#10B981" format="number" />
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="grid gap-6 sm:grid-cols-3">
-                    <BarList title="Top Channels" items={listing.seo.gaTopChannels ?? []} />
+                    {!listing.gaLiveStats && <BarList title="Top Channels" items={listing.seo.gaTopChannels ?? []} />}
                     <BarList title="Top Countries" items={listing.seo.gaTopCountries ?? []} />
                     <BarList title="Device Category" items={listing.seo.gaTopDevices ?? []} />
                   </div>
