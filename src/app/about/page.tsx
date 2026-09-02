@@ -79,20 +79,22 @@ export default function AboutPage() {
 
       <section className="border-b border-rule py-16 sm:py-20">
         <Container>
-          <SectionHeader eyebrow="Who we are" title="A team built around digital acquisitions" className="mb-8" />
-          <div className="max-w-[70ch] text-justify leading-relaxed text-ink-soft">
-            <p>
-              Durqo is built by a team of experienced professionals specializing in digital acquisitions, online
-              business valuation, and marketplace transactions. Our backgrounds span escrow and payments,
-              financial verification, and building software that removes friction from a deal rather than adding
-              to it.
-            </p>
-            <p className="mt-3.5">
-              We built Durqo to simplify buying and selling digital assets: a platform where a seller can list a
-              business without friction, a buyer can evaluate it with real data, and both sides can complete a
-              transaction knowing the process is simple, secure, and efficient from the first message to the
-              final transfer.
-            </p>
+          <div className="grid gap-8 md:grid-cols-[300px_1fr] md:gap-14">
+            <SectionHeader eyebrow="Who we are" title="A team built around digital acquisitions" />
+            <div className="grid gap-6 text-justify leading-relaxed text-ink-soft lg:grid-cols-2 lg:gap-10">
+              <p>
+                Durqo is built by a team of experienced professionals specializing in digital acquisitions, online
+                business valuation, and marketplace transactions. Our backgrounds span escrow and payments,
+                financial verification, and building software that removes friction from a deal rather than
+                adding to it.
+              </p>
+              <p>
+                We built Durqo to simplify buying and selling digital assets: a platform where a seller can list a
+                business without friction, a buyer can evaluate it with real data, and both sides can complete a
+                transaction knowing the process is simple, secure, and efficient from the first message to the
+                final transfer.
+              </p>
+            </div>
           </div>
         </Container>
       </section>
