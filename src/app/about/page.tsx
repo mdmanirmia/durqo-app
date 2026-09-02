@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, Lock, TrendingUp, Headphones, ArrowRight } from "lucide-react";
+import { ShieldCheck, Lock, TrendingUp, Headphones, ArrowRight, FilePlus2, MessagesSquare, CreditCard, ArrowRightLeft } from "lucide-react";
 import Container from "@/components/ui/Container";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { CATEGORIES } from "@/lib/categories";
@@ -7,25 +7,91 @@ import { CATEGORIES } from "@/lib/categories";
 const PROCESS = [
   {
     num: "01",
+    icon: FilePlus2,
     title: "List Your Business",
     body: "Create a listing in minutes at no cost. Publishing is always free, and our team reviews the details before it goes live to buyers.",
   },
   {
     num: "02",
+    icon: MessagesSquare,
     title: "Connect with Buyers",
     body: "Interested buyers reach out directly through the platform to ask questions and express interest, so you always know who you're talking to.",
   },
   {
     num: "03",
+    icon: CreditCard,
     title: "Secure Payment Handling",
     body: "For transactions over $2,000, payment runs through a structured process: an initial payment via the website, followed by the remainder through wire transfer, credit card, or debit card, with funds protected by escrow throughout.",
   },
   {
     num: "04",
+    icon: ArrowRightLeft,
     title: "Smooth Transfer Process",
     body: "Once payment clears, the seller transfers all assets, accounts, and access included in the sale within the agreed timeframe, and the deal is complete.",
   },
 ] as const;
+
+// Abstract, on-brand line illustration of a marketplace exchange — a
+// listing card handed off to a verified/escrow badge — used in place of a
+// stock or fabricated "team" photo, since no real product/team photography
+// exists yet. Pure decoration: colors resolve via currentColor from the
+// Tailwind text-* classes on each wrapping <g>, so it follows the same
+// design tokens (and dark mode) as the rest of the page.
+function ExchangeIllustration() {
+  return (
+    <svg viewBox="0 0 440 240" fill="none" className="h-auto w-full" aria-hidden="true">
+      {/* scattered dots for texture */}
+      <g className="text-rule-strong" fill="currentColor">
+        <circle cx="24" cy="24" r="2.5" />
+        <circle cx="410" cy="200" r="2.5" />
+        <circle cx="60" cy="200" r="2" />
+        <circle cx="250" cy="30" r="2" />
+      </g>
+
+      {/* dashed connecting path from listing card to escrow badge */}
+      <path
+        d="M172 118 C 230 118, 250 90, 300 90"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="5 7"
+        strokeLinecap="round"
+        className="text-rule-strong"
+      />
+      <circle cx="236" cy="106" r="4" className="text-brand" fill="currentColor" />
+
+      {/* listing card */}
+      <g className="text-rule-strong">
+        <rect x="24" y="58" width="148" height="120" rx="14" fill="var(--paper-raised)" stroke="currentColor" strokeWidth="1.5" />
+      </g>
+      <rect x="42" y="78" width="52" height="10" rx="5" className="text-brand" fill="currentColor" opacity="0.55" />
+      <rect x="42" y="100" width="112" height="8" rx="4" className="text-rule-strong" fill="currentColor" />
+      <rect x="42" y="114" width="80" height="8" rx="4" className="text-rule-strong" fill="currentColor" opacity="0.6" />
+      <rect x="42" y="140" width="60" height="20" rx="10" className="text-brand-soft" fill="currentColor" />
+      <text x="72" y="154" textAnchor="middle" className="mono fill-brand-hover" fontSize="11" fontWeight="700">
+        $
+      </text>
+
+      {/* escrow / verified badge */}
+      <circle cx="356" cy="90" r="40" className="text-brand-soft" fill="currentColor" />
+      <circle cx="356" cy="90" r="40" className="text-brand" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M340 90 L 351 101 L 373 78"
+        className="text-brand-strong"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+
+      {/* buyer glyph, bottom right */}
+      <g className="text-ink-faint" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round">
+        <circle cx="356" cy="176" r="12" />
+        <path d="M332 216 c0 -15 11 -24 24 -24 s24 9 24 24" />
+      </g>
+    </svg>
+  );
+}
 
 const OFFERINGS = [
   {
@@ -66,7 +132,8 @@ export default function AboutPage() {
               </p>
             </div>
             <div className="rounded-xl border border-rule-strong bg-paper-raised p-8">
-              <p className="mono mb-2 text-xs text-ink-faint">OUR MISSION</p>
+              <ExchangeIllustration />
+              <p className="mono mb-2 mt-4 text-xs text-ink-faint">OUR MISSION</p>
               <h3 className="mb-1 text-2xl">Simple, secure, efficient</h3>
               <p className="text-justify text-ink-soft">
                 Make buying and selling an online business as straightforward and safe as any other major
@@ -120,11 +187,16 @@ export default function AboutPage() {
         <Container>
           <SectionHeader eyebrow="Our process" title="How a sale moves from listing to close" className="mb-10" />
           <div className="grid gap-6 sm:grid-cols-2">
-            {PROCESS.map((step) => (
-              <div key={step.num} className="border-t border-rule pt-6">
-                <span className="mono mb-2 block text-xs font-semibold text-brand-strong">{step.num}</span>
-                <h4 className="mb-1.5 text-base">{step.title}</h4>
-                <p className="text-justify text-sm leading-relaxed text-ink-soft">{step.body}</p>
+            {PROCESS.map(({ num, icon: Icon, title, body }) => (
+              <div key={num} className="border-t border-rule pt-6">
+                <div className="mb-3 flex items-center gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-rule-strong bg-brand-soft text-brand">
+                    <Icon size={17} />
+                  </div>
+                  <span className="mono text-xs font-semibold text-brand-strong">{num}</span>
+                </div>
+                <h4 className="mb-1.5 text-base">{title}</h4>
+                <p className="text-justify text-sm leading-relaxed text-ink-soft">{body}</p>
               </div>
             ))}
           </div>
@@ -151,9 +223,14 @@ export default function AboutPage() {
       <section className="py-16 sm:py-20">
         <Container>
           <div className="flex flex-col items-start gap-6 rounded-xl border border-rule-strong bg-paper-sunk p-8 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="mb-1 text-xl">Ready to get started?</h3>
-              <p className="text-ink-soft">List a business for free, or browse what&rsquo;s already for sale.</p>
+            <div className="flex items-center gap-4">
+              <div className="hidden h-12 w-12 shrink-0 place-items-center rounded-full border border-rule-strong bg-brand-soft text-brand sm:grid">
+                <ArrowRightLeft size={20} />
+              </div>
+              <div>
+                <h3 className="mb-1 text-xl">Ready to get started?</h3>
+                <p className="text-ink-soft">List a business for free, or browse what&rsquo;s already for sale.</p>
+              </div>
             </div>
             <div className="flex shrink-0 gap-3">
               <Link
