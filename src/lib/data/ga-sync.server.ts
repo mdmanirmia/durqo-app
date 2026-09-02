@@ -24,7 +24,10 @@ export async function syncListingGaStats(listingId: string): Promise<void> {
 
   try {
     const fresh = await refreshAccessToken(connection.refresh_token);
-    const report = await runGa4Report(connection.ga_property_id, fresh.access_token, 90);
+    const report = await runGa4Report(connection.ga_property_id, fresh.access_token, {
+      startDate: "90daysAgo",
+      endDate: "today",
+    });
 
     await admin
       .from("listing_ga_connections")
