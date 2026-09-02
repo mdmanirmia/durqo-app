@@ -161,10 +161,6 @@ export default function AddNewBusinessPage() {
   const [gaNewUsers, setGaNewUsers] = useState("");
   const [gaPageViews, setGaPageViews] = useState("");
   const [gaEngagementTime, setGaEngagementTime] = useState("");
-  const [gaEngagementRate, setGaEngagementRate] = useState("");
-  const [topChannels, setTopChannels] = useState([{ name: "", value: "" }]);
-  const [topCountries, setTopCountries] = useState([{ name: "", value: "" }]);
-  const [topDevices, setTopDevices] = useState([{ name: "", value: "" }]);
 
   const [gscClicks, setGscClicks] = useState("");
   const [gscImpressions, setGscImpressions] = useState("");
@@ -287,12 +283,6 @@ export default function AddNewBusinessPage() {
         if (gaTotalUsers) seo.ga_total_users = Number(gaTotalUsers);
         if (gaNewUsers) seo.ga_new_users = Number(gaNewUsers);
         if (gaPageViews) seo.ga_total_page_views = Number(gaPageViews);
-        if (gaEngagementRate) seo.ga_engagement_rate = Number(gaEngagementRate);
-        const namedRows = (rows: { name: string; value: string }[]) =>
-          rows.filter((r) => r.name && r.value).map((r) => ({ name: r.name, users: Number(r.value) }));
-        if (topChannels.some((r) => r.name)) seo.ga_top_channels = namedRows(topChannels);
-        if (topCountries.some((r) => r.name)) seo.ga_top_countries = namedRows(topCountries);
-        if (topDevices.some((r) => r.name)) seo.ga_top_devices = namedRows(topDevices);
         if (gscClicks) seo.gsc_total_clicks = Number(gscClicks);
         if (gscImpressions) seo.gsc_total_impressions = Number(gscImpressions);
         if (gscIndexed) seo.gsc_indexed_pages = Number(gscIndexed);
@@ -580,21 +570,6 @@ export default function AddNewBusinessPage() {
                 <Field label="New Users"><input value={gaNewUsers} onChange={(e) => setGaNewUsers(e.target.value)} className={inputCls} /></Field>
                 <Field label="Total Page Views"><input value={gaPageViews} onChange={(e) => setGaPageViews(e.target.value)} className={inputCls} /></Field>
                 <Field label="Avg. Engagement Time"><input placeholder="1m 26s" value={gaEngagementTime} onChange={(e) => setGaEngagementTime(e.target.value)} className={inputCls} /></Field>
-                <Field label="Engagement Rate (%)"><input value={gaEngagementRate} onChange={(e) => setGaEngagementRate(e.target.value)} className={inputCls} /></Field>
-              </div>
-              <div className="grid gap-5 sm:grid-cols-3">
-                <div>
-                  <h5 className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Top Channels</h5>
-                  <NamedValueRows rows={topChannels} setRows={setTopChannels} nameLabel="Channel" valueLabel="Users" />
-                </div>
-                <div>
-                  <h5 className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Top Countries</h5>
-                  <NamedValueRows rows={topCountries} setRows={setTopCountries} nameLabel="Country" valueLabel="Users" />
-                </div>
-                <div>
-                  <h5 className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Device Category</h5>
-                  <NamedValueRows rows={topDevices} setRows={setTopDevices} nameLabel="Device" valueLabel="Users" />
-                </div>
               </div>
               <ImageGallery
                 label="Google Analytics Images"
