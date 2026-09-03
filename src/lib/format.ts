@@ -10,6 +10,23 @@ export function fmtNumber(n: number | undefined | null): string {
   return String(n);
 }
 
+// Shortens a business URL for display (strips the protocol and a leading
+// "www.", then truncates with an ellipsis past maxLen) without touching the
+// underlying value used for the actual href — long URLs (a Facebook page,
+// a deep e-commerce link, etc.) shouldn't blow out the listing header.
+export function fmtDisplayUrl(url: string, maxLen = 42): string {
+  const display = url.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
+  if (display.length <= maxLen) return display;
+  return display.slice(0, maxLen - 1) + "…";
+}
+
+// Normalizes a stored business URL into a safe, absolute href — most rows
+// already include the protocol, but this covers any that were saved as a
+// bare domain.
+export function toHref(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
 export function monthLabel(ym: string): string {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
