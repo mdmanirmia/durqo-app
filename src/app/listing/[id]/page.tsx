@@ -340,9 +340,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
           <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24">
             <div className="rounded-xl border border-rule bg-paper-raised p-5">
               {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
-                <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
+                <div className="mono text-center text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
               )}
-              <div className="mono mb-4 text-2xl font-bold text-ink">{fmtUSD(price)}</div>
+              <div className="mono mb-4 text-center text-2xl font-bold text-ink">{fmtUSD(price)}</div>
               <div className="flex flex-col gap-2">
                 <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
                 <CartButton listingId={listing.id} sold={listing.status === "sold"} />
