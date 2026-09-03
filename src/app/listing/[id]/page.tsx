@@ -61,6 +61,12 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // they belong to — empty when this listing predates real Storage uploads
   // (ProofGalleryButton falls back to a placeholder in that case).
   const imagesByKind = (kind: string) => (listing.images ?? []).filter((img) => img.kind === kind).map((img) => img.url);
+  // Cover photo: auto-detected from the seller's Business URL at listing
+  // creation time (see the "new listing" form's handleBusinessUrlBlur) when
+  // their site has an Open Graph / social-preview image. Absent for
+  // listings created before this existed, or when the site had no such
+  // image — the sidebar falls back to a plain placeholder box either way.
+  const coverImageUrl = imagesByKind("cover")[0];
   const incomeImageUrls = imagesByKind("proof_of_income");
   const gaImageUrls = imagesByKind("google_analytics");
   const gscImageUrls = imagesByKind("search_console");
@@ -338,7 +344,16 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
           {/* SIDEBAR — acquisition panel, sticky */}
           <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24">
-            <div className="aspect-video rounded-xl border border-rule bg-paper-sunk" />
+            {coverImageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- external, seller-supplied domain; next/image would need every possible domain allowlisted
+              <img
+                src={coverImageUrl}
+                alt={listing.title}
+                className="aspect-video w-full rounded-xl border border-rule bg-paper-sunk object-cover"
+              />
+            ) : (
+              <div className="aspect-video rounded-xl border border-rule bg-paper-sunk" />
+            )}
 
             <div className="rounded-xl border border-rule bg-paper-raised p-5">
               {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
