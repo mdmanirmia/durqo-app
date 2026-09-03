@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, ChevronRight, Lock } from "lucide-react";
+import { ShieldCheck, ChevronRight, Lock, ExternalLink } from "lucide-react";
 import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { NICHE_MAP } from "@/lib/niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
-import { fmtUSD, fmtNumber } from "@/lib/format";
+import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref } from "@/lib/format";
 import TrendChart from "@/components/charts/TrendChart";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
@@ -93,7 +93,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
           <div className="flex flex-col gap-12">
             <div>
               <h1 className="mb-2 text-3xl sm:text-4xl">{listing.title}</h1>
-              {listing.businessUrl && <p className="mono text-sm text-brand-strong">{listing.businessUrl}</p>}
+              {listing.businessUrl && (
+                <a
+                  href={toHref(listing.businessUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow"
+                  className="mono inline-flex items-center gap-1 text-sm text-brand-strong hover:underline"
+                >
+                  {fmtDisplayUrl(listing.businessUrl)}
+                  <ExternalLink size={13} className="shrink-0" />
+                </a>
+              )}
             </div>
 
             {/* Quick Stats */}
