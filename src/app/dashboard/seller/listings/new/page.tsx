@@ -142,13 +142,6 @@ export default function AddNewBusinessPage() {
 
   const [title, setTitle] = useState("");
   const [businessUrl, setBusinessUrl] = useState("");
-  // Auto-detected cover photo (the site's Open Graph / social-preview
-  // image), fetched once the seller finishes typing their Business URL —
-  // see handleBusinessUrlBlur below. Entirely best-effort: if nothing is
-  // found (or the seller dismisses it), the listing simply has no cover
-  // photo, same as before this feature existed.
-  const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null);
-  const [coverStatus, setCoverStatus] = useState<"idle" | "loading" | "found" | "none">("idle");
   const [location, setLocation] = useState("");
   const [price, setPrice] = useState("");
   const [discountedPrice, setDiscountedPrice] = useState("");
@@ -198,29 +191,6 @@ export default function AddNewBusinessPage() {
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats({});
-  }
-
-  async function handleBusinessUrlBlur() {
-    if (!businessUrl.trim()) {
-      setCoverStatus("idle");
-      setCoverImageUrl(null);
-      return;
-    }
-    setCoverStatus("loading");
-    try {
-      const res = await fetch(`/api/og-image?url=${encodeURIComponent(businessUrl.trim())}`);
-      const data = await res.json();
-      if (data.imageUrl) {
-        setCoverImageUrl(data.imageUrl);
-        setCoverStatus("found");
-      } else {
-        setCoverImageUrl(null);
-        setCoverStatus("none");
-      }
-    } catch {
-      setCoverImageUrl(null);
-      setCoverStatus("none");
-    }
   }
 
   async function uploadGallery(supabase: NonNullable<ReturnType<typeof createClient>>, sellerId: string, listingId: string, files: File[], kind: string) {
@@ -345,15 +315,6 @@ export default function AddNewBusinessPage() {
         }
       }
 
-      if (coverImageUrl) {
-        // Auto-detected from the seller's Business URL (see
-        // handleBusinessUrlBlur) — stored as a direct link to the site's own
-        // preview image rather than re-hosted, same as any other external
-        // image reference.
-        const { error: coverErr } = await supabase.from("listing_images").insert({ listing_id: listingId, url: coverImageUrl, kind: "cover" });
-        if (coverErr) throw new Error(`Saving cover image failed: ${coverErr.message}`);
-      }
-
       await uploadGallery(supabase, sellerId, listingId, incomeImages, "proof_of_income");
       await uploadGallery(supabase, sellerId, listingId, gaImages, "google_analytics");
       await uploadGallery(supabase, sellerId, listingId, gscImages, "search_console");
@@ -435,33 +396,7 @@ export default function AddNewBusinessPage() {
             still feeds the "Business Location" Quick Stat). */}
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Business URL" className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
-            <input
-              type="url"
-              value={businessUrl}
-              onChange={(e) => setBusinessUrl(e.target.value)}
-              onBlur={handleBusinessUrlBlur}
-              placeholder="https://"
-              className={inputCls}
-            />
-            {coverStatus === "loading" && (
-              <p className="mt-2 text-xs text-ink-faint">Looking for a cover photo from your site&hellip;</p>
-            )}
-            {coverStatus === "found" && coverImageUrl && (
-              <div className="mt-2 flex items-center gap-3 rounded-lg border border-rule bg-paper-raised p-2">
-                {/* eslint-disable-next-line @next/next/no-img-element -- external, seller-supplied domain; next/image would need every possible domain allowlisted */}
-                <img src={coverImageUrl} alt="" className="h-14 w-24 rounded-md object-cover" />
-                <div className="flex-1 text-xs text-ink-soft">
-                  Found a cover photo from your site. It&rsquo;ll be used as the listing&rsquo;s cover photo.
-                </div>
-                <button
-                  type="button"
-                  onClick={() => { setCoverImageUrl(null); setCoverStatus("none"); }}
-                  className="shrink-0 text-xs font-semibold text-ink-faint hover:text-danger"
-                >
-                  Remove
-                </button>
-              </div>
-            )}
+            <input type="url" value={businessUrl} onChange={(e) => setBusinessUrl(e.target.value)} placeholder="https://" className={inputCls} />
           </Field>
           {categoryId !== "websites" && (
             <Field label="Business location">
