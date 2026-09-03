@@ -338,8 +338,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
           {/* SIDEBAR — acquisition panel, sticky */}
           <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24">
-            <div className="aspect-video rounded-xl border border-rule bg-paper-sunk" />
-
             <div className="rounded-xl border border-rule bg-paper-raised p-5">
               {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                 <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
