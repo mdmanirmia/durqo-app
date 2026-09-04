@@ -175,7 +175,10 @@ export default function SellerOverview() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
+                      <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                    </div>
                   </td>
                 </tr>
               );
