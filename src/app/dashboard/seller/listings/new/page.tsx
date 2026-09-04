@@ -10,6 +10,7 @@ import { MONETIZATION_TYPES } from "@/lib/monetization-types";
 import { NICHES } from "@/lib/niches";
 import { createClient } from "@/lib/supabase/client";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
+import { parseDurationToSeconds } from "@/lib/format";
 
 const MONTHS = ["Sep 2025","Oct 2025","Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026"];
 const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01-01","2026-02-01","2026-03-01","2026-04-01","2026-05-01","2026-06-01","2026-07-01","2026-08-01"];
@@ -283,6 +284,10 @@ export default function AddNewBusinessPage() {
         if (gaTotalUsers) seo.ga_total_users = Number(gaTotalUsers);
         if (gaNewUsers) seo.ga_new_users = Number(gaNewUsers);
         if (gaPageViews) seo.ga_total_page_views = Number(gaPageViews);
+        if (gaEngagementTime) {
+          const secs = parseDurationToSeconds(gaEngagementTime);
+          if (secs !== null) seo.ga_avg_engagement_seconds = secs;
+        }
         if (gscClicks) seo.gsc_total_clicks = Number(gscClicks);
         if (gscImpressions) seo.gsc_total_impressions = Number(gscImpressions);
         if (gscIndexed) seo.gsc_indexed_pages = Number(gscIndexed);
