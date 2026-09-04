@@ -95,6 +95,36 @@ export function youtubeThumbnailUrl(videoUrl: string | null | undefined): string
   return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
 }
 
+// Parses a YouTube channel URL into the identifier shape the Data API's
+// channels.list endpoint needs — either a direct channel id (/channel/UC...,
+// used with the `id=` param) or a handle (/@name, /c/name, /user/name — all
+// treated as a handle and passed via `forHandle=`, which YouTube resolves
+// for legacy custom-URL and username links too in the vast majority of
+// cases). Returns null for anything that isn't a recognizable channel URL,
+// so the Channel Overview auto-fill can fall back to manual entry instead of
+// surfacing a hard error over a nice-to-have.
+export function extractYoutubeChannelIdentifier(
+  channelUrl: string | null | undefined
+): { type: "id"; value: string } | { type: "handle"; value: string } | null {
+  if (!channelUrl) return null;
+  const trimmed = channelUrl.trim();
+
+  const idMatch = trimmed.match(/youtube\.com\/channel\/(UC[\w-]{22})/);
+  if (idMatch) return { type: "id", value: idMatch[1] };
+
+  const handleMatch = trimmed.match(/youtube\.com\/@([\w.-]+)/);
+  if (handleMatch) return { type: "handle", value: handleMatch[1] };
+
+  const legacyMatch = trimmed.match(/youtube\.com\/(?:c|user)\/([\w.-]+)/);
+  if (legacyMatch) return { type: "handle", value: legacyMatch[1] };
+
+  // A bare "@handle" typed without the full URL.
+  const bareHandle = trimmed.match(/^@([\w.-]+)$/);
+  if (bareHandle) return { type: "handle", value: bareHandle[1] };
+
+  return null;
+}
+
 // Formats a listing.quickStats value the same way regardless of which
 // category it belongs to — money as $, counts abbreviated (12.4K), rates as
 // %, multiples with an ×, ages in years, everything else (ratings, domain

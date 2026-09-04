@@ -95,6 +95,26 @@ export interface TopVideo {
   publishedOn?: string; // "YYYY-MM-DD"
 }
 
+// YouTube Channels category only — powers the public "YouTube Channel
+// Overview" panel on the listing page, auto-filled from the Channel URL via
+// the YouTube Data API v3 (src/lib/youtube.ts's fetchYoutubeChannelOverview()).
+// avgViewsPerVideo is a lifetime average (totalViews / totalVideos); the
+// three "recent" fields are derived from the channel's last (up to) 10
+// uploads at sync time. Fields the API didn't return (e.g. a hidden
+// subscriber count) come through as null/undefined and the stat card is
+// simply omitted from the panel.
+export interface ChannelOverview {
+  channelTitle: string;
+  channelHandle?: string;
+  channelAvatarUrl?: string;
+  channelCreatedOn?: string; // "YYYY-MM-DD"
+  avgViewsPerVideo?: number;
+  recentAvgViews?: number;
+  recentAvgLikes?: number;
+  engagementRatePercent?: number;
+  lastSyncedAt: string;
+}
+
 export interface SellerInfo {
   id: string;
   name: string;
@@ -157,6 +177,7 @@ export interface Listing {
   // changes; absent/empty just means neither section renders.
   copyrightNotes?: CopyrightNotes;
   topVideos?: TopVideo[];
+  channelOverview?: ChannelOverview;
 }
 
 export interface GaLiveStats {
