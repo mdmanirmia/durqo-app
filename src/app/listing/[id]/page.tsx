@@ -75,6 +75,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const copyrightNoteLines = (listing.copyrightNotes?.notes ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
   const topVideos = (listing.topVideos ?? []).filter((v) => v.title);
 
+  // YouTube Channel Overview panel (Sep 4 2026) — auto-populated from the
+  // Channel URL (see fetchYoutubeChannelOverview() in src/lib/youtube.ts).
+  // Renders whenever a sync has completed at least once; the plain manual
+  // Channel Statistics tiles in Quick Statistics above still show even
+  // without this, same fallback reasoning as the Google Analytics section.
+  const channelOverview = listing.channelOverview;
+  const channelSinceYear = channelOverview?.channelCreatedOn ? new Date(`${channelOverview.channelCreatedOn}T00:00:00`).getFullYear() : undefined;
+  const channelLastUpdated = channelOverview?.lastSyncedAt
+    ? new Date(`${channelOverview.lastSyncedAt}T00:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : undefined;
+
   // A section should render whenever there's anything to show for it — the
   // seller may have typed in manual numbers, uploaded proof screenshots, or
   // both. Gating solely on `listing.seo` being present hid sections (and
@@ -163,6 +174,39 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 </a>
               )}
             </div>
+
+            {/* YouTube Channel Overview — YouTube Channels only, auto-filled
+                from the Channel URL (Sep 4 2026). Styled to Durqo's own
+                navy/emerald tokens, not the dark reference theme it was
+                speced from. */}
+            {listing.categoryId === "youtube-channels" && channelOverview && (
+              <section className="rounded-xl border border-rule bg-paper-raised p-5 sm:p-6">
+                <h2 className="mb-4 text-xl">YouTube Channel Overview</h2>
+                <div className="mb-5 flex flex-wrap items-center gap-3">
+                  {channelOverview.channelAvatarUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={channelOverview.channelAvatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-full border border-rule-strong object-cover" />
+                  )}
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-ink">{channelOverview.channelTitle || listing.title}</span>
+                      {channelSinceYear && <Badge tone="neutral">Since {channelSinceYear}</Badge>}
+                    </div>
+                    {channelOverview.channelHandle && <p className="mono text-sm text-ink-faint">{channelOverview.channelHandle}</p>}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <StatTile label="Subscribers" value={listing.quickStats.subscribers} />
+                  <StatTile label="Total Views" value={listing.quickStats.total_views} />
+                  <StatTile label="Videos" value={listing.quickStats.total_videos} />
+                  <StatTile label="Avg Views/Video" value={channelOverview.avgViewsPerVideo} />
+                  <StatTile label="Recent Avg Views" value={channelOverview.recentAvgViews} />
+                  <StatTile label="Engagement Rate" value={channelOverview.engagementRatePercent !== undefined ? `${channelOverview.engagementRatePercent}%` : undefined} />
+                  <StatTile label="Avg Likes" value={channelOverview.recentAvgLikes} />
+                </div>
+                {channelLastUpdated && <p className="mt-4 text-xs text-ink-faint">This data was updated on {channelLastUpdated}.</p>}
+              </section>
+            )}
 
             {/* Quick Stats */}
             <section>
