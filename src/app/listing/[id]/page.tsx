@@ -62,6 +62,19 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
         ? { location: "Channel Location", monthly_income: "Avg. Monthly Income", subscribers: "Total Subscribers" }
         : {};
 
+  // YouTube Channels Quick Statistics — trimmed to just Channel Location,
+  // Avg. Monthly Income, and Channel Age (Sep 2026 request: only these plus
+  // the always-shown Niche/Asking Price belong in Quick Statistics for this
+  // category). Subscribers/Total Views/Total Videos stay in
+  // category.quickStats (categories.ts) so buildQuickStats() still computes
+  // them into listing.quickStats — the YouTube Channel Overview panel above
+  // reads those same values directly, so they aren't lost, just no longer
+  // duplicated in the Quick Statistics grid below.
+  const quickStatDisplayKeys: QuickStatKey[] =
+    listing.categoryId === "youtube-channels"
+      ? (category?.quickStats.filter((k) => k === "location" || k === "monthly_income" || k === "channel_age") ?? [])
+      : (category?.quickStats ?? []);
+
   // Real uploaded verification screenshots, grouped by which data section
   // they belong to — empty when this listing predates real Storage uploads
   // (ProofGalleryButton falls back to a placeholder in that case).
@@ -212,7 +225,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             <section>
               <h2 className="mb-4 text-xl">Quick Statistics</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {category?.quickStats.map((key: QuickStatKey) => (
+                {quickStatDisplayKeys.map((key: QuickStatKey) => (
                   <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
                 ))}
                 {listing.niches.length > 0 && (
