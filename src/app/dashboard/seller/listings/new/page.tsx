@@ -188,6 +188,52 @@ export default function AddNewBusinessPage() {
   // without a page-wide spinner.
   const [videoLookup, setVideoLookup] = useState<Record<number, "loading" | "done" | "error">>({});
 
+  // YouTube Channel Overview (Sep 4 2026 follow-up): auto-fills the 4
+  // Channel Statistics fields above from the Channel URL, and separately
+  // stashes the extra fields the public overview panel needs (identity +
+  // the 3 "recent" stats) that don't have a manual form field of their own.
+  const [channelOverview, setChannelOverview] = useState<{
+    channelTitle: string;
+    channelHandle: string | null;
+    channelAvatarUrl: string | null;
+    channelCreatedOn: string | null;
+    avgViewsPerVideo: number | null;
+    recentAvgViews: number | null;
+    recentAvgLikes: number | null;
+    engagementRatePercent: number | null;
+  } | null>(null);
+  const [channelLookup, setChannelLookup] = useState<"loading" | "done" | "error" | null>(null);
+
+  async function fetchChannelInfo(url: string) {
+    if (!url.trim() || categoryId !== "youtube-channels") return;
+    setChannelLookup("loading");
+    try {
+      const res = await fetch(`/api/youtube/channel-info?url=${encodeURIComponent(url)}`);
+      if (!res.ok) throw new Error("lookup failed");
+      const info = await res.json();
+      setQuickStats((prev) => ({
+        ...prev,
+        ...(info.subscribers !== null && info.subscribers !== undefined ? { subscribers: String(info.subscribers) } : {}),
+        ...(info.totalViews !== null && info.totalViews !== undefined ? { total_views: String(info.totalViews) } : {}),
+        ...(info.totalVideos !== null && info.totalVideos !== undefined ? { total_videos: String(info.totalVideos) } : {}),
+        ...(info.channelAgeYears !== null && info.channelAgeYears !== undefined ? { channel_age: String(info.channelAgeYears) } : {}),
+      }));
+      setChannelOverview({
+        channelTitle: info.channelTitle || "",
+        channelHandle: info.channelHandle ?? null,
+        channelAvatarUrl: info.channelAvatarUrl ?? null,
+        channelCreatedOn: info.channelCreatedOn || null,
+        avgViewsPerVideo: info.avgViewsPerVideo ?? null,
+        recentAvgViews: info.recentAvgViews ?? null,
+        recentAvgLikes: info.recentAvgLikes ?? null,
+        engagementRatePercent: info.engagementRatePercent ?? null,
+      });
+      setChannelLookup("done");
+    } catch {
+      setChannelLookup("error");
+    }
+  }
+
   async function fetchVideoInfo(i: number, url: string) {
     if (!url.trim()) return;
     setVideoLookup((prev) => ({ ...prev, [i]: "loading" }));
@@ -236,6 +282,8 @@ export default function AddNewBusinessPage() {
     setCopyrightNotes("");
     setCopyrightImages([]);
     setTopVideos(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
+    setChannelOverview(null);
+    setChannelLookup(null);
   }
 
   async function uploadGallery(supabase: NonNullable<ReturnType<typeof createClient>>, sellerId: string, listingId: string, files: File[], kind: string) {
@@ -388,6 +436,20 @@ export default function AddNewBusinessPage() {
           const { error } = await supabase.from("listing_top_videos").insert(videoRows);
           if (error) throw new Error(`Saving Top Performing Videos failed: ${error.message}`);
         }
+        if (channelOverview) {
+          const { error } = await supabase.from("listing_youtube_channel_overview").insert({
+            listing_id: listingId,
+            channel_title: channelOverview.channelTitle,
+            channel_handle: channelOverview.channelHandle,
+            channel_avatar_url: channelOverview.channelAvatarUrl,
+            channel_created_on: channelOverview.channelCreatedOn,
+            avg_views_per_video: channelOverview.avgViewsPerVideo,
+            recent_avg_views: channelOverview.recentAvgViews,
+            recent_avg_likes: channelOverview.recentAvgLikes,
+            engagement_rate_percent: channelOverview.engagementRatePercent,
+          });
+          if (error) throw new Error(`Saving Channel Overview failed: ${error.message}`);
+        }
       }
 
       await uploadGallery(supabase, sellerId, listingId, incomeImages, "proof_of_income");
@@ -477,7 +539,17 @@ export default function AddNewBusinessPage() {
             fields/columns, just different copy for that category. */}
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label={categoryId === "youtube-channels" ? "Channel URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
-            <input type="url" value={businessUrl} onChange={(e) => setBusinessUrl(e.target.value)} placeholder="https://" className={inputCls} />
+            <input
+              type="url"
+              value={businessUrl}
+              onChange={(e) => setBusinessUrl(e.target.value)}
+              onBlur={(e) => categoryId === "youtube-channels" && fetchChannelInfo(e.target.value)}
+              placeholder="https://"
+              className={inputCls}
+            />
+            {categoryId === "youtube-channels" && channelLookup === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching channel details from YouTube…</p>}
+            {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel Statistics auto-filled below — edit any field if needed.</p>}
+            {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details automatically — enter Channel Statistics manually below.</p>}
           </Field>
           {categoryId !== "websites" && (
             <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
