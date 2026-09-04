@@ -612,7 +612,7 @@ export default function ListingEditForm({
           </div>
         </Section>
       ) : categoryId === "youtube-channels" ? (
-        <Section title="Channel Statistics" hint="Shown in this listing's Quick Statistics.">
+        <Section title="Channel Statistics" hint="Channel Age is shown in Quick Statistics; the others appear in the YouTube Channel Overview panel.">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Total Subscribers">
               <input type="number" min="0" value={quickStats.subscribers ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, subscribers: e.target.value }))} className={inputCls} />
