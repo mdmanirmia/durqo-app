@@ -69,6 +69,11 @@ export type ListingFullEditFields = {
   // seller had filled in before and just erased).
   seo?: Record<string, number | null>;
   socialStats: { platform: string; followers: number }[];
+  // YouTube Channels category only (Design & Development New.pdf, Sep 4
+  // 2026). Undefined = category has neither section, skip both tables
+  // entirely — same "undefined vs. present" convention as `seo` above.
+  copyrightNotes?: string;
+  topVideos?: { title: string; videoUrl: string; views: number | null; likes: number | null; duration: string; publishedOn: string | null }[];
 };
 
 // Core listing row + every related "profile" table (quick stats live as
@@ -129,6 +134,44 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
   if (socialRows.length) {
     const { error } = await admin.from("listing_social_stats").insert(socialRows);
     if (error) throw new Error(`Saving social stats failed: ${error.message}`);
+  }
+
+  // Copyright Notes: upsert, same 1:1 pattern as listing_seo_data.
+  // `updated_on` is stamped with today's date on every save, matching
+  // the "This data was updated on <date>" line on the public listing —
+  // sellers never type this date themselves.
+  if (fields.copyrightNotes !== undefined) {
+    const { error } = await admin
+      .from("listing_copyright_notes")
+      .upsert(
+        { listing_id: listingId, notes: fields.copyrightNotes, updated_on: new Date().toISOString().slice(0, 10) },
+        { onConflict: "listing_id" }
+      );
+    if (error) throw new Error(`Saving Copyright Notes failed: ${error.message}`);
+  }
+
+  // Top Performing Videos: full replace, same delete-then-insert reasoning
+  // as monthly income / social stats above (the form always sends every
+  // row it has, blanks included).
+  if (fields.topVideos !== undefined) {
+    const { error: deleteVideosError } = await admin.from("listing_top_videos").delete().eq("listing_id", listingId);
+    if (deleteVideosError) throw new Error(deleteVideosError.message);
+    const videoRows = fields.topVideos
+      .filter((v) => v.title)
+      .map((v, i) => ({
+        listing_id: listingId,
+        rank: i + 1,
+        title: v.title,
+        video_url: v.videoUrl || null,
+        views: v.views,
+        likes: v.likes,
+        duration: v.duration || null,
+        published_on: v.publishedOn,
+      }));
+    if (videoRows.length) {
+      const { error } = await admin.from("listing_top_videos").insert(videoRows);
+      if (error) throw new Error(`Saving Top Performing Videos failed: ${error.message}`);
+    }
   }
 
   revalidatePath(`/listing/${listingId}`);
