@@ -67,6 +67,41 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const semrushImageUrls = imagesByKind("semrush");
   const ahrefsImageUrls = imagesByKind("ahrefs");
 
+  // A section should render whenever there's anything to show for it — the
+  // seller may have typed in manual numbers, uploaded proof screenshots, or
+  // both. Gating solely on `listing.seo` being present hid sections (and
+  // the screenshots inside them) whenever only images were uploaded with no
+  // numeric fields filled in, since no listing_seo_data row gets written in
+  // that case (see the form's handleSubmit).
+  const hasGaData =
+    !!listing.gaLiveStats ||
+    gaImageUrls.length > 0 ||
+    listing.seo?.gaTotalUsers !== undefined ||
+    listing.seo?.gaNewUsers !== undefined ||
+    listing.seo?.gaTotalPageViews !== undefined ||
+    listing.seo?.gaAvgEngagementSeconds !== undefined;
+  const hasGscData =
+    gscImageUrls.length > 0 ||
+    listing.seo?.gscTotalClicks !== undefined ||
+    listing.seo?.gscTotalImpressions !== undefined ||
+    listing.seo?.gscIndexedPages !== undefined ||
+    listing.seo?.gscNonIndexedPages !== undefined ||
+    listing.seo?.gscAvgCtr !== undefined;
+  const hasSemrushData =
+    semrushImageUrls.length > 0 ||
+    listing.seo?.semrushAuthorityScore !== undefined ||
+    listing.seo?.semrushTotalTraffic !== undefined ||
+    listing.seo?.semrushTotalKeywords !== undefined ||
+    listing.seo?.semrushTop10Keywords !== undefined ||
+    listing.seo?.semrushTotalBacklinks !== undefined;
+  const hasAhrefsData =
+    ahrefsImageUrls.length > 0 ||
+    listing.seo?.ahrefsDr !== undefined ||
+    listing.seo?.ahrefsUr !== undefined ||
+    listing.seo?.ahrefsReferringDomains !== undefined ||
+    listing.seo?.ahrefsTotalKeywords !== undefined ||
+    listing.seo?.ahrefsTotalBacklinks !== undefined;
+
   return (
     <main className="py-8 sm:py-10">
       <Container>
@@ -176,7 +211,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 page never shows two different sets of numbers for the same
                 thing. A seller who hasn't connected live GA gets the
                 manual data + screenshots instead. */}
-            {category?.hasSeoData && (listing.gaLiveStats || listing.seo) && (
+            {category?.hasSeoData && hasGaData && (
               <section>
                 <div className="mb-4 flex flex-wrap items-center gap-2">
                   <h2 className="text-xl">Google Analytics Data</h2>
@@ -189,15 +224,15 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
                 {listing.gaLiveStats ? (
                   <GoogleAnalyticsLivePanel listingId={listing.id} initialStats={listing.gaLiveStats} />
-                ) : listing.seo ? (
+                ) : (
                   <>
                     <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                      <StatTile label="Total Users" value={listing.seo.gaTotalUsers} />
-                      <StatTile label="New Users" value={listing.seo.gaNewUsers} />
-                      <StatTile label="Total Page Views" value={listing.seo.gaTotalPageViews} />
+                      <StatTile label="Total Users" value={listing.seo?.gaTotalUsers} />
+                      <StatTile label="New Users" value={listing.seo?.gaNewUsers} />
+                      <StatTile label="Total Page Views" value={listing.seo?.gaTotalPageViews} />
                       <StatTile
                         label="Avg. Engagement Time"
-                        value={listing.seo.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
+                        value={listing.seo?.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
                       />
                     </div>
                     <div className="mb-6 grid gap-4 sm:grid-cols-2">
@@ -212,50 +247,56 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                     </div>
                     <ProofGalleryButton label="Google Analytics Data" images={gaImageUrls} count={3} />
                   </>
-                ) : null}
+                )}
               </section>
             )}
 
-            {/* SEO / Analytics data block */}
-            {category?.hasSeoData && listing.seo && (
-              <>
-                <section>
-                  <h2 className="mb-1 text-xl">Google Search Console Data</h2>
-                  <p className="mb-4 text-sm text-ink-faint">Engagement statistics, last 12 months</p>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <StatTile label="Total Clicks" value={listing.seo.gscTotalClicks} />
-                    <StatTile label="Total Impressions" value={listing.seo.gscTotalImpressions} />
-                    <StatTile label="Indexed Pages" value={listing.seo.gscIndexedPages} />
-                    <StatTile label="Non-Indexed Pages" value={listing.seo.gscNonIndexedPages} />
-                    <StatTile label="Average CTR" value={listing.seo.gscAvgCtr ? `${listing.seo.gscAvgCtr}%` : undefined} />
-                  </div>
-                  <ProofGalleryButton label="Google Search Console Data" images={gscImageUrls} count={2} />
-                </section>
+            {/* SEO / Analytics data block — each of the three sub-sections
+                below is gated on its own hasXData flag (numbers or proof
+                screenshots), not on `listing.seo` as a whole, so e.g. an
+                Ahrefs-only upload doesn't also require Search Console data
+                to exist before its screenshots become visible. */}
+            {category?.hasSeoData && hasGscData && (
+              <section>
+                <h2 className="mb-1 text-xl">Google Search Console Data</h2>
+                <p className="mb-4 text-sm text-ink-faint">Engagement statistics, last 12 months</p>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <StatTile label="Total Clicks" value={listing.seo?.gscTotalClicks} />
+                  <StatTile label="Total Impressions" value={listing.seo?.gscTotalImpressions} />
+                  <StatTile label="Indexed Pages" value={listing.seo?.gscIndexedPages} />
+                  <StatTile label="Non-Indexed Pages" value={listing.seo?.gscNonIndexedPages} />
+                  <StatTile label="Average CTR" value={listing.seo?.gscAvgCtr ? `${listing.seo.gscAvgCtr}%` : undefined} />
+                </div>
+                <ProofGalleryButton label="Google Search Console Data" images={gscImageUrls} count={2} />
+              </section>
+            )}
 
-                <section>
-                  <h2 className="mb-4 text-xl">SEMrush Data</h2>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <StatTile label="Authority Score" value={listing.seo.semrushAuthorityScore} />
-                    <StatTile label="Total Traffic" value={listing.seo.semrushTotalTraffic} />
-                    <StatTile label="Total Keywords" value={listing.seo.semrushTotalKeywords} />
-                    <StatTile label="Top 10 Keywords" value={listing.seo.semrushTop10Keywords} />
-                    <StatTile label="Total Backlinks" value={listing.seo.semrushTotalBacklinks} />
-                  </div>
-                  <ProofGalleryButton label="SEMrush Data" images={semrushImageUrls} count={2} />
-                </section>
+            {category?.hasSeoData && hasSemrushData && (
+              <section>
+                <h2 className="mb-4 text-xl">SEMrush Data</h2>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <StatTile label="Authority Score" value={listing.seo?.semrushAuthorityScore} />
+                  <StatTile label="Total Traffic" value={listing.seo?.semrushTotalTraffic} />
+                  <StatTile label="Total Keywords" value={listing.seo?.semrushTotalKeywords} />
+                  <StatTile label="Top 10 Keywords" value={listing.seo?.semrushTop10Keywords} />
+                  <StatTile label="Total Backlinks" value={listing.seo?.semrushTotalBacklinks} />
+                </div>
+                <ProofGalleryButton label="SEMrush Data" images={semrushImageUrls} count={2} />
+              </section>
+            )}
 
-                <section>
-                  <h2 className="mb-4 text-xl">Ahrefs Data</h2>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    <StatTile label="DR Rating" value={listing.seo.ahrefsDr} />
-                    <StatTile label="UR Rating" value={listing.seo.ahrefsUr} />
-                    <StatTile label="Referring Domains" value={listing.seo.ahrefsReferringDomains} />
-                    <StatTile label="Total Keywords" value={listing.seo.ahrefsTotalKeywords} />
-                    <StatTile label="Total Backlinks" value={listing.seo.ahrefsTotalBacklinks} />
-                  </div>
-                  <ProofGalleryButton label="Ahrefs Data" images={ahrefsImageUrls} count={2} />
-                </section>
-              </>
+            {category?.hasSeoData && hasAhrefsData && (
+              <section>
+                <h2 className="mb-4 text-xl">Ahrefs Data</h2>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  <StatTile label="DR Rating" value={listing.seo?.ahrefsDr} />
+                  <StatTile label="UR Rating" value={listing.seo?.ahrefsUr} />
+                  <StatTile label="Referring Domains" value={listing.seo?.ahrefsReferringDomains} />
+                  <StatTile label="Total Keywords" value={listing.seo?.ahrefsTotalKeywords} />
+                  <StatTile label="Total Backlinks" value={listing.seo?.ahrefsTotalBacklinks} />
+                </div>
+                <ProofGalleryButton label="Ahrefs Data" images={ahrefsImageUrls} count={2} />
+              </section>
             )}
 
             {/* Social Media */}
