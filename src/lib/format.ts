@@ -27,6 +27,29 @@ export function toHref(url: string): string {
   return /^https?:\/\//i.test(url) ? url : `https://${url}`;
 }
 
+// Parses a seller-typed duration ("1m 26s", "1m26s", "26s", "1:26", or a
+// bare number of seconds) into a whole number of seconds — the storage
+// format for ga_avg_engagement_seconds, matching what
+// GoogleAnalyticsLivePanel's own fmtDuration() renders back out on the
+// live-GA panel. Returns null when the text isn't a recognizable duration,
+// so the caller can skip persisting it rather than saving a wrong number.
+export function parseDurationToSeconds(input: string): number | null {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  const colon = trimmed.match(/^(\d+):([0-5]?\d)$/);
+  if (colon) return Number(colon[1]) * 60 + Number(colon[2]);
+
+  const unitMatch = trimmed.match(/^(?:(\d+)\s*m)?\s*(?:(\d+)\s*s)?$/i);
+  if (unitMatch && (unitMatch[1] !== undefined || unitMatch[2] !== undefined)) {
+    return Number(unitMatch[1] ?? 0) * 60 + Number(unitMatch[2] ?? 0);
+  }
+
+  if (/^\d+$/.test(trimmed)) return Number(trimmed);
+
+  return null;
+}
+
 export function monthLabel(ym: string): string {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
