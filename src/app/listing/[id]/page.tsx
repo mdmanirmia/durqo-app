@@ -6,7 +6,6 @@ import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories"
 import { NICHE_MAP } from "@/lib/niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref } from "@/lib/format";
-import TrendChart from "@/components/charts/TrendChart";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -42,8 +41,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const category = CATEGORY_MAP[listing.categoryId];
   const price = listing.discountedPrice ?? listing.price;
   const incomeSeries = listing.monthlyStats.map((m) => ({ month: m.month, income: m.income }));
-  const usersSeries = listing.monthlyStats.map((m) => ({ month: m.month, users: m.gaTotalUsers }));
-  const viewsSeries = listing.monthlyStats.map((m) => ({ month: m.month, views: m.gaPageViews }));
 
   // Websites/E-commerce Quick Stat label overrides (Business Page Layout
   // .docx, Sep 1, 2026 revision): "Monthly Income"/"Monthly Views" are
@@ -234,16 +231,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                         label="Avg. Engagement Time"
                         value={listing.seo?.gaAvgEngagementSeconds ? `${Math.floor(listing.seo.gaAvgEngagementSeconds / 60)}m ${listing.seo.gaAvgEngagementSeconds % 60}s` : undefined}
                       />
-                    </div>
-                    <div className="mb-6 grid gap-4 sm:grid-cols-2">
-                      <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                        <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Users trend</p>
-                        <TrendChart data={usersSeries} dataKey="users" color="#14213D" format="number" />
-                      </div>
-                      <div className="rounded-lg border border-rule bg-paper-raised p-4">
-                        <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Page views trend</p>
-                        <TrendChart data={viewsSeries} dataKey="views" color="#10B981" format="number" />
-                      </div>
                     </div>
                     <ProofGalleryButton label="Google Analytics Data" images={gaImageUrls} count={3} />
                   </>
