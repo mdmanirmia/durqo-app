@@ -76,6 +76,8 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       { data: comments },
       { data: images },
       { data: gaLiveStats },
+      { data: copyrightNotes },
+      { data: topVideos },
     ] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", row.seller_id).maybeSingle(),
       supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
@@ -89,6 +91,10 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       // listings), so a missing/errored query here just means "not
       // connected," never a reason to fail the whole page.
       supabase.from("listing_ga_public_stats").select("*").eq("listing_id", id).maybeSingle(),
+      // YouTube Channels category only (Design & Development New.pdf, Sep
+      // 4 2026) — missing rows just mean neither section renders.
+      supabase.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
+      supabase.from("listing_top_videos").select("*").eq("listing_id", id),
     ]);
 
     let authorNames: Record<string, string> = {};
@@ -108,6 +114,8 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       authorNames,
       images: images ?? [],
       gaLiveStats,
+      copyrightNotes,
+      topVideos: topVideos ?? [],
     });
   } catch (err) {
     console.warn("[listings] getListingById falling back to mock data (unexpected error):", err);

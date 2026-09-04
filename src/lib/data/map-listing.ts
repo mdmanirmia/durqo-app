@@ -23,6 +23,7 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   articles_posted: "articles_posted",
   subscribers: "subscribers",
   monthly_views: "monthly_views",
+  total_views: "total_views",
   total_videos: "total_videos",
   channel_age: "channel_age_years",
   followers: "followers",
@@ -131,6 +132,30 @@ export function mapSeo(row: Row | null | undefined): SeoData | undefined {
 
 export function mapSocialStats(rows: Row[]): SocialStat[] {
   return rows.map((r) => ({ platform: r.platform, followers: r.followers ?? 0 }));
+}
+
+// YouTube Channels category only (Design & Development New.pdf, Sep 4
+// 2026) — see CopyrightNotes/TopVideo in src/lib/types.ts.
+export function mapCopyrightNotes(row: Row | null | undefined): Listing["copyrightNotes"] {
+  if (!row) return undefined;
+  return {
+    notes: row.notes ?? "",
+    updatedOn: row.updated_on ? String(row.updated_on).slice(0, 10) : "",
+  };
+}
+
+export function mapTopVideos(rows: Row[]): NonNullable<Listing["topVideos"]> {
+  return rows
+    .slice()
+    .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+    .map((r) => ({
+      title: r.title,
+      videoUrl: r.video_url ?? undefined,
+      views: r.views ?? undefined,
+      likes: r.likes ?? undefined,
+      duration: r.duration ?? undefined,
+      publishedOn: r.published_on ? String(r.published_on).slice(0, 10) : undefined,
+    }));
 }
 
 export function mapImages(rows: Row[]): ListingImage[] {
@@ -259,15 +284,19 @@ function computeAutoQuickStats(
     }
   }
 
-  // Followers (Social Media Accounts) / Subscribers (YouTube, Newsletters)
-  // — the total across every platform/entry the seller logged in Social
-  // Stats.
+  // Followers (Social Media Accounts) / Subscribers (Newsletters) — the
+  // total across every platform/entry the seller logged in Social Stats.
+  // YouTube Channels is excluded here (Design & Development New.pdf, Sep 4
+  // 2026): "Total Subscribers" is now a manually-entered Quick Stat for
+  // that category instead (see the manual Channel Statistics block on the
+  // seller form) — this computed total would otherwise silently overwrite
+  // (or delete, when Social Stats is empty) that manual value.
   const totalFollowers = socialStats.reduce((sum, s) => sum + (s.followers ?? 0), 0);
   if (has("followers")) {
     if (totalFollowers > 0) quickStats.followers = totalFollowers;
     else delete quickStats.followers;
   }
-  if (has("subscribers")) {
+  if (has("subscribers") && row.category_id !== "youtube-channels") {
     if (totalFollowers > 0) quickStats.subscribers = totalFollowers;
     else delete quickStats.subscribers;
   }
@@ -292,6 +321,8 @@ export function mapListing(
     authorNames?: Record<string, string>;
     images?: Row[];
     gaLiveStats?: Row | null;
+    copyrightNotes?: Row | null;
+    topVideos?: Row[];
   } = {}
 ): Listing {
   const monthlyStats = mapMonthlyStats(related.monthlyStats ?? []);
@@ -335,6 +366,8 @@ export function mapListing(
     seller: mapSeller(related.seller),
     images: mapImages(related.images ?? []),
     gaLiveStats: mapGaLiveStats(related.gaLiveStats),
+    copyrightNotes: mapCopyrightNotes(related.copyrightNotes),
+    topVideos: mapTopVideos(related.topVideos ?? []),
   };
 }
 
