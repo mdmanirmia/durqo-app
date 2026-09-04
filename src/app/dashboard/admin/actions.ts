@@ -35,6 +35,15 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
 
   revalidatePath("/dashboard/admin/listings");
   revalidatePath("/dashboard/admin");
+  // Publish/unpublish/mark-sold/archive all change what the public listing
+  // page and the homepage/marketplace should show for this listing — unlike
+  // updateListing() and setListingGaVerified() above, this action was only
+  // ever revalidating the admin views, so a status flip (e.g. Unpublish)
+  // kept showing the old state on /listing/[id] until something else
+  // happened to revalidate it.
+  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/");
+  revalidatePath("/buy");
 }
 
 export async function setUserRole(userId: string, role: UserRole) {
