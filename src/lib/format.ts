@@ -75,14 +75,24 @@ const QUICK_STAT_COUNT = new Set([
   "likes_per_post", "views_per_post", "total_downloads", "total_reviews", "active_clients", "followers",
 ]);
 
+// Pulls the 11-character video id out of any YouTube video URL shape
+// (watch, youtu.be, shorts, or embed links). Shared by youtubeThumbnailUrl()
+// below (no API key needed for thumbnails) and by the server-side
+// /api/youtube/video-info lookup (src/lib/youtube.ts) that auto-fills the
+// Top Performing Videos form fields from a pasted URL.
+export function extractYoutubeVideoId(videoUrl: string | null | undefined): string | null {
+  if (!videoUrl) return null;
+  const match = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+  return match ? match[1] : null;
+}
+
 // Extracts a thumbnail image URL straight from a YouTube video URL (watch,
 // youtu.be, shorts, or embed links) via YouTube's own static thumbnail
 // endpoint — no API key, and no separate image upload needed for the Top
 // Performing Videos section (YouTube Channels category only).
 export function youtubeThumbnailUrl(videoUrl: string | null | undefined): string | null {
-  if (!videoUrl) return null;
-  const match = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
-  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null;
+  const id = extractYoutubeVideoId(videoUrl);
+  return id ? `https://img.youtube.com/vi/${id}/mqdefault.jpg` : null;
 }
 
 // Formats a listing.quickStats value the same way regardless of which
