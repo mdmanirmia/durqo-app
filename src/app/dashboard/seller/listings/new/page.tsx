@@ -591,7 +591,10 @@ export default function AddNewBusinessPage() {
           // Design & Development New.pdf (Sep 4 2026): this category has no
           // Google Analytics data to auto-compute these from, so — like
           // Domains — they're typed in directly rather than calculated.
-          <Section title="Channel Statistics" hint="Shown in this listing's Quick Statistics once published.">
+          // (Sep 2026: only Channel Age shows in this listing's Quick
+          // Statistics — Total Subscribers/Total Views/Total Videos appear
+          // in the YouTube Channel Overview panel instead, see page.tsx.)
+          <Section title="Channel Statistics" hint="Channel Age is shown in Quick Statistics; the others appear in the YouTube Channel Overview panel once published.">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Total Subscribers">
                 <input type="number" min="0" value={quickStats.subscribers ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, subscribers: e.target.value }))} className={inputCls} />
