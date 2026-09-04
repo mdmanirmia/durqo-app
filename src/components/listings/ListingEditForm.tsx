@@ -164,6 +164,7 @@ export default function ListingEditForm({
   socialStats,
   copyrightNotes,
   topVideos,
+  channelOverview,
 }: {
   mode: "admin" | "seller";
   listing: Row;
@@ -173,6 +174,7 @@ export default function ListingEditForm({
   socialStats: Row[];
   copyrightNotes?: Row | null;
   topVideos?: Row[];
+  channelOverview?: Row | null;
 }) {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState<string>(listing.category_id);
@@ -270,6 +272,64 @@ export default function ListingEditForm({
   // after.
   const [videoLookup, setVideoLookup] = useState<Record<number, "loading" | "done" | "error">>({});
 
+  // YouTube Channel Overview (Sep 4 2026 follow-up) — pre-filled from the
+  // listing's existing row, if any; re-fetched wholesale from the Channel
+  // URL field's onBlur, same pattern as fetchVideoInfo below.
+  const [channelOverviewState, setChannelOverviewState] = useState<{
+    channelTitle: string;
+    channelHandle: string | null;
+    channelAvatarUrl: string | null;
+    channelCreatedOn: string | null;
+    avgViewsPerVideo: number | null;
+    recentAvgViews: number | null;
+    recentAvgLikes: number | null;
+    engagementRatePercent: number | null;
+  } | null>(
+    channelOverview
+      ? {
+          channelTitle: channelOverview.channel_title ?? "",
+          channelHandle: channelOverview.channel_handle ?? null,
+          channelAvatarUrl: channelOverview.channel_avatar_url ?? null,
+          channelCreatedOn: channelOverview.channel_created_on ? String(channelOverview.channel_created_on).slice(0, 10) : null,
+          avgViewsPerVideo: channelOverview.avg_views_per_video ?? null,
+          recentAvgViews: channelOverview.recent_avg_views ?? null,
+          recentAvgLikes: channelOverview.recent_avg_likes ?? null,
+          engagementRatePercent: channelOverview.engagement_rate_percent ?? null,
+        }
+      : null
+  );
+  const [channelLookup, setChannelLookup] = useState<"loading" | "done" | "error" | null>(null);
+
+  async function fetchChannelInfo(url: string) {
+    if (!url.trim() || categoryId !== "youtube-channels") return;
+    setChannelLookup("loading");
+    try {
+      const res = await fetch(`/api/youtube/channel-info?url=${encodeURIComponent(url)}`);
+      if (!res.ok) throw new Error("lookup failed");
+      const info = await res.json();
+      setQuickStats((prev) => ({
+        ...prev,
+        ...(info.subscribers !== null && info.subscribers !== undefined ? { subscribers: String(info.subscribers) } : {}),
+        ...(info.totalViews !== null && info.totalViews !== undefined ? { total_views: String(info.totalViews) } : {}),
+        ...(info.totalVideos !== null && info.totalVideos !== undefined ? { total_videos: String(info.totalVideos) } : {}),
+        ...(info.channelAgeYears !== null && info.channelAgeYears !== undefined ? { channel_age: String(info.channelAgeYears) } : {}),
+      }));
+      setChannelOverviewState({
+        channelTitle: info.channelTitle || "",
+        channelHandle: info.channelHandle ?? null,
+        channelAvatarUrl: info.channelAvatarUrl ?? null,
+        channelCreatedOn: info.channelCreatedOn || null,
+        avgViewsPerVideo: info.avgViewsPerVideo ?? null,
+        recentAvgViews: info.recentAvgViews ?? null,
+        recentAvgLikes: info.recentAvgLikes ?? null,
+        engagementRatePercent: info.engagementRatePercent ?? null,
+      });
+      setChannelLookup("done");
+    } catch {
+      setChannelLookup("error");
+    }
+  }
+
   async function fetchVideoInfo(i: number, url: string) {
     if (!url.trim()) return;
     setVideoLookup((prev) => ({ ...prev, [i]: "loading" }));
@@ -329,6 +389,8 @@ export default function ListingEditForm({
     if (id !== "youtube-channels") {
       setCopyrightNotesText("");
       setTopVideoRows(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
+      setChannelOverviewState(null);
+      setChannelLookup(null);
     }
   }
 
@@ -427,6 +489,21 @@ export default function ListingEditForm({
                 publishedOn: v.publishedOn || null,
               }))
             : undefined,
+        channelOverview:
+          categoryId === "youtube-channels"
+            ? channelOverviewState
+              ? {
+                  channelTitle: channelOverviewState.channelTitle,
+                  channelHandle: channelOverviewState.channelHandle,
+                  channelAvatarUrl: channelOverviewState.channelAvatarUrl,
+                  channelCreatedOn: channelOverviewState.channelCreatedOn,
+                  avgViewsPerVideo: channelOverviewState.avgViewsPerVideo,
+                  recentAvgViews: channelOverviewState.recentAvgViews,
+                  recentAvgLikes: channelOverviewState.recentAvgLikes,
+                  engagementRatePercent: channelOverviewState.engagementRatePercent,
+                }
+              : null
+            : undefined,
       });
 
       await Promise.all([
@@ -492,7 +569,17 @@ export default function ListingEditForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={categoryId === "youtube-channels" ? "Channel URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
-          <input type="url" value={businessUrl} onChange={(e) => setBusinessUrl(e.target.value)} placeholder="https://" className={inputCls} />
+          <input
+            type="url"
+            value={businessUrl}
+            onChange={(e) => setBusinessUrl(e.target.value)}
+            onBlur={(e) => categoryId === "youtube-channels" && fetchChannelInfo(e.target.value)}
+            placeholder="https://"
+            className={inputCls}
+          />
+          {categoryId === "youtube-channels" && channelLookup === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching channel details from YouTube…</p>}
+          {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel Statistics auto-filled below — edit any field if needed.</p>}
+          {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details automatically — enter Channel Statistics manually below.</p>}
         </Field>
         {categoryId !== "websites" && (
           <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
