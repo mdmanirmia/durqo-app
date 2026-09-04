@@ -34,11 +34,15 @@ export default async function SellerEditListingPage({ params }: { params: Promis
   if (!listing) notFound();
   if (listing.seller_id !== user.id) notFound();
 
-  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }] = await Promise.all([
+  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }, { data: copyrightNotes }, { data: topVideos }] = await Promise.all([
     supabase.from("listing_seo_data").select("*").eq("listing_id", id).maybeSingle(),
     supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
     supabase.from("listing_images").select("*").eq("listing_id", id),
     supabase.from("listing_social_stats").select("*").eq("listing_id", id),
+    // YouTube Channels category only (Design & Development New.pdf, Sep 4
+    // 2026) — missing rows just mean neither section is pre-filled.
+    supabase.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
+    supabase.from("listing_top_videos").select("*").eq("listing_id", id),
   ]);
 
   return (
@@ -50,6 +54,8 @@ export default async function SellerEditListingPage({ params }: { params: Promis
         monthlyStats={monthlyStats ?? []}
         images={images ?? []}
         socialStats={socialStats ?? []}
+        copyrightNotes={copyrightNotes ?? null}
+        topVideos={topVideos ?? []}
       />
     </DashboardShell>
   );
