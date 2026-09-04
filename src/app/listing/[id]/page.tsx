@@ -67,9 +67,10 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // the always-shown Niche/Asking Price belong in Quick Statistics for this
   // category). Subscribers/Total Views/Total Videos stay in
   // category.quickStats (categories.ts) so buildQuickStats() still computes
-  // them into listing.quickStats — the YouTube Channel Overview panel above
-  // reads those same values directly, so they aren't lost, just no longer
-  // duplicated in the Quick Statistics grid below.
+  // them into listing.quickStats — the "Channel Analytics" panel further
+  // down the page (renamed/moved from "YouTube Channel Overview", see
+  // below) reads those same values directly, so they aren't lost, just no
+  // longer duplicated in the Quick Statistics grid below.
   const quickStatDisplayKeys: QuickStatKey[] =
     listing.categoryId === "youtube-channels"
       ? (category?.quickStats.filter((k) => k === "location" || k === "monthly_income" || k === "channel_age") ?? [])
@@ -88,11 +89,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const copyrightNoteLines = (listing.copyrightNotes?.notes ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
   const topVideos = (listing.topVideos ?? []).filter((v) => v.title);
 
-  // YouTube Channel Overview panel (Sep 4 2026) — auto-populated from the
-  // Channel URL (see fetchYoutubeChannelOverview() in src/lib/youtube.ts).
-  // Renders whenever a sync has completed at least once; the plain manual
-  // Channel Statistics tiles in Quick Statistics above still show even
-  // without this, same fallback reasoning as the Google Analytics section.
+  // "Channel Analytics" panel (Sep 4 2026, renamed from "YouTube Channel
+  // Overview" and moved to right after "Overview of the Channel" per a
+  // same-day follow-up request) — auto-populated from the Channel URL (see
+  // fetchYoutubeChannelOverview() in src/lib/youtube.ts). Renders whenever
+  // a sync has completed at least once; the plain manual Channel
+  // Statistics tiles in Quick Statistics above still show even without
+  // this, same fallback reasoning as the Google Analytics section.
   const channelOverview = listing.channelOverview;
   const channelSinceYear = channelOverview?.channelCreatedOn ? new Date(`${channelOverview.channelCreatedOn}T00:00:00`).getFullYear() : undefined;
   const channelLastUpdated = channelOverview?.lastSyncedAt
@@ -188,39 +191,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               )}
             </div>
 
-            {/* YouTube Channel Overview — YouTube Channels only, auto-filled
-                from the Channel URL (Sep 4 2026). Styled to Durqo's own
-                navy/emerald tokens, not the dark reference theme it was
-                speced from. */}
-            {listing.categoryId === "youtube-channels" && channelOverview && (
-              <section className="rounded-xl border border-rule bg-paper-raised p-5 sm:p-6">
-                <h2 className="mb-4 text-xl">YouTube Channel Overview</h2>
-                <div className="mb-5 flex flex-wrap items-center gap-3">
-                  {channelOverview.channelAvatarUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={channelOverview.channelAvatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-full border border-rule-strong object-cover" />
-                  )}
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-ink">{channelOverview.channelTitle || listing.title}</span>
-                      {channelSinceYear && <Badge tone="neutral">Since {channelSinceYear}</Badge>}
-                    </div>
-                    {channelOverview.channelHandle && <p className="mono text-sm text-ink-faint">{channelOverview.channelHandle}</p>}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <StatTile label="Subscribers" value={listing.quickStats.subscribers} />
-                  <StatTile label="Total Views" value={listing.quickStats.total_views} />
-                  <StatTile label="Videos" value={listing.quickStats.total_videos} />
-                  <StatTile label="Avg Views/Video" value={channelOverview.avgViewsPerVideo} />
-                  <StatTile label="Recent Avg Views" value={channelOverview.recentAvgViews} />
-                  <StatTile label="Engagement Rate" value={channelOverview.engagementRatePercent !== undefined ? `${channelOverview.engagementRatePercent}%` : undefined} />
-                  <StatTile label="Avg Likes" value={channelOverview.recentAvgLikes} />
-                </div>
-                {channelLastUpdated && <p className="mt-4 text-xs text-ink-faint">This data was updated on {channelLastUpdated}.</p>}
-              </section>
-            )}
-
             {/* Quick Stats */}
             <section>
               <h2 className="mb-4 text-xl">Quick Statistics</h2>
@@ -243,6 +213,45 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 <p className="mt-3 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
               )}
             </section>
+
+            {/* Channel Analytics (formerly "YouTube Channel Overview") —
+                YouTube Channels only, auto-filled from the Channel URL (Sep
+                4 2026). Styled to Durqo's own navy/emerald tokens, not the
+                dark reference theme it was speced from. Moved to right
+                after "Overview of the Channel" and renamed to "Channel
+                Analytics" per the user's follow-up request. The ShieldCheck
+                tick next to the channel title is gated on listing.gaVerified
+                — same flag/icon already used for the "Reviewed by Durqo"
+                pill on the Google Analytics Data section below. */}
+            {listing.categoryId === "youtube-channels" && channelOverview && (
+              <section className="rounded-xl border border-rule bg-paper-raised p-5 sm:p-6">
+                <h2 className="mb-4 text-xl">Channel Analytics</h2>
+                <div className="mb-5 flex flex-wrap items-center gap-3">
+                  {channelOverview.channelAvatarUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={channelOverview.channelAvatarUrl} alt="" className="h-12 w-12 shrink-0 rounded-full border border-rule-strong object-cover" />
+                  )}
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-semibold text-ink">{channelOverview.channelTitle || listing.title}</span>
+                      {listing.gaVerified && <ShieldCheck size={16} className="shrink-0 text-brand-hover" aria-label="Reviewed by Durqo" />}
+                      {channelSinceYear && <Badge tone="neutral">Since {channelSinceYear}</Badge>}
+                    </div>
+                    {channelOverview.channelHandle && <p className="mono text-sm text-ink-faint">{channelOverview.channelHandle}</p>}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <StatTile label="Subscribers" value={listing.quickStats.subscribers} />
+                  <StatTile label="Total Views" value={listing.quickStats.total_views} />
+                  <StatTile label="Videos" value={listing.quickStats.total_videos} />
+                  <StatTile label="Avg Views/Video" value={channelOverview.avgViewsPerVideo} />
+                  <StatTile label="Recent Avg Views" value={channelOverview.recentAvgViews} />
+                  <StatTile label="Engagement Rate" value={channelOverview.engagementRatePercent !== undefined ? `${channelOverview.engagementRatePercent}%` : undefined} />
+                  <StatTile label="Avg Likes" value={channelOverview.recentAvgLikes} />
+                </div>
+                {channelLastUpdated && <p className="mt-4 text-xs text-ink-faint">This data was updated on {channelLastUpdated}.</p>}
+              </section>
+            )}
 
             {/* Proof of Income */}
             {incomeSeries.some((s) => s.income) && (
