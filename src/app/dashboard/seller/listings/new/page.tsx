@@ -182,6 +182,38 @@ export default function AddNewBusinessPage() {
   const [topVideos, setTopVideos] = useState(
     Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" }))
   );
+  // Per-row auto-fill status for the Video URL → /api/youtube/video-info
+  // lookup below (Sep 4, 2026 follow-up): "loading" while fetching,
+  // "done"/"error" after, so each row can show its own inline status
+  // without a page-wide spinner.
+  const [videoLookup, setVideoLookup] = useState<Record<number, "loading" | "done" | "error">>({});
+
+  async function fetchVideoInfo(i: number, url: string) {
+    if (!url.trim()) return;
+    setVideoLookup((prev) => ({ ...prev, [i]: "loading" }));
+    try {
+      const res = await fetch(`/api/youtube/video-info?url=${encodeURIComponent(url)}`);
+      if (!res.ok) throw new Error("lookup failed");
+      const info = await res.json();
+      setTopVideos((prev) =>
+        prev.map((row, idx) =>
+          idx === i
+            ? {
+                ...row,
+                title: info.title || row.title,
+                views: info.views !== null && info.views !== undefined ? String(info.views) : row.views,
+                likes: info.likes !== null && info.likes !== undefined ? String(info.likes) : row.likes,
+                duration: info.duration || row.duration,
+                publishedOn: info.publishedOn || row.publishedOn,
+              }
+            : row
+        )
+      );
+      setVideoLookup((prev) => ({ ...prev, [i]: "done" }));
+    } catch {
+      setVideoLookup((prev) => ({ ...prev, [i]: "error" }));
+    }
+  }
 
   const [incomeImages, setIncomeImages] = useState<File[]>([]);
   const [gaImages, setGaImages] = useState<File[]>([]);
@@ -729,7 +761,17 @@ export default function AddNewBusinessPage() {
                       <input value={v.title} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, title: e.target.value } : row)))} className={inputCls} />
                     </Field>
                     <Field label="Video URL" className="sm:col-span-2">
-                      <input type="url" placeholder="https://www.youtube.com/watch?v=..." value={v.videoUrl} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, videoUrl: e.target.value } : row)))} className={inputCls} />
+                      <input
+                        type="url"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        value={v.videoUrl}
+                        onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, videoUrl: e.target.value } : row)))}
+                        onBlur={(e) => fetchVideoInfo(i, e.target.value)}
+                        className={inputCls}
+                      />
+                      {videoLookup[i] === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching details from YouTube…</p>}
+                      {videoLookup[i] === "done" && <p className="mt-1 text-xs text-brand-strong">Auto-filled from YouTube — edit any field if needed.</p>}
+                      {videoLookup[i] === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch details automatically — enter them manually below.</p>}
                     </Field>
                     <Field label="Views">
                       <input type="number" min="0" value={v.views} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, views: e.target.value } : row)))} className={inputCls} />
