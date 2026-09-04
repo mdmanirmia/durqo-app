@@ -548,8 +548,8 @@ export default function AddNewBusinessPage() {
               className={inputCls}
             />
             {categoryId === "youtube-channels" && channelLookup === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching channel details from YouTube…</p>}
-            {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel Statistics auto-filled below — edit any field if needed.</p>}
-            {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details automatically — enter Channel Statistics manually below.</p>}
+            {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched — Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
+            {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
           </Field>
           {categoryId !== "websites" && (
             <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
@@ -588,28 +588,19 @@ export default function AddNewBusinessPage() {
             </div>
           </Section>
         ) : categoryId === "youtube-channels" ? (
-          // Design & Development New.pdf (Sep 4 2026): this category has no
-          // Google Analytics data to auto-compute these from, so — like
-          // Domains — they're typed in directly rather than calculated.
-          // (Sep 2026: only Channel Age shows in this listing's Quick
-          // Statistics — Total Subscribers/Total Views/Total Videos appear
-          // in the YouTube Channel Overview panel instead, see page.tsx.)
-          <Section title="Channel Statistics" hint="Channel Age is shown in Quick Statistics; the others appear in the YouTube Channel Overview panel once published.">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Total Subscribers">
-                <input type="number" min="0" value={quickStats.subscribers ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, subscribers: e.target.value }))} className={inputCls} />
-              </Field>
-              <Field label="Total Views">
-                <input type="number" min="0" value={quickStats.total_views ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_views: e.target.value }))} className={inputCls} />
-              </Field>
-              <Field label="Total Videos">
-                <input type="number" min="0" value={quickStats.total_videos ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_videos: e.target.value }))} className={inputCls} />
-              </Field>
-              <Field label="Channel Age (years)">
-                <input type="number" min="0" step="0.5" value={quickStats.channel_age ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, channel_age: e.target.value }))} className={inputCls} />
-              </Field>
-            </div>
-          </Section>
+          // Sep 4 2026 follow-up: this used to be a manual "Channel
+          // Statistics" section (Total Subscribers/Total Views/Total
+          // Videos/Channel Age), but all four are now fully covered by
+          // fetchChannelInfo() firing on the Channel URL field's onBlur
+          // above — the user asked to drop the redundant manual inputs
+          // entirely ("list korar somoi eita input deyar dorkar nei karon
+          // other sob data theke ei gulo peye jasse") since sellers were
+          // being asked to type numbers the app already fetches itself.
+          // quickStats.subscribers/.total_views/.total_videos/.channel_age
+          // are still set — just silently, by that lookup — and still get
+          // submitted below; there's simply no visible input for them
+          // anymore, on this form or on ListingEditForm.
+          null
         ) : (
           category.quickStats.includes("age") && (
             <div>
