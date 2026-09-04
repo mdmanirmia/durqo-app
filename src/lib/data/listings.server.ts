@@ -78,6 +78,7 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       { data: gaLiveStats },
       { data: copyrightNotes },
       { data: topVideos },
+      { data: channelOverview },
     ] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", row.seller_id).maybeSingle(),
       supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
@@ -95,6 +96,7 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       // 4 2026) — missing rows just mean neither section renders.
       supabase.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
       supabase.from("listing_top_videos").select("*").eq("listing_id", id),
+      supabase.from("listing_youtube_channel_overview").select("*").eq("listing_id", id).maybeSingle(),
     ]);
 
     let authorNames: Record<string, string> = {};
@@ -116,6 +118,7 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       gaLiveStats,
       copyrightNotes,
       topVideos: topVideos ?? [],
+      channelOverview,
     });
   } catch (err) {
     console.warn("[listings] getListingById falling back to mock data (unexpected error):", err);

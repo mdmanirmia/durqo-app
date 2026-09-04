@@ -158,6 +158,22 @@ export function mapTopVideos(rows: Row[]): NonNullable<Listing["topVideos"]> {
     }));
 }
 
+// YouTube Channels category only — see ChannelOverview in src/lib/types.ts.
+export function mapChannelOverview(row: Row | null | undefined): Listing["channelOverview"] {
+  if (!row) return undefined;
+  return {
+    channelTitle: row.channel_title ?? "",
+    channelHandle: row.channel_handle ?? undefined,
+    channelAvatarUrl: row.channel_avatar_url ?? undefined,
+    channelCreatedOn: row.channel_created_on ? String(row.channel_created_on).slice(0, 10) : undefined,
+    avgViewsPerVideo: row.avg_views_per_video ?? undefined,
+    recentAvgViews: row.recent_avg_views ?? undefined,
+    recentAvgLikes: row.recent_avg_likes ?? undefined,
+    engagementRatePercent: row.engagement_rate_percent ?? undefined,
+    lastSyncedAt: row.last_synced_at ? String(row.last_synced_at).slice(0, 10) : "",
+  };
+}
+
 export function mapImages(rows: Row[]): ListingImage[] {
   return rows
     .slice()
@@ -323,6 +339,7 @@ export function mapListing(
     gaLiveStats?: Row | null;
     copyrightNotes?: Row | null;
     topVideos?: Row[];
+    channelOverview?: Row | null;
   } = {}
 ): Listing {
   const monthlyStats = mapMonthlyStats(related.monthlyStats ?? []);
@@ -368,6 +385,7 @@ export function mapListing(
     gaLiveStats: mapGaLiveStats(related.gaLiveStats),
     copyrightNotes: mapCopyrightNotes(related.copyrightNotes),
     topVideos: mapTopVideos(related.topVideos ?? []),
+    channelOverview: mapChannelOverview(related.channelOverview),
   };
 }
 
