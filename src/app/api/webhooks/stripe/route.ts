@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import type Stripe from "stripe";
 import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -73,6 +74,13 @@ export async function POST(request: Request) {
           // listing some other event already moved to a different state
           // (e.g. a seller who archived it in the meantime).
           await admin.from("listings").update({ status: "sold" }).in("id", listingIds).eq("status", "published");
+          // Without this, the "Sold" badge only shows up once something
+          // else happens to revalidate these paths — a buyer who completes
+          // checkout and lands back on the listing page (or the homepage/
+          // marketplace) could still see it as buyable.
+          for (const id of listingIds) revalidatePath(`/listing/${id}`);
+          revalidatePath("/");
+          revalidatePath("/buy");
         }
       }
     }
