@@ -131,8 +131,23 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
           {listing.status === "sold" && <StatusBadge status="sold" />}
         </div>
 
+        {/*
+          Mobile order request (Sep 2026): on small screens this grid
+          collapses to a single implicit column, so items stack in DOM
+          order. Splitting MAIN CONTENT into a "top" chunk (through
+          Payment Terms) and a "bottom" chunk (FAQ + Comments), with the
+          SIDEBAR in between, gives the desired mobile reading order —
+          Payment Terms, then the price/action card + seller details,
+          then FAQ, then Comments — while desktop's 2-column layout is
+          unchanged: the grid's default row-major auto-placement puts
+          MAIN CONTENT TOP and MAIN CONTENT BOTTOM in column 1 (stacked,
+          same as before) and SIDEBAR in column 2, spanning both rows
+          (lg:row-span-2) so its sticky behavior still tracks scroll
+          across the full combined height of both main-content chunks,
+          exactly as when it was one single grid row.
+        */}
         <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
-          {/* MAIN CONTENT */}
+          {/* MAIN CONTENT — TOP (through Payment Terms) */}
           <div className="flex flex-col gap-12">
             <div>
               <h1 className="mb-2 text-3xl sm:text-4xl">{listing.title}</h1>
@@ -405,7 +420,51 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 </p>
               </div>
             </section>
+          </div>
 
+          {/* SIDEBAR — acquisition panel + seller details, sticky. Placed here
+              (between MAIN CONTENT TOP and MAIN CONTENT BOTTOM) so mobile's
+              single-column stacking reads Payment Terms → price/action card →
+              seller details → FAQ → Comments; lg:row-span-2 keeps it spanning
+              both main-content rows on desktop so it still sticks through the
+              full page height, not just the "top" chunk's height. */}
+          <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24 lg:row-span-2">
+            <div className="rounded-xl border border-rule bg-paper-raised p-5">
+              {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
+                <div className="mono text-center text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
+              )}
+              <div className="mono mb-4 text-center text-2xl font-bold text-ink">{fmtUSD(price)}</div>
+              <div className="flex flex-col gap-2">
+                <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
+                <CartButton listingId={listing.id} sold={listing.status === "sold"} />
+                <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
+                <WishlistButton listingId={listing.id} variant="full" />
+              </div>
+              <p className="mt-4 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
+                <Lock size={12} className="mt-0.5 shrink-0" />
+                Your identity and message stay confidential to the seller until you choose to share more.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-rule bg-paper-raised p-5">
+              <h5 className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Seller</h5>
+              <div className="mb-1 font-semibold text-ink">{listing.seller.name}</div>
+              {listing.seller.location && <div className="mb-2 text-sm text-ink-soft">{listing.seller.location}</div>}
+              {listing.seller.isVerified ? (
+                <div className="mb-2 flex items-center gap-1.5 text-sm text-brand-hover">
+                  <ShieldCheck size={15} />
+                  Verified {listing.seller.verificationMethod?.replace("_", " ")}
+                </div>
+              ) : (
+                <div className="mb-2 text-sm text-ink-faint">Identity not yet verified</div>
+              )}
+              <div className="mono text-sm text-ink-soft">{listing.seller.totalSales} completed sale{listing.seller.totalSales === 1 ? "" : "s"}</div>
+              <div className="text-xs text-ink-faint">Member since {listing.seller.memberSince}</div>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT — BOTTOM (FAQ + Comments) */}
+          <div className="flex flex-col gap-12">
             {/* FAQ */}
             <section>
               <h2 className="mb-2 text-xl">FAQ with Seller</h2>
@@ -441,42 +500,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               </div>
             </section>
           </div>
-
-          {/* SIDEBAR — acquisition panel, sticky */}
-          <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24">
-            <div className="rounded-xl border border-rule bg-paper-raised p-5">
-              {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
-                <div className="mono text-center text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
-              )}
-              <div className="mono mb-4 text-center text-2xl font-bold text-ink">{fmtUSD(price)}</div>
-              <div className="flex flex-col gap-2">
-                <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
-                <CartButton listingId={listing.id} sold={listing.status === "sold"} />
-                <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
-                <WishlistButton listingId={listing.id} variant="full" />
-              </div>
-              <p className="mt-4 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
-                <Lock size={12} className="mt-0.5 shrink-0" />
-                Your identity and message stay confidential to the seller until you choose to share more.
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-rule bg-paper-raised p-5">
-              <h5 className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Seller</h5>
-              <div className="mb-1 font-semibold text-ink">{listing.seller.name}</div>
-              {listing.seller.location && <div className="mb-2 text-sm text-ink-soft">{listing.seller.location}</div>}
-              {listing.seller.isVerified ? (
-                <div className="mb-2 flex items-center gap-1.5 text-sm text-brand-hover">
-                  <ShieldCheck size={15} />
-                  Verified {listing.seller.verificationMethod?.replace("_", " ")}
-                </div>
-              ) : (
-                <div className="mb-2 text-sm text-ink-faint">Identity not yet verified</div>
-              )}
-              <div className="mono text-sm text-ink-soft">{listing.seller.totalSales} completed sale{listing.seller.totalSales === 1 ? "" : "s"}</div>
-              <div className="text-xs text-ink-faint">Member since {listing.seller.memberSince}</div>
-            </div>
-          </aside>
         </div>
       </Container>
     </main>
