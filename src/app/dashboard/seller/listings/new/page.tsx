@@ -174,6 +174,15 @@ export default function AddNewBusinessPage() {
 
   const [socialStats, setSocialStats] = useState([{ name: "", value: "" }]);
 
+  // YouTube Channels category only (Design & Development New.pdf, Sep 4
+  // 2026) — Copyright Notes (free text + proof screenshots) and up to 5
+  // Top Performing Videos.
+  const [copyrightNotes, setCopyrightNotes] = useState("");
+  const [copyrightImages, setCopyrightImages] = useState<File[]>([]);
+  const [topVideos, setTopVideos] = useState(
+    Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" }))
+  );
+
   const [incomeImages, setIncomeImages] = useState<File[]>([]);
   const [gaImages, setGaImages] = useState<File[]>([]);
   const [gscImages, setGscImages] = useState<File[]>([]);
@@ -192,6 +201,9 @@ export default function AddNewBusinessPage() {
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats({});
+    setCopyrightNotes("");
+    setCopyrightImages([]);
+    setTopVideos(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
   }
 
   async function uploadGallery(supabase: NonNullable<ReturnType<typeof createClient>>, sellerId: string, listingId: string, files: File[], kind: string) {
@@ -320,11 +332,40 @@ export default function AddNewBusinessPage() {
         }
       }
 
+      // Copyright Notes + Top Performing Videos — YouTube Channels only.
+      if (categoryId === "youtube-channels") {
+        if (copyrightNotes.trim()) {
+          const { error } = await supabase
+            .from("listing_copyright_notes")
+            .insert({ listing_id: listingId, notes: copyrightNotes, updated_on: new Date().toISOString().slice(0, 10) });
+          if (error) throw new Error(`Saving Copyright Notes failed: ${error.message}`);
+        }
+        const videoRows = topVideos
+          .filter((v) => v.title)
+          .map((v, i) => ({
+            listing_id: listingId,
+            rank: i + 1,
+            title: v.title,
+            video_url: v.videoUrl || null,
+            views: v.views ? Number(v.views) : null,
+            likes: v.likes ? Number(v.likes) : null,
+            duration: v.duration || null,
+            published_on: v.publishedOn || null,
+          }));
+        if (videoRows.length) {
+          const { error } = await supabase.from("listing_top_videos").insert(videoRows);
+          if (error) throw new Error(`Saving Top Performing Videos failed: ${error.message}`);
+        }
+      }
+
       await uploadGallery(supabase, sellerId, listingId, incomeImages, "proof_of_income");
       await uploadGallery(supabase, sellerId, listingId, gaImages, "google_analytics");
       await uploadGallery(supabase, sellerId, listingId, gscImages, "search_console");
       await uploadGallery(supabase, sellerId, listingId, semrushImages, "semrush");
       await uploadGallery(supabase, sellerId, listingId, ahrefsImages, "ahrefs");
+      if (categoryId === "youtube-channels") {
+        await uploadGallery(supabase, sellerId, listingId, copyrightImages, "copyright_notes");
+      }
 
       setSubmitted(true);
       if (category.hasSeoData) {
@@ -385,7 +426,7 @@ export default function AddNewBusinessPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Business title">
+          <Field label={categoryId === "youtube-channels" ? "Channel Name" : "Business title"}>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Southbound Coffee Co." className={inputCls} />
           </Field>
           <Field label="Category">
@@ -398,13 +439,16 @@ export default function AddNewBusinessPage() {
         {/* Business Location: not collected for Websites (Sep 2026 revision —
             the user asked for it to be dropped from this category, unlike
             E-commerce and every other category where it's still shown and
-            still feeds the "Business Location" Quick Stat). */}
+            still feeds the "Business Location" Quick Stat). Labels below
+            switch to "Channel Name/URL/Location" for YouTube Channels
+            (Design & Development New.pdf, Sep 4 2026) — same underlying
+            fields/columns, just different copy for that category. */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Business URL" className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+          <Field label={categoryId === "youtube-channels" ? "Channel URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
             <input type="url" value={businessUrl} onChange={(e) => setBusinessUrl(e.target.value)} placeholder="https://" className={inputCls} />
           </Field>
           {categoryId !== "websites" && (
-            <Field label="Business location">
+            <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
               <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
             </Field>
           )}
@@ -437,6 +481,26 @@ export default function AddNewBusinessPage() {
                   />
                 </Field>
               ))}
+            </div>
+          </Section>
+        ) : categoryId === "youtube-channels" ? (
+          // Design & Development New.pdf (Sep 4 2026): this category has no
+          // Google Analytics data to auto-compute these from, so — like
+          // Domains — they're typed in directly rather than calculated.
+          <Section title="Channel Statistics" hint="Shown in this listing's Quick Statistics once published.">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Total Subscribers">
+                <input type="number" min="0" value={quickStats.subscribers ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, subscribers: e.target.value }))} className={inputCls} />
+              </Field>
+              <Field label="Total Views">
+                <input type="number" min="0" value={quickStats.total_views ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_views: e.target.value }))} className={inputCls} />
+              </Field>
+              <Field label="Total Videos">
+                <input type="number" min="0" value={quickStats.total_videos ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_videos: e.target.value }))} className={inputCls} />
+              </Field>
+              <Field label="Channel Age (years)">
+                <input type="number" min="0" step="0.5" value={quickStats.channel_age ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, channel_age: e.target.value }))} className={inputCls} />
+              </Field>
             </div>
           </Section>
         ) : (
@@ -490,7 +554,7 @@ export default function AddNewBusinessPage() {
           </div>
         </Section>
 
-        <Section title="Overview of the Business">
+        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : "Overview of the Business"}>
           <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} placeholder="What does the business do, how is it monetized, and why are you selling?" className={`${inputCls} w-full`} />
         </Section>
 
@@ -633,6 +697,57 @@ export default function AddNewBusinessPage() {
               <ImageGallery label="Ahrefs Data Images" files={ahrefsImages} setFiles={setAhrefsImages} />
             </Section>
           </>
+        )}
+
+        {categoryId === "youtube-channels" && (
+          <Section title="Copyright Notes" hint="Any copyright claims/strikes on your videos or shorts, and how they affect monetization.">
+            <textarea
+              rows={4}
+              value={copyrightNotes}
+              onChange={(e) => setCopyrightNotes(e.target.value)}
+              placeholder={"e.g. 2 copyright notes found on videos\n1 video is tagged as \"This video is ineligible to earn...\"\nNo copyright notes found on shorts"}
+              className={`${inputCls} w-full`}
+            />
+            <p className="mt-1.5 text-xs text-ink-faint">One note per line — shown as a list on your published listing, with today&rsquo;s date as the &ldquo;last updated&rdquo; stamp.</p>
+            <ImageGallery
+              label="Proof of Copyright Notes"
+              hint="Screenshot(s) of the Copyright Notices page in YouTube Studio."
+              files={copyrightImages}
+              setFiles={setCopyrightImages}
+            />
+          </Section>
+        )}
+
+        {categoryId === "youtube-channels" && (
+          <Section title="Top Performing Videos" hint="Up to 5 of your channel's best-performing videos — shown publicly with a thumbnail pulled from each video URL.">
+            <div className="flex flex-col gap-4">
+              {topVideos.map((v, i) => (
+                <div key={i} className="rounded-xl border border-rule bg-paper-raised p-4">
+                  <h5 className="mb-3 text-sm font-semibold text-ink-soft">Video {i + 1}</h5>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Field label="Title" className="sm:col-span-2">
+                      <input value={v.title} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, title: e.target.value } : row)))} className={inputCls} />
+                    </Field>
+                    <Field label="Video URL" className="sm:col-span-2">
+                      <input type="url" placeholder="https://www.youtube.com/watch?v=..." value={v.videoUrl} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, videoUrl: e.target.value } : row)))} className={inputCls} />
+                    </Field>
+                    <Field label="Views">
+                      <input type="number" min="0" value={v.views} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, views: e.target.value } : row)))} className={inputCls} />
+                    </Field>
+                    <Field label="Likes">
+                      <input type="number" min="0" value={v.likes} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, likes: e.target.value } : row)))} className={inputCls} />
+                    </Field>
+                    <Field label="Duration">
+                      <input placeholder="12:18" value={v.duration} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, duration: e.target.value } : row)))} className={inputCls} />
+                    </Field>
+                    <Field label="Upload date">
+                      <input type="date" value={v.publishedOn} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, publishedOn: e.target.value } : row)))} className={inputCls} />
+                    </Field>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Section>
         )}
 
         {category.hasSocialStats && (
