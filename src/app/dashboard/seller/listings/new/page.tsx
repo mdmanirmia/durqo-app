@@ -757,9 +757,6 @@ export default function AddNewBusinessPage() {
                 <div key={i} className="rounded-xl border border-rule bg-paper-raised p-4">
                   <h5 className="mb-3 text-sm font-semibold text-ink-soft">Video {i + 1}</h5>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <Field label="Title" className="sm:col-span-2">
-                      <input value={v.title} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, title: e.target.value } : row)))} className={inputCls} />
-                    </Field>
                     <Field label="Video URL" className="sm:col-span-2">
                       <input
                         type="url"
@@ -772,6 +769,9 @@ export default function AddNewBusinessPage() {
                       {videoLookup[i] === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching details from YouTube…</p>}
                       {videoLookup[i] === "done" && <p className="mt-1 text-xs text-brand-strong">Auto-filled from YouTube — edit any field if needed.</p>}
                       {videoLookup[i] === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch details automatically — enter them manually below.</p>}
+                    </Field>
+                    <Field label="Title" className="sm:col-span-2">
+                      <input value={v.title} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, title: e.target.value } : row)))} className={inputCls} />
                     </Field>
                     <Field label="Views">
                       <input type="number" min="0" value={v.views} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, views: e.target.value } : row)))} className={inputCls} />
