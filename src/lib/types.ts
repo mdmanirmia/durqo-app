@@ -66,11 +66,33 @@ export type ListingImageKind =
   | "google_analytics"
   | "search_console"
   | "semrush"
-  | "ahrefs";
+  | "ahrefs"
+  | "copyright_notes";
 
 export interface ListingImage {
   url: string;
   kind: ListingImageKind;
+}
+
+// YouTube Channels category only (Design & Development New.pdf, Sep 4
+// 2026): free-text copyright-strike/claim notes plus an auto-stamped "last
+// updated" date, shown alongside its own proof-screenshot gallery
+// (kind: "copyright_notes" above).
+export interface CopyrightNotes {
+  notes: string;
+  updatedOn: string; // "YYYY-MM-DD"
+}
+
+// YouTube Channels category only — up to 5 per listing, ordered by rank.
+// `videoUrl` doubles as the source for a derived thumbnail (see
+// youtubeThumbnailUrl() in src/lib/format.ts) rather than a separate upload.
+export interface TopVideo {
+  title: string;
+  videoUrl?: string;
+  views?: number;
+  likes?: number;
+  duration?: string;
+  publishedOn?: string; // "YYYY-MM-DD"
 }
 
 export interface SellerInfo {
@@ -130,6 +152,11 @@ export interface Listing {
   // connected and a sync has completed at least once; the listing page
   // falls back to the manual GA section above when this is absent.
   gaLiveStats?: GaLiveStats;
+  // YouTube Channels category only — both optional so every other category
+  // (and the bundled mock listings, which predate these fields) needs no
+  // changes; absent/empty just means neither section renders.
+  copyrightNotes?: CopyrightNotes;
+  topVideos?: TopVideo[];
 }
 
 export interface GaLiveStats {

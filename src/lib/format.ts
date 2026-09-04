@@ -71,9 +71,19 @@ const QUICK_STAT_MULTIPLE = new Set(["income_multiple"]);
 const QUICK_STAT_YEARS = new Set(["age", "channel_age"]);
 const QUICK_STAT_PERCENT = new Set(["open_rate", "click_through_rate", "unsubscribe_rate"]);
 const QUICK_STAT_COUNT = new Set([
-  "monthly_visitors", "subscribers", "monthly_views", "total_videos", "total_posts",
+  "monthly_visitors", "subscribers", "monthly_views", "total_views", "total_videos", "total_posts",
   "likes_per_post", "views_per_post", "total_downloads", "total_reviews", "active_clients", "followers",
 ]);
+
+// Extracts a thumbnail image URL straight from a YouTube video URL (watch,
+// youtu.be, shorts, or embed links) via YouTube's own static thumbnail
+// endpoint — no API key, and no separate image upload needed for the Top
+// Performing Videos section (YouTube Channels category only).
+export function youtubeThumbnailUrl(videoUrl: string | null | undefined): string | null {
+  if (!videoUrl) return null;
+  const match = videoUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([\w-]{11})/);
+  return match ? `https://img.youtube.com/vi/${match[1]}/mqdefault.jpg` : null;
+}
 
 // Formats a listing.quickStats value the same way regardless of which
 // category it belongs to — money as $, counts abbreviated (12.4K), rates as

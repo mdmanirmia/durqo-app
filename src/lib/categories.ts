@@ -12,6 +12,7 @@ export type QuickStatKey =
   | "authority_score"
   | "subscribers"
   | "monthly_views"
+  | "total_views"
   | "total_videos"
   | "channel_age"
   | "followers"
@@ -76,7 +77,14 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "youtube-channels",
     name: "YouTube Channels",
     description: "Monetized channels with an existing subscriber base.",
-    quickStats: ["location", "monthly_income", "monthly_views", "subscribers", "total_videos", "channel_age", "income_multiple"],
+    // Design & Development New.pdf (Sep 4, 2026 revision): Total
+    // Subscribers/Total Views/Total Videos/Channel Age are entered
+    // manually on the form (this category has no Google Analytics data to
+    // compute them from — see hasSeoData: false and the note below), not
+    // auto-computed like most other categories' Quick Stats. "Total Views"
+    // is a distinct field from "monthly_views" (an average, GA-sourced,
+    // and not applicable here) — see QUICK_STAT_COLUMNS in map-listing.ts.
+    quickStats: ["location", "monthly_income", "subscribers", "total_views", "total_videos", "channel_age"],
     hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: true,
@@ -196,6 +204,7 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   articles_posted: "Articles Posted",
   subscribers: "Subscribers",
   monthly_views: "Monthly Views",
+  total_views: "Total Views",
   total_videos: "Total Videos",
   channel_age: "Channel Age",
   followers: "Followers",
