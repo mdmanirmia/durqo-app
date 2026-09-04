@@ -74,6 +74,20 @@ export type ListingFullEditFields = {
   // entirely — same "undefined vs. present" convention as `seo` above.
   copyrightNotes?: string;
   topVideos?: { title: string; videoUrl: string; views: number | null; likes: number | null; duration: string; publishedOn: string | null }[];
+  // YouTube Channel Overview panel (Channel URL auto-fill, Sep 4 2026).
+  // Undefined = skip the table entirely; null = clear a previously-saved
+  // overview (e.g. the seller cleared the Channel URL field); an object =
+  // upsert the freshly-fetched values.
+  channelOverview?: {
+    channelTitle: string;
+    channelHandle: string | null;
+    channelAvatarUrl: string | null;
+    channelCreatedOn: string | null;
+    avgViewsPerVideo: number | null;
+    recentAvgViews: number | null;
+    recentAvgLikes: number | null;
+    engagementRatePercent: number | null;
+  } | null;
 };
 
 // Core listing row + every related "profile" table (quick stats live as
@@ -172,6 +186,33 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
       const { error } = await admin.from("listing_top_videos").insert(videoRows);
       if (error) throw new Error(`Saving Top Performing Videos failed: ${error.message}`);
     }
+  }
+
+  // YouTube Channel Overview: upsert (1:1, same pattern as Copyright
+  // Notes), or clear the row entirely when the seller removed the Channel
+  // URL. `last_synced_at` defaults to now() on every write — the "This
+  // data was updated on <date>" stamp on the public panel.
+  if (fields.channelOverview === null) {
+    const { error } = await admin.from("listing_youtube_channel_overview").delete().eq("listing_id", listingId);
+    if (error) throw new Error(`Clearing Channel Overview failed: ${error.message}`);
+  } else if (fields.channelOverview !== undefined) {
+    const c = fields.channelOverview;
+    const { error } = await admin.from("listing_youtube_channel_overview").upsert(
+      {
+        listing_id: listingId,
+        channel_title: c.channelTitle,
+        channel_handle: c.channelHandle,
+        channel_avatar_url: c.channelAvatarUrl,
+        channel_created_on: c.channelCreatedOn,
+        avg_views_per_video: c.avgViewsPerVideo,
+        recent_avg_views: c.recentAvgViews,
+        recent_avg_likes: c.recentAvgLikes,
+        engagement_rate_percent: c.engagementRatePercent,
+        last_synced_at: new Date().toISOString(),
+      },
+      { onConflict: "listing_id" }
+    );
+    if (error) throw new Error(`Saving Channel Overview failed: ${error.message}`);
   }
 
   revalidatePath(`/listing/${listingId}`);
