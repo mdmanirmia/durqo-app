@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, ChevronRight, Lock, ExternalLink } from "lucide-react";
+import { ShieldCheck, ChevronRight, Lock, ExternalLink, Eye, ThumbsUp, Clock, Calendar } from "lucide-react";
 import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { NICHE_MAP } from "@/lib/niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
-import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref } from "@/lib/format";
+import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -49,10 +49,18 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // QUICK_STAT_LABELS map since every other category still shows a
   // manually-entered value under the plain "Monthly Income"/"Monthly Views"
   // label.
+  // YouTube Channels label overrides (Design & Development New.pdf, Sep 4
+  // 2026): "Business Location" -> "Channel Location", "Monthly Income" ->
+  // "Avg. Monthly Income" (same averaging as Websites/E-commerce, just
+  // sourced from this category's own Proof of Income entries), and
+  // "Subscribers" -> "Total Subscribers" — scoped to this category only so
+  // Newsletters' plain "Subscribers" label is untouched.
   const quickStatLabelOverrides: Partial<Record<QuickStatKey, string>> =
     listing.categoryId === "websites" || listing.categoryId === "e-commerce"
       ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views" }
-      : {};
+      : listing.categoryId === "youtube-channels"
+        ? { location: "Channel Location", monthly_income: "Avg. Monthly Income", subscribers: "Total Subscribers" }
+        : {};
 
   // Real uploaded verification screenshots, grouped by which data section
   // they belong to — empty when this listing predates real Storage uploads
@@ -63,6 +71,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const gscImageUrls = imagesByKind("search_console");
   const semrushImageUrls = imagesByKind("semrush");
   const ahrefsImageUrls = imagesByKind("ahrefs");
+  const copyrightImageUrls = imagesByKind("copyright_notes");
+  const copyrightNoteLines = (listing.copyrightNotes?.notes ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+  const topVideos = (listing.topVideos ?? []).filter((v) => v.title);
 
   // A section should render whenever there's anything to show for it — the
   // seller may have typed in manual numbers, uploaded proof screenshots, or
@@ -154,7 +165,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
             {/* Overview */}
             <section>
-              <h2 className="mb-3 text-xl">Overview of the Business</h2>
+              <h2 className="mb-3 text-xl">{listing.categoryId === "youtube-channels" ? "Overview of the Channel" : "Overview of the Business"}</h2>
               <p className="max-w-[70ch] text-ink-soft">{listing.overview}</p>
               {category?.note && (
                 <p className="mt-3 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
@@ -196,6 +207,73 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                       {MONETIZATION_MAP[id] ?? id}
                     </span>
                   ))}
+                </div>
+              </section>
+            )}
+
+            {/* Copyright Notes — YouTube Channels only (Design & Development
+                New.pdf, Sep 4 2026). Renders whenever there's a note or a
+                proof screenshot, same "don't gate on one field alone"
+                reasoning as the GA/GSC/SEMrush/Ahrefs sections below. */}
+            {listing.categoryId === "youtube-channels" && (copyrightNoteLines.length > 0 || copyrightImageUrls.length > 0) && (
+              <section>
+                <h2 className="mb-1 text-xl">Copyright Notes</h2>
+                {listing.copyrightNotes?.updatedOn && (
+                  <p className="mb-4 text-sm text-ink-faint">
+                    This data was updated on{" "}
+                    {new Date(`${listing.copyrightNotes.updatedOn}T00:00:00`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                  </p>
+                )}
+                {copyrightNoteLines.length > 0 && (
+                  <ul className="mb-4 list-disc space-y-1.5 pl-5 text-sm text-ink-soft">
+                    {copyrightNoteLines.map((line, i) => (
+                      <li key={i}>{line}</li>
+                    ))}
+                  </ul>
+                )}
+                {copyrightImageUrls.length > 0 && <ProofGalleryButton label="Copyright Notes" images={copyrightImageUrls} />}
+              </section>
+            )}
+
+            {/* Top Performing Videos — YouTube Channels only. Thumbnails are
+                derived client-side from each video URL (see
+                youtubeThumbnailUrl in src/lib/format.ts), not uploaded. */}
+            {listing.categoryId === "youtube-channels" && topVideos.length > 0 && (
+              <section>
+                <h2 className="mb-4 text-xl">All-Time Top Performing Videos</h2>
+                <div className="flex flex-col gap-2">
+                  {topVideos.map((v, i) => {
+                    const thumb = youtubeThumbnailUrl(v.videoUrl);
+                    const content = (
+                      <>
+                        <span className="mono grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-semibold text-brand-hover">{i + 1}</span>
+                        <span className="h-12 w-20 shrink-0 overflow-hidden rounded-md bg-paper-sunk">
+                          {thumb && (
+                            // eslint-disable-next-line @next/next/no-img-element -- external YouTube thumbnail URL, not a local /public asset
+                            <img src={thumb} alt="" className="h-full w-full object-cover" />
+                          )}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium text-ink">{v.title}</span>
+                          <span className="mono mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-faint">
+                            {v.views !== undefined && <span className="flex items-center gap-1"><Eye size={12} /> {fmtNumber(v.views)} views</span>}
+                            {v.likes !== undefined && <span className="flex items-center gap-1"><ThumbsUp size={12} /> {fmtNumber(v.likes)} likes</span>}
+                            {v.duration && <span className="flex items-center gap-1"><Clock size={12} /> {v.duration}</span>}
+                            {v.publishedOn && <span className="flex items-center gap-1"><Calendar size={12} /> {v.publishedOn}</span>}
+                          </span>
+                        </span>
+                      </>
+                    );
+                    return v.videoUrl ? (
+                      <a key={i} href={v.videoUrl} target="_blank" rel="noopener noreferrer nofollow" className="flex items-center gap-3 rounded-lg border border-rule bg-paper-raised p-3 hover:border-brand-strong">
+                        {content}
+                      </a>
+                    ) : (
+                      <div key={i} className="flex items-center gap-3 rounded-lg border border-rule bg-paper-raised p-3">
+                        {content}
+                      </div>
+                    );
+                  })}
                 </div>
               </section>
             )}
