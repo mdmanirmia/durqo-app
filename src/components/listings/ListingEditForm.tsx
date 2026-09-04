@@ -578,8 +578,8 @@ export default function ListingEditForm({
             className={inputCls}
           />
           {categoryId === "youtube-channels" && channelLookup === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching channel details from YouTube…</p>}
-          {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel Statistics auto-filled below — edit any field if needed.</p>}
-          {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details automatically — enter Channel Statistics manually below.</p>}
+          {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched — Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
+          {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
         </Field>
         {categoryId !== "websites" && (
           <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
@@ -612,22 +612,16 @@ export default function ListingEditForm({
           </div>
         </Section>
       ) : categoryId === "youtube-channels" ? (
-        <Section title="Channel Statistics" hint="Channel Age is shown in Quick Statistics; the others appear in the YouTube Channel Overview panel.">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Total Subscribers">
-              <input type="number" min="0" value={quickStats.subscribers ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, subscribers: e.target.value }))} className={inputCls} />
-            </Field>
-            <Field label="Total Views">
-              <input type="number" min="0" value={quickStats.total_views ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_views: e.target.value }))} className={inputCls} />
-            </Field>
-            <Field label="Total Videos">
-              <input type="number" min="0" value={quickStats.total_videos ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_videos: e.target.value }))} className={inputCls} />
-            </Field>
-            <Field label="Channel Age (years)">
-              <input type="number" min="0" step="0.5" value={quickStats.channel_age ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, channel_age: e.target.value }))} className={inputCls} />
-            </Field>
-          </div>
-        </Section>
+        // Sep 4 2026 follow-up: dropped the manual "Channel Statistics"
+        // section (Total Subscribers/Total Views/Total Videos/Channel Age)
+        // — all four are fully covered by fetchChannelInfo() firing on the
+        // Channel URL field's onBlur above, so the user asked to remove the
+        // redundant manual inputs here too, matching the create form.
+        // quickStats.subscribers/.total_views/.total_videos/.channel_age
+        // are still set by that lookup (including re-initialized from the
+        // listing's saved values when this form loads) and still get saved
+        // on submit — there's just no visible input for them anymore.
+        null
       ) : (
         category.quickStats.includes("age") && (
           <div>
