@@ -162,6 +162,8 @@ export default function ListingEditForm({
   monthlyStats,
   images,
   socialStats,
+  copyrightNotes,
+  topVideos,
 }: {
   mode: "admin" | "seller";
   listing: Row;
@@ -169,6 +171,8 @@ export default function ListingEditForm({
   monthlyStats: Row[];
   images: Row[];
   socialStats: Row[];
+  copyrightNotes?: Row | null;
+  topVideos?: Row[];
 }) {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState<string>(listing.category_id);
@@ -243,6 +247,24 @@ export default function ListingEditForm({
     socialStats.length > 0 ? socialStats.map((r) => ({ name: r.platform ?? "", value: r.followers != null ? String(r.followers) : "" })) : [{ name: "", value: "" }]
   );
 
+  // YouTube Channels category only (Design & Development New.pdf, Sep 4
+  // 2026) — pre-filled from the listing's existing rows, if any.
+  const [copyrightNotesText, setCopyrightNotesText] = useState(copyrightNotes?.notes ?? "");
+  const [topVideoRows, setTopVideoRows] = useState(() => {
+    const sorted = (topVideos ?? []).slice().sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0));
+    return Array.from({ length: 5 }, (_, i) => {
+      const v = sorted[i];
+      return {
+        title: v?.title ?? "",
+        videoUrl: v?.video_url ?? "",
+        views: v?.views != null ? String(v.views) : "",
+        likes: v?.likes != null ? String(v.likes) : "",
+        duration: v?.duration ?? "",
+        publishedOn: v?.published_on ? String(v.published_on).slice(0, 10) : "",
+      };
+    });
+  });
+
   function imagesOfKind(kind: string) {
     return images.filter((img) => img.kind === kind).map((img) => ({ id: img.id as string, url: img.url as string }));
   }
@@ -252,12 +274,14 @@ export default function ListingEditForm({
     search_console: imagesOfKind("search_console"),
     semrush: imagesOfKind("semrush"),
     ahrefs: imagesOfKind("ahrefs"),
+    copyright_notes: imagesOfKind("copyright_notes"),
   });
   const [incomeImages, setIncomeImages] = useState<File[]>([]);
   const [gaImages, setGaImages] = useState<File[]>([]);
   const [gscImages, setGscImages] = useState<File[]>([]);
   const [semrushImages, setSemrushImages] = useState<File[]>([]);
   const [ahrefsImages, setAhrefsImages] = useState<File[]>([]);
+  const [copyrightImages, setCopyrightImages] = useState<File[]>([]);
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
 
   const [saving, setSaving] = useState(false);
@@ -270,6 +294,10 @@ export default function ListingEditForm({
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats(initialQuickStats(id));
+    if (id !== "youtube-channels") {
+      setCopyrightNotesText("");
+      setTopVideoRows(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
+    }
   }
 
   async function handleDeleteExistingImage(kind: keyof typeof existingImages, imageId: string) {
@@ -355,6 +383,18 @@ export default function ListingEditForm({
         gaAccessConfirmed: category.hasSeoData ? gaAccessConfirmed : null,
         seo: seoFields,
         socialStats: socialStatRows.filter((r) => r.name && r.value).map((r) => ({ platform: r.name, followers: Number(r.value) })),
+        copyrightNotes: categoryId === "youtube-channels" ? copyrightNotesText : undefined,
+        topVideos:
+          categoryId === "youtube-channels"
+            ? topVideoRows.map((v) => ({
+                title: v.title,
+                videoUrl: v.videoUrl,
+                views: v.views ? Number(v.views) : null,
+                likes: v.likes ? Number(v.likes) : null,
+                duration: v.duration,
+                publishedOn: v.publishedOn || null,
+              }))
+            : undefined,
       });
 
       await Promise.all([
@@ -363,6 +403,7 @@ export default function ListingEditForm({
         uploadNewImages("search_console", gscImages),
         uploadNewImages("semrush", semrushImages),
         uploadNewImages("ahrefs", ahrefsImages),
+        uploadNewImages("copyright_notes", copyrightImages),
       ]);
 
       setSaved(true);
@@ -407,7 +448,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Business title">
+        <Field label={categoryId === "youtube-channels" ? "Channel Name" : "Business title"}>
           <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
         </Field>
         <Field label="Category">
@@ -418,11 +459,11 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Business URL" className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+        <Field label={categoryId === "youtube-channels" ? "Channel URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
           <input type="url" value={businessUrl} onChange={(e) => setBusinessUrl(e.target.value)} placeholder="https://" className={inputCls} />
         </Field>
         {categoryId !== "websites" && (
-          <Field label="Business location">
+          <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
             <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
           </Field>
         )}
@@ -449,6 +490,23 @@ export default function ListingEditForm({
                 />
               </Field>
             ))}
+          </div>
+        </Section>
+      ) : categoryId === "youtube-channels" ? (
+        <Section title="Channel Statistics" hint="Shown in this listing's Quick Statistics.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Total Subscribers">
+              <input type="number" min="0" value={quickStats.subscribers ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, subscribers: e.target.value }))} className={inputCls} />
+            </Field>
+            <Field label="Total Views">
+              <input type="number" min="0" value={quickStats.total_views ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_views: e.target.value }))} className={inputCls} />
+            </Field>
+            <Field label="Total Videos">
+              <input type="number" min="0" value={quickStats.total_videos ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, total_videos: e.target.value }))} className={inputCls} />
+            </Field>
+            <Field label="Channel Age (years)">
+              <input type="number" min="0" step="0.5" value={quickStats.channel_age ?? ""} onChange={(e) => setQuickStats((prev) => ({ ...prev, channel_age: e.target.value }))} className={inputCls} />
+            </Field>
           </div>
         </Section>
       ) : (
@@ -500,7 +558,7 @@ export default function ListingEditForm({
         </div>
       </Section>
 
-      <Section title="Overview of the Business">
+      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : "Overview of the Business"}>
         <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} className={`${inputCls} w-full`} />
       </Section>
 
@@ -660,6 +718,59 @@ export default function ListingEditForm({
             />
           </Section>
         </>
+      )}
+
+      {categoryId === "youtube-channels" && (
+        <Section title="Copyright Notes" hint="Any copyright claims/strikes on your videos or shorts, and how they affect monetization.">
+          <textarea
+            rows={4}
+            value={copyrightNotesText}
+            onChange={(e) => setCopyrightNotesText(e.target.value)}
+            className={`${inputCls} w-full`}
+          />
+          <p className="mt-1.5 text-xs text-ink-faint">One note per line — shown as a list on the published listing. Saving updates the &ldquo;last updated&rdquo; date shown there to today.</p>
+          <EditableImageGallery
+            label="Proof of Copyright Notes"
+            hint="Screenshot(s) of the Copyright Notices page in YouTube Studio."
+            existing={existingImages.copyright_notes}
+            onDeleteExisting={(id) => handleDeleteExistingImage("copyright_notes", id)}
+            deletingId={deletingImageId}
+            newFiles={copyrightImages}
+            setNewFiles={setCopyrightImages}
+          />
+        </Section>
+      )}
+
+      {categoryId === "youtube-channels" && (
+        <Section title="Top Performing Videos" hint="Up to 5 of your channel's best-performing videos — shown publicly with a thumbnail pulled from each video URL.">
+          <div className="flex flex-col gap-4">
+            {topVideoRows.map((v, i) => (
+              <div key={i} className="rounded-xl border border-rule bg-paper-raised p-4">
+                <h5 className="mb-3 text-sm font-semibold text-ink-soft">Video {i + 1}</h5>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field label="Title" className="sm:col-span-2">
+                    <input value={v.title} onChange={(e) => setTopVideoRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, title: e.target.value } : row)))} className={inputCls} />
+                  </Field>
+                  <Field label="Video URL" className="sm:col-span-2">
+                    <input type="url" placeholder="https://www.youtube.com/watch?v=..." value={v.videoUrl} onChange={(e) => setTopVideoRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, videoUrl: e.target.value } : row)))} className={inputCls} />
+                  </Field>
+                  <Field label="Views">
+                    <input type="number" min="0" value={v.views} onChange={(e) => setTopVideoRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, views: e.target.value } : row)))} className={inputCls} />
+                  </Field>
+                  <Field label="Likes">
+                    <input type="number" min="0" value={v.likes} onChange={(e) => setTopVideoRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, likes: e.target.value } : row)))} className={inputCls} />
+                  </Field>
+                  <Field label="Duration">
+                    <input placeholder="12:18" value={v.duration} onChange={(e) => setTopVideoRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, duration: e.target.value } : row)))} className={inputCls} />
+                  </Field>
+                  <Field label="Upload date">
+                    <input type="date" value={v.publishedOn} onChange={(e) => setTopVideoRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, publishedOn: e.target.value } : row)))} className={inputCls} />
+                  </Field>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
       )}
 
       {category.hasSocialStats && (
