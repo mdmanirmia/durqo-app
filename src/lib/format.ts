@@ -50,6 +50,17 @@ export function parseDurationToSeconds(input: string): number | null {
   return null;
 }
 
+// Reverse of parseDurationToSeconds() — renders a stored
+// ga_avg_engagement_seconds value back into the "1m 26s" text an edit form
+// pre-fills its input with, matching the format sellers are asked to type.
+export function formatEngagementSeconds(seconds: number | null | undefined): string {
+  if (seconds === null || seconds === undefined || !Number.isFinite(seconds)) return "";
+  const m = Math.floor(seconds / 60);
+  const s = Math.round(seconds % 60);
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
 export function monthLabel(ym: string): string {
   const [y, m] = ym.split("-").map(Number);
   return new Date(y, m - 1, 1).toLocaleDateString("en-US", { month: "short", year: "2-digit" });
