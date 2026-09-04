@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revokeToken } from "@/lib/google-analytics";
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
 
   await admin.from("listing_ga_connections").delete().eq("listing_id", listingId);
   await admin.from("listing_ga_public_stats").delete().eq("listing_id", listingId);
+
+  revalidatePath(`/listing/${listingId}`);
 
   return NextResponse.json({ ok: true });
 }
