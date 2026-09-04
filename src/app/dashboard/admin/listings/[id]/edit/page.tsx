@@ -25,7 +25,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
   const { data: listing } = await admin.from("listings").select("*").eq("id", id).single();
   if (!listing) notFound();
 
-  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }, { data: copyrightNotes }, { data: topVideos }] = await Promise.all([
+  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }, { data: copyrightNotes }, { data: topVideos }, { data: channelOverview }] = await Promise.all([
     admin.from("listing_seo_data").select("*").eq("listing_id", id).maybeSingle(),
     admin.from("listing_monthly_stats").select("*").eq("listing_id", id),
     admin.from("listing_images").select("*").eq("listing_id", id),
@@ -34,6 +34,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
     // 2026) — missing rows just mean neither section is pre-filled.
     admin.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
     admin.from("listing_top_videos").select("*").eq("listing_id", id),
+    admin.from("listing_youtube_channel_overview").select("*").eq("listing_id", id).maybeSingle(),
   ]);
 
   return (
@@ -47,6 +48,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
         socialStats={socialStats ?? []}
         copyrightNotes={copyrightNotes ?? null}
         topVideos={topVideos ?? []}
+        channelOverview={channelOverview ?? null}
       />
     </DashboardShell>
   );
