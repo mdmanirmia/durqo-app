@@ -174,8 +174,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
           exactly as when it was one single grid row.
         */}
         <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
-          {/* MAIN CONTENT — TOP (through Payment Terms) */}
-          <div className="flex flex-col gap-12">
+          {/* MAIN CONTENT — TOP (through Payment Terms). min-w-0 guards
+              against the CSS Grid/Flexbox "automatic minimum size" bug: a
+              grid/flex item's default min-width is its content's intrinsic
+              (unwrapped) width, so one unbreakable/nowrap descendant deep
+              inside this column (e.g. a truncated Top Performing Videos
+              title) can otherwise force this whole column — and therefore
+              the entire mobile single-column layout — wider than the
+              viewport. Sep 5 2026: this exact bug shipped with the YouTube
+              Channels "All-Time Top Performing Videos" section; fixed at
+              the section/row level below, with this as defense-in-depth. */}
+          <div className="min-w-0 flex flex-col gap-12">
             <div>
               <h1 className="mb-2 text-3xl sm:text-4xl">{listing.title}</h1>
               {listing.businessUrl && (
@@ -330,9 +339,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 derived client-side from each video URL (see
                 youtubeThumbnailUrl in src/lib/format.ts), not uploaded. */}
             {listing.categoryId === "youtube-channels" && topVideos.length > 0 && (
-              <section>
+              <section className="min-w-0">
                 <h2 className="mb-4 text-xl">All-Time Top Performing Videos</h2>
-                <div className="flex flex-col gap-2">
+                <div className="flex min-w-0 flex-col gap-2">
                   {topVideos.map((v, i) => {
                     const thumb = youtubeThumbnailUrl(v.videoUrl);
                     const content = (
@@ -356,11 +365,11 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                       </>
                     );
                     return v.videoUrl ? (
-                      <a key={i} href={v.videoUrl} target="_blank" rel="noopener noreferrer nofollow" className="flex items-center gap-3 rounded-lg border border-rule bg-paper-raised p-3 hover:border-brand-strong">
+                      <a key={i} href={v.videoUrl} target="_blank" rel="noopener noreferrer nofollow" className="flex min-w-0 items-center gap-3 rounded-lg border border-rule bg-paper-raised p-3 hover:border-brand-strong">
                         {content}
                       </a>
                     ) : (
-                      <div key={i} className="flex items-center gap-3 rounded-lg border border-rule bg-paper-raised p-3">
+                      <div key={i} className="flex min-w-0 items-center gap-3 rounded-lg border border-rule bg-paper-raised p-3">
                         {content}
                       </div>
                     );
@@ -504,7 +513,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               seller details → FAQ → Comments; lg:row-span-2 keeps it spanning
               both main-content rows on desktop so it still sticks through the
               full page height, not just the "top" chunk's height. */}
-          <aside className="flex h-max flex-col gap-4 lg:sticky lg:top-24 lg:row-span-2">
+          <aside className="min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-24 lg:row-span-2">
             <div className="rounded-xl border border-rule bg-paper-raised p-5">
               {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                 <div className="mono text-center text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
@@ -539,8 +548,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             </div>
           </aside>
 
-          {/* MAIN CONTENT — BOTTOM (FAQ + Comments) */}
-          <div className="flex flex-col gap-12">
+          {/* MAIN CONTENT — BOTTOM (FAQ + Comments). min-w-0 for the same
+              grid-overflow-guard reason as MAIN CONTENT TOP above. */}
+          <div className="min-w-0 flex flex-col gap-12">
             {/* FAQ */}
             <section>
               <h2 className="mb-2 text-xl">FAQ with Seller</h2>
