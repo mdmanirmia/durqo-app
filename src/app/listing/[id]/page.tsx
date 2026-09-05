@@ -69,6 +69,16 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // new category) gets the same "Avg. Monthly Income" treatment as SaaS;
   // "Business Type" already reads correctly from the shared
   // QUICK_STAT_LABELS map, no override needed.
+  // Startup Business (user request, Sep 5, 2026 — a brand new category):
+  // "Business Location" -> "Company Location", "Monthly Income" -> "Avg.
+  // Monthly Income" (same averaging as every other category), "Business
+  // Type" -> "Business Model" (this category's own curated list of
+  // business models, src/lib/startup-business-models.ts, reusing the
+  // shared business_type column). "Funding Stage"/"Funding Raised"/"Team
+  // Size"/"Business Age" all already read correctly from the shared
+  // QUICK_STAT_LABELS map, no override needed. Niche/Industry labeling is
+  // handled generically via INDUSTRY_ID_SPACE_CATEGORIES below (categories.ts) —
+  // this category shares SaaS's "Industry" option list/label.
   const quickStatLabelOverrides: Partial<Record<QuickStatKey, string>> =
     listing.categoryId === "websites"
       ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views", age: "Website Age" }
@@ -82,7 +92,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             ? { monthly_income: "Avg. Monthly Income" }
             : listing.categoryId === "apps-tools"
               ? { location: "App Location", monthly_income: "Avg. Monthly Income", age: "App Age", total_reviews: "Reviews", total_downloads: "Downloads/Installs" }
-              : {};
+              : listing.categoryId === "startup-business"
+                ? { location: "Company Location", monthly_income: "Avg. Monthly Income", business_type: "Business Model" }
+                : {};
 
   // YouTube Channels Quick Statistics — trimmed to just Channel Location,
   // Avg. Monthly Income, and Channel Age (Sep 2026 request: only these plus
