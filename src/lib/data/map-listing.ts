@@ -38,6 +38,9 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   // storage shape as business_type above, just for that category's Account
   // Type checklist (see src/lib/account-types.ts).
   account_type: "account_type",
+  // SaaS only — a plain manual number input replacing "Articles Posted" for
+  // this category (migration 018), same treatment as articles_posted itself.
+  active_subscribers: "active_subscribers",
   followers: "followers",
   total_posts: "total_posts",
   likes_per_post: "likes_per_post",
