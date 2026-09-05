@@ -125,11 +125,18 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
       if (names.length) stats[key] = names.join(", ");
       continue;
     }
-    // "platform" (Android & iOS Apps) is a single plain-text id (not a
-    // comma-separated list, unlike business_type/account_type above — see
-    // src/lib/app-platforms.ts) turned into its display name here.
+    // "platform" (Android & iOS Apps) is stored the same way as
+    // business_type/account_type above — a comma-separated string of ids
+    // (changed from a single-select value on Sep 5, 2026 so a seller can
+    // list both iOS and Android — see src/lib/app-platforms.ts) joined into
+    // display names here.
     if (key === "platform" && typeof value === "string") {
-      stats[key] = APP_PLATFORM_MAP[value] ?? value;
+      const names = value
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean)
+        .map((id) => APP_PLATFORM_MAP[id] ?? id);
+      if (names.length) stats[key] = names.join(", ");
       continue;
     }
     stats[key] = value;
