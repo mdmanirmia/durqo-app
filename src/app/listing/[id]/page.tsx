@@ -5,6 +5,7 @@ import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { NICHE_MAP } from "@/lib/niches";
 import { INDUSTRY_MAP } from "@/lib/industries";
+import { INDUSTRY_ID_SPACE_CATEGORIES } from "@/lib/categories";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
@@ -63,6 +64,10 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // averaging as every other category), "Followers" -> "Total Followers",
   // "Business Age" -> "Account Age". "Account Type" already reads correctly
   // from the shared QUICK_STAT_LABELS map, no override needed.
+  // AI Apps & Tools (Design & Development New.pdf, Sep 5, 2026 — a brand
+  // new category) gets the same "Avg. Monthly Income" treatment as SaaS;
+  // "Business Type" already reads correctly from the shared
+  // QUICK_STAT_LABELS map, no override needed.
   const quickStatLabelOverrides: Partial<Record<QuickStatKey, string>> =
     listing.categoryId === "websites"
       ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views", age: "Website Age" }
@@ -72,7 +77,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
         ? { location: "Channel Location", monthly_income: "Avg. Monthly Income", subscribers: "Total Subscribers" }
         : listing.categoryId === "social-media-accounts"
           ? { location: "Account Location", monthly_income: "Avg. Monthly Income", followers: "Total Followers", age: "Account Age" }
-          : listing.categoryId === "saas"
+          : listing.categoryId === "saas" || listing.categoryId === "ai-apps-tools"
             ? { monthly_income: "Avg. Monthly Income" }
             : {};
 
@@ -222,12 +227,12 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
                 ))}
                 {listing.niches.length > 0 && (
-                  // SaaS calls this same field "Industry" with its own
-                  // option list (src/lib/industries.ts) — Design &
-                  // Development New 1.pdf, Sep 5, 2026.
+                  // SaaS and AI Apps & Tools call this same field "Industry"
+                  // with a shared curated option list (src/lib/industries.ts)
+                  // — Design & Development New 1.pdf / New.pdf, Sep 5, 2026.
                   <StatTile
-                    label={listing.categoryId === "saas" ? "Industry" : "Niche"}
-                    value={listing.niches.map((id) => (listing.categoryId === "saas" ? INDUSTRY_MAP[id] : NICHE_MAP[id]) ?? id).join(", ")}
+                    label={INDUSTRY_ID_SPACE_CATEGORIES.has(listing.categoryId) ? "Industry" : "Niche"}
+                    value={listing.niches.map((id) => (INDUSTRY_ID_SPACE_CATEGORIES.has(listing.categoryId) ? INDUSTRY_MAP[id] : NICHE_MAP[id]) ?? id).join(", ")}
                   />
                 )}
                 <StatTile label="Asking Price" value={fmtUSD(price)} />
