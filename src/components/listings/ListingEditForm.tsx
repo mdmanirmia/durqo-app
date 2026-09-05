@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
-import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS } from "@/lib/monetization-types";
+import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS } from "@/lib/monetization-types";
 import { BUSINESS_TYPES } from "@/lib/business-types";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
+import { INDUSTRIES } from "@/lib/industries";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds, formatEngagementSeconds } from "@/lib/format";
 import { updateListingFull, addListingImages, deleteListingImage, type ListingFullEditFields } from "@/lib/actions/listing-edit";
@@ -391,6 +392,11 @@ export default function ListingEditForm({
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats(initialQuickStats(id));
+    // See the matching comment in the seller "new listing" form: SaaS's
+    // "Industry" option list doesn't share an id space with the shared
+    // NICHES list every other category uses, so a selection has to be
+    // cleared when crossing into or out of SaaS.
+    if ((id === "saas") !== (categoryId === "saas")) setNiches([]);
     if (id !== "youtube-channels") {
       setCopyrightNotesText("");
       setTopVideoRows(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
@@ -652,6 +658,20 @@ export default function ListingEditForm({
                   />
                 </Field>
               )}
+              {/* Active Subscribers — SaaS only, mirrors the seller "new
+                  listing" form: replaces "Articles Posted" for this
+                  category (Design & Development New 1.pdf, Sep 5, 2026). */}
+              {category.quickStats.includes("active_subscribers") && (
+                <Field label="Active Subscribers">
+                  <input
+                    type="number"
+                    min="0"
+                    value={quickStats.active_subscribers ?? ""}
+                    onChange={(e) => setQuickStats((prev) => ({ ...prev, active_subscribers: e.target.value }))}
+                    className={inputCls}
+                  />
+                </Field>
+              )}
               {/* Total Followers — Social Media Accounts only, mirrors the
                   seller "new listing" form: a plain manual input, not
                   computed from Social Stats (see the carve-out for this
@@ -730,9 +750,15 @@ export default function ListingEditForm({
         </Section>
       )}
 
-      <Section title="Niche" hint="Select every niche this business fits — shown on the published listing.">
+      {/* "Industry" is the SaaS category's own name for this same Niche
+          selector, mirrors the seller "new listing" form (Design &
+          Development New 1.pdf, Sep 5, 2026) — see src/lib/industries.ts. */}
+      <Section
+        title={categoryId === "saas" ? "Industry" : "Niche"}
+        hint={categoryId === "saas" ? "Select every industry this business fits — shown on the published listing." : "Select every niche this business fits — shown on the published listing."}
+      >
         <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-          {NICHES.map((n) => (
+          {(categoryId === "saas" ? INDUSTRIES : NICHES).map((n) => (
             <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
               <input
                 type="checkbox"
@@ -806,11 +832,14 @@ export default function ListingEditForm({
       {category.hasMonetization && (
         <Section title="Monetization Methods">
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {/* Social Media Accounts sees a curated subset — see the
-                matching comment in the seller "new listing" form. */}
+            {/* Social Media Accounts and SaaS each see their own curated
+                subset — see the matching comment in the seller "new
+                listing" form. */}
             {(categoryId === "social-media-accounts"
               ? MONETIZATION_TYPES.filter((m) => SOCIAL_MEDIA_MONETIZATION_IDS.includes(m.id))
-              : MONETIZATION_TYPES
+              : categoryId === "saas"
+                ? MONETIZATION_TYPES.filter((m) => SAAS_MONETIZATION_IDS.includes(m.id))
+                : MONETIZATION_TYPES
             ).map((m) => (
               <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                 <input
