@@ -220,12 +220,18 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 dark reference theme it was speced from. Moved to right
                 after "Overview of the Channel" and renamed to "Channel
                 Analytics" per the user's follow-up request. The ShieldCheck
-                tick next to the channel title is gated on listing.gaVerified
-                — same flag/icon already used for the "Reviewed by Durqo"
-                pill on the Google Analytics Data section below. */}
+                tick next to the "Channel Analytics" heading itself (moved
+                here from next to the channel title per a same-day follow-up
+                screenshot pinpointing this exact spot) is gated on
+                listing.gaVerified — same flag/icon already used for the
+                "Reviewed by Durqo" pill on the Google Analytics Data
+                section below. */}
             {listing.categoryId === "youtube-channels" && channelOverview && (
               <section className="rounded-xl border border-rule bg-paper-raised p-5 sm:p-6">
-                <h2 className="mb-4 text-xl">Channel Analytics</h2>
+                <h2 className="mb-4 flex items-center gap-2 text-xl">
+                  Channel Analytics
+                  {listing.gaVerified && <ShieldCheck size={18} className="shrink-0 text-brand-hover" aria-label="Reviewed by Durqo" />}
+                </h2>
                 <div className="mb-5 flex flex-wrap items-center gap-3">
                   {channelOverview.channelAvatarUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -234,7 +240,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-semibold text-ink">{channelOverview.channelTitle || listing.title}</span>
-                      {listing.gaVerified && <ShieldCheck size={16} className="shrink-0 text-brand-hover" aria-label="Reviewed by Durqo" />}
                       {channelSinceYear && <Badge tone="neutral">Since {channelSinceYear}</Badge>}
                     </div>
                     {channelOverview.channelHandle && <p className="mono text-sm text-ink-faint">{channelOverview.channelHandle}</p>}
