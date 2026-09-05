@@ -6,8 +6,9 @@ import { BarChart3, CheckCircle2, Plus, Trash2, Upload } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
-import { MONETIZATION_TYPES } from "@/lib/monetization-types";
+import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS } from "@/lib/monetization-types";
 import { BUSINESS_TYPES } from "@/lib/business-types";
+import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import { createClient } from "@/lib/supabase/client";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
@@ -21,7 +22,7 @@ const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01
 // (E-commerce only) is a comma-separated string of ids built by the
 // checkbox grid below, not a single typed value — it belongs here, not in
 // the numeric branch, for the same reason "location" does.
-const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type"]);
+const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type", "account_type"]);
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -524,7 +525,7 @@ export default function AddNewBusinessPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : "Business title"}>
+          <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : "Business title"}>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Southbound Coffee Co." className={inputCls} />
           </Field>
           <Field label="Category">
@@ -542,7 +543,7 @@ export default function AddNewBusinessPage() {
             (Design & Development New.pdf, Sep 4 2026) — same underlying
             fields/columns, just different copy for that category. */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+          <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
             <input
               type="url"
               value={businessUrl}
@@ -556,7 +557,7 @@ export default function AddNewBusinessPage() {
             {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
           </Field>
           {categoryId !== "websites" && (
-            <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
+            <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : "Business location"}>
               <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
             </Field>
           )}
@@ -609,7 +610,7 @@ export default function AddNewBusinessPage() {
           category.quickStats.includes("age") && (
             <div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={categoryId === "websites" ? "Website Age (years)" : "Business Age (years)"}>
+                <Field label={categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : "Business Age (years)"}>
                   <input
                     type="number"
                     min="0"
@@ -626,6 +627,22 @@ export default function AddNewBusinessPage() {
                       min="0"
                       value={quickStats.articles_posted ?? ""}
                       onChange={(e) => setQuickStats((prev) => ({ ...prev, articles_posted: e.target.value }))}
+                      className={inputCls}
+                    />
+                  </Field>
+                )}
+                {/* Total Followers — Social Media Accounts only (Design &
+                    Development New.pdf, Sep 5, 2026). A plain manual input,
+                    not computed from Social Stats — see the carve-out for
+                    this category in computeAutoQuickStats() in
+                    map-listing.ts. */}
+                {categoryId === "social-media-accounts" && (
+                  <Field label="Total Followers">
+                    <input
+                      type="number"
+                      min="0"
+                      value={quickStats.followers ?? ""}
+                      onChange={(e) => setQuickStats((prev) => ({ ...prev, followers: e.target.value }))}
                       className={inputCls}
                     />
                   </Field>
@@ -667,6 +684,36 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
+        {/* Account Type — Social Media Accounts only (Design & Development
+            New.pdf, Sep 5, 2026). Same mechanism as Business Type above:
+            a comma-separated string of ids in quickStats.account_type (see
+            TEXT_QUICK_STAT_KEYS above), joined into display names by
+            buildQuickStats() in map-listing.ts before the public listing
+            page's Quick Statistics grid renders it. */}
+        {categoryId === "social-media-accounts" && (
+          <Section title="Account Type" hint="Select every platform this account is on — shown as a Quick Stat on your published listing.">
+            <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+              {ACCOUNT_TYPES.map((t) => {
+                const selected = (quickStats.account_type ?? "").split(",").filter(Boolean);
+                return (
+                  <label key={t.id} className="flex items-center gap-2 py-1 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(t.id)}
+                      onChange={() => {
+                        const next = selected.includes(t.id) ? selected.filter((id) => id !== t.id) : [...selected, t.id];
+                        setQuickStats((prev) => ({ ...prev, account_type: next.join(",") }));
+                      }}
+                      className="accent-brand-strong"
+                    />
+                    {t.name}
+                  </label>
+                );
+              })}
+            </div>
+          </Section>
+        )}
+
         <Section title="Niche" hint="Select every niche this business fits — shown on your published listing.">
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
             {NICHES.map((n) => (
@@ -685,7 +732,7 @@ export default function AddNewBusinessPage() {
           </div>
         </Section>
 
-        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : "Overview of the Business"}>
+        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : "Overview of the Business"}>
           <textarea
             required
             rows={5}
@@ -694,7 +741,9 @@ export default function AddNewBusinessPage() {
             placeholder={
               categoryId === "websites"
                 ? "What does the website do, how is it monetized, and why are you selling?"
-                : "What does the business do, how is it monetized, and why are you selling?"
+                : categoryId === "social-media-accounts"
+                  ? "What is the account about, how is it monetized, and why are you selling?"
+                  : "What does the business do, how is it monetized, and why are you selling?"
             }
             className={`${inputCls} w-full`}
           />
@@ -756,7 +805,15 @@ export default function AddNewBusinessPage() {
         {category.hasMonetization && (
           <Section title="Monetization Methods">
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-              {MONETIZATION_TYPES.map((m) => (
+              {/* Social Media Accounts sees a curated subset of the shared
+                  monetization list (Design & Development New.pdf, Sep 5,
+                  2026) — see SOCIAL_MEDIA_MONETIZATION_IDS in
+                  monetization-types.ts. Every other category keeps seeing
+                  the full generic list, unchanged. */}
+              {(categoryId === "social-media-accounts"
+                ? MONETIZATION_TYPES.filter((m) => SOCIAL_MEDIA_MONETIZATION_IDS.includes(m.id))
+                : MONETIZATION_TYPES
+              ).map((m) => (
                 <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                   <input
                     type="checkbox"
@@ -911,7 +968,17 @@ export default function AddNewBusinessPage() {
         <Section title="Sale Includes">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Assets included">
-              <textarea rows={3} value={saleIncludesAssets} onChange={(e) => setSaleIncludesAssets(e.target.value)} placeholder="Domain, codebase, social accounts, email list…" className={`${inputCls} w-full`} />
+              <textarea
+                rows={3}
+                value={saleIncludesAssets}
+                onChange={(e) => setSaleIncludesAssets(e.target.value)}
+                placeholder={
+                  categoryId === "social-media-accounts"
+                    ? "Social media account, unique content, unique design, email lists…"
+                    : "Domain, codebase, social accounts, email list…"
+                }
+                className={`${inputCls} w-full`}
+              />
             </Field>
             <Field label="Post-sale support">
               <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} placeholder="e.g. 30 days of email support" className={`${inputCls} w-full`} />
