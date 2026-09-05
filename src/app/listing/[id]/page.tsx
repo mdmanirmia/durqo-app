@@ -230,28 +230,21 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 4 2026). Styled to Durqo's own navy/emerald tokens, not the
                 dark reference theme it was speced from. Moved to right
                 after "Overview of the Channel" and renamed to "Channel
-                Analytics" per the user's follow-up request. The ShieldCheck
-                tick next to the "Channel Analytics" heading itself renders
-                unconditionally for every YouTube Channels listing (Sep 5
-                2026 follow-up — previously gated on listing.gaVerified,
-                same as the "Reviewed by Durqo" pill on the Google Analytics
-                Data section below, but the user asked for it to always show
-                here regardless of GA-verification status). A native `title`
-                attribute (same-day follow-up) shows a "Verified" tooltip on
-                hover/focus, since the icon otherwise carries no visible
-                label of its own. A "Connected" pill (same-day follow-up)
-                sits next to it, matching the identical badge already used
-                for a connected Google Analytics account
-                (GoogleAnalyticsLivePanel.tsx) — this section only renders at
-                all once `channelOverview` has been fetched from the YouTube
-                API, so "Connected" is unconditional here too. */}
+                Analytics" per the user's follow-up request. A "Connected"
+                pill (Sep 5 2026 follow-up) sits next to the heading,
+                matching the identical badge already used for a connected
+                Google Analytics account (GoogleAnalyticsLivePanel.tsx) —
+                this section only renders at all once `channelOverview` has
+                been fetched from the YouTube API, so "Connected" is
+                unconditional here. This pill replaced a separate ShieldCheck
+                "Verified" tick that briefly sat next to it (same-day
+                follow-up) — the user pointed out the two badges said the
+                same thing, so the tick was dropped and "Connected" alone
+                carries that meaning now. */}
             {listing.categoryId === "youtube-channels" && channelOverview && (
               <section className="rounded-xl border border-rule bg-paper-raised p-5 sm:p-6">
                 <h2 className="mb-4 flex flex-wrap items-center gap-2 text-xl">
                   Channel Analytics
-                  <span title="Verified">
-                    <ShieldCheck size={18} className="shrink-0 text-brand-hover" aria-label="Verified" />
-                  </span>
                   <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand-hover">
                     <CheckCircle2 size={12} /> Connected
                   </span>
