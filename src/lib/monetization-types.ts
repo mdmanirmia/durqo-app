@@ -2,6 +2,17 @@ export const MONETIZATION_TYPES: { id: string; name: string }[] = [
   { id: "amazon-affiliates", name: "Amazon Affiliates" },
   { id: "affiliate-sales", name: "Affiliate Sales" },
   { id: "adsense", name: "Adsense" },
+  // Added for the Social Media Accounts category's curated Monetization
+  // Methods checklist (Design & Development New.pdf, Sep 5, 2026) — kept in
+  // this shared list (rather than a separate file) so MONETIZATION_MAP stays
+  // the single source of truth for every monetization id's display name;
+  // see SOCIAL_MEDIA_MONETIZATION_IDS below for which ids that category's
+  // form actually shows.
+  { id: "ads", name: "Ads" },
+  { id: "sponsorships", name: "Sponsorships" },
+  { id: "donations", name: "Donations" },
+  { id: "merchandise-sale", name: "Merchandise Sale" },
+  { id: "others", name: "Others" },
   { id: "ezoic", name: "Ezoic" },
   { id: "e-commerce", name: "E-commerce" },
   { id: "dropshipping", name: "Dropshipping" },
@@ -58,3 +69,19 @@ export const MONETIZATION_TYPES: { id: string; name: string }[] = [
 export const MONETIZATION_MAP: Record<string, string> = Object.fromEntries(
   MONETIZATION_TYPES.map((m) => [m.id, m.name])
 );
+
+// Social Media Accounts category only — the seller form shows just this
+// curated subset of MONETIZATION_TYPES for that category (Design &
+// Development New.pdf, Sep 5, 2026) instead of the full generic list every
+// other category sees, since most of that list (affiliate networks, ad
+// networks built for content sites, Amazon-specific programs) doesn't apply
+// to a creator's social account.
+export const SOCIAL_MEDIA_MONETIZATION_IDS = [
+  "ads",
+  "sponsorships",
+  "affiliate-sales",
+  "services-subscriptions",
+  "donations",
+  "merchandise-sale",
+  "others",
+];

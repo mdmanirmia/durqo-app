@@ -16,6 +16,7 @@ export type QuickStatKey =
   | "total_videos"
   | "channel_age"
   | "business_type"
+  | "account_type"
   | "followers"
   | "total_posts"
   | "likes_per_post"
@@ -102,7 +103,23 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "social-media-accounts",
     name: "Social Media Accounts",
     description: "Instagram, TikTok and X accounts with real followings.",
-    quickStats: ["location", "monthly_income", "followers", "age", "total_posts", "likes_per_post", "views_per_post", "income_multiple"],
+    // Design & Development New.pdf (Sep 5, 2026 revision): this category's
+    // fields were reworked to talk about "the account" rather than "the
+    // business" (see the label overrides in src/app/listing/[id]/page.tsx
+    // and the form field labels), and its Quick Statistics were replaced
+    // wholesale with Account Type/Account Location/Avg. Monthly
+    // Income/Total Followers/Account Age (plus the always-shown
+    // Niche/Asking Price) — Total Posts/Likes per Post/Views per
+    // Post/Income Multiple are no longer part of this category's spec.
+    // "Account Type" (Facebook/Instagram/TikTok/Twitter-X/Others, see
+    // src/lib/account-types.ts) is a manually-entered, multi-select Quick
+    // Stat, same mechanism as E-commerce's "Business Type". "Total
+    // Followers" is now a plain manual input (see the seller form) rather
+    // than computed from the generic Social Stats rows — see the
+    // social-media-accounts carve-out in computeAutoQuickStats() in
+    // map-listing.ts, mirroring the same treatment YouTube Channels'
+    // "Total Subscribers" already got.
+    quickStats: ["account_type", "location", "monthly_income", "followers", "age"],
     hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: false,
@@ -216,6 +233,7 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   total_videos: "Total Videos",
   channel_age: "Channel Age",
   business_type: "Business Type",
+  account_type: "Account Type",
   followers: "Followers",
   total_posts: "Total Posts",
   likes_per_post: "Likes per Post",
