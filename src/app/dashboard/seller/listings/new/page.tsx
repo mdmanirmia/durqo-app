@@ -550,7 +550,7 @@ export default function AddNewBusinessPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : categoryId === "apps-tools" ? "App Name" : "Business title"}>
+          <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : categoryId === "apps-tools" ? "App Name" : categoryId === "domains" ? "Domain Name" : "Business title"}>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Southbound Coffee Co." className={inputCls} />
           </Field>
           <Field label="Category">
@@ -568,7 +568,7 @@ export default function AddNewBusinessPage() {
             (Design & Development New.pdf, Sep 4 2026) — same underlying
             fields/columns, just different copy for that category. */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : categoryId === "apps-tools" ? "App URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+          <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : categoryId === "apps-tools" ? "App URL" : categoryId === "domains" ? "Domain URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
             <input
               type="url"
               value={businessUrl}
@@ -581,7 +581,7 @@ export default function AddNewBusinessPage() {
             {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched — Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
             {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
           </Field>
-          {categoryId !== "websites" && (
+          {categoryId !== "websites" && categoryId !== "domains" && (
             <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : categoryId === "apps-tools" ? "App location" : "Business location"}>
               <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
             </Field>
@@ -957,7 +957,7 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
-        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : categoryId === "apps-tools" ? "Overview of the App" : "Overview of the Business"}>
+        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : categoryId === "apps-tools" ? "Overview of the App" : categoryId === "domains" ? "Overview of the Domain" : "Overview of the Business"}>
           <textarea
             required
             rows={5}
