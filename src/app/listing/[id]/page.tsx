@@ -81,7 +81,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
           : listing.categoryId === "saas" || listing.categoryId === "ai-apps-tools"
             ? { monthly_income: "Avg. Monthly Income" }
             : listing.categoryId === "apps-tools"
-              ? { age: "App Age", total_reviews: "Reviews", total_downloads: "Downloads/Installs" }
+              ? { location: "App Location", age: "App Age", total_reviews: "Reviews", total_downloads: "Downloads/Installs" }
               : {};
 
   // YouTube Channels Quick Statistics — trimmed to just Channel Location,
