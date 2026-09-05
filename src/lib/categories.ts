@@ -166,21 +166,26 @@ export const CATEGORIES: CategoryConfig[] = [
     // Design & Development New.pdf (Sep 5, 2026 revision — a brand new
     // category, not a rework): Quick Statistics are Business Location/
     // Business Type/Avg. Monthly Income/Active Subscribers/Business Age
-    // (plus the always-shown Industry/Asking Price, see below). "Business
-    // Type" here is a manually-entered, multi-select Quick Stat listing
-    // which major AI model(s) the app is built on (Anthropic (Claude)/
-    // Gemini (Google)/OpenAI (ChatGPT)/Meta (Llama)/Character.AI/Others —
-    // see src/lib/ai-business-types.ts) — same `business_type` column and
+    // (plus the always-shown Asking Price, see below). "Business Type" here
+    // is a manually-entered, multi-select Quick Stat listing which major AI
+    // model(s) the app is built on (Anthropic (Claude)/Gemini (Google)/
+    // OpenAI (ChatGPT)/Meta (Llama)/Character.AI/Others — see
+    // src/lib/ai-business-types.ts) — same `business_type` column and
     // mechanism as E-commerce's own Business Type checklist, just a
     // different curated option list for this category (see the
     // categoryId === "ai-apps-tools" branches on both listing forms, and
     // the AI_BUSINESS_TYPE_MAP branch in buildQuickStats() in
     // map-listing.ts). "Active Subscribers" reuses the same key/column SaaS
-    // already introduced (migration 018) as a plain manual input. "Industry"
-    // is this category's own name for the generic Niche selector, sharing
-    // SaaS's curated option list and id space (src/lib/industries.ts) rather
-    // than a new one — see the categoryId === "saas" || "ai-apps-tools"
-    // branches on both listing forms and the public listing page.
+    // already introduced (migration 018) as a plain manual input.
+    // NOTE (Sep 5, 2026 same-day follow-up): this category originally also
+    // had an "Industry" field (sharing SaaS's curated option list, see the
+    // AI Apps & Tools category addendum project doc), but the user asked to
+    // drop Industry entirely for this category — not just hide it from
+    // Quick Statistics, but remove the selector from the form too. So
+    // ai-apps-tools is deliberately NOT in INDUSTRY_ID_SPACE_CATEGORIES
+    // below, and both listing forms skip the whole Niche/Industry <Section>
+    // for this category (categoryId !== "ai-apps-tools" guard) rather than
+    // falling back to the generic Niche list.
     quickStats: ["location", "business_type", "monthly_income", "active_subscribers", "age"],
     hasSeoData: true,
     hasMonetization: true,
@@ -261,13 +266,17 @@ export const CATEGORIES: CategoryConfig[] = [
 ];
 
 // Categories that share the "Industry" option list/id space
-// (src/lib/industries.ts) instead of the generic NICHES list — SaaS
-// (Design & Development New 1.pdf) and AI Apps & Tools (Design &
-// Development New.pdf), both Sep 5, 2026. Single source of truth used by
-// both listing forms (to decide which option list to show, and whether to
-// clear a niches/industries selection on category change) and the public
-// listing page (to decide the "Industry" vs "Niche" label).
-export const INDUSTRY_ID_SPACE_CATEGORIES = new Set(["saas", "ai-apps-tools"]);
+// (src/lib/industries.ts) instead of the generic NICHES list — currently
+// just SaaS (Design & Development New 1.pdf, Sep 5, 2026). Single source of
+// truth used by both listing forms (to decide which option list to show,
+// and whether to clear a niches/industries selection on category change)
+// and the public listing page (to decide the "Industry" vs "Niche" label).
+// AI Apps & Tools briefly shared this same mechanism (Design & Development
+// New.pdf) but the user asked, same day, to drop Industry from that
+// category entirely — it's intentionally not a member of this set; both
+// listing forms skip the whole Niche/Industry section for it outright
+// instead of falling back to the generic Niche list.
+export const INDUSTRY_ID_SPACE_CATEGORIES = new Set(["saas"]);
 
 export const CATEGORY_MAP: Record<string, CategoryConfig> = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c])
