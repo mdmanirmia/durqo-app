@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
-import { MONETIZATION_TYPES } from "@/lib/monetization-types";
+import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS } from "@/lib/monetization-types";
 import { BUSINESS_TYPES } from "@/lib/business-types";
+import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds, formatEngagementSeconds } from "@/lib/format";
@@ -23,7 +24,7 @@ const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01
 // "business_type" (E-commerce only) is a comma-separated string of ids
 // built by the checkbox grid below, not a single typed value — see the
 // matching comment in the seller "new listing" form.
-const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type"]);
+const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type", "account_type"]);
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
@@ -561,7 +562,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : "Business title"}>
+        <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : "Business title"}>
           <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
         </Field>
         <Field label="Category">
@@ -572,7 +573,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+        <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
           <input
             type="url"
             value={businessUrl}
@@ -586,7 +587,7 @@ export default function ListingEditForm({
           {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
         </Field>
         {categoryId !== "websites" && (
-          <Field label={categoryId === "youtube-channels" ? "Channel location" : "Business location"}>
+          <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : "Business location"}>
             <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
           </Field>
         )}
@@ -630,7 +631,7 @@ export default function ListingEditForm({
         category.quickStats.includes("age") && (
           <div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={categoryId === "websites" ? "Website Age (years)" : "Business Age (years)"}>
+              <Field label={categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : "Business Age (years)"}>
                 <input
                   type="number"
                   min="0"
@@ -647,6 +648,21 @@ export default function ListingEditForm({
                     min="0"
                     value={quickStats.articles_posted ?? ""}
                     onChange={(e) => setQuickStats((prev) => ({ ...prev, articles_posted: e.target.value }))}
+                    className={inputCls}
+                  />
+                </Field>
+              )}
+              {/* Total Followers — Social Media Accounts only, mirrors the
+                  seller "new listing" form: a plain manual input, not
+                  computed from Social Stats (see the carve-out for this
+                  category in computeAutoQuickStats() in map-listing.ts). */}
+              {categoryId === "social-media-accounts" && (
+                <Field label="Total Followers">
+                  <input
+                    type="number"
+                    min="0"
+                    value={quickStats.followers ?? ""}
+                    onChange={(e) => setQuickStats((prev) => ({ ...prev, followers: e.target.value }))}
                     className={inputCls}
                   />
                 </Field>
@@ -685,6 +701,35 @@ export default function ListingEditForm({
         </Section>
       )}
 
+      {/* Account Type — Social Media Accounts only, mirrors the seller "new
+          listing" form's checkbox grid and quickStats.account_type storage
+          (see TEXT_QUICK_STAT_KEYS above), pre-filled from the listing's
+          saved value by initialQuickStats() above like every other text
+          Quick Stat. */}
+      {categoryId === "social-media-accounts" && (
+        <Section title="Account Type" hint="Select every platform this account is on — shown as a Quick Stat on the published listing.">
+          <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+            {ACCOUNT_TYPES.map((t) => {
+              const selected = (quickStats.account_type ?? "").split(",").filter(Boolean);
+              return (
+                <label key={t.id} className="flex items-center gap-2 py-1 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(t.id)}
+                    onChange={() => {
+                      const next = selected.includes(t.id) ? selected.filter((id) => id !== t.id) : [...selected, t.id];
+                      setQuickStats((prev) => ({ ...prev, account_type: next.join(",") }));
+                    }}
+                    className="accent-brand-strong"
+                  />
+                  {t.name}
+                </label>
+              );
+            })}
+          </div>
+        </Section>
+      )}
+
       <Section title="Niche" hint="Select every niche this business fits — shown on the published listing.">
         <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
           {NICHES.map((n) => (
@@ -701,7 +746,7 @@ export default function ListingEditForm({
         </div>
       </Section>
 
-      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : "Overview of the Business"}>
+      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : "Overview of the Business"}>
         <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} className={`${inputCls} w-full`} />
       </Section>
 
@@ -761,7 +806,12 @@ export default function ListingEditForm({
       {category.hasMonetization && (
         <Section title="Monetization Methods">
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {MONETIZATION_TYPES.map((m) => (
+            {/* Social Media Accounts sees a curated subset — see the
+                matching comment in the seller "new listing" form. */}
+            {(categoryId === "social-media-accounts"
+              ? MONETIZATION_TYPES.filter((m) => SOCIAL_MEDIA_MONETIZATION_IDS.includes(m.id))
+              : MONETIZATION_TYPES
+            ).map((m) => (
               <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                 <input
                   type="checkbox"
