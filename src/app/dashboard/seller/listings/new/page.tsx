@@ -524,7 +524,7 @@ export default function AddNewBusinessPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel Name" : "Business title"}>
+          <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : "Business title"}>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Southbound Coffee Co." className={inputCls} />
           </Field>
           <Field label="Category">
@@ -542,7 +542,7 @@ export default function AddNewBusinessPage() {
             (Design & Development New.pdf, Sep 4 2026) — same underlying
             fields/columns, just different copy for that category. */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+          <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
             <input
               type="url"
               value={businessUrl}
@@ -609,7 +609,7 @@ export default function AddNewBusinessPage() {
           category.quickStats.includes("age") && (
             <div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Business Age (years)">
+                <Field label={categoryId === "websites" ? "Website Age (years)" : "Business Age (years)"}>
                   <input
                     type="number"
                     min="0"
@@ -685,8 +685,19 @@ export default function AddNewBusinessPage() {
           </div>
         </Section>
 
-        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : "Overview of the Business"}>
-          <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} placeholder="What does the business do, how is it monetized, and why are you selling?" className={`${inputCls} w-full`} />
+        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : "Overview of the Business"}>
+          <textarea
+            required
+            rows={5}
+            value={overview}
+            onChange={(e) => setOverview(e.target.value)}
+            placeholder={
+              categoryId === "websites"
+                ? "What does the website do, how is it monetized, and why are you selling?"
+                : "What does the business do, how is it monetized, and why are you selling?"
+            }
+            className={`${inputCls} w-full`}
+          />
         </Section>
 
         <Section title="Proof of Income" hint="Monthly income for the last 12 months. Monthly average is calculated automatically.">
