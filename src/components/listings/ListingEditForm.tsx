@@ -393,10 +393,12 @@ export default function ListingEditForm({
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats(initialQuickStats(id));
-    // See the matching comment in the seller "new listing" form: SaaS and
-    // AI Apps & Tools share an "Industry" option list that doesn't overlap
-    // with the shared NICHES list every other category uses, so a selection
-    // has to be cleared when crossing into or out of that pair.
+    // See the matching comment in the seller "new listing" form: SaaS has
+    // its own "Industry" option list that doesn't overlap with the shared
+    // NICHES list every other category uses, so a selection has to be
+    // cleared when crossing into or out of SaaS. (AI Apps & Tools forces
+    // niches to [] unconditionally on save instead — see updateListingFull
+    // call below — since it has no Niche/Industry section at all.)
     if (INDUSTRY_ID_SPACE_CATEGORIES.has(id) !== INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId)) setNiches([]);
     if (id !== "youtube-channels") {
       setCopyrightNotesText("");
@@ -481,7 +483,11 @@ export default function ListingEditForm({
         saleIncludesAssets,
         saleIncludesSupport,
         quickStatColumns,
-        niches,
+        // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
+        // to Design & Development New.pdf) — the Niche/Industry section is
+        // hidden below for this category, so never save a stale selection
+        // left over from before this change, or from switching categories.
+        niches: categoryId === "ai-apps-tools" ? [] : niches,
         loomVideoUrl: loomVideoUrl || null,
         monetizationTypeIds: monetization,
         monthlyExpenses: expenses.filter((r) => r.label && r.amount).map((r) => ({ label: r.label, amount: Number(r.amount) })),
@@ -760,28 +766,33 @@ export default function ListingEditForm({
         </Section>
       )}
 
-      {/* "Industry" is SaaS's and AI Apps & Tools' own name for this same
-          Niche selector, mirrors the seller "new listing" form (Design &
-          Development New 1.pdf / New.pdf, Sep 5, 2026) — see
-          src/lib/industries.ts. */}
-      <Section
-        title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
-        hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on the published listing." : "Select every niche this business fits — shown on the published listing."}
-      >
-        <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-          {(INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? INDUSTRIES : NICHES).map((n) => (
-            <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
-              <input
-                type="checkbox"
-                checked={niches.includes(n.id)}
-                onChange={() => setNiches((prev) => (prev.includes(n.id) ? prev.filter((id) => id !== n.id) : [...prev, n.id]))}
-                className="accent-brand-strong"
-              />
-              {n.name}
-            </label>
-          ))}
-        </div>
-      </Section>
+      {/* "Industry" is SaaS's own name for this same Niche selector, mirrors
+          the seller "new listing" form (Design & Development New 1.pdf,
+          Sep 5, 2026) — see src/lib/industries.ts. AI Apps & Tools briefly
+          shared this same mechanism (Design & Development New.pdf) but the
+          user asked, same day, to drop Industry from that category
+          entirely — so the whole section is skipped for it, same as the
+          create form. */}
+      {categoryId !== "ai-apps-tools" && (
+        <Section
+          title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
+          hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on the published listing." : "Select every niche this business fits — shown on the published listing."}
+        >
+          <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+            {(INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? INDUSTRIES : NICHES).map((n) => (
+              <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
+                <input
+                  type="checkbox"
+                  checked={niches.includes(n.id)}
+                  onChange={() => setNiches((prev) => (prev.includes(n.id) ? prev.filter((id) => id !== n.id) : [...prev, n.id]))}
+                  className="accent-brand-strong"
+                />
+                {n.name}
+              </label>
+            ))}
+          </div>
+        </Section>
+      )}
 
       <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : "Overview of the Business"}>
         <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} className={`${inputCls} w-full`} />
