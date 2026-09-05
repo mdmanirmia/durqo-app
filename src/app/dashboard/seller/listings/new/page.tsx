@@ -6,10 +6,11 @@ import { BarChart3, CheckCircle2, Plus, Trash2, Upload } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
-import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS } from "@/lib/monetization-types";
+import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS } from "@/lib/monetization-types";
 import { BUSINESS_TYPES } from "@/lib/business-types";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
+import { INDUSTRIES } from "@/lib/industries";
 import { createClient } from "@/lib/supabase/client";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds } from "@/lib/format";
@@ -284,6 +285,15 @@ export default function AddNewBusinessPage() {
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats({});
+    // SaaS uses its own "Industry" option list (src/lib/industries.ts)
+    // rather than the shared NICHES list every other category draws from
+    // (Design & Development New 1.pdf, Sep 5, 2026) — the two id spaces
+    // don't overlap, so a niches/industries selection made under one has to
+    // be cleared when crossing into or out of SaaS, or it'd carry over
+    // ids the new category's option list (and INDUSTRY_MAP/NICHE_MAP) can't
+    // resolve. Every other category-to-category switch still shares one id
+    // space, so the selection is intentionally preserved there.
+    if ((id === "saas") !== (categoryId === "saas")) setNiches([]);
     setCopyrightNotes("");
     setCopyrightImages([]);
     setTopVideos(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
@@ -631,6 +641,22 @@ export default function AddNewBusinessPage() {
                     />
                   </Field>
                 )}
+                {/* Active Subscribers — SaaS only (Design & Development New
+                    1.pdf, Sep 5, 2026), replacing "Articles Posted" for this
+                    category. Same plain manual input mechanism as Articles
+                    Posted, just a distinct QuickStatKey/column so that
+                    field stays untouched for Websites/E-commerce. */}
+                {category.quickStats.includes("active_subscribers") && (
+                  <Field label="Active Subscribers">
+                    <input
+                      type="number"
+                      min="0"
+                      value={quickStats.active_subscribers ?? ""}
+                      onChange={(e) => setQuickStats((prev) => ({ ...prev, active_subscribers: e.target.value }))}
+                      className={inputCls}
+                    />
+                  </Field>
+                )}
                 {/* Total Followers — Social Media Accounts only (Design &
                     Development New.pdf, Sep 5, 2026). A plain manual input,
                     not computed from Social Stats — see the carve-out for
@@ -714,9 +740,18 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
-        <Section title="Niche" hint="Select every niche this business fits — shown on your published listing.">
+        {/* "Industry" is the SaaS category's own name for this same Niche
+            selector (Design & Development New 1.pdf, Sep 5, 2026) — its own
+            curated option list (src/lib/industries.ts), but stored in the
+            same `niches` state/column as every other category, same
+            treatment as "Account Location" being just `location` under a
+            different label for Social Media Accounts. */}
+        <Section
+          title={categoryId === "saas" ? "Industry" : "Niche"}
+          hint={categoryId === "saas" ? "Select every industry this business fits — shown on your published listing." : "Select every niche this business fits — shown on your published listing."}
+        >
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {NICHES.map((n) => (
+            {(categoryId === "saas" ? INDUSTRIES : NICHES).map((n) => (
               <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
                 <input
                   type="checkbox"
@@ -805,14 +840,17 @@ export default function AddNewBusinessPage() {
         {category.hasMonetization && (
           <Section title="Monetization Methods">
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-              {/* Social Media Accounts sees a curated subset of the shared
-                  monetization list (Design & Development New.pdf, Sep 5,
-                  2026) — see SOCIAL_MEDIA_MONETIZATION_IDS in
+              {/* Social Media Accounts and SaaS each see their own curated
+                  subset of the shared monetization list (Design &
+                  Development New.pdf / New 1.pdf, Sep 5, 2026) — see
+                  SOCIAL_MEDIA_MONETIZATION_IDS / SAAS_MONETIZATION_IDS in
                   monetization-types.ts. Every other category keeps seeing
                   the full generic list, unchanged. */}
               {(categoryId === "social-media-accounts"
                 ? MONETIZATION_TYPES.filter((m) => SOCIAL_MEDIA_MONETIZATION_IDS.includes(m.id))
-                : MONETIZATION_TYPES
+                : categoryId === "saas"
+                  ? MONETIZATION_TYPES.filter((m) => SAAS_MONETIZATION_IDS.includes(m.id))
+                  : MONETIZATION_TYPES
               ).map((m) => (
                 <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                   <input
@@ -975,7 +1013,9 @@ export default function AddNewBusinessPage() {
                 placeholder={
                   categoryId === "social-media-accounts"
                     ? "Social media account, unique content, unique design, email lists…"
-                    : "Domain, codebase, social accounts, email list…"
+                    : categoryId === "saas"
+                      ? "Domain, website files, brand assets, content, email lists…"
+                      : "Domain, codebase, social accounts, email list…"
                 }
                 className={`${inputCls} w-full`}
               />
