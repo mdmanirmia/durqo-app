@@ -631,9 +631,6 @@ export default function AddNewBusinessPage() {
                   </Field>
                 )}
               </div>
-              <p className="mt-2 text-xs text-ink-faint">
-                The rest of this category&rsquo;s Quick Statistics (income, traffic, authority score, follower counts, income multiple, etc.) aren&rsquo;t entered here — they&rsquo;re calculated automatically once your listing is published, from the Proof of Income, Analytics and other data below.
-              </p>
             </div>
           )
         )}
