@@ -80,15 +80,17 @@ export const CATEGORIES: CategoryConfig[] = [
     // Design & Development New.pdf (Sep 4, 2026 revision): Total
     // Subscribers/Total Views/Total Videos/Channel Age are entered
     // manually on the form (this category has no Google Analytics data to
-    // compute them from — see hasSeoData: false and the note below), not
-    // auto-computed like most other categories' Quick Stats. "Total Views"
-    // is a distinct field from "monthly_views" (an average, GA-sourced,
-    // and not applicable here) — see QUICK_STAT_COLUMNS in map-listing.ts.
+    // compute them from — see hasSeoData: false), not auto-computed like
+    // most other categories' Quick Stats. "Total Views" is a distinct
+    // field from "monthly_views" (an average, GA-sourced, and not
+    // applicable here) — see QUICK_STAT_COLUMNS in map-listing.ts. (The
+    // "Channel Analytics is shared privately..." note that used to render
+    // under Overview of the Channel was removed Sep 5, 2026 per the user's
+    // request — see the build-plan doc.)
     quickStats: ["location", "monthly_income", "subscribers", "total_views", "total_videos", "channel_age"],
     hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: true,
-    note: "Channel Analytics is shared privately — buyers request access via message before purchase.",
   },
   {
     id: "social-media-accounts",
