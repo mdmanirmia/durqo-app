@@ -286,16 +286,16 @@ export default function AddNewBusinessPage() {
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats({});
-    // SaaS and AI Apps & Tools share their own "Industry" option list
-    // (src/lib/industries.ts) rather than the shared NICHES list every
-    // other category draws from (Design & Development New 1.pdf / New.pdf,
-    // Sep 5, 2026) — the two id spaces don't overlap, so a niches/industries
-    // selection made under one has to be cleared when crossing into or out
-    // of this pair, or it'd carry over ids the new list (and
-    // INDUSTRY_MAP/NICHE_MAP) can't resolve. Switching between SaaS and AI
-    // Apps & Tools themselves keeps the selection (same id space). Every
-    // other category-to-category switch still shares one id space, so the
-    // selection is intentionally preserved there.
+    // SaaS has its own "Industry" option list (src/lib/industries.ts)
+    // rather than the shared NICHES list every other category draws from
+    // (Design & Development New 1.pdf, Sep 5, 2026) — the two id spaces
+    // don't overlap, so a niches/industries selection made under one has to
+    // be cleared when crossing into or out of SaaS, or it'd carry over ids
+    // the new list (and INDUSTRY_MAP/NICHE_MAP) can't resolve. Every other
+    // category-to-category switch still shares one id space, so the
+    // selection is intentionally preserved there. (AI Apps & Tools forces
+    // niches to [] unconditionally at submit time instead — see the insert
+    // payload below — since it has no Niche/Industry section at all.)
     if (INDUSTRY_ID_SPACE_CATEGORIES.has(id) !== INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId)) setNiches([]);
     setCopyrightNotes("");
     setCopyrightImages([]);
@@ -371,7 +371,11 @@ export default function AddNewBusinessPage() {
           status: "pending_review",
           ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
           loom_video_url: loomVideoUrl || null,
-          niches,
+          // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
+          // to Design & Development New.pdf) — the Niche/Industry section is
+          // hidden above for this category, so never submit a stale
+          // selection left over from switching categories.
+          niches: categoryId === "ai-apps-tools" ? [] : niches,
           ...quickStatColumns,
         })
         .select()
@@ -756,32 +760,40 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
-        {/* "Industry" is SaaS's and AI Apps & Tools' own name for this same
-            Niche selector (Design & Development New 1.pdf / New.pdf, Sep 5,
-            2026) — a shared curated option list (src/lib/industries.ts),
-            but stored in the same `niches` state/column as every other
-            category, same treatment as "Account Location" being just
-            `location` under a different label for Social Media Accounts. */}
-        <Section
-          title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
-          hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on your published listing." : "Select every niche this business fits — shown on your published listing."}
-        >
-          <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {(INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? INDUSTRIES : NICHES).map((n) => (
-              <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
-                <input
-                  type="checkbox"
-                  checked={niches.includes(n.id)}
-                  onChange={() =>
-                    setNiches((prev) => (prev.includes(n.id) ? prev.filter((id) => id !== n.id) : [...prev, n.id]))
-                  }
-                  className="accent-brand-strong"
-                />
-                {n.name}
-              </label>
-            ))}
-          </div>
-        </Section>
+        {/* "Industry" is SaaS's own name for this same Niche selector
+            (Design & Development New 1.pdf, Sep 5, 2026) — a shared curated
+            option list (src/lib/industries.ts), but stored in the same
+            `niches` state/column as every other category, same treatment as
+            "Account Location" being just `location` under a different label
+            for Social Media Accounts. AI Apps & Tools originally shared this
+            same Industry mechanism (Design & Development New.pdf) but the
+            user asked (Sep 5, 2026 follow-up) to drop Industry from this
+            category entirely — not just hide it from Quick Statistics, but
+            remove the selector from the form too — so the whole section is
+            skipped for ai-apps-tools rather than falling back to a generic
+            "Niche" section. */}
+        {categoryId !== "ai-apps-tools" && (
+          <Section
+            title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
+            hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on your published listing." : "Select every niche this business fits — shown on your published listing."}
+          >
+            <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+              {(INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? INDUSTRIES : NICHES).map((n) => (
+                <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={niches.includes(n.id)}
+                    onChange={() =>
+                      setNiches((prev) => (prev.includes(n.id) ? prev.filter((id) => id !== n.id) : [...prev, n.id]))
+                    }
+                    className="accent-brand-strong"
+                  />
+                  {n.name}
+                </label>
+              ))}
+            </div>
+          </Section>
+        )}
 
         <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : "Overview of the Business"}>
           <textarea
