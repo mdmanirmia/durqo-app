@@ -4,6 +4,7 @@ import { ShieldCheck, ChevronRight, Lock, ExternalLink, Eye, ThumbsUp, Clock, Ca
 import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { NICHE_MAP } from "@/lib/niches";
+import { INDUSTRY_MAP } from "@/lib/industries";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
@@ -71,7 +72,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
         ? { location: "Channel Location", monthly_income: "Avg. Monthly Income", subscribers: "Total Subscribers" }
         : listing.categoryId === "social-media-accounts"
           ? { location: "Account Location", monthly_income: "Avg. Monthly Income", followers: "Total Followers", age: "Account Age" }
-          : {};
+          : listing.categoryId === "saas"
+            ? { monthly_income: "Avg. Monthly Income" }
+            : {};
 
   // YouTube Channels Quick Statistics — trimmed to just Channel Location,
   // Avg. Monthly Income, and Channel Age (Sep 2026 request: only these plus
@@ -219,7 +222,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
                 ))}
                 {listing.niches.length > 0 && (
-                  <StatTile label="Niche" value={listing.niches.map((id) => NICHE_MAP[id] ?? id).join(", ")} />
+                  // SaaS calls this same field "Industry" with its own
+                  // option list (src/lib/industries.ts) — Design &
+                  // Development New 1.pdf, Sep 5, 2026.
+                  <StatTile
+                    label={listing.categoryId === "saas" ? "Industry" : "Niche"}
+                    value={listing.niches.map((id) => (listing.categoryId === "saas" ? INDUSTRY_MAP[id] : NICHE_MAP[id]) ?? id).join(", ")}
+                  />
                 )}
                 <StatTile label="Asking Price" value={fmtUSD(price)} />
               </div>
