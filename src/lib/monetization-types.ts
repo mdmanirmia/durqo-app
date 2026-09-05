@@ -70,6 +70,19 @@ export const MONETIZATION_TYPES: { id: string; name: string }[] = [
   { id: "ticketmaster", name: "Ticketmaster" },
   { id: "viator", name: "Viator" },
   { id: "youtube-display-ads", name: "YouTube Display Ads" },
+  // Added for the AI Apps & Tools category's curated Monetization Methods
+  // checklist (Design & Development New.pdf, Sep 5, 2026) — see
+  // AI_APPS_TOOLS_MONETIZATION_IDS below. "ads" and "affiliate-sales"
+  // already exist above; "services" also already exists (E-commerce/agency
+  // categories use it too).
+  { id: "subscriptions", name: "Subscriptions" },
+  { id: "usage-based", name: "Usage-Based" },
+  { id: "api-fees", name: "API Fees" },
+  { id: "commission", name: "Commission" },
+  { id: "lifetime-deals", name: "Lifetime Deals" },
+  { id: "one-time-sales", name: "One-Time Sales" },
+  { id: "licensing", name: "Licensing" },
+  { id: "enterprise-contracts", name: "Enterprise Contracts" },
 ];
 
 export const MONETIZATION_MAP: Record<string, string> = Object.fromEntries(
@@ -102,5 +115,23 @@ export const SAAS_MONETIZATION_IDS = [
   "services-subscriptions",
   "e-commerce",
   "affiliate-sales",
+  "others",
+];
+
+// AI Apps & Tools category only — same curated-subset mechanism as
+// SOCIAL_MEDIA_MONETIZATION_IDS / SAAS_MONETIZATION_IDS above (Design &
+// Development New.pdf, Sep 5, 2026).
+export const AI_APPS_TOOLS_MONETIZATION_IDS = [
+  "subscriptions",
+  "usage-based",
+  "api-fees",
+  "ads",
+  "affiliate-sales",
+  "commission",
+  "services",
+  "lifetime-deals",
+  "one-time-sales",
+  "licensing",
+  "enterprise-contracts",
   "others",
 ];
