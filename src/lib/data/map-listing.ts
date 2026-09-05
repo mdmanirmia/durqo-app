@@ -13,6 +13,7 @@ import type { QuickStatKey } from "@/lib/categories";
 import { BUSINESS_TYPE_MAP } from "@/lib/business-types";
 import { AI_BUSINESS_TYPE_MAP } from "@/lib/ai-business-types";
 import { ACCOUNT_TYPE_MAP } from "@/lib/account-types";
+import { APP_PLATFORM_MAP } from "@/lib/app-platforms";
 
 // Maps each app-level QuickStatKey to the flat column name it lives under
 // on public.listings. "location" reads the same generic `location` column
@@ -66,6 +67,13 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   // in mapListing below (see computeAutoQuickStats). Kept here only so this
   // map stays exhaustive over QuickStatKey.
   indexed_pages: "indexed_pages",
+  // Android & iOS Apps only (migration 020) — plain manual numeric input,
+  // same treatment as rating/total_downloads/total_reviews above.
+  store_price: "store_price",
+  // Android & iOS Apps only (migration 020) — single-select plain-text
+  // value ("ios" | "android" | "ios-android"), turned into a display name
+  // by buildQuickStats() below the same way business_type/account_type are.
+  platform: "platform",
 };
 
 // Row shapes are intentionally loose (`Record<string, any>` via a minimal
@@ -115,6 +123,13 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
         .filter(Boolean)
         .map((id) => ACCOUNT_TYPE_MAP[id] ?? id);
       if (names.length) stats[key] = names.join(", ");
+      continue;
+    }
+    // "platform" (Android & iOS Apps) is a single plain-text id (not a
+    // comma-separated list, unlike business_type/account_type above — see
+    // src/lib/app-platforms.ts) turned into its display name here.
+    if (key === "platform" && typeof value === "string") {
+      stats[key] = APP_PLATFORM_MAP[value] ?? value;
       continue;
     }
     stats[key] = value;
