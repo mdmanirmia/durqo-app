@@ -403,6 +403,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   <GoogleAnalyticsLivePanel listingId={listing.id} initialStats={listing.gaLiveStats} />
                 ) : (
                   <>
+                    <p className="mb-4 text-sm text-ink-faint">Engagement statistics, last 12 months</p>
                     <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
                       <StatTile label="Total Users" value={listing.seo?.gaTotalUsers} />
                       <StatTile label="New Users" value={listing.seo?.gaNewUsers} />
