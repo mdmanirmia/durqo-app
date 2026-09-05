@@ -11,6 +11,7 @@ import type {
 } from "@/lib/types";
 import type { QuickStatKey } from "@/lib/categories";
 import { BUSINESS_TYPE_MAP } from "@/lib/business-types";
+import { ACCOUNT_TYPE_MAP } from "@/lib/account-types";
 
 // Maps each app-level QuickStatKey to the flat column name it lives under
 // on public.listings. "location" reads the same generic `location` column
@@ -33,6 +34,10 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   // buildQuickStats() below joins the ids into display names before this
   // reaches the page.
   business_type: "business_type",
+  // Social Media Accounts only — same plain-text, comma-separated-ids
+  // storage shape as business_type above, just for that category's Account
+  // Type checklist (see src/lib/account-types.ts).
+  account_type: "account_type",
   followers: "followers",
   total_posts: "total_posts",
   likes_per_post: "likes_per_post",
@@ -89,6 +94,18 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
         .map((id) => id.trim())
         .filter(Boolean)
         .map((id) => BUSINESS_TYPE_MAP[id] ?? id);
+      if (names.length) stats[key] = names.join(", ");
+      continue;
+    }
+    // "account_type" (Social Media Accounts) is stored the same way as
+    // "business_type" above — a comma-separated string of ids joined into
+    // display names here.
+    if (key === "account_type" && typeof value === "string") {
+      const names = value
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean)
+        .map((id) => ACCOUNT_TYPE_MAP[id] ?? id);
       if (names.length) stats[key] = names.join(", ");
       continue;
     }
@@ -329,9 +346,15 @@ function computeAutoQuickStats(
   // 2026): "Total Subscribers" is now a manually-entered Quick Stat for
   // that category instead (see the manual Channel Statistics block on the
   // seller form) — this computed total would otherwise silently overwrite
-  // (or delete, when Social Stats is empty) that manual value.
+  // (or delete, when Social Stats is empty) that manual value. Social Media
+  // Accounts is excluded the same way as of Sep 5, 2026: this category has
+  // hasSocialStats: false (a Social Media Accounts listing IS the account,
+  // logging a Social Stats row for it doesn't make sense), so this
+  // computed total would always be zero for it anyway — "Total Followers"
+  // is now a plain manual input on the seller form instead, reading and
+  // writing the same `followers` column buildQuickStats() already pulls in.
   const totalFollowers = socialStats.reduce((sum, s) => sum + (s.followers ?? 0), 0);
-  if (has("followers")) {
+  if (has("followers") && row.category_id !== "social-media-accounts") {
     if (totalFollowers > 0) quickStats.followers = totalFollowers;
     else delete quickStats.followers;
   }
