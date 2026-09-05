@@ -13,6 +13,12 @@ export const MONETIZATION_TYPES: { id: string; name: string }[] = [
   { id: "donations", name: "Donations" },
   { id: "merchandise-sale", name: "Merchandise Sale" },
   { id: "others", name: "Others" },
+  // Added for the SaaS category's curated Monetization Methods checklist
+  // (Design & Development New 1.pdf, Sep 5, 2026) — see
+  // SAAS_MONETIZATION_IDS below. Every other id that list needs
+  // ("services-subscriptions", "e-commerce", "affiliate-sales", "others",
+  // "ads") already exists above.
+  { id: "digital-products", name: "Digital Products" },
   { id: "ezoic", name: "Ezoic" },
   { id: "e-commerce", name: "E-commerce" },
   { id: "dropshipping", name: "Dropshipping" },
@@ -83,5 +89,18 @@ export const SOCIAL_MEDIA_MONETIZATION_IDS = [
   "services-subscriptions",
   "donations",
   "merchandise-sale",
+  "others",
+];
+
+// SaaS category only — same curated-subset mechanism as
+// SOCIAL_MEDIA_MONETIZATION_IDS above (Design & Development New 1.pdf, Sep
+// 5, 2026): the affiliate-network/ad-network/Amazon-specific entries in the
+// full generic list don't apply to a software business.
+export const SAAS_MONETIZATION_IDS = [
+  "ads",
+  "digital-products",
+  "services-subscriptions",
+  "e-commerce",
+  "affiliate-sales",
   "others",
 ];

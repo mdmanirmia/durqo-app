@@ -17,6 +17,7 @@ export type QuickStatKey =
   | "channel_age"
   | "business_type"
   | "account_type"
+  | "active_subscribers"
   | "followers"
   | "total_posts"
   | "likes_per_post"
@@ -137,7 +138,23 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "saas",
     name: "SaaS",
     description: "Subscription software with recurring revenue.",
-    quickStats: ["monthly_income", "monthly_visitors", "age", "domain_authority", "income_multiple", "articles_posted"],
+    // Design & Development New 1.pdf (Sep 5, 2026 revision): this category's
+    // Quick Statistics were replaced wholesale with Business Location/Avg.
+    // Monthly Income/Active Subscribers/Business Age (plus the always-shown
+    // Industry/Asking Price — "Industry" is this category's own name for the
+    // generic Niche selector, see the categoryId === "saas" branches on both
+    // listing forms and the public listing page, and src/lib/industries.ts
+    // for its curated option list) — Monthly Visitors/Domain Authority/
+    // Income Multiple/Articles Posted are no longer part of this category's
+    // spec. "Active Subscribers" replaces "Articles Posted" as a plain
+    // manual input (same mechanism, just a new QuickStatKey so Websites/
+    // E-commerce's own "Articles Posted" field is untouched) — see the
+    // category.quickStats.includes("active_subscribers") block on both
+    // forms. hasSeoData stays true: the Google Analytics/Search Console/
+    // SEMrush/Ahrefs sections this category collects aren't part of the
+    // spec change, only which of their derived stats surface as a Quick
+    // Stat.
+    quickStats: ["location", "monthly_income", "active_subscribers", "age"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -234,6 +251,7 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   channel_age: "Channel Age",
   business_type: "Business Type",
   account_type: "Account Type",
+  active_subscribers: "Active Subscribers",
   followers: "Followers",
   total_posts: "Total Posts",
   likes_per_post: "Likes per Post",
