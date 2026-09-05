@@ -12,7 +12,10 @@ import WishlistButton from "./WishlistButton";
 // /buy table isn't this component, but every card surface (homepage,
 // marketplace, dashboards) renders the same shape so a listing never reads
 // differently in two places. Every field falls back to "Not disclosed" /
-// an em dash rather than leaving blank space or guessing a value.
+// an em dash rather than leaving blank space or guessing a value — except
+// Revenue/mo and Profit/mo specifically, which show "$0" when a listing has
+// no income data at all (e.g. Domains, which has no Proof of Income section
+// to derive monthly_income from), per user request Sep 5, 2026.
 export default function ListingCard({ listing }: { listing: Listing }) {
   const category = CATEGORY_MAP[listing.categoryId];
   const Icon = CATEGORY_ICONS[listing.categoryId] ?? Globe;
@@ -69,11 +72,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         <div className="mono mt-auto grid grid-cols-3 gap-3 border-t border-rule pt-3 text-sm">
           <div>
             <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Revenue/mo</span>
-            {revenue !== undefined ? fmtUSD(revenue) : "Not disclosed"}
+            {fmtUSD(revenue ?? 0)}
           </div>
           <div>
             <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Profit/mo</span>
-            {profit !== undefined ? fmtUSD(profit) : "Not disclosed"}
+            {fmtUSD(profit ?? 0)}
           </div>
           <div>
             <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Age</span>
