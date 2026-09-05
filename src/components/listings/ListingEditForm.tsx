@@ -561,7 +561,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={categoryId === "youtube-channels" ? "Channel Name" : "Business title"}>
+        <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : "Business title"}>
           <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
         </Field>
         <Field label="Category">
@@ -572,7 +572,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={categoryId === "youtube-channels" ? "Channel URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+        <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
           <input
             type="url"
             value={businessUrl}
@@ -630,7 +630,7 @@ export default function ListingEditForm({
         category.quickStats.includes("age") && (
           <div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Business Age (years)">
+              <Field label={categoryId === "websites" ? "Website Age (years)" : "Business Age (years)"}>
                 <input
                   type="number"
                   min="0"
@@ -701,7 +701,7 @@ export default function ListingEditForm({
         </div>
       </Section>
 
-      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : "Overview of the Business"}>
+      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : "Overview of the Business"}>
         <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} className={`${inputCls} w-full`} />
       </Section>
 
