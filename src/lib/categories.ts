@@ -247,7 +247,17 @@ export const CATEGORIES: CategoryConfig[] = [
     // that collects a location field (Digital Agencies, Service Business,
     // etc.) — labeled "App Location" via the categoryId === "apps-tools"
     // branch of quickStatLabelOverrides in the public listing page.
-    quickStats: ["location", "age", "rating", "total_reviews", "total_downloads", "store_price", "platform"],
+    // "monthly_income" added (same-day follow-up — "revenue and profit data
+    // dekhabe" on the /buy marketplace card) so ListingCard's Revenue/mo and
+    // Profit/mo stop showing "Not disclosed" for this category: both are
+    // derived from listing.quickStats.monthly_income
+    // (src/components/ListingCard.tsx), which computeAutoQuickStats() in
+    // map-listing.ts only populates when "monthly_income" is present in a
+    // category's quickStats — same auto-averaged-from-Proof-of-Income
+    // mechanism every other category already uses, no form changes needed.
+    // Labeled "Avg. Monthly Income" via quickStatLabelOverrides, same as
+    // SaaS/AI Apps & Tools.
+    quickStats: ["location", "monthly_income", "age", "rating", "total_reviews", "total_downloads", "store_price", "platform"],
     hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: true,
