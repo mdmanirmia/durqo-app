@@ -317,11 +317,15 @@ function computeAutoQuickStats(
     else delete quickStats.subscribers;
   }
 
-  // Business Location / Business Age mirror the same top-level fields the
-  // rest of the app already reads (row.location / row.business_age_years)
-  // — buildQuickStats() already picked these up via QUICK_STAT_COLUMNS, so
-  // there's nothing to override here; they're listed in this comment only
-  // to make clear the omission is intentional, not an oversight.
+  // Business Location mirrors the same top-level field the rest of the app
+  // already reads (row.location) — buildQuickStats() already picked this up
+  // via QUICK_STAT_COLUMNS, so there's nothing to override here; it's listed
+  // in this comment only to make clear the omission is intentional, not an
+  // oversight. Business Age is handled separately below (see businessAgeYears
+  // in mapListing) — YouTube Channels never populates business_age_years at
+  // all (sellers enter Channel Age as a manual quick stat instead, stored in
+  // channel_age_years), so that field needs a category-spanning fallback,
+  // not a pass-through.
 }
 
 export function mapListing(
@@ -359,7 +363,22 @@ export function mapListing(
     location: row.location ?? undefined,
     price: Number(row.price),
     discountedPrice: row.discounted_price != null ? Number(row.discounted_price) : undefined,
-    businessAgeYears: row.business_age_years != null ? Number(row.business_age_years) : undefined,
+    // Sep 5 2026: YouTube Channels listings leave business_age_years null —
+    // sellers enter the channel's age as a manual quick stat instead
+    // (channel_age_years, see QUICK_STAT_COLUMNS.channel_age), which is
+    // otherwise invisible to every surface that reads businessAgeYears
+    // directly (ListingCard's "AGE" tile, the /buy table's "Business age"
+    // column, the /buy age-range filter, the homepage spotlight's "X yrs
+    // old" line) — those showed "New" for a 5-year-old channel because they
+    // never look at quickStats.channel_age. Falling back to it here, at the
+    // single mapping layer every one of those already reads through, fixes
+    // all of them at once rather than patching each call site.
+    businessAgeYears:
+      row.business_age_years != null
+        ? Number(row.business_age_years)
+        : row.channel_age_years != null
+          ? Number(row.channel_age_years)
+          : undefined,
     overview: row.overview ?? "",
     monthlyExpenses: row.monthly_expenses ?? [],
     monetizationTypeIds: row.monetization_type_ids ?? [],
