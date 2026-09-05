@@ -7,6 +7,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { MONETIZATION_TYPES } from "@/lib/monetization-types";
+import { BUSINESS_TYPES } from "@/lib/business-types";
 import { NICHES } from "@/lib/niches";
 import { createClient } from "@/lib/supabase/client";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
@@ -16,8 +17,11 @@ const MONTHS = ["Sep 2025","Oct 2025","Nov 2025","Dec 2025","Jan 2026","Feb 2026
 const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01-01","2026-02-01","2026-03-01","2026-04-01","2026-05-01","2026-06-01","2026-07-01","2026-08-01"];
 
 // Which quick-stat columns are text/date vs numeric, so form values get
-// converted to the right type before hitting Postgres.
-const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar"]);
+// converted to the right type before hitting Postgres. "business_type"
+// (E-commerce only) is a comma-separated string of ids built by the
+// checkbox grid below, not a single typed value — it belongs here, not in
+// the numeric branch, for the same reason "location" does.
+const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type"]);
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -632,6 +636,38 @@ export default function AddNewBusinessPage() {
               </p>
             </div>
           )
+        )}
+
+        {/* Business Type — E-commerce only (Sep 5, 2026 request). Stored as
+            a comma-separated string of ids in quickStats.business_type (see
+            TEXT_QUICK_STAT_KEYS above), the same free-text-like column
+            shape "location" already uses, so it needs no dedicated state or
+            submit-path changes — just this checkbox grid toggling that one
+            string. buildQuickStats() in map-listing.ts joins the ids into
+            display names before the public listing page's Quick Statistics
+            grid renders it. */}
+        {categoryId === "e-commerce" && (
+          <Section title="Business Type" hint="Select every business model this store uses — shown as a Quick Stat on your published listing.">
+            <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+              {BUSINESS_TYPES.map((t) => {
+                const selected = (quickStats.business_type ?? "").split(",").filter(Boolean);
+                return (
+                  <label key={t.id} className="flex items-center gap-2 py-1 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(t.id)}
+                      onChange={() => {
+                        const next = selected.includes(t.id) ? selected.filter((id) => id !== t.id) : [...selected, t.id];
+                        setQuickStats((prev) => ({ ...prev, business_type: next.join(",") }));
+                      }}
+                      className="accent-brand-strong"
+                    />
+                    {t.name}
+                  </label>
+                );
+              })}
+            </div>
+          </Section>
         )}
 
         <Section title="Niche" hint="Select every niche this business fits — shown on your published listing.">
