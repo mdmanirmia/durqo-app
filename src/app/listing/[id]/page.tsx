@@ -220,17 +220,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 dark reference theme it was speced from. Moved to right
                 after "Overview of the Channel" and renamed to "Channel
                 Analytics" per the user's follow-up request. The ShieldCheck
-                tick next to the "Channel Analytics" heading itself (moved
-                here from next to the channel title per a same-day follow-up
-                screenshot pinpointing this exact spot) is gated on
-                listing.gaVerified — same flag/icon already used for the
-                "Reviewed by Durqo" pill on the Google Analytics Data
-                section below. */}
+                tick next to the "Channel Analytics" heading itself renders
+                unconditionally for every YouTube Channels listing (Sep 5
+                2026 follow-up — previously gated on listing.gaVerified,
+                same as the "Reviewed by Durqo" pill on the Google Analytics
+                Data section below, but the user asked for it to always show
+                here regardless of GA-verification status). */}
             {listing.categoryId === "youtube-channels" && channelOverview && (
               <section className="rounded-xl border border-rule bg-paper-raised p-5 sm:p-6">
                 <h2 className="mb-4 flex items-center gap-2 text-xl">
                   Channel Analytics
-                  {listing.gaVerified && <ShieldCheck size={18} className="shrink-0 text-brand-hover" aria-label="Reviewed by Durqo" />}
+                  <ShieldCheck size={18} className="shrink-0 text-brand-hover" aria-label="Reviewed by Durqo" />
                 </h2>
                 <div className="mb-5 flex flex-wrap items-center gap-3">
                   {channelOverview.channelAvatarUrl && (
