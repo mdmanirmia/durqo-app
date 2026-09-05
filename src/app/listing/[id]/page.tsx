@@ -285,7 +285,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
             {/* Overview */}
             <section>
-              <h2 className="mb-3 text-xl">{listing.categoryId === "youtube-channels" ? "Overview of the Channel" : listing.categoryId === "websites" ? "Overview of the Website" : listing.categoryId === "social-media-accounts" ? "Overview of the Account" : listing.categoryId === "apps-tools" ? "Overview of the App" : "Overview of the Business"}</h2>
+              <h2 className="mb-3 text-xl">{listing.categoryId === "youtube-channels" ? "Overview of the Channel" : listing.categoryId === "websites" ? "Overview of the Website" : listing.categoryId === "social-media-accounts" ? "Overview of the Account" : listing.categoryId === "apps-tools" ? "Overview of the App" : listing.categoryId === "domains" ? "Overview of the Domain" : "Overview of the Business"}</h2>
               <p className="max-w-[70ch] text-ink-soft">{listing.overview}</p>
               {category?.note && (
                 <p className="mt-3 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
