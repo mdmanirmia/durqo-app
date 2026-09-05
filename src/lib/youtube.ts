@@ -116,6 +116,11 @@ type ChannelListItem = {
   contentDetails?: Record<string, unknown>;
 };
 
+// Logs *why* a channels.list lookup failed (bad/missing key, quota
+// exhausted, handle no longer resolving, etc.) instead of the old
+// swallow-everything-into-null behavior, which made every failure show up
+// identically as the generic "Couldn't fetch channel details from
+// YouTube." with no way to tell the causes apart from Vercel's logs.
 async function fetchChannelListItem(apiKey: string, identifier: { type: "id" | "handle"; value: string }): Promise<ChannelListItem | null> {
   const param = identifier.type === "id" ? `id=${encodeURIComponent(identifier.value)}` : `forHandle=${encodeURIComponent(identifier.value)}`;
   const url = `https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics,contentDetails&${param}&key=${apiKey}`;
@@ -123,36 +128,37 @@ async function fetchChannelListItem(apiKey: string, identifier: { type: "id" | "
   let res: Response;
   try {
     res = await fetch(url);
-  } catch {
+  } catch (err) {
+    console.error(`[youtube] channels.list network error for ${identifier.type}=${identifier.value}:`, err);
     return null;
   }
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const bodyText = await res.text().catch(() => "");
+    console.error(`[youtube] channels.list failed (${res.status} ${res.statusText}) for ${identifier.type}=${identifier.value}: ${bodyText}`);
+    return null;
+  }
 
   let data: unknown;
   try {
     data = await res.json();
-  } catch {
+  } catch (err) {
+    console.error(`[youtube] channels.list returned invalid JSON for ${identifier.type}=${identifier.value}:`, err);
     return null;
   }
 
   const item = (data as { items?: unknown[] })?.items?.[0] as ChannelListItem | undefined;
+  if (!item) {
+    console.error(`[youtube] channels.list returned no items for ${identifier.type}=${identifier.value}`);
+  }
   return item ?? null;
 }
 
-// Looks up just the basic, always-available channel fields (title, handle,
-// avatar, created date, subscribers, total views, total videos, age) — used
-// to auto-fill the 4 existing manual Channel Statistics inputs quickly, and
-// as the first half of the full overview lookup below.
-export async function fetchYoutubeChannelBasicInfo(channelUrl: string): Promise<YoutubeChannelOverview | null> {
-  const apiKey = getYoutubeApiKey();
-  if (!apiKey) return null;
-
-  const identifier = extractYoutubeChannelIdentifier(channelUrl);
-  if (!identifier) return null;
-
-  const item = await fetchChannelListItem(apiKey, identifier);
-  if (!item) return null;
-
+// Builds the "basic info" shape from an already-fetched channels.list item —
+// shared by fetchYoutubeChannelBasicInfo (which fetches its own item) and
+// fetchYoutubeChannelOverview (which reuses the item it already fetched,
+// instead of making a second, redundant channels.list call for the same
+// channel).
+function buildBasicInfoFromItem(item: ChannelListItem): YoutubeChannelOverview {
   const snippet = item.snippet ?? {};
   const statistics = item.statistics ?? {};
 
@@ -183,6 +189,23 @@ export async function fetchYoutubeChannelBasicInfo(channelUrl: string): Promise<
   };
 }
 
+// Looks up just the basic, always-available channel fields (title, handle,
+// avatar, created date, subscribers, total views, total videos, age) — used
+// to auto-fill the 4 existing manual Channel Statistics inputs quickly, and
+// as the first half of the full overview lookup below.
+export async function fetchYoutubeChannelBasicInfo(channelUrl: string): Promise<YoutubeChannelOverview | null> {
+  const apiKey = getYoutubeApiKey();
+  if (!apiKey) return null;
+
+  const identifier = extractYoutubeChannelIdentifier(channelUrl);
+  if (!identifier) return null;
+
+  const item = await fetchChannelListItem(apiKey, identifier);
+  if (!item) return null;
+
+  return buildBasicInfoFromItem(item);
+}
+
 // Full overview: basic info plus the three "recent" stats derived from the
 // channel's last (up to) 10 uploads — Recent Avg Views, Recent Avg Likes,
 // and Engagement Rate (avg likes / avg views on those same recent videos).
@@ -196,8 +219,12 @@ export async function fetchYoutubeChannelOverview(channelUrl: string): Promise<Y
   const item = await fetchChannelListItem(apiKey, identifier);
   if (!item) return null;
 
-  const basic = await fetchYoutubeChannelBasicInfo(channelUrl);
-  if (!basic) return null;
+  // Built from the item already fetched above — previously this made a
+  // second, redundant channels.list call (fetchYoutubeChannelBasicInfo did
+  // its own identifier extraction + fetch for the same channel), doubling
+  // quota usage per lookup and doubling the chance of a transient failure
+  // making the whole overview lookup fail.
+  const basic = buildBasicInfoFromItem(item);
 
   const contentDetails = item.contentDetails ?? {};
   const relatedPlaylists = contentDetails.relatedPlaylists as { uploads?: string } | undefined;
