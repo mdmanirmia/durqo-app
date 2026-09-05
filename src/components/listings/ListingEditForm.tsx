@@ -5,12 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey, INDUSTRY_ID_SPACE_CATEGORIES } from "@/lib/categories";
-import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS, AI_APPS_TOOLS_MONETIZATION_IDS } from "@/lib/monetization-types";
+import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS, AI_APPS_TOOLS_MONETIZATION_IDS, ANDROID_IOS_APPS_MONETIZATION_IDS } from "@/lib/monetization-types";
 import { BUSINESS_TYPES } from "@/lib/business-types";
 import { AI_BUSINESS_TYPES } from "@/lib/ai-business-types";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import { INDUSTRIES } from "@/lib/industries";
+import { APP_NICHES } from "@/lib/app-niches";
+import { APP_PLATFORMS } from "@/lib/app-platforms";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds, formatEngagementSeconds } from "@/lib/format";
 import { updateListingFull, addListingImages, deleteListingImage, type ListingFullEditFields } from "@/lib/actions/listing-edit";
@@ -26,7 +28,7 @@ const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01
 // "business_type" (E-commerce only) is a comma-separated string of ids
 // built by the checkbox grid below, not a single typed value — see the
 // matching comment in the seller "new listing" form.
-const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type", "account_type"]);
+const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type", "account_type", "platform"]);
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
@@ -398,8 +400,11 @@ export default function ListingEditForm({
     // NICHES list every other category uses, so a selection has to be
     // cleared when crossing into or out of SaaS. (AI Apps & Tools forces
     // niches to [] unconditionally on save instead — see updateListingFull
-    // call below — since it has no Niche/Industry section at all.)
-    if (INDUSTRY_ID_SPACE_CATEGORIES.has(id) !== INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId)) setNiches([]);
+    // call below — since it has no Niche/Industry section at all.) Android &
+    // iOS Apps has its own curated Niche list too (src/lib/app-niches.ts) —
+    // same id-space-mismatch reasoning applies.
+    if (INDUSTRY_ID_SPACE_CATEGORIES.has(id) !== INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) || (id === "apps-tools") !== (categoryId === "apps-tools"))
+      setNiches([]);
     if (id !== "youtube-channels") {
       setCopyrightNotesText("");
       setTopVideoRows(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
@@ -575,7 +580,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : "Business title"}>
+        <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : categoryId === "apps-tools" ? "App Name" : "Business title"}>
           <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
         </Field>
         <Field label="Category">
@@ -586,7 +591,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+        <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : categoryId === "apps-tools" ? "App URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
           <input
             type="url"
             value={businessUrl}
@@ -600,7 +605,7 @@ export default function ListingEditForm({
           {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
         </Field>
         {categoryId !== "websites" && (
-          <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : "Business location"}>
+          <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : categoryId === "apps-tools" ? "App location" : "Business location"}>
             <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
           </Field>
         )}
@@ -644,7 +649,7 @@ export default function ListingEditForm({
         category.quickStats.includes("age") && (
           <div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : "Business Age (years)"}>
+              <Field label={categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : categoryId === "apps-tools" ? "App Age (years)" : "Business Age (years)"}>
                 <input
                   type="number"
                   min="0"
@@ -697,6 +702,78 @@ export default function ListingEditForm({
             </div>
           </div>
         )
+      )}
+
+      {/* App Statistics — Android & iOS Apps only, mirrors the seller "new
+          listing" form: replaces the generic "Quick Statistics" heading for
+          this category with Rating/Reviews/Downloads-Installs/Store Price.
+          step="any" deliberately (see the matching comment in the seller
+          form) — a mismatched decimal under a fixed step silently blocks
+          native HTML5 submission with no console error or network request. */}
+      {categoryId === "apps-tools" && (
+        <Section title="App Statistics" hint="Shown on the published listing instead of Quick Statistics.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Rating">
+              <input
+                type="number"
+                min="0"
+                max="5"
+                step="any"
+                value={quickStats.rating ?? ""}
+                onChange={(e) => setQuickStats((prev) => ({ ...prev, rating: e.target.value }))}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Reviews">
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={quickStats.total_reviews ?? ""}
+                onChange={(e) => setQuickStats((prev) => ({ ...prev, total_reviews: e.target.value }))}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Downloads/Installs">
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={quickStats.total_downloads ?? ""}
+                onChange={(e) => setQuickStats((prev) => ({ ...prev, total_downloads: e.target.value }))}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Store Price (USD)">
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={quickStats.store_price ?? ""}
+                onChange={(e) => setQuickStats((prev) => ({ ...prev, store_price: e.target.value }))}
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </Section>
+      )}
+
+      {/* Platform — Android & iOS Apps only, mirrors the seller "new
+          listing" form: single-select (src/lib/app-platforms.ts) stored as
+          one plain-text value in quickStats.platform. */}
+      {categoryId === "apps-tools" && (
+        <Section title="Platform" hint="Which platform(s) this app is available on — shown as a Quick Stat on the published listing.">
+          <select
+            value={quickStats.platform ?? ""}
+            onChange={(e) => setQuickStats((prev) => ({ ...prev, platform: e.target.value }))}
+            className={`${inputCls} w-full sm:w-64`}
+          >
+            <option value="">Select a platform</option>
+            {APP_PLATFORMS.map((p) => (
+              <option key={p.id} value={p.id}>{p.name}</option>
+            ))}
+          </select>
+        </Section>
       )}
 
       {/* Business Type — E-commerce and AI Apps & Tools, mirrors the seller
@@ -779,7 +856,9 @@ export default function ListingEditForm({
           hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on the published listing." : "Select every niche this business fits — shown on the published listing."}
         >
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {(INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? INDUSTRIES : NICHES).map((n) => (
+            {/* Android & iOS Apps has its own curated Niche list (src/lib/
+                app-niches.ts), mirrors the create form. */}
+            {(INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? INDUSTRIES : categoryId === "apps-tools" ? APP_NICHES : NICHES).map((n) => (
               <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
                 <input
                   type="checkbox"
@@ -794,7 +873,7 @@ export default function ListingEditForm({
         </Section>
       )}
 
-      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : "Overview of the Business"}>
+      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : categoryId === "apps-tools" ? "Overview of the App" : "Overview of the Business"}>
         <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} className={`${inputCls} w-full`} />
       </Section>
 
@@ -854,16 +933,18 @@ export default function ListingEditForm({
       {category.hasMonetization && (
         <Section title="Monetization Methods">
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {/* Social Media Accounts, SaaS and AI Apps & Tools each see
-                their own curated subset — see the matching comment in the
-                seller "new listing" form. */}
+            {/* Social Media Accounts, SaaS, AI Apps & Tools and Android &
+                iOS Apps each see their own curated subset — see the
+                matching comment in the seller "new listing" form. */}
             {(categoryId === "social-media-accounts"
               ? MONETIZATION_TYPES.filter((m) => SOCIAL_MEDIA_MONETIZATION_IDS.includes(m.id))
               : categoryId === "saas"
                 ? MONETIZATION_TYPES.filter((m) => SAAS_MONETIZATION_IDS.includes(m.id))
                 : categoryId === "ai-apps-tools"
                   ? MONETIZATION_TYPES.filter((m) => AI_APPS_TOOLS_MONETIZATION_IDS.includes(m.id))
-                  : MONETIZATION_TYPES
+                  : categoryId === "apps-tools"
+                    ? MONETIZATION_TYPES.filter((m) => ANDROID_IOS_APPS_MONETIZATION_IDS.includes(m.id))
+                    : MONETIZATION_TYPES
             ).map((m) => (
               <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                 <input
