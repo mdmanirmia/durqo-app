@@ -801,7 +801,7 @@ export default function AddNewBusinessPage() {
               </label>
             </Section>
 
-            <Section title="Google Search Console Data">
+            <Section title="Google Search Console Data" hint="Engagement statistics, last 12 months.">
               <div className="grid gap-4 sm:grid-cols-3">
                 <Field label="Total Clicks"><input value={gscClicks} onChange={(e) => setGscClicks(e.target.value)} className={inputCls} /></Field>
                 <Field label="Total Impressions"><input value={gscImpressions} onChange={(e) => setGscImpressions(e.target.value)} className={inputCls} /></Field>
