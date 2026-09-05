@@ -55,6 +55,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // sourced from this category's own Proof of Income entries), and
   // "Subscribers" -> "Total Subscribers" — scoped to this category only so
   // Newsletters' plain "Subscribers" label is untouched.
+  // Social Media Accounts label overrides (Design & Development New.pdf,
+  // Sep 5, 2026): this category's whole Quick Statistics vocabulary talks
+  // about "the account" rather than "the business" — "Business Location" ->
+  // "Account Location", "Monthly Income" -> "Avg. Monthly Income" (same
+  // averaging as every other category), "Followers" -> "Total Followers",
+  // "Business Age" -> "Account Age". "Account Type" already reads correctly
+  // from the shared QUICK_STAT_LABELS map, no override needed.
   const quickStatLabelOverrides: Partial<Record<QuickStatKey, string>> =
     listing.categoryId === "websites"
       ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views", age: "Website Age" }
@@ -62,7 +69,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
       ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views" }
       : listing.categoryId === "youtube-channels"
         ? { location: "Channel Location", monthly_income: "Avg. Monthly Income", subscribers: "Total Subscribers" }
-        : {};
+        : listing.categoryId === "social-media-accounts"
+          ? { location: "Account Location", monthly_income: "Avg. Monthly Income", followers: "Total Followers", age: "Account Age" }
+          : {};
 
   // YouTube Channels Quick Statistics — trimmed to just Channel Location,
   // Avg. Monthly Income, and Channel Age (Sep 2026 request: only these plus
