@@ -14,6 +14,8 @@ import { BUSINESS_TYPE_MAP } from "@/lib/business-types";
 import { AI_BUSINESS_TYPE_MAP } from "@/lib/ai-business-types";
 import { ACCOUNT_TYPE_MAP } from "@/lib/account-types";
 import { APP_PLATFORM_MAP } from "@/lib/app-platforms";
+import { STARTUP_BUSINESS_MODEL_MAP } from "@/lib/startup-business-models";
+import { FUNDING_STAGE_MAP } from "@/lib/funding-stages";
 
 // Maps each app-level QuickStatKey to the flat column name it lives under
 // on public.listings. "location" reads the same generic `location` column
@@ -74,6 +76,16 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   // value ("ios" | "android" | "ios-android"), turned into a display name
   // by buildQuickStats() below the same way business_type/account_type are.
   platform: "platform",
+  // Startup Business only (migration 022) — single-select plain-text id
+  // (bootstrapped/pre-seed/seed/series-a/series-b-plus, see src/lib/
+  // funding-stages.ts), turned into a display name by buildQuickStats()
+  // below via FUNDING_STAGE_MAP (a single value, not a comma-separated
+  // list, unlike business_type/account_type/platform).
+  funding_stage: "funding_stage",
+  // Startup Business only (migration 022) — plain manual numeric inputs,
+  // same treatment as store_price/rating/etc above.
+  funding_raised: "funding_raised",
+  team_size: "team_size",
 };
 
 // Row shapes are intentionally loose (`Record<string, any>` via a minimal
@@ -104,7 +116,12 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
     // Development New.pdf, Sep 5, 2026), so the id -> name map used here
     // depends on which category the row belongs to.
     if (key === "business_type" && typeof value === "string") {
-      const map = row.category_id === "ai-apps-tools" ? AI_BUSINESS_TYPE_MAP : BUSINESS_TYPE_MAP;
+      const map =
+        row.category_id === "ai-apps-tools"
+          ? AI_BUSINESS_TYPE_MAP
+          : row.category_id === "startup-business"
+            ? STARTUP_BUSINESS_MODEL_MAP
+            : BUSINESS_TYPE_MAP;
       const names = value
         .split(",")
         .map((id) => id.trim())
@@ -137,6 +154,13 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
         .filter(Boolean)
         .map((id) => APP_PLATFORM_MAP[id] ?? id);
       if (names.length) stats[key] = names.join(", ");
+      continue;
+    }
+    // "funding_stage" (Startup Business) is a single plain-text id, unlike
+    // business_type/account_type/platform above — turned into its display
+    // name directly, no split/join needed.
+    if (key === "funding_stage" && typeof value === "string") {
+      stats[key] = FUNDING_STAGE_MAP[value] ?? value;
       continue;
     }
     stats[key] = value;
