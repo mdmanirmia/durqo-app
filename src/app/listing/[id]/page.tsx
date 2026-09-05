@@ -6,6 +6,7 @@ import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories"
 import { NICHE_MAP } from "@/lib/niches";
 import { INDUSTRY_MAP } from "@/lib/industries";
 import { INDUSTRY_ID_SPACE_CATEGORIES } from "@/lib/categories";
+import { APP_NICHE_MAP } from "@/lib/app-niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
@@ -79,7 +80,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
           ? { location: "Account Location", monthly_income: "Avg. Monthly Income", followers: "Total Followers", age: "Account Age" }
           : listing.categoryId === "saas" || listing.categoryId === "ai-apps-tools"
             ? { monthly_income: "Avg. Monthly Income" }
-            : {};
+            : listing.categoryId === "apps-tools"
+              ? { age: "App Age", total_reviews: "Reviews", total_downloads: "Downloads/Installs" }
+              : {};
 
   // YouTube Channels Quick Statistics — trimmed to just Channel Location,
   // Avg. Monthly Income, and Channel Age (Sep 2026 request: only these plus
@@ -221,7 +224,14 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
             {/* Quick Stats */}
             <section>
-              <h2 className="mb-4 text-xl">Quick Statistics</h2>
+              {/* Android & iOS Apps replaces this heading with "App
+                  Statistics" (Design & Development New.pdf, "Update the
+                  Apps & Tools category to Android & iOS Apps" revision,
+                  Sep 5, 2026) — the spec explicitly says "No need to show
+                  Quick Statistics. Instead of this, it will show App
+                  Statistics." Same underlying grid/data, just a different
+                  heading for this category. */}
+              <h2 className="mb-4 text-xl">{listing.categoryId === "apps-tools" ? "App Statistics" : "Quick Statistics"}</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {quickStatDisplayKeys.map((key: QuickStatKey) => (
                   <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
@@ -230,9 +240,19 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   // SaaS and AI Apps & Tools call this same field "Industry"
                   // with a shared curated option list (src/lib/industries.ts)
                   // — Design & Development New 1.pdf / New.pdf, Sep 5, 2026.
+                  // Android & iOS Apps keeps the plain "Niche" label but has
+                  // its own curated option list (src/lib/app-niches.ts).
                   <StatTile
                     label={INDUSTRY_ID_SPACE_CATEGORIES.has(listing.categoryId) ? "Industry" : "Niche"}
-                    value={listing.niches.map((id) => (INDUSTRY_ID_SPACE_CATEGORIES.has(listing.categoryId) ? INDUSTRY_MAP[id] : NICHE_MAP[id]) ?? id).join(", ")}
+                    value={listing.niches
+                      .map((id) =>
+                        (INDUSTRY_ID_SPACE_CATEGORIES.has(listing.categoryId)
+                          ? INDUSTRY_MAP[id]
+                          : listing.categoryId === "apps-tools"
+                            ? APP_NICHE_MAP[id]
+                            : NICHE_MAP[id]) ?? id
+                      )
+                      .join(", ")}
                   />
                 )}
                 <StatTile label="Asking Price" value={fmtUSD(price)} />
@@ -241,7 +261,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
             {/* Overview */}
             <section>
-              <h2 className="mb-3 text-xl">{listing.categoryId === "youtube-channels" ? "Overview of the Channel" : listing.categoryId === "websites" ? "Overview of the Website" : listing.categoryId === "social-media-accounts" ? "Overview of the Account" : "Overview of the Business"}</h2>
+              <h2 className="mb-3 text-xl">{listing.categoryId === "youtube-channels" ? "Overview of the Channel" : listing.categoryId === "websites" ? "Overview of the Website" : listing.categoryId === "social-media-accounts" ? "Overview of the Account" : listing.categoryId === "apps-tools" ? "Overview of the App" : "Overview of the Business"}</h2>
               <p className="max-w-[70ch] text-ink-soft">{listing.overview}</p>
               {category?.note && (
                 <p className="mt-3 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
