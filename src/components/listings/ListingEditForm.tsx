@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { MONETIZATION_TYPES } from "@/lib/monetization-types";
+import { BUSINESS_TYPES } from "@/lib/business-types";
 import { NICHES } from "@/lib/niches";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds, formatEngagementSeconds } from "@/lib/format";
@@ -19,7 +20,10 @@ import { setListingStatus } from "@/app/dashboard/admin/actions";
 const MONTHS = ["Sep 2025","Oct 2025","Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026"];
 const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01-01","2026-02-01","2026-03-01","2026-04-01","2026-05-01","2026-06-01","2026-07-01","2026-08-01"];
 
-const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar"]);
+// "business_type" (E-commerce only) is a comma-separated string of ids
+// built by the checkbox grid below, not a single typed value — see the
+// matching comment in the seller "new listing" form.
+const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type"]);
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
@@ -653,6 +657,35 @@ export default function ListingEditForm({
             </p>
           </div>
         )
+      )}
+
+      {/* Business Type — E-commerce only (Sep 5, 2026 request), mirrors the
+          seller "new listing" form: a comma-separated string of ids in
+          quickStats.business_type (see TEXT_QUICK_STAT_KEYS above),
+          pre-filled from the listing's saved value by initialQuickStats()
+          above like every other text Quick Stat. */}
+      {categoryId === "e-commerce" && (
+        <Section title="Business Type" hint="Select every business model this store uses — shown as a Quick Stat on the published listing.">
+          <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+            {BUSINESS_TYPES.map((t) => {
+              const selected = (quickStats.business_type ?? "").split(",").filter(Boolean);
+              return (
+                <label key={t.id} className="flex items-center gap-2 py-1 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(t.id)}
+                    onChange={() => {
+                      const next = selected.includes(t.id) ? selected.filter((id) => id !== t.id) : [...selected, t.id];
+                      setQuickStats((prev) => ({ ...prev, business_type: next.join(",") }));
+                    }}
+                    className="accent-brand-strong"
+                  />
+                  {t.name}
+                </label>
+              );
+            })}
+          </div>
+        </Section>
       )}
 
       <Section title="Niche" hint="Select every niche this business fits — shown on the published listing.">
