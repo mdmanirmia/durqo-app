@@ -11,6 +11,7 @@ import type {
 } from "@/lib/types";
 import type { QuickStatKey } from "@/lib/categories";
 import { BUSINESS_TYPE_MAP } from "@/lib/business-types";
+import { AI_BUSINESS_TYPE_MAP } from "@/lib/ai-business-types";
 import { ACCOUNT_TYPE_MAP } from "@/lib/account-types";
 
 // Maps each app-level QuickStatKey to the flat column name it lives under
@@ -90,13 +91,17 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
     // of display names (e.g. "shopify,dropshipping" -> "Shopify,
     // Dropshipping") here, once, rather than making every consumer
     // (ListingCard, the listing detail page's StatTile) know about the raw
-    // id encoding.
+    // id encoding. AI Apps & Tools shares this same column but its own
+    // curated option list/id space (src/lib/ai-business-types.ts, Design &
+    // Development New.pdf, Sep 5, 2026), so the id -> name map used here
+    // depends on which category the row belongs to.
     if (key === "business_type" && typeof value === "string") {
+      const map = row.category_id === "ai-apps-tools" ? AI_BUSINESS_TYPE_MAP : BUSINESS_TYPE_MAP;
       const names = value
         .split(",")
         .map((id) => id.trim())
         .filter(Boolean)
-        .map((id) => BUSINESS_TYPE_MAP[id] ?? id);
+        .map((id) => map[id] ?? id);
       if (names.length) stats[key] = names.join(", ");
       continue;
     }
