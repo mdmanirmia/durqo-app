@@ -759,20 +759,30 @@ export default function ListingEditForm({
       )}
 
       {/* Platform — Android & iOS Apps only, mirrors the seller "new
-          listing" form: single-select (src/lib/app-platforms.ts) stored as
-          one plain-text value in quickStats.platform. */}
+          listing" form: a multi-select checkbox grid (Sep 5, 2026 follow-up
+          — a seller can list an app as available on both iOS and Android)
+          storing a comma-separated string of ids in quickStats.platform. */}
       {categoryId === "apps-tools" && (
-        <Section title="Platform" hint="Which platform(s) this app is available on — shown as a Quick Stat on the published listing.">
-          <select
-            value={quickStats.platform ?? ""}
-            onChange={(e) => setQuickStats((prev) => ({ ...prev, platform: e.target.value }))}
-            className={`${inputCls} w-full sm:w-64`}
-          >
-            <option value="">Select a platform</option>
-            {APP_PLATFORMS.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
+        <Section title="Platform" hint="Select every platform this app is available on — shown as a Quick Stat on the published listing.">
+          <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+            {APP_PLATFORMS.map((p) => {
+              const selected = (quickStats.platform ?? "").split(",").filter(Boolean);
+              return (
+                <label key={p.id} className="flex items-center gap-2 py-1 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(p.id)}
+                    onChange={() => {
+                      const next = selected.includes(p.id) ? selected.filter((id) => id !== p.id) : [...selected, p.id];
+                      setQuickStats((prev) => ({ ...prev, platform: next.join(",") }));
+                    }}
+                    className="accent-brand-strong"
+                  />
+                  {p.name}
+                </label>
+              );
+            })}
+          </div>
         </Section>
       )}
 
