@@ -50,7 +50,7 @@ function FilterPanel({
       </div>
 
       <div>
-        <h4 className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Asset types</h4>
+        <h4 className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">Asset categories</h4>
         <div className="flex max-h-56 flex-col gap-1 overflow-y-auto pr-1">
           {CATEGORIES.map((c) => (
             <label key={c.id} className="flex items-center gap-2 py-0.5 text-sm text-ink">
