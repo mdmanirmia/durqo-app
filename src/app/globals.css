@@ -88,6 +88,30 @@ h1, h2, h3, h4 {
   text-wrap: balance;
 }
 
+/* Sitewide body-copy justification (Sep 5, 2026, per an explicit "sob
+   likha justify hobe" request — all writing across the site, including
+   every listing's text, should be justified). Scoped to paragraphs and
+   list items rather than every element: those are where real body copy
+   lives (listing overview/description text, About/Terms/Privacy content,
+   FAQ answers, Copyright Notes bullets, etc.), while headings, buttons,
+   badges, labels, and nav links are short single-line UI chrome that
+   justify has no visible effect on anyway. Placed in Tailwind's `base`
+   layer (not left unlayered like the body/h1 rules above) specifically so
+   any paragraph that already carries an explicit Tailwind alignment
+   utility — text-center/text-left/text-right, e.g. empty-state messages,
+   the login/register "Don't have an account?" line, the cart's fine-print
+   line — keeps overriding this default: Tailwind's `utilities` layer
+   always wins over `base` regardless of selector order or specificity, so
+   nothing already deliberately centered/right-aligned changes. This
+   superseded the one-off `text-justify` class previously added by hand
+   just to the Payment Terms card, which is now redundant but left as-is
+   (harmless — the same alignment either way). */
+@layer base {
+  p, li {
+    text-align: justify;
+  }
+}
+
 h1 {
   font-weight: 700;
   letter-spacing: -0.02em;
