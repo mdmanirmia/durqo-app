@@ -15,6 +15,7 @@ export type QuickStatKey =
   | "total_views"
   | "total_videos"
   | "channel_age"
+  | "business_type"
   | "followers"
   | "total_posts"
   | "likes_per_post"
@@ -67,8 +68,13 @@ export const CATEGORIES: CategoryConfig[] = [
     // Same auto-computed model as Websites (Sep 1, 2026 revision): Monthly
     // Income, Monthly Views and Authority Score are computed automatically
     // rather than typed in manually. Income Multiple is intentionally not
-    // shown for E-commerce.
-    quickStats: ["location", "monthly_income", "monthly_views", "age", "authority_score", "articles_posted"],
+    // shown for E-commerce. "Business Type" (Sep 5, 2026 addition) is a
+    // manually-entered, multi-select Quick Stat unique to this category —
+    // Shopify/WooCommerce/Dropshipping/Digital Products/Others, see
+    // src/lib/business-types.ts — joined into a single display string by
+    // buildQuickStats() in map-listing.ts, same treatment as the plain-text
+    // "location" field.
+    quickStats: ["location", "business_type", "monthly_income", "monthly_views", "age", "authority_score", "articles_posted"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -209,6 +215,7 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   total_views: "Total Views",
   total_videos: "Total Videos",
   channel_age: "Channel Age",
+  business_type: "Business Type",
   followers: "Followers",
   total_posts: "Total Posts",
   likes_per_post: "Likes per Post",
