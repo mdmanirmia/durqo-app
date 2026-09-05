@@ -3,12 +3,13 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { refreshAccessToken, runGa4Report } from "@/lib/google-analytics";
 
-// Shared by the OAuth callback (first sync right after connecting) and the
-// on-demand /api/google-analytics/sync route (re-sync button, and where a
-// future scheduled job would hook in for the "auto-updates monthly"
-// cadence Flippa's own integration uses). Always refreshes the access
-// token first — GA4 access tokens are short-lived (~1hr), so a stored one
-// is almost always stale by the time this runs.
+// Shared by the OAuth callback (first sync right after connecting), the
+// on-demand /api/google-analytics/sync route (seller's "Re-sync" button),
+// and the daily cron job (src/app/api/cron/sync/route.ts, Sep 5 2026 —
+// runs this for every connected listing once a day, matching the
+// "auto-updates" cadence Flippa's own integration uses). Always refreshes
+// the access token first — GA4 access tokens are short-lived (~1hr), so a
+// stored one is almost always stale by the time this runs.
 export async function syncListingGaStats(listingId: string): Promise<void> {
   const admin = createAdminClient();
   if (!admin) throw new Error("Backend isn't connected yet.");
