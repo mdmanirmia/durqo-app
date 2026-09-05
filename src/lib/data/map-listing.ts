@@ -473,12 +473,24 @@ export function mapListing(
     // never look at quickStats.channel_age. Falling back to it here, at the
     // single mapping layer every one of those already reads through, fixes
     // all of them at once rather than patching each call site.
+    // Same gap for Domains (same-day follow-up): Domains has no "age" quick
+    // stat at all — sellers instead type a free-text "Domain Age" like
+    // "6 years" into the domain_age column (see QUICK_STAT_COLUMNS.domain_age),
+    // so every one of those same surfaces showed "New" for a 6-year-old
+    // domain. `parseInt` on that text pulls out its leading number ("6
+    // years" -> 6); falls through to undefined ("New") if domain_age is
+    // empty or doesn't start with a number.
     businessAgeYears:
       row.business_age_years != null
         ? Number(row.business_age_years)
         : row.channel_age_years != null
           ? Number(row.channel_age_years)
-          : undefined,
+          : row.domain_age
+            ? (() => {
+                const parsed = parseInt(String(row.domain_age), 10);
+                return Number.isNaN(parsed) ? undefined : parsed;
+              })()
+            : undefined,
     overview: row.overview ?? "",
     monthlyExpenses: row.monthly_expenses ?? [],
     monetizationTypeIds: row.monetization_type_ids ?? [],
