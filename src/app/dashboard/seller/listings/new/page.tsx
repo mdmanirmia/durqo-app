@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { BarChart3, CheckCircle2, Plus, Trash2, Upload } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
-import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
-import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS } from "@/lib/monetization-types";
+import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey, INDUSTRY_ID_SPACE_CATEGORIES } from "@/lib/categories";
+import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS, AI_APPS_TOOLS_MONETIZATION_IDS } from "@/lib/monetization-types";
 import { BUSINESS_TYPES } from "@/lib/business-types";
+import { AI_BUSINESS_TYPES } from "@/lib/ai-business-types";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import { INDUSTRIES } from "@/lib/industries";
@@ -285,15 +286,17 @@ export default function AddNewBusinessPage() {
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats({});
-    // SaaS uses its own "Industry" option list (src/lib/industries.ts)
-    // rather than the shared NICHES list every other category draws from
-    // (Design & Development New 1.pdf, Sep 5, 2026) — the two id spaces
-    // don't overlap, so a niches/industries selection made under one has to
-    // be cleared when crossing into or out of SaaS, or it'd carry over
-    // ids the new category's option list (and INDUSTRY_MAP/NICHE_MAP) can't
-    // resolve. Every other category-to-category switch still shares one id
-    // space, so the selection is intentionally preserved there.
-    if ((id === "saas") !== (categoryId === "saas")) setNiches([]);
+    // SaaS and AI Apps & Tools share their own "Industry" option list
+    // (src/lib/industries.ts) rather than the shared NICHES list every
+    // other category draws from (Design & Development New 1.pdf / New.pdf,
+    // Sep 5, 2026) — the two id spaces don't overlap, so a niches/industries
+    // selection made under one has to be cleared when crossing into or out
+    // of this pair, or it'd carry over ids the new list (and
+    // INDUSTRY_MAP/NICHE_MAP) can't resolve. Switching between SaaS and AI
+    // Apps & Tools themselves keeps the selection (same id space). Every
+    // other category-to-category switch still shares one id space, so the
+    // selection is intentionally preserved there.
+    if (INDUSTRY_ID_SPACE_CATEGORIES.has(id) !== INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId)) setNiches([]);
     setCopyrightNotes("");
     setCopyrightImages([]);
     setTopVideos(Array.from({ length: 5 }, () => ({ title: "", videoUrl: "", views: "", likes: "", duration: "", publishedOn: "" })));
@@ -678,18 +681,31 @@ export default function AddNewBusinessPage() {
           )
         )}
 
-        {/* Business Type — E-commerce only (Sep 5, 2026 request). Stored as
-            a comma-separated string of ids in quickStats.business_type (see
-            TEXT_QUICK_STAT_KEYS above), the same free-text-like column
-            shape "location" already uses, so it needs no dedicated state or
-            submit-path changes — just this checkbox grid toggling that one
-            string. buildQuickStats() in map-listing.ts joins the ids into
-            display names before the public listing page's Quick Statistics
-            grid renders it. */}
-        {categoryId === "e-commerce" && (
-          <Section title="Business Type" hint="Select every business model this store uses — shown as a Quick Stat on your published listing.">
+        {/* Business Type — E-commerce and AI Apps & Tools (Sep 5, 2026
+            requests). Stored as a comma-separated string of ids in
+            quickStats.business_type (see TEXT_QUICK_STAT_KEYS above), the
+            same free-text-like column shape "location" already uses, so it
+            needs no dedicated state or submit-path changes — just this
+            checkbox grid toggling that one string. AI Apps & Tools shows
+            its own curated option list (src/lib/ai-business-types.ts —
+            which major AI model the app is built on) instead of
+            E-commerce's business-model list, same column/mechanism, picked
+            by category the same way the Niche/Industry section below
+            switches lists. buildQuickStats() in map-listing.ts joins the
+            ids into display names (using the right map for the category)
+            before the public listing page's Quick Statistics grid renders
+            it. */}
+        {(categoryId === "e-commerce" || categoryId === "ai-apps-tools") && (
+          <Section
+            title="Business Type"
+            hint={
+              categoryId === "ai-apps-tools"
+                ? "Select every AI model this app or tool is built on — shown as a Quick Stat on your published listing."
+                : "Select every business model this store uses — shown as a Quick Stat on your published listing."
+            }
+          >
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-              {BUSINESS_TYPES.map((t) => {
+              {(categoryId === "ai-apps-tools" ? AI_BUSINESS_TYPES : BUSINESS_TYPES).map((t) => {
                 const selected = (quickStats.business_type ?? "").split(",").filter(Boolean);
                 return (
                   <label key={t.id} className="flex items-center gap-2 py-1 text-sm">
@@ -740,18 +756,18 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
-        {/* "Industry" is the SaaS category's own name for this same Niche
-            selector (Design & Development New 1.pdf, Sep 5, 2026) — its own
-            curated option list (src/lib/industries.ts), but stored in the
-            same `niches` state/column as every other category, same
-            treatment as "Account Location" being just `location` under a
-            different label for Social Media Accounts. */}
+        {/* "Industry" is SaaS's and AI Apps & Tools' own name for this same
+            Niche selector (Design & Development New 1.pdf / New.pdf, Sep 5,
+            2026) — a shared curated option list (src/lib/industries.ts),
+            but stored in the same `niches` state/column as every other
+            category, same treatment as "Account Location" being just
+            `location` under a different label for Social Media Accounts. */}
         <Section
-          title={categoryId === "saas" ? "Industry" : "Niche"}
-          hint={categoryId === "saas" ? "Select every industry this business fits — shown on your published listing." : "Select every niche this business fits — shown on your published listing."}
+          title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
+          hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on your published listing." : "Select every niche this business fits — shown on your published listing."}
         >
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {(categoryId === "saas" ? INDUSTRIES : NICHES).map((n) => (
+            {(INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? INDUSTRIES : NICHES).map((n) => (
               <label key={n.id} className="flex items-center gap-2 py-1 text-sm">
                 <input
                   type="checkbox"
@@ -840,17 +856,20 @@ export default function AddNewBusinessPage() {
         {category.hasMonetization && (
           <Section title="Monetization Methods">
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-              {/* Social Media Accounts and SaaS each see their own curated
-                  subset of the shared monetization list (Design &
-                  Development New.pdf / New 1.pdf, Sep 5, 2026) — see
-                  SOCIAL_MEDIA_MONETIZATION_IDS / SAAS_MONETIZATION_IDS in
+              {/* Social Media Accounts, SaaS and AI Apps & Tools each see
+                  their own curated subset of the shared monetization list
+                  (Design & Development New.pdf / New 1.pdf / New.pdf, Sep 5,
+                  2026) — see SOCIAL_MEDIA_MONETIZATION_IDS /
+                  SAAS_MONETIZATION_IDS / AI_APPS_TOOLS_MONETIZATION_IDS in
                   monetization-types.ts. Every other category keeps seeing
                   the full generic list, unchanged. */}
               {(categoryId === "social-media-accounts"
                 ? MONETIZATION_TYPES.filter((m) => SOCIAL_MEDIA_MONETIZATION_IDS.includes(m.id))
                 : categoryId === "saas"
                   ? MONETIZATION_TYPES.filter((m) => SAAS_MONETIZATION_IDS.includes(m.id))
-                  : MONETIZATION_TYPES
+                  : categoryId === "ai-apps-tools"
+                    ? MONETIZATION_TYPES.filter((m) => AI_APPS_TOOLS_MONETIZATION_IDS.includes(m.id))
+                    : MONETIZATION_TYPES
               ).map((m) => (
                 <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                   <input
