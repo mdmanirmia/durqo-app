@@ -143,3 +143,25 @@ export const AI_APPS_TOOLS_MONETIZATION_IDS = [
 // category's "Services & Subscriptions" option; "ads" and "others" already
 // exist too.
 export const ANDROID_IOS_APPS_MONETIZATION_IDS = ["services-subscriptions", "ads", "others"];
+
+// Startup Business category only — same curated-subset mechanism as the
+// lists above (user request, Sep 5, 2026). A broader list than most of the
+// other subsets since a startup's monetization can span software,
+// e-commerce, or services — every id here already exists above (added for
+// SaaS/AI Apps & Tools/E-commerce), no new monetization ids needed.
+export const STARTUP_BUSINESS_MONETIZATION_IDS = [
+  "subscriptions",
+  "usage-based",
+  "api-fees",
+  "e-commerce",
+  "digital-products",
+  "advertising",
+  "affiliate-sales",
+  "commission",
+  "licensing",
+  "enterprise-contracts",
+  "one-time-sales",
+  "lifetime-deals",
+  "services",
+  "others",
+];

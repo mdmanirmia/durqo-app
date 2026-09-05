@@ -35,7 +35,10 @@ export type QuickStatKey =
   | "domain_registrar"
   | "indexed_pages"
   | "store_price"
-  | "platform";
+  | "platform"
+  | "funding_stage"
+  | "funding_raised"
+  | "team_size";
 
 export interface CategoryConfig {
   id: string;
@@ -307,6 +310,39 @@ export const CATEGORIES: CategoryConfig[] = [
     hasMonetization: false,
     hasSocialStats: false,
   },
+  {
+    id: "startup-business",
+    name: "Startup Business",
+    description: "Early-stage startups with product, traction, or a funding history.",
+    // User request, Sep 5, 2026 — a brand new category, not a rework (same
+    // treatment as AI Apps & Tools). Quick Statistics: Company Location/
+    // Funding Stage/Funding Raised/Avg. Monthly Income/Business Model/Team
+    // Size/Business Age (plus the always-shown Industry/Asking Price — this
+    // category shares SaaS's "Industry" option list/label, see
+    // INDUSTRY_ID_SPACE_CATEGORIES below, since a startup's field is better
+    // described as an industry than a content "Niche"). "Funding Stage" is
+    // a new single-select Quick Stat (src/lib/funding-stages.ts) — unlike
+    // Business Type/Account Type/Platform, a startup is only ever at one
+    // funding stage, so it's stored as one plain-text id in the new
+    // `funding_stage` column (migration 022) rather than a comma-separated
+    // multi-select. "Funding Raised" and "Team Size" are new plain manual
+    // numeric inputs (new `funding_raised`/`team_size` columns, same
+    // migration), same treatment as Android & iOS Apps' Store Price/
+    // Rating/etc. "Business Model" reuses the shared `business_type`
+    // column/mechanism (comma-separated multi-select) with its own curated
+    // option list (src/lib/startup-business-models.ts: B2B/B2C/B2B2C/
+    // Marketplace/SaaS/Hardware/Others) — same pattern as E-commerce's
+    // Business Type and AI Apps & Tools' Business Type checklists, just a
+    // different option list for this category, picked by category_id in
+    // buildQuickStats() in map-listing.ts. "Avg. Monthly Income" is the
+    // same auto-averaged-from-Proof-of-Income mechanism every other
+    // category uses (computeAutoQuickStats() in map-listing.ts) — a
+    // pre-revenue startup can simply leave Proof of Income at $0/unset.
+    quickStats: ["location", "funding_stage", "funding_raised", "monthly_income", "business_type", "team_size", "age"],
+    hasSeoData: true,
+    hasMonetization: true,
+    hasSocialStats: true,
+  },
 ];
 
 // Categories that share the "Industry" option list/id space
@@ -320,7 +356,13 @@ export const CATEGORIES: CategoryConfig[] = [
 // category entirely — it's intentionally not a member of this set; both
 // listing forms skip the whole Niche/Industry section for it outright
 // instead of falling back to the generic Niche list.
-export const INDUSTRY_ID_SPACE_CATEGORIES = new Set(["saas"]);
+// Startup Business (user request, Sep 5, 2026) shares this same "Industry"
+// mechanism as SaaS — a startup's field is better described as an industry
+// than a content "Niche" — so both listing forms' generic
+// `INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId)` check already picks up the
+// "Industry" label and the shared INDUSTRIES option list for this category
+// too, with no per-category code changes needed elsewhere.
+export const INDUSTRY_ID_SPACE_CATEGORIES = new Set(["saas", "startup-business"]);
 
 export const CATEGORY_MAP: Record<string, CategoryConfig> = Object.fromEntries(
   CATEGORIES.map((c) => [c.id, c])
@@ -360,4 +402,7 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   indexed_pages: "Indexed Pages",
   store_price: "Store Price",
   platform: "Platform",
+  funding_stage: "Funding Stage",
+  funding_raised: "Funding Raised",
+  team_size: "Team Size",
 };

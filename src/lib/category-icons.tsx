@@ -17,6 +17,7 @@ import {
   Handshake,
   Link2,
   Bot,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 
@@ -36,6 +37,7 @@ export const CATEGORY_ICONS: Record<string, LucideIcon> = {
   "service-business": Handshake,
   domains: Link2,
   "ai-apps-tools": Bot,
+  "startup-business": Rocket,
 };
 
 export function categoryIcon(categoryId: string): LucideIcon {
