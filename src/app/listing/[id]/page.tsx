@@ -56,7 +56,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // "Subscribers" -> "Total Subscribers" — scoped to this category only so
   // Newsletters' plain "Subscribers" label is untouched.
   const quickStatLabelOverrides: Partial<Record<QuickStatKey, string>> =
-    listing.categoryId === "websites" || listing.categoryId === "e-commerce"
+    listing.categoryId === "websites"
+      ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views", age: "Website Age" }
+      : listing.categoryId === "e-commerce"
       ? { monthly_income: "Avg. Monthly Income", monthly_views: "Avg. Monthly Views" }
       : listing.categoryId === "youtube-channels"
         ? { location: "Channel Location", monthly_income: "Avg. Monthly Income", subscribers: "Total Subscribers" }
@@ -216,7 +218,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
             {/* Overview */}
             <section>
-              <h2 className="mb-3 text-xl">{listing.categoryId === "youtube-channels" ? "Overview of the Channel" : "Overview of the Business"}</h2>
+              <h2 className="mb-3 text-xl">{listing.categoryId === "youtube-channels" ? "Overview of the Channel" : listing.categoryId === "websites" ? "Overview of the Website" : "Overview of the Business"}</h2>
               <p className="max-w-[70ch] text-ink-soft">{listing.overview}</p>
               {category?.note && (
                 <p className="mt-3 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
