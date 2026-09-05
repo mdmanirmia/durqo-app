@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey, INDUSTRY_ID_SPACE_CATEGORIES } from "@/lib/categories";
-import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS, AI_APPS_TOOLS_MONETIZATION_IDS, ANDROID_IOS_APPS_MONETIZATION_IDS } from "@/lib/monetization-types";
+import { MONETIZATION_TYPES, SOCIAL_MEDIA_MONETIZATION_IDS, SAAS_MONETIZATION_IDS, AI_APPS_TOOLS_MONETIZATION_IDS, ANDROID_IOS_APPS_MONETIZATION_IDS, STARTUP_BUSINESS_MONETIZATION_IDS } from "@/lib/monetization-types";
 import { BUSINESS_TYPES } from "@/lib/business-types";
 import { AI_BUSINESS_TYPES } from "@/lib/ai-business-types";
+import { STARTUP_BUSINESS_MODELS } from "@/lib/startup-business-models";
+import { FUNDING_STAGES } from "@/lib/funding-stages";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import { INDUSTRIES } from "@/lib/industries";
@@ -28,7 +30,7 @@ const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01
 // "business_type" (E-commerce only) is a comma-separated string of ids
 // built by the checkbox grid below, not a single typed value — see the
 // matching comment in the seller "new listing" form.
-const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type", "account_type", "platform"]);
+const TEXT_QUICK_STAT_KEYS = new Set<QuickStatKey>(["location", "domain_age", "domain_registrar", "business_type", "account_type", "platform", "funding_stage"]);
 const DATE_QUICK_STAT_KEYS = new Set<QuickStatKey>(["domain_expires"]);
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
@@ -786,24 +788,72 @@ export default function ListingEditForm({
         </Section>
       )}
 
-      {/* Business Type — E-commerce and AI Apps & Tools, mirrors the seller
-          "new listing" form: a comma-separated string of ids in
-          quickStats.business_type (see TEXT_QUICK_STAT_KEYS above),
+      {/* Startup Details — Startup Business only, mirrors the seller "new
+          listing" form: Funding Stage (single-select, stored as a single
+          plain-text id in quickStats.funding_stage, see TEXT_QUICK_STAT_KEYS
+          above) plus Funding Raised/Team Size (plain manual numeric
+          inputs). */}
+      {categoryId === "startup-business" && (
+        <Section title="Startup Details" hint="Shown as Quick Stats on the published listing.">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Funding Stage">
+              <select
+                value={quickStats.funding_stage ?? ""}
+                onChange={(e) => setQuickStats((prev) => ({ ...prev, funding_stage: e.target.value }))}
+                className={inputCls}
+              >
+                <option value="">Select a stage</option>
+                {FUNDING_STAGES.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Funding Raised (USD)">
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={quickStats.funding_raised ?? ""}
+                onChange={(e) => setQuickStats((prev) => ({ ...prev, funding_raised: e.target.value }))}
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Team Size">
+              <input
+                type="number"
+                min="0"
+                step="any"
+                value={quickStats.team_size ?? ""}
+                onChange={(e) => setQuickStats((prev) => ({ ...prev, team_size: e.target.value }))}
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </Section>
+      )}
+
+      {/* Business Type — E-commerce, AI Apps & Tools and Startup Business,
+          mirrors the seller "new listing" form: a comma-separated string of
+          ids in quickStats.business_type (see TEXT_QUICK_STAT_KEYS above),
           pre-filled from the listing's saved value by initialQuickStats()
           above like every other text Quick Stat. AI Apps & Tools shows its
-          own curated option list (src/lib/ai-business-types.ts) instead of
+          own curated option list (src/lib/ai-business-types.ts) and Startup
+          Business shows its own list (src/lib/startup-business-models.ts,
+          labeled "Business Model" on the public listing page) instead of
           E-commerce's business-model list. */}
-      {(categoryId === "e-commerce" || categoryId === "ai-apps-tools") && (
+      {(categoryId === "e-commerce" || categoryId === "ai-apps-tools" || categoryId === "startup-business") && (
         <Section
-          title="Business Type"
+          title={categoryId === "startup-business" ? "Business Model" : "Business Type"}
           hint={
             categoryId === "ai-apps-tools"
               ? "Select every AI model this app or tool is built on — shown as a Quick Stat on the published listing."
-              : "Select every business model this store uses — shown as a Quick Stat on the published listing."
+              : categoryId === "startup-business"
+                ? "Select every business model this startup runs on — shown as a Quick Stat on the published listing."
+                : "Select every business model this store uses — shown as a Quick Stat on the published listing."
           }
         >
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
-            {(categoryId === "ai-apps-tools" ? AI_BUSINESS_TYPES : BUSINESS_TYPES).map((t) => {
+            {(categoryId === "ai-apps-tools" ? AI_BUSINESS_TYPES : categoryId === "startup-business" ? STARTUP_BUSINESS_MODELS : BUSINESS_TYPES).map((t) => {
               const selected = (quickStats.business_type ?? "").split(",").filter(Boolean);
               return (
                 <label key={t.id} className="flex items-center gap-2 py-1 text-sm">
@@ -954,7 +1004,9 @@ export default function ListingEditForm({
                   ? MONETIZATION_TYPES.filter((m) => AI_APPS_TOOLS_MONETIZATION_IDS.includes(m.id))
                   : categoryId === "apps-tools"
                     ? MONETIZATION_TYPES.filter((m) => ANDROID_IOS_APPS_MONETIZATION_IDS.includes(m.id))
-                    : MONETIZATION_TYPES
+                    : categoryId === "startup-business"
+                      ? MONETIZATION_TYPES.filter((m) => STARTUP_BUSINESS_MONETIZATION_IDS.includes(m.id))
+                      : MONETIZATION_TYPES
             ).map((m) => (
               <label key={m.id} className="flex items-center gap-2 py-1 text-sm">
                 <input
