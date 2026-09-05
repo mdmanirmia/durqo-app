@@ -233,9 +233,21 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   heading for this category. */}
               <h2 className="mb-4 text-xl">{listing.categoryId === "apps-tools" ? "App Statistics" : "Quick Statistics"}</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {quickStatDisplayKeys.map((key: QuickStatKey) => (
-                  <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={listing.quickStats[key]} />
-                ))}
+                {quickStatDisplayKeys.map((key: QuickStatKey) => {
+                  // Age values (App Age, Business Age, Channel Age, Account
+                  // Age, Website Age) are plain numbers of years in the DB,
+                  // shown bare here ("2") unlike the marketplace grid/
+                  // homepage spotlight, which already append " yrs" (see
+                  // src/lib/format.ts's QUICK_STAT_YEARS / formatQuickStat —
+                  // not used on this page). Sep 5, 2026 request ("Age Years e
+                  // dekhabe" — show Age in years): append the same " yrs"
+                  // suffix here too, only when a value is actually set, so
+                  // this stays consistent site-wide without disturbing the
+                  // "skip this tile" behavior StatTile has for undefined/"".
+                  const raw = listing.quickStats[key];
+                  const value = (key === "age" || key === "channel_age") && raw !== undefined && raw !== "" ? `${raw} yrs` : raw;
+                  return <StatTile key={key} label={quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key]} value={value} />;
+                })}
                 {listing.niches.length > 0 && (
                   // SaaS and AI Apps & Tools call this same field "Industry"
                   // with a shared curated option list (src/lib/industries.ts)
