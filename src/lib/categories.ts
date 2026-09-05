@@ -242,7 +242,12 @@ export const CATEGORIES: CategoryConfig[] = [
     // Proof of Income, Monthly Expenses, Social Media Accounts, Sale
     // Includes and Payment Terms aren't mentioned in the spec, so they stay
     // as every other category has them (hasSocialStats: true, unchanged).
-    quickStats: ["age", "rating", "total_reviews", "total_downloads", "store_price", "platform"],
+    // "location" added to this list (Sep 5, 2026 follow-up) so App Location
+    // shows as its own App Statistics tile, same as every other category
+    // that collects a location field (Digital Agencies, Service Business,
+    // etc.) — labeled "App Location" via the categoryId === "apps-tools"
+    // branch of quickStatLabelOverrides in the public listing page.
+    quickStats: ["location", "age", "rating", "total_reviews", "total_downloads", "store_price", "platform"],
     hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: true,
