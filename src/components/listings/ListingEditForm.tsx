@@ -652,9 +652,6 @@ export default function ListingEditForm({
                 </Field>
               )}
             </div>
-            <p className="mt-2 text-xs text-ink-faint">
-              The rest of this category&rsquo;s Quick Statistics aren&rsquo;t entered here — they&rsquo;re calculated automatically from the Proof of Income, Analytics and other data below.
-            </p>
           </div>
         )
       )}
