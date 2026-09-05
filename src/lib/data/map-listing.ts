@@ -10,6 +10,7 @@ import type {
   ListingImageKind,
 } from "@/lib/types";
 import type { QuickStatKey } from "@/lib/categories";
+import { BUSINESS_TYPE_MAP } from "@/lib/business-types";
 
 // Maps each app-level QuickStatKey to the flat column name it lives under
 // on public.listings. "location" reads the same generic `location` column
@@ -26,6 +27,12 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   total_views: "total_views",
   total_videos: "total_videos",
   channel_age: "channel_age_years",
+  // E-commerce only — a plain text column holding a comma-separated list of
+  // business-type ids (e.g. "shopify,dropshipping"), same storage shape as
+  // the other TEXT_QUICK_STAT_KEYS fields (location, domain_registrar).
+  // buildQuickStats() below joins the ids into display names before this
+  // reaches the page.
+  business_type: "business_type",
   followers: "followers",
   total_posts: "total_posts",
   likes_per_post: "likes_per_post",
@@ -69,7 +76,23 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
   for (const key of quickStatKeys) {
     const column = QUICK_STAT_COLUMNS[key];
     const value = row[column];
-    if (value !== null && value !== undefined) stats[key] = value;
+    if (value === null || value === undefined || value === "") continue;
+    // "business_type" is stored as a comma-separated string of ids (see
+    // QUICK_STAT_COLUMNS above) — turn it into a comma-space-joined string
+    // of display names (e.g. "shopify,dropshipping" -> "Shopify,
+    // Dropshipping") here, once, rather than making every consumer
+    // (ListingCard, the listing detail page's StatTile) know about the raw
+    // id encoding.
+    if (key === "business_type" && typeof value === "string") {
+      const names = value
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean)
+        .map((id) => BUSINESS_TYPE_MAP[id] ?? id);
+      if (names.length) stats[key] = names.join(", ");
+      continue;
+    }
+    stats[key] = value;
   }
   return stats;
 }
