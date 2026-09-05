@@ -135,3 +135,11 @@ export const AI_APPS_TOOLS_MONETIZATION_IDS = [
   "enterprise-contracts",
   "others",
 ];
+
+// Android & iOS Apps category only — same curated-subset mechanism as the
+// lists above (Design & Development New.pdf, "Update the Apps & Tools
+// category to Android & iOS Apps" revision, Sep 5, 2026). "services-
+// subscriptions" already exists above (added for SaaS) and covers this
+// category's "Services & Subscriptions" option; "ads" and "others" already
+// exist too.
+export const ANDROID_IOS_APPS_MONETIZATION_IDS = ["services-subscriptions", "ads", "others"];

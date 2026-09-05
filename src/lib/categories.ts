@@ -33,7 +33,9 @@ export type QuickStatKey =
   | "domain_age"
   | "domain_expires"
   | "domain_registrar"
-  | "indexed_pages";
+  | "indexed_pages"
+  | "store_price"
+  | "platform";
 
 export interface CategoryConfig {
   id: string;
@@ -211,10 +213,37 @@ export const CATEGORIES: CategoryConfig[] = [
   },
   {
     id: "apps-tools",
-    name: "Apps & Tools",
-    description: "Mobile and desktop apps, utilities and tools.",
-    quickStats: ["monthly_income", "age", "total_downloads", "total_reviews", "rating", "income_multiple"],
-    hasSeoData: true,
+    name: "Android & iOS Apps",
+    description: "Mobile apps for iOS and Android with real installs and reviews.",
+    // Design & Development New.pdf ("Update the Apps & Tools category to
+    // Android & iOS Apps", Sep 5, 2026) — renamed from the original generic
+    // "Apps & Tools" seed category (id kept as "apps-tools" since there were
+    // zero live listings under it to migrate) and given its own field set:
+    // App Name/URL/Location/Age (the universal title/business_url/location/
+    // business_age_years fields, just relabeled — see the categoryId ===
+    // "apps-tools" branches on both listing forms), Rating/Reviews/
+    // Downloads-Installs/Store Price as a dedicated "App Statistics" section
+    // (replacing the generic "Quick Statistics" heading for this category
+    // only — see the Section title ternary on both forms and the public
+    // listing page), and a single-select Platform field (iOS/Android/iOS &
+    // Android, src/lib/app-platforms.ts — a new `platform` column, migration
+    // 020, stored as one plain string via TEXT_QUICK_STAT_KEYS rather than
+    // the comma-separated multi-select shape Business Type/Account Type
+    // use). Niche keeps its plain "Niche" label but swaps in its own
+    // curated option list (src/lib/app-niches.ts) instead of the generic
+    // NICHES list — see the categoryId === "apps-tools" branch on both
+    // forms' Niche section and the public listing page's Niche StatTile.
+    // Monetization Methods is trimmed to Services & Subscriptions/Ads/
+    // Others (src/lib/monetization-types.ts, ANDROID_IOS_APPS_MONETIZATION_
+    // IDS). The spec explicitly says to delete Google Analytics/Search
+    // Console/SEMrush/Ahrefs Data for this category — hasSeoData: false
+    // below already hides (and stops collecting/submitting) all four
+    // sections on both forms and the public page, no further code needed.
+    // Proof of Income, Monthly Expenses, Social Media Accounts, Sale
+    // Includes and Payment Terms aren't mentioned in the spec, so they stay
+    // as every other category has them (hasSocialStats: true, unchanged).
+    quickStats: ["age", "rating", "total_reviews", "total_downloads", "store_price", "platform"],
+    hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: true,
   },
@@ -314,4 +343,6 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   domain_registrar: "Registrar",
   authority_score: "Authority Score",
   indexed_pages: "Indexed Pages",
+  store_price: "Store Price",
+  platform: "Platform",
 };
