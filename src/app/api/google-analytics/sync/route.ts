@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { syncListingGaStats } from "@/lib/data/ga-sync.server";
 
-// "Sync now" button on the seller's Google Analytics connection status.
-// Also where a future scheduled job would call in to match Flippa's
-// "metrics auto-update monthly" cadence — not built yet (see project doc).
+// "Sync now" button on the seller's Google Analytics connection status —
+// for an on-demand refresh between the daily cron job's runs
+// (src/app/api/cron/sync/route.ts, Sep 5 2026).
 export async function POST(request: Request) {
   const supabase = await createClient();
   if (!supabase) return NextResponse.json({ error: "Backend isn't connected yet." }, { status: 500 });
