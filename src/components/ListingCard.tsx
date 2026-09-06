@@ -4,7 +4,7 @@ import { Listing } from "@/lib/types";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
-import { fmtUSD, formatQuickStat } from "@/lib/format";
+import { fmtUSD } from "@/lib/format";
 import { Badge } from "./ui/Badge";
 import WishlistButton from "./WishlistButton";
 
@@ -23,7 +23,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   const revenue = listing.quickStats.monthly_income as number | undefined;
   const expenseTotal = listing.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   const profit = revenue !== undefined ? (listing.monthlyExpenses.length > 0 ? revenue - expenseTotal : revenue) : undefined;
-  const multiple = listing.quickStats.income_multiple as number | undefined;
   const location = (listing.quickStats.location as string | undefined) ?? listing.location ?? undefined;
 
   const tags = (listing.monetizationTypeIds ?? [])
@@ -88,7 +87,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           <div className="mono">
             {hasDiscount && <span className="block text-xs text-ink-faint line-through">{fmtUSD(listing.price)}</span>}
             <span className="text-lg font-bold text-ink">{fmtUSD(listing.discountedPrice ?? listing.price)}</span>
-            {multiple !== undefined && <span className="ml-1.5 text-xs text-ink-faint">({formatQuickStat("income_multiple", multiple)})</span>}
           </div>
           <div className="flex items-center gap-2">
             <WishlistButton listingId={listing.id} />
