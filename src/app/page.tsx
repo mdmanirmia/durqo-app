@@ -136,7 +136,7 @@ export default async function Home() {
   // verified count automatically once sellers start verifying.
   const verifiedStat =
     verifiedCount > 0
-      ? { value: String(verifiedCount), label: "Verified sellers" }
+      ? { value: String(verifiedCount), label: verifiedCount === 1 ? "Verified seller" : "Verified sellers" }
       : { value: String(activeCategoryCount), label: "Categories with live listings" };
 
   // Featured opportunity (hero spotlight): prefer the highest-priced listing
