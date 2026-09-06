@@ -1,14 +1,20 @@
 import Link from "next/link";
-import { Lock, ShieldCheck, Mail } from "lucide-react";
+import { Eye, LifeBuoy, Mail } from "lucide-react";
 import Container from "./ui/Container";
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return <h4 className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-white/45">{children}</h4>;
 }
 
+// Sep 6, 2026: "Every deal held in escrow" / "Payments secured by Stripe"
+// were removed — Stripe Checkout currently runs on test-mode keys only (see
+// build-plan-and-decisions.md, Stripe Checkout + Payments/Escrow sections),
+// so neither claim describes a fully live, real-money service yet. Replaced
+// with two claims that are true today: every listing goes through Durqo's
+// real review process, and support is available across the whole deal.
 const TRUST_BAR = [
-  { icon: Lock, label: "Every deal held in escrow" },
-  { icon: ShieldCheck, label: "Payments secured by Stripe" },
+  { icon: Eye, label: "Transparent deal process" },
+  { icon: LifeBuoy, label: "Support from listing to transfer" },
 ];
 
 // Every href below points to a route that actually exists in this app —
@@ -40,7 +46,7 @@ export default function Footer() {
               DURQO<span className="text-brand">.</span>
             </Link>
             <p className="mt-3 max-w-[30ch] text-sm leading-relaxed text-white/55">
-              The verified marketplace for buying and selling digital businesses.
+              A trusted marketplace for buying and selling digital businesses.
             </p>
             <a href="mailto:support@durqo.com" className="mt-5 inline-flex items-center gap-2 text-sm text-white/65 hover:text-white">
               <Mail size={15} className="text-brand" />
