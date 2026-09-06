@@ -175,3 +175,14 @@ h1 {
   * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
   [data-reveal] { opacity: 1 !important; transform: none !important; }
 }
+
+/* Horizontally-scrollable rows with no visible scrollbar (the /buy category
+   shortcuts bar and mobile filter chips row) — content still scrolls with
+   touch/trackpad/keyboard, only the scrollbar chrome itself is hidden. */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
