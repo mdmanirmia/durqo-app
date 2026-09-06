@@ -93,6 +93,13 @@ const CONFIDENCE = [
   { icon: MessageSquare, title: "Secure communication", body: "Negotiate and share information directly through Durqo's private messaging — nothing moves to unrecorded channels." },
 ];
 
+// The assurance panel's bottom row deliberately says "Identity verification"
+// (the available process) rather than "Seller verified" (a completed-status
+// claim) — this is a general marketing panel, not scoped to any one logged-in
+// seller's actual verification status, so it must never imply every seller
+// on the marketplace already carries a Verified badge.
+const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Data checked"];
+
 export default async function Home() {
   const listings = await getPublishedListings();
   // "Businesses gaining attention" — the 3 most recently published, in the
@@ -572,33 +579,82 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* CONFIDENCE / TRUST */}
-      <section className="bg-brand-strong py-14 sm:py-16">
+      {/* CONFIDENCE / TRUST — left column carries its own visual weight now
+          via "The Durqo Review Standard" assurance panel (Sep 6 2026
+          refinement pass), instead of leaving a large empty area next to
+          the four detailed rows on the right. Desktop uses an explicit
+          42/58 split (via fr units, not percent, so the 64px column gap
+          doesn't push the two columns past 100% width); tablet drops to an
+          even 2-column split with a tighter gap; mobile stacks to one
+          column in document order (heading/paragraph, then the panel, then
+          the four rows). */}
+      <section className="relative overflow-hidden bg-brand-strong py-14 sm:py-16 lg:py-20">
         <Container>
-          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
-            <div>
-              <DashEyebrow onDark>Our commitment</DashEyebrow>
-              <h2 className="text-2xl text-white sm:text-3xl">Confidence is built into every step.</h2>
-              <p className="mt-3 max-w-[46ch] text-[0.95rem] leading-relaxed text-white/65">
-                A trusted marketplace with the checks and balances serious buyers and sellers expect.
-              </p>
-            </div>
-            <div className="flex flex-col gap-5">
-              {CONFIDENCE.map(({ icon: Icon, title, body }, i) => (
-                <div
-                  key={title}
-                  data-reveal
-                  className={`flex gap-4 ${i < CONFIDENCE.length - 1 ? "border-b border-white/10 pb-5" : ""}`}
-                >
-                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
-                    <Icon size={18} />
-                  </span>
-                  <div>
-                    <h4 className="text-sm font-semibold text-white">{title}</h4>
-                    <p className="mt-1 text-sm leading-relaxed text-white/65">{body}</p>
+          <div className="mx-auto max-w-[1240px]">
+            <div className="grid items-start gap-8 md:grid-cols-2 md:gap-x-8 lg:grid-cols-[0.42fr_0.58fr] lg:gap-x-16">
+              <div>
+                <DashEyebrow onDark>Our commitment</DashEyebrow>
+                <h2 className="text-2xl text-white sm:text-3xl">Confidence is built into every step.</h2>
+                <p className="mt-3 max-w-[46ch] text-[0.95rem] leading-relaxed text-white/65">
+                  Clear checks, verified signals and secure communication help buyers and sellers make informed
+                  decisions.
+                </p>
+
+                {/* Assurance panel — describes Durqo's real, available review
+                    process (see CONFIDENCE below for the fuller writeups),
+                    never a guarantee that every listing/seller has already
+                    completed every check. */}
+                <div className="relative mt-6 flex h-[240px] flex-col items-center justify-between overflow-hidden rounded-xl border border-[rgba(148,163,184,0.25)] bg-white/[0.04] px-6 py-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-24px_40px_-28px_rgba(0,0,0,0.35)] lg:h-[310px] lg:py-8">
+                  <svg
+                    className="pointer-events-none absolute -bottom-10 -left-12 h-40 w-60 text-brand/10"
+                    viewBox="0 0 220 160"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path d="M-10 138 Q 40 98 90 138 T 230 128" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M-10 154 Q 50 118 100 154 T 230 144" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M-10 108 Q 30 78 80 113 T 230 98" stroke="currentColor" strokeWidth="1.5" />
+                  </svg>
+
+                  <p className="mono relative text-[0.68rem] font-semibold uppercase tracking-wider text-white/45">
+                    The Durqo review standard
+                  </p>
+
+                  <div className="relative flex h-20 w-20 items-center justify-center lg:h-24 lg:w-24">
+                    <span className="absolute inset-0 rounded-full border border-brand/20" aria-hidden />
+                    <span className="absolute inset-2 rounded-full border border-brand/15" aria-hidden />
+                    <span className="absolute inset-4 rounded-full border border-brand/10" aria-hidden />
+                    <ShieldCheck size={36} className="relative text-brand" />
+                  </div>
+
+                  <div className="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5">
+                    {REVIEW_STANDARD_ITEMS.map((t) => (
+                      <span key={t} className="flex items-center gap-1.5 text-[0.72rem] font-medium text-white/75">
+                        <CheckCircle2 size={12} className="shrink-0 text-brand" />
+                        {t}
+                      </span>
+                    ))}
                   </div>
                 </div>
-              ))}
+              </div>
+
+              <div className="flex flex-col gap-6 lg:gap-9">
+                {CONFIDENCE.map(({ icon: Icon, title, body }, i) => (
+                  <div
+                    key={title}
+                    data-reveal
+                    className={`flex gap-4 ${i < CONFIDENCE.length - 1 ? "border-b border-white/10 pb-6 lg:pb-11" : ""}`}
+                  >
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
+                      <Icon size={18} />
+                    </span>
+                    <div>
+                      <h4 className="text-sm font-semibold text-white">{title}</h4>
+                      <p className="mt-1 text-sm leading-relaxed text-white/65">{body}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </Container>
