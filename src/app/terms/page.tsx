@@ -1,15 +1,50 @@
+import type { Metadata } from "next";
 import Container from "@/components/ui/Container";
+import TermsToc from "./TermsToc";
+import { SUCCESS_FEE_TIERS, SUCCESS_FEE_RANGE_LABEL, computeSuccessFee, fmtRate } from "@/lib/fees";
+import { fmtUSD } from "@/lib/format";
 
-export const metadata = { title: "Terms and Conditions | Durqo" };
+// Sep 6, 2026 Terms-page rebuild — see claude/build-plan-and-decisions.md and
+// this session's own audit for the full trail. Two things changed here that
+// are worth a reader's attention:
+//
+// 1. The fee table now matches the 10% / 7% / 5% schedule already used
+//    consistently on /sell, the homepage's seller panel, and the /contact
+//    FAQ (imported from the single shared src/lib/fees.ts module — see that
+//    file's own comment for the two prior audits that flagged this
+//    conflict and left it unresolved). The OLD 10%/8%/5%/3% table is gone.
+// 2. Every "Escrow Provider" / held-in-escrow claim has been removed. The
+//    codebase has no independent escrow integration anywhere (Stripe
+//    Checkout pays straight into Durqo's own Stripe balance; seller payout
+//    is a manual admin step — see build-plan-and-decisions.md, "Payments /
+//    Escrow / Withdrawals"). The site owner explicitly confirmed (Sep 6,
+//    2026) that this page should describe today's real flow rather than a
+//    provider that doesn't exist yet. Same reasoning removed the old "3%
+//    card processing fee" line — no such charge exists anywhere in the
+//    checkout code.
+//
+// Effective date was bumped to today because these are substantive
+// corrections to what the Terms actually say, not a cosmetic redesign —
+// flagged in the implementation report for the owner/legal sign-off this
+// kind of change should still get before it's treated as final.
+const EFFECTIVE_DATE = "September 6, 2026";
 
-const EFFECTIVE_DATE = "September 2, 2026";
+export const metadata: Metadata = {
+  title: "Terms and Conditions | Durqo",
+  description: "Read the terms governing access to and use of the Durqo digital-business marketplace.",
+  openGraph: {
+    title: "Terms and Conditions | Durqo",
+    description: "Read the terms governing access to and use of the Durqo digital-business marketplace.",
+  },
+  alternates: { canonical: "https://www.durqo.com/terms" },
+};
 
 const SECTIONS = [
   { id: "acceptance", num: "01", title: "Acceptance of These Terms" },
   { id: "definitions", num: "02", title: "Definitions" },
   { id: "eligibility", num: "03", title: "Eligibility & Account Registration" },
   { id: "buying-selling", num: "04", title: "The Buying and Selling Process" },
-  { id: "payment-fees", num: "05", title: "Payment, Fees & Escrow" },
+  { id: "payment-fees", num: "05", title: "Payment & Success Fee" },
   { id: "disputes", num: "06", title: "Cancellations, Refunds & Disputes" },
   { id: "conduct", num: "07", title: "Prohibited Conduct" },
   { id: "ip", num: "08", title: "Intellectual Property" },
@@ -37,7 +72,7 @@ function Section({
         <span className="mono text-xs font-semibold text-brand-strong">{num}</span>
         <h2 className="text-xl sm:text-2xl">{title}</h2>
       </div>
-      <div className="flex max-w-[70ch] flex-col gap-3.5 text-justify leading-relaxed text-ink-soft">{children}</div>
+      <div className="flex max-w-[70ch] flex-col gap-3.5 text-left leading-relaxed text-ink-soft">{children}</div>
     </section>
   );
 }
@@ -50,33 +85,38 @@ function List({ items }: { items: React.ReactNode[] }) {
   return (
     <ul className="list-disc space-y-2 pl-5 marker:text-rule-strong">
       {items.map((item, i) => (
-        <li key={i}>{item}</li>
+        <li key={i} className="text-left">
+          {item}
+        </li>
       ))}
     </ul>
   );
 }
 
+// Renders the same three tiers computeSuccessFee() applies — desktop gets a
+// real semantic <table>, mobile stacks each tier as labelled rows, so the
+// numbers can never fall out of sync with the calculator further down the
+// page (Section 10 of the brief: "table must use actual approved values only").
 function FeeTable() {
-  const rows = [
-    ["$1 to $50,000", "10%"],
-    ["$50,000 to $100,000", "8%"],
-    ["$100,000 to $500,000", "5%"],
-    ["Over $500,000", "3%"],
-  ];
   return (
     <div className="overflow-hidden rounded-lg border border-rule">
       <table className="w-full text-sm">
+        <caption className="sr-only">Durqo Success Fee by final sale price</caption>
         <thead>
           <tr className="bg-paper-sunk text-left text-xs uppercase tracking-wide text-ink-faint">
-            <th className="px-4 py-2.5 font-semibold">Final Sale Price</th>
-            <th className="px-4 py-2.5 font-semibold">Durqo Success Fee</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">
+              Final Sale Price
+            </th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">
+              Durqo Success Fee
+            </th>
           </tr>
         </thead>
         <tbody className="mono">
-          {rows.map(([range, fee]) => (
-            <tr key={range} className="border-t border-rule">
-              <td className="px-4 py-2.5 text-ink-soft">{range}</td>
-              <td className="px-4 py-2.5 text-ink">{fee}</td>
+          {SUCCESS_FEE_TIERS.map((tier) => (
+            <tr key={tier.id} className="border-t border-rule">
+              <td className="px-4 py-2.5 text-ink-soft">{tier.label}</td>
+              <td className="px-4 py-2.5 text-ink">{fmtRate(tier.rate)}</td>
             </tr>
           ))}
         </tbody>
@@ -84,6 +124,80 @@ function FeeTable() {
     </div>
   );
 }
+
+function SummaryCard({ eyebrow, children }: { eyebrow: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5 rounded-lg border border-rule bg-paper-raised p-5">
+      <p className="mono text-xs font-semibold uppercase tracking-wide text-brand-strong">{eyebrow}</p>
+      <p className="text-left text-sm leading-relaxed text-ink-soft">{children}</p>
+    </div>
+  );
+}
+
+// A small, unmissable status tag so a reader can't confuse a planned
+// integration with something they can actually use today. Sep 6, 2026: the
+// site owner explicitly required this distinction — see the "Planned
+// payment system" block below.
+function StatusBadge({ tone, children }: { tone: "live" | "planned"; children: React.ReactNode }) {
+  return (
+    <span
+      className={`mono inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${
+        tone === "live" ? "bg-brand-soft text-brand-strong" : "bg-paper-sunk text-ink-faint"
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+// Worked example — the exact numbers below come straight out of
+// computeSuccessFee(1000), never typed by hand, so they can't silently
+// drift from the calculator the rest of the page (and eventually real
+// payout math) shares.
+function FeeExample() {
+  const price = 1000;
+  const breakdown = computeSuccessFee(price);
+  const feeUSD = breakdown.feeCents / 100;
+  const netUSD = breakdown.netCents / 100;
+  const rows: [string, string][] = [
+    ["Final Sale Price", fmtUSD(price)],
+    ["Applicable Success Fee", fmtRate(breakdown.rate)],
+    ["Durqo Seller Success Fee", fmtUSD(feeUSD)],
+    ["Seller receives", fmtUSD(netUSD)],
+    ["Durqo Buyer Commission", "$0"],
+    ["Standard transaction cost", "Included"],
+  ];
+  return (
+    <div className="rounded-lg border border-rule-strong bg-paper-sunk p-5">
+      <p className="mb-3 text-sm font-semibold text-ink">Example: A business sells for {fmtUSD(price)}</p>
+      <dl className="mono flex flex-col gap-2 text-sm">
+        {rows.map(([label, value]) => (
+          <div key={label} className="flex items-baseline justify-between gap-4">
+            <dt className="text-ink-soft">{label}</dt>
+            <dd className="text-ink">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-3 text-left text-xs leading-relaxed text-ink-faint">
+        The Buyer funds only the agreed {fmtUSD(price)} purchase price. The {fmtUSD(feeUSD)} Success Fee is deducted
+        from the Seller&rsquo;s proceeds, not charged to the Buyer.
+      </p>
+    </div>
+  );
+}
+
+// Steps match the real flow: Stripe Checkout pays straight into Durqo's own
+// balance (no third-party escrow, no Stripe Connect), and seller payout is
+// a manual admin step today. See src/lib/fees.ts for the fuller citation of
+// where this was confirmed in the codebase and the project's own decision
+// log.
+const PAYMENT_FLOW = [
+  "Buyer and Seller agree on the transaction through the Platform.",
+  "Buyer pays the agreed purchase price securely through Durqo's payment provider, Stripe.",
+  "Durqo holds the payment until the Seller has transferred the agreed assets and the Buyer has confirmed receipt.",
+  "Once confirmed, Durqo's Success Fee is deducted from the sale proceeds.",
+  "The remaining balance is paid out to the Seller.",
+];
 
 export default function TermsPage() {
   return (
@@ -94,7 +208,7 @@ export default function TermsPage() {
             <div>
               <p className="eyebrow mb-3">Legal</p>
               <h1 className="mb-4 text-4xl">Terms and Conditions</h1>
-              <p className="max-w-[52ch] text-justify text-ink-soft">
+              <p className="max-w-[52ch] text-left text-ink-soft">
                 These Terms and Conditions (&ldquo;Terms&rdquo;) govern your access to and use of Durqo&rsquo;s
                 website, marketplace, and related services (together, the &ldquo;Platform&rdquo;). Please read
                 them carefully before you create an account, list a business, or make a purchase.
@@ -103,7 +217,9 @@ export default function TermsPage() {
             <div className="rounded-xl border border-rule-strong bg-paper-raised p-8">
               <p className="mono mb-2 text-xs text-ink-faint">EFFECTIVE {EFFECTIVE_DATE.toUpperCase()}</p>
               <h3 className="mb-1 text-2xl">Questions about these Terms?</h3>
-              <p className="mb-4 text-justify text-ink-soft">Our team is happy to walk through any clause before you sign off on a listing or a purchase.</p>
+              <p className="mb-4 text-left text-ink-soft">
+                Contact us if you need help locating or understanding information about the Platform.
+              </p>
               <a href="mailto:support@durqo.com" className="inline-block text-sm font-semibold text-brand-hover">
                 support@durqo.com
               </a>
@@ -114,24 +230,10 @@ export default function TermsPage() {
 
       <section className="py-16 sm:py-20">
         <Container>
-          <div className="grid gap-12 lg:grid-cols-[240px_1fr]">
-            {/* Table of contents */}
-            <nav aria-label="Table of contents" className="hidden lg:block">
-              <div className="sticky top-24 flex flex-col gap-1 border-l border-rule pl-4">
-                <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">On this page</p>
-                {SECTIONS.map((s) => (
-                  <a
-                    key={s.id}
-                    href={`#${s.id}`}
-                    className="rounded-md px-2 py-1.5 text-sm text-ink-soft transition-colors hover:bg-paper-sunk hover:text-brand-hover"
-                  >
-                    {s.num}. {s.title}
-                  </a>
-                ))}
-              </div>
-            </nav>
+          <div className="grid gap-8 lg:grid-cols-[240px_1fr] lg:gap-12">
+            <TermsToc items={SECTIONS.map((s) => ({ id: s.id, num: s.num, title: s.title }))} />
 
-            <div className="flex flex-col gap-10">
+            <div className="flex max-w-[760px] flex-col gap-10">
               <Section id="acceptance" num="01" title="Acceptance of These Terms">
                 <p>
                   Welcome to Durqo. By creating an account, browsing listings, submitting a listing for sale, or
@@ -170,12 +272,9 @@ export default function TermsPage() {
                       purchases a Listing.
                     </>,
                     <>
-                      <strong className="text-ink">Escrow Provider:</strong> the independent third-party
-                      escrow or payment service used to hold and release funds for a transaction.
-                    </>,
-                    <>
                       <strong className="text-ink">Success Fee:</strong> the commission Durqo charges a Seller
-                      when a Listing successfully sells, calculated as set out in Section 5.
+                      when a Listing successfully sells, calculated as a percentage of the final sale price set
+                      out in Section 5. Buyers are never charged a Durqo commission.
                     </>,
                   ]}
                 />
@@ -197,14 +296,14 @@ export default function TermsPage() {
                   Durqo provides a marketplace that connects Sellers of online businesses, websites, and digital
                   assets with prospective Buyers. Durqo is not a party to the underlying sale; the agreement to
                   buy or sell a business is between the Buyer and the Seller. Durqo facilitates discovery,
-                  verification, communication, and payment through the Platform.
+                  listing review, communication, and payment through the Platform.
                 </p>
                 <SubHeading>4.1 Sellers</SubHeading>
                 <List
                   items={[
                     "Sellers must provide accurate, complete, and non-misleading details about the business being listed, including financial data, website traffic, and revenue.",
-                    "Listings must not contain false, exaggerated, or misleading claims, and any supporting screenshots or documents submitted for verification must genuinely belong to the listed business.",
-                    "Once a sale is agreed and payment has cleared through the Escrow Provider, the Seller must transfer all assets, accounts, and access included in the sale within the timeframe agreed with the Buyer.",
+                    "Listings must not contain false, exaggerated, or misleading claims, and any supporting screenshots or documents submitted for review must genuinely belong to the listed business.",
+                    "Once a sale is agreed and payment has been made through Durqo's payment provider, the Seller must transfer all assets, accounts, and access included in the sale within the timeframe agreed with the Buyer.",
                     "A Success Fee is charged only when a sale is completed; there is no charge simply for creating or maintaining a listing.",
                   ]}
                 />
@@ -212,29 +311,89 @@ export default function TermsPage() {
                 <List
                   items={[
                     "Buyers are responsible for conducting their own due diligence on a business before committing to purchase it, including independently verifying any figures or claims that matter to their decision.",
-                    "Payments must be made only through the payment methods approved on the Platform (for example, escrow or another Durqo-approved processor), never by paying a Seller directly outside the Platform.",
+                    "Payments must be made only through the payment methods approved on the Platform, never by paying a Seller directly outside the Platform.",
                     "Buyers acknowledge that acquiring an online business carries inherent risk, and that Durqo does not guarantee the future performance of any business purchased through the Platform.",
                   ]}
                 />
               </Section>
 
-              <Section id="payment-fees" num="05" title="Payment, Fees & Escrow">
+              <Section id="payment-fees" num="05" title="Payment & Success Fee">
+                <p className="text-left font-medium text-ink">
+                  List for free. Pay a {SUCCESS_FEE_RANGE_LABEL} Success Fee only when your business sells.
+                  Standard transaction costs included. Buyers pay no Durqo marketplace commission.
+                </p>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <SummaryCard eyebrow="Success Fee">{SUCCESS_FEE_RANGE_LABEL}, based on the Final Sale Price.</SummaryCard>
+                  <SummaryCard eyebrow="Standard costs included">
+                    Standard transaction costs are covered within the applicable Success Fee.
+                  </SummaryCard>
+                  <SummaryCard eyebrow="No buyer commission">Buyers pay no Durqo marketplace commission.</SummaryCard>
+                </div>
+
                 <p>
                   There are no listing fees for Sellers: creating and publishing a Listing is always free. Durqo
-                  earns its Success Fee only when a Listing actually sells, calculated as a percentage of the
-                  final sale price:
+                  earns its Success Fee only when a Listing actually sells, calculated as a flat percentage of
+                  the full final sale price (not a marginal or progressive calculation):
                 </p>
                 <FeeTable />
+
+                <FeeExample />
+
+                <div className="flex items-center gap-2">
+                  <SubHeading>How payment works today</SubHeading>
+                  <StatusBadge tone="live">Currently operational</StatusBadge>
+                </div>
                 <p>
-                  Buyers paying by credit or debit card will incur an additional 3% payment processing fee,
-                  charged by our payment processor rather than by Durqo directly. Where a transaction uses our
-                  Escrow Provider, escrow fees are typically split evenly between the Buyer and the Seller unless
-                  the parties agree otherwise before the transaction begins.
+                  Durqo does not currently use a third-party escrow provider. Payments are processed directly
+                  through Durqo&rsquo;s payment provider, Stripe:
                 </p>
+                <ol className="list-decimal space-y-2 pl-5 marker:text-rule-strong">
+                  {PAYMENT_FLOW.map((step, i) => (
+                    <li key={i} className="text-left">
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+                <p className="text-left text-xs leading-relaxed text-ink-faint">
+                  Stripe is an independent payment processor, not an escrow provider — Stripe does not hold
+                  funds on Durqo&rsquo;s behalf pending a separate release condition, and this section will be
+                  updated if that changes.
+                </p>
+
+                <div className="mt-2 flex items-center gap-2">
+                  <SubHeading>Planned payment system</SubHeading>
+                  <StatusBadge tone="planned">Not yet available</StatusBadge>
+                </div>
                 <p>
-                  Funds for a purchase are held by the Escrow Provider until the agreed transfer conditions are
-                  met, and are released to the Seller only once the Buyer has confirmed receipt of the assets
-                  described in the Listing.
+                  Durqo intends to introduce the following payment methods. None of them are integrated or
+                  available to Buyers or Sellers today — each will be clearly marked as available on the
+                  Platform, and this page will be updated to describe it as operational, only once it has been
+                  built and verified:
+                </p>
+                <List
+                  items={[
+                    <>
+                      <strong className="text-ink">An approved independent escrow provider</strong> to hold a
+                      Buyer&rsquo;s full purchase price until the transaction completes. <em>Coming soon.</em>
+                    </>,
+                    <>
+                      <strong className="text-ink">Stripe</strong>, used to collect Durqo&rsquo;s Success Fee
+                      directly from eligible international Sellers when deducting it from escrow isn&rsquo;t
+                      available. Stripe is a payment processor, not an escrow provider. <em>Coming soon.</em>
+                    </>,
+                    <>
+                      <strong className="text-ink">SSLCommerz</strong>, used to collect Durqo&rsquo;s Success Fee
+                      directly from eligible Bangladeshi Sellers when deducting it from escrow isn&rsquo;t
+                      available. SSLCommerz is a Bangladeshi payment gateway, not an escrow provider.{" "}
+                      <em>Not currently available.</em>
+                    </>,
+                  ]}
+                />
+                <p className="text-left text-xs leading-relaxed text-ink-faint">
+                  Under this planned system, Durqo will not directly hold escrow funds, and a Buyer&rsquo;s full
+                  purchase price will never be processed through Stripe or SSLCommerz — those two are used only
+                  to collect the Seller&rsquo;s Success Fee where a direct escrow deduction isn&rsquo;t possible.
                 </p>
               </Section>
 
@@ -244,9 +403,14 @@ export default function TermsPage() {
                     "Once a business has been transferred and the Buyer has confirmed receipt, the sale is final.",
                     "Refunds are granted only in cases of confirmed fraud, material misrepresentation, or a Seller's breach of the agreed transfer terms.",
                     "Any dispute relating to a transaction must be reported to Durqo within 7 days of the transaction's completion; disputes reported after this window may not be eligible for resolution through the Platform.",
-                    "Where a dispute cannot be resolved directly between the Buyer and Seller, Durqo may, at its discretion and without obligation to do so, review the available evidence and help mediate a resolution, including via the Escrow Provider's own dispute process.",
+                    "Where a dispute cannot be resolved directly between the Buyer and Seller, Durqo may, at its discretion and without obligation to do so, review the available evidence and help mediate a resolution, including through Stripe's own payment-dispute process where applicable.",
                   ]}
                 />
+                <p className="text-left text-sm text-ink-soft">
+                  Nothing in these Terms limits any right or remedy that cannot lawfully be limited or excluded
+                  under applicable law, including any non-waivable consumer-protection or payment-network
+                  chargeback rights you may have.
+                </p>
               </Section>
 
               <Section id="conduct" num="07" title="Prohibited Conduct">
@@ -291,6 +455,10 @@ export default function TermsPage() {
                     "Durqo's total liability arising out of or relating to the Platform will not exceed the total Success Fees actually paid by you to Durqo in the twelve months preceding the claim.",
                   ]}
                 />
+                <p className="text-left text-sm text-ink-soft">
+                  Nothing in these Terms limits any right or remedy that cannot lawfully be limited or excluded
+                  under applicable law.
+                </p>
               </Section>
 
               <Section id="indemnification" num="10" title="Indemnification">
@@ -324,16 +492,14 @@ export default function TermsPage() {
 
               <Section id="governing-law" num="13" title="Governing Law & Contact">
                 <p>
-                  These Terms are governed by the laws applicable to Durqo&rsquo;s place of business, without
-                  regard to conflict-of-law principles, except where mandatory local consumer-protection law
-                  provides otherwise. If any provision of these Terms is found unenforceable, the remaining
-                  provisions will continue in full force, and these Terms, together with our Privacy Policy,
-                  constitute the entire agreement between you and Durqo regarding your use of the Platform.
+                  These Terms are governed by the laws of Newfoundland and Labrador and the applicable federal
+                  laws of Canada, without regard to conflict-of-law principles, except where mandatory local
+                  consumer-protection law provides otherwise. If any provision of these Terms is found
+                  unenforceable, the remaining provisions will continue in full force, and these Terms, together
+                  with our Privacy Policy, constitute the entire agreement between you and Durqo regarding your
+                  use of the Platform.
                 </p>
-                <p>
-                  If you have any questions about these Terms, please reach out; we&rsquo;re glad to explain any
-                  clause in plain language before you rely on it.
-                </p>
+                <p>If you have any questions about these Terms, please reach out.</p>
                 <a href="mailto:support@durqo.com" className="inline-block w-fit font-semibold text-brand-hover">
                   support@durqo.com
                 </a>
