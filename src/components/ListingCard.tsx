@@ -4,20 +4,22 @@ import { Listing } from "@/lib/types";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
-import { fmtUSD } from "@/lib/format";
+import { fmtUSD, fmtUSDOrNA, fmtAgeOrNA } from "@/lib/format";
 import { Badge } from "./ui/Badge";
 import WishlistButton from "./WishlistButton";
 
 // The one card used everywhere a listing is shown — homepage, /buy grid,
-// /buy table isn't this component, but every card surface (homepage,
-// marketplace, dashboards) renders the same shape so a listing never reads
-// differently in two places. Every field falls back to "Not disclosed" /
-// an em dash rather than leaving blank space or guessing a value — except
-// Revenue/mo and Profit/mo specifically, which show "$0" when a listing has
-// no income data at all (e.g. Domains, which has no Proof of Income section
-// to derive monthly_income from), per user request Sep 5, 2026.
+// dashboards. /buy's Table view is a different component (ListingsTable).
+//
+// Card-data honesty rules (buy-page redesign, Section 9): every field shows
+// real data only. Revenue/Profit/Age show "N/A" when nobody recorded a
+// value and "$0"/"New" only when that's the actual stored value — missing
+// is never silently treated as zero (a change from this card's earlier
+// always-"$0"-for-missing-income behavior).
 export default function ListingCard({ listing }: { listing: Listing }) {
   const category = CATEGORY_MAP[listing.categoryId];
+  // Compact category metadata only (Section 9) — a small line icon, not a
+  // visual anchor, so it can never grow the card.
   const Icon = CATEGORY_ICONS[listing.categoryId] ?? Globe;
 
   const revenue = listing.quickStats.monthly_income as number | undefined;
@@ -25,34 +27,40 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   const profit = revenue !== undefined ? (listing.monthlyExpenses.length > 0 ? revenue - expenseTotal : revenue) : undefined;
   const location = (listing.quickStats.location as string | undefined) ?? listing.location ?? undefined;
 
-  const tags = (listing.monetizationTypeIds ?? [])
-    .map((id) => MONETIZATION_MAP[id])
-    .filter(Boolean)
-    .slice(0, 3);
+  const allTags = (listing.monetizationTypeIds ?? []).map((id) => MONETIZATION_MAP[id]).filter(Boolean);
+  const tags = allTags.slice(0, 2);
+  const extraTagCount = allTags.length - tags.length;
 
   const hasDiscount = listing.discountedPrice != null && listing.discountedPrice < listing.price;
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-rule bg-paper-raised transition hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[0_16px_32px_-20px_rgba(15,23,41,0.2)]">
-      <div className="relative flex h-16 items-center justify-between border-b border-rule bg-paper-sunk px-4">
-        <span className="grid h-9 w-9 place-items-center rounded-lg bg-paper-raised text-brand-strong">
-          <Icon size={17} />
+      <div className="relative flex items-center justify-between border-b border-rule bg-paper-sunk px-4 py-2.5">
+        <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-ink-faint">
+          <Icon size={20} className="shrink-0 text-ink-soft" aria-hidden />
+          {category?.name ?? listing.categoryId}
         </span>
         <div className="flex items-center gap-1.5">
-          {listing.isVerified && <Badge tone="brand" icon={BadgeCheck}>Verified</Badge>}
+          {listing.isVerified && (
+            <Badge tone="brand" icon={BadgeCheck} aria-label="Listing verified by Durqo">
+              Verified
+            </Badge>
+          )}
           {listing.status === "sold" && <Badge tone="dark">Sold</Badge>}
         </div>
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
-        <div className="flex items-center gap-2 text-xs text-ink-faint">
-          <span className="mono uppercase tracking-wide">{category?.name ?? listing.categoryId}</span>
-          {location && (
-            <>
-              <span aria-hidden>·</span>
-              <span className="flex items-center gap-1"><MapPin size={11} />{location}</span>
-            </>
+        <div className="flex items-center justify-between gap-2">
+          {location ? (
+            <span className="flex items-center gap-1 text-xs text-ink-faint">
+              <MapPin size={11} />
+              {location}
+            </span>
+          ) : (
+            <span />
           )}
+          <WishlistButton listingId={listing.id} size="lg" />
         </div>
 
         <div>
@@ -63,23 +71,28 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {tags.map((t) => (
-              <span key={t} className="rounded-md border border-rule bg-paper-sunk px-2 py-0.5 text-[0.68rem] text-ink-soft">{t}</span>
+              <span key={t} className="rounded-md border border-rule bg-paper-sunk px-2 py-0.5 text-[0.68rem] text-ink-soft">
+                {t}
+              </span>
             ))}
+            {extraTagCount > 0 && (
+              <span className="rounded-md border border-rule bg-paper-sunk px-2 py-0.5 text-[0.68rem] text-ink-faint">+{extraTagCount}</span>
+            )}
           </div>
         )}
 
         <div className="mono mt-auto grid grid-cols-3 gap-3 border-t border-rule pt-3 text-sm">
           <div>
             <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Revenue/mo</span>
-            {fmtUSD(revenue ?? 0)}
+            {fmtUSDOrNA(revenue)}
           </div>
           <div>
             <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Profit/mo</span>
-            {fmtUSD(profit ?? 0)}
+            {fmtUSDOrNA(profit)}
           </div>
           <div>
             <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Age</span>
-            {listing.businessAgeYears ? `${listing.businessAgeYears} yrs` : "New"}
+            {fmtAgeOrNA(listing.businessAgeYears)}
           </div>
         </div>
 
@@ -88,15 +101,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             {hasDiscount && <span className="block text-xs text-ink-faint line-through">{fmtUSD(listing.price)}</span>}
             <span className="text-lg font-bold text-ink">{fmtUSD(listing.discountedPrice ?? listing.price)}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <WishlistButton listingId={listing.id} />
-            <Link
-              href={`/listing/${listing.id}`}
-              className="rounded-lg bg-brand-strong px-3.5 py-2 text-sm font-semibold text-white hover:bg-navy-secondary"
-            >
-              View Listing
-            </Link>
-          </div>
+          <Link
+            href={`/listing/${listing.id}`}
+            className="rounded-lg bg-brand-strong px-3.5 py-2 text-sm font-semibold text-white hover:bg-navy-secondary"
+          >
+            View Listing
+          </Link>
         </div>
       </div>
     </div>

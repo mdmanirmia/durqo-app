@@ -10,7 +10,18 @@ import { isRealListingId } from "@/lib/is-demo-listing";
 // Heart toggle used on ListingCard and the listing detail sidebar. Checks
 // membership on mount (cheap single-row lookup) and optimistically flips on
 // click; redirects to /login if the buyer isn't signed in.
-export default function WishlistButton({ listingId, variant = "icon" }: { listingId: string; variant?: "icon" | "full" }) {
+export default function WishlistButton({
+  listingId,
+  variant = "icon",
+  size = "sm",
+}: {
+  listingId: string;
+  variant?: "icon" | "full";
+  // "lg" gives the icon variant a 44×44px hit target (WCAG/mobile target-size
+  // guidance) — used on ListingCard (buy-page redesign, Section 9) where the
+  // wishlist button must be independently, comfortably tappable.
+  size?: "sm" | "lg";
+}) {
   const router = useRouter();
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -78,11 +89,12 @@ export default function WishlistButton({ listingId, variant = "icon" }: { listin
       disabled={busy || isDemo}
       title={title}
       className={clsx(
-        "grid h-8 w-8 place-items-center rounded-full border transition disabled:opacity-60",
+        "grid place-items-center rounded-full border transition disabled:opacity-60",
+        size === "lg" ? "h-11 w-11" : "h-8 w-8",
         error ? "border-red-400 text-red-500" : saved ? "border-brand text-brand" : "border-rule-strong text-ink-soft hover:border-brand hover:text-brand"
       )}
     >
-      <Heart size={14} className={saved ? "fill-brand" : ""} />
+      <Heart size={size === "lg" ? 16 : 14} className={saved ? "fill-brand" : ""} />
     </button>
   );
 }
