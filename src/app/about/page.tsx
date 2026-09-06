@@ -3,10 +3,6 @@ import Link from "next/link";
 import {
   ArrowRight,
   ArrowDown,
-  Search,
-  FileSearch,
-  MessageSquare,
-  Handshake,
   Layers,
   FileCheck2,
   GitCompare,
@@ -134,8 +130,15 @@ const PRINCIPLES = [
   },
 ] as const;
 
+// "Structured" rather than "verified" here deliberately: the public /buy
+// query gates on listing status only (published/sold — see
+// src/lib/data/listings.server.ts's STATUS_LISTS), and the "Verified" badge
+// shown on cards (src/lib/data/map-listing.ts) is itself derived from that
+// same status, not a second, independent check. So every public listing is
+// "structured" (it passed the publish review) but "verified" would overstate
+// that as a distinct assurance layer that doesn't exist today.
 const BUYER_BENEFITS = [
-  "Explore verified public listings",
+  "Explore structured public listings",
   "Compare essential business information",
   "Communicate directly with sellers",
 ];
@@ -183,42 +186,51 @@ export default function AboutPage() {
               </div>
 
               {/* Abstract platform-purpose visual — HTML/CSS/SVG and
-                  existing icons only. No real listings, prices, revenue
-                  figures or category cards; purely conceptual and secondary
-                  to the H1. */}
+                  existing icons only. Shows only the Seller -> Durqo
+                  marketplace -> Buyer relationship (a small node on each
+                  side, a central Durqo mark, restrained connector lines) —
+                  deliberately NOT the four journey stages, which belong only
+                  in the "From opportunity to ownership" section below and
+                  would otherwise read as a duplicated, competing summary of
+                  the same process right in the hero. No real listings,
+                  prices, revenue figures or category cards; purely
+                  conceptual and secondary to the H1. */}
               <div className="relative mx-auto w-full max-w-[380px]" aria-hidden="true">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 sm:p-7">
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70">
-                      <User size={12} className="text-brand" />
-                      Seller
-                    </span>
-                    <span className="flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/70">
-                      <User size={12} className="text-brand" />
-                      Buyer
-                    </span>
-                  </div>
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 sm:p-8">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/5 text-white/70">
+                        <User size={18} />
+                      </span>
+                      <span className="text-xs font-medium text-white/70">Seller</span>
+                    </div>
 
-                  <svg viewBox="0 0 300 32" className="mt-2 h-6 w-full text-white/20" fill="none">
-                    <path d="M20 6 C 100 28, 200 28, 280 6" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 5" />
-                  </svg>
+                    <svg viewBox="0 0 100 20" className="h-4 flex-1 text-white/25" fill="none">
+                      <path d="M0 10 H100" stroke="currentColor" strokeWidth="1.5" strokeDasharray="1 6" strokeLinecap="round" />
+                    </svg>
 
-                  <div className="mt-1 rounded-xl border border-white/10 bg-white/[0.06] p-4">
-                    <p className="mono text-left text-[0.62rem] uppercase tracking-wider text-white/40">The Durqo marketplace</p>
-                    <div className="mt-3 flex flex-col gap-2">
-                      {[
-                        { icon: Search, label: "Discover opportunities" },
-                        { icon: FileSearch, label: "Evaluate listing information" },
-                        { icon: MessageSquare, label: "Connect and communicate" },
-                        { icon: Handshake, label: "Complete the transfer" },
-                      ].map(({ icon: Icon, label }) => (
-                        <div key={label} className="flex items-center gap-2.5 rounded-lg bg-white/5 px-3 py-2">
-                          <Icon size={14} className="shrink-0 text-brand" />
-                          <span className="text-xs text-white/75">{label}</span>
-                        </div>
-                      ))}
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="grid h-14 w-14 shrink-0 place-items-center rounded-xl border border-brand/40 bg-brand/10 text-brand">
+                        <span className="mono text-lg font-bold">D</span>
+                      </span>
+                      <span className="text-xs font-semibold text-white">Durqo</span>
+                    </div>
+
+                    <svg viewBox="0 0 100 20" className="h-4 flex-1 text-white/25" fill="none">
+                      <path d="M0 10 H100" stroke="currentColor" strokeWidth="1.5" strokeDasharray="1 6" strokeLinecap="round" />
+                    </svg>
+
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/15 bg-white/5 text-white/70">
+                        <User size={18} />
+                      </span>
+                      <span className="text-xs font-medium text-white/70">Buyer</span>
                     </div>
                   </div>
+
+                  <p className="mt-6 text-center text-xs leading-relaxed text-white/50">
+                    A single focused marketplace connecting sellers and buyers of digital businesses.
+                  </p>
                 </div>
               </div>
             </div>
@@ -279,20 +291,20 @@ export default function AboutPage() {
                   <div
                     key={pair.problemLabel}
                     data-reveal
-                    className="grid overflow-hidden rounded-xl border border-rule sm:grid-cols-[1fr_auto_1fr]"
+                    className="grid overflow-hidden rounded-xl border border-rule md:grid-cols-[1fr_auto_1fr]"
                   >
-                    <div className="bg-paper-raised p-6 sm:p-7">
+                    <div className="bg-paper-raised p-6 md:p-7">
                       <ProblemIcon size={20} className="text-ink-faint" aria-hidden="true" />
                       <h3 className="mt-3 text-base font-semibold text-ink">{pair.problemLabel}</h3>
                       <p className="mt-1.5 text-left text-sm leading-relaxed text-ink-soft">{pair.problemText}</p>
                     </div>
 
-                    <div className="flex items-center justify-center bg-paper-sunk px-4 py-3 sm:bg-transparent sm:py-0">
-                      <ArrowDown size={16} className="text-ink-faint sm:hidden" aria-hidden="true" />
-                      <ArrowRight size={16} className="hidden text-ink-faint sm:block" aria-hidden="true" />
+                    <div className="flex items-center justify-center bg-paper-sunk px-4 py-3 md:bg-transparent md:py-0">
+                      <ArrowDown size={16} className="text-ink-faint md:hidden" aria-hidden="true" />
+                      <ArrowRight size={16} className="hidden text-ink-faint md:block" aria-hidden="true" />
                     </div>
 
-                    <div className="bg-brand-soft/50 p-6 sm:p-7">
+                    <div className="bg-brand-soft/50 p-6 md:p-7">
                       <ApproachIcon size={20} className="text-brand-strong" aria-hidden="true" />
                       <h3 className="mt-3 text-base font-semibold text-ink">{pair.approachLabel}</h3>
                       <p className="mt-1.5 text-left text-sm leading-relaxed text-ink-soft">{pair.approachText}</p>
@@ -323,7 +335,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-4 sm:gap-6">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-6 md:gap-y-8 lg:grid-cols-4 lg:gap-6">
               {JOURNEY.map((step) => (
                 <div key={step.n} data-reveal className="border-t border-rule pt-5">
                   <span className="mono text-xl font-bold text-brand">{step.n}</span>
@@ -359,9 +371,9 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="grid gap-8 divide-y divide-rule sm:grid-cols-3 sm:gap-8 sm:divide-x sm:divide-y-0">
+            <div className="grid gap-8 divide-y divide-rule lg:grid-cols-3 lg:gap-8 lg:divide-x lg:divide-y-0">
               {PRINCIPLES.map(({ icon: Icon, title, body }, i) => (
-                <div key={title} data-reveal className={`flex flex-col gap-2 ${i > 0 ? "pt-6 sm:pt-0 sm:pl-8" : ""}`}>
+                <div key={title} data-reveal className={`flex flex-col gap-2 ${i > 0 ? "pt-6 lg:pt-0 lg:pl-8" : ""}`}>
                   <Icon size={22} className="text-brand" aria-hidden="true" />
                   <h3 className="mt-1 text-lg font-semibold text-ink">{title}</h3>
                   <p className="text-left text-sm leading-relaxed text-ink-soft">{body}</p>
@@ -377,8 +389,8 @@ export default function AboutPage() {
       <section className="py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="grid gap-10 sm:grid-cols-2 sm:divide-x sm:divide-rule">
-              <div data-reveal className="sm:pr-10">
+            <div className="grid gap-10 md:grid-cols-2 md:divide-x md:divide-rule">
+              <div data-reveal className="md:pr-10">
                 <DashEyebrow>For buyers</DashEyebrow>
                 <h2 className="text-2xl sm:text-3xl">Explore opportunities with greater clarity.</h2>
                 <p className="mt-3 text-left text-[0.95rem] leading-relaxed text-ink-soft">
@@ -393,13 +405,13 @@ export default function AboutPage() {
                     </span>
                   ))}
                 </div>
-                <Button href="/buy" className="mt-6 min-h-12 w-full sm:w-auto">
+                <Button href="/buy" className="mt-6 min-h-12 w-full md:w-auto">
                   Browse listings
                   <ArrowRight size={16} aria-hidden="true" />
                 </Button>
               </div>
 
-              <div data-reveal className="border-t border-rule pt-10 sm:border-t-0 sm:pl-10 sm:pt-0">
+              <div data-reveal className="border-t border-rule pt-10 md:border-t-0 md:pl-10 md:pt-0">
                 <DashEyebrow>For sellers</DashEyebrow>
                 <h2 className="text-2xl sm:text-3xl">Present your business with more structure.</h2>
                 <p className="mt-3 text-left text-[0.95rem] leading-relaxed text-ink-soft">
@@ -414,7 +426,7 @@ export default function AboutPage() {
                     </span>
                   ))}
                 </div>
-                <Button href="/sell" className="mt-6 min-h-12 w-full sm:w-auto">
+                <Button href="/sell" className="mt-6 min-h-12 w-full md:w-auto">
                   Start selling
                   <ArrowRight size={16} aria-hidden="true" />
                 </Button>
