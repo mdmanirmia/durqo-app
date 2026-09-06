@@ -558,7 +558,7 @@ export default async function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      <section id="how-it-works" className="scroll-mt-20 border-b border-rule py-14 sm:py-16">
         <Container>
           <div className="mb-10 text-center">
             <DashEyebrow center>How it works</DashEyebrow>
