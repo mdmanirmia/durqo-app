@@ -34,8 +34,12 @@ export default function Footer() {
   // copy change — this is the "small, safe shared-component adjustment"
   // allowance called out for this page, mirroring how Header.tsx already
   // uses usePathname() for its own per-route active-nav state.
+  //
+  // Sep 6, 2026 Terms-page rebuild: same reasoning extended to /terms — a
+  // legal document should flow straight from its final section into the
+  // Footer, not into a promotional "Explore the marketplace" strip.
   const pathname = usePathname();
-  const showTrustBar = pathname !== "/about";
+  const showTrustBar = pathname !== "/about" && pathname !== "/terms";
 
   return (
     <footer className="mt-16 bg-brand-strong text-white/80">
