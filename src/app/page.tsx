@@ -112,7 +112,13 @@ export default async function Home() {
   for (const l of listings) {
     categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
   }
-  const verifiedCount = listings.filter((l) => l.isVerified).length;
+  // Distinct sellers with real identity verification (profiles.is_verified,
+  // surfaced as SellerInfo.isVerified via mapSeller) — deliberately NOT
+  // `listing.isVerified`, which (Sep 2026 /buy fix) now means "this listing
+  // is published," true for nearly every listing here and so would inflate
+  // this into a near-duplicate of "Active listings" instead of the distinct,
+  // opt-in seller-identity signal this stat is meant to show.
+  const verifiedCount = new Set(listings.filter((l) => l.seller.isVerified).map((l) => l.seller.id)).size;
   const totalListedValue = listings.reduce((sum, l) => sum + (l.discountedPrice ?? l.price), 0);
 
   // Categories sorted by how much real inventory they carry — both the
