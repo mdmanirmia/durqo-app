@@ -14,6 +14,7 @@ import {
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { getPublishedListings } from "@/lib/data/listings.server";
+import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import ListingCard from "@/components/ListingCard";
 import WishlistButton from "@/components/WishlistButton";
 import Container from "@/components/ui/Container";
@@ -564,7 +565,11 @@ export default async function Home() {
                   {[
                     "Free valuation",
                     "No upfront listing fee",
-                    "Success fee starting at 10% — only when sold",
+                    // Sourced from src/lib/fees.ts (the top tier is always
+                    // the highest Success Fee rate) rather than a hardcoded
+                    // "10%" literal, so this line can't drift from /sell,
+                    // /terms, and /contact if the schedule ever changes.
+                    `Success fee starting at ${fmtRate(SUCCESS_FEE_TIERS[0].rate)} — only when sold`,
                     "Professional support from listing to close",
                   ].map((t) => (
                     <span key={t} className="flex items-center gap-2 text-sm text-ink-soft">
