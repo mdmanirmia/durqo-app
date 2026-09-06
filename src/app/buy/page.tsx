@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Container from "@/components/ui/Container";
 import MarketplaceHero from "@/components/buy/MarketplaceHero";
-import CategoryShortcuts from "@/components/buy/CategoryShortcuts";
 import DesktopFilterSidebar from "@/components/buy/DesktopFilterSidebar";
 import ResultsSkeleton from "@/components/buy/ResultsSkeleton";
 import BottomCTA from "@/components/buy/BottomCTA";
@@ -27,7 +26,6 @@ export default async function BuyPage({
   return (
     <main>
       <MarketplaceHero />
-      <CategoryShortcuts filters={filters} />
 
       <div className="border-b border-rule py-8 sm:py-10">
         <Container>
