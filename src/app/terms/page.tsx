@@ -236,6 +236,26 @@ const PLANNED_FEE_ROUTES = [
   },
 ];
 
+// Sep 6, 2026: the site owner asked for this page to also describe local
+// Bangladeshi payment rails for Bangladeshi Buyers and Sellers. Same
+// discipline as everywhere else on this page — a full grep of this
+// codebase (dependencies, env vars, API routes) turns up no bKash, Rocket,
+// Nagad, or direct Bangladeshi bank integration anywhere, so this is
+// written as part of the planned architecture, not something available
+// today, and doesn't assert a specific technical mechanism (e.g. whether
+// it routes through the eventual escrow provider) beyond what's been
+// confirmed.
+const PLANNED_BD_LOCAL_PAYMENTS = [
+  {
+    title: "Bangladeshi Buyers",
+    body: "Will be able to fund a purchase using a Bangladeshi bank account, bKash, Rocket, Nagad, or other Bangladeshi payment methods.",
+  },
+  {
+    title: "Bangladeshi Sellers",
+    body: "Will be able to receive their sale proceeds directly into a Bangladeshi bank account, bKash, Rocket, or Nagad account.",
+  },
+];
+
 function StepFlow({ steps }: { steps: { title: string; body: string }[] }) {
   return (
     <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -465,6 +485,27 @@ export default function TermsPage() {
                   hold or release a Buyer&rsquo;s purchase price, and a Buyer&rsquo;s full purchase price will
                   never be routed through Stripe or SSLCommerz &mdash; both are used only to collect the
                   Seller&rsquo;s Success Fee.
+                </p>
+
+                <div className="mt-2 flex items-center gap-2">
+                  <SubHeading>Planned local payment methods for Bangladesh</SubHeading>
+                  <StatusBadge tone="planned">Not yet available</StatusBadge>
+                </div>
+                <p>
+                  Durqo intends to support local payment rails for Bangladeshi Buyers and Sellers, in addition to
+                  the flows described above. No part of this is built or available today:
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {PLANNED_BD_LOCAL_PAYMENTS.map((route) => (
+                    <div key={route.title} className="rounded-lg border border-rule bg-paper-raised p-5">
+                      <p className="text-left text-sm font-semibold text-ink">{route.title}</p>
+                      <p className="mt-1 text-left text-sm leading-relaxed text-ink-soft">{route.body}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-left text-xs leading-relaxed text-ink-faint">
+                  This section will be updated to describe a specific local payment method as operational only
+                  once it has actually been integrated and verified in production.
                 </p>
               </Section>
 
