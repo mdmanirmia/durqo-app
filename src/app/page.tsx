@@ -56,6 +56,30 @@ function fmtCompactUSD(n: number): string {
   return fmtUSD(n);
 }
 
+// A small number of hand-written, honest excerpts for specific listings
+// whose full overview reads awkwardly once cut to two lines — keyed by
+// title, and only ever used as an override of the real overview text, never
+// invented content. Anything not in this map falls back to `excerpt()`
+// below, which trims the listing's own real overview to a clean word
+// boundary (with CSS line-clamp-2 kept as a defensive fallback in the JSX
+// in case a browser renders the trimmed text wider than expected).
+const SPOTLIGHT_EXCERPTS: Record<string, string> = {
+  "PixelMind AI Design Studio": "AI-powered platform for creating on-brand marketing and social media assets.",
+};
+
+function excerpt(text: string, maxChars = 108): string {
+  if (text.length <= maxChars) return text;
+  const cut = text.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trimEnd() + "…";
+}
+
+// The hero's review-process summary — one honest line describing Durqo's
+// marketplace-wide policy (see CONFIDENCE below), rendered as a single
+// nowrap line on wider screens and as an intentional 2-column grid (never
+// a lone wrapped item) below that, per the Sep 6 2026 refinement pass.
+const REVIEW_ITEMS = ["Listing reviewed", "Performance checked", "Seller verification available"];
+
 const STEPS = [
   { icon: Search, title: "Explore or list", body: "Browse vetted listings by category, or submit your own business to be listed." },
   { icon: LineChart, title: "Review and connect", body: "Evaluate performance data, ask questions and connect directly with the seller." },
@@ -99,7 +123,7 @@ export default async function Home() {
   // verified count automatically once sellers start verifying.
   const verifiedStat =
     verifiedCount > 0
-      ? { value: String(verifiedCount), label: "Verified seller profiles" }
+      ? { value: String(verifiedCount), label: "Verified sellers" }
       : { value: String(activeCategoryCount), label: "Categories with live listings" };
 
   // Featured opportunity (hero spotlight): prefer the highest-priced listing
@@ -135,6 +159,11 @@ export default async function Home() {
       : null;
   const sparkPoints = spotlightSeries.slice(-8);
   const sparkMax = sparkPoints.length ? Math.max(...sparkPoints, 1) : 1;
+  // Proof of Income is entered as a 12-month series across this project's
+  // seller forms, so "Last 12 months" is accurate for a normal listing —
+  // but if a listing has a shorter recorded history for any reason, say so
+  // honestly instead of claiming a span that isn't really there.
+  const spotlightPeriodLabel = spotlightSeries.length >= 10 ? "Last 12 months" : "Recorded history";
 
   const statsBar = [
     { icon: Package, value: String(listings.length), label: "Active listings" },
@@ -143,10 +172,14 @@ export default async function Home() {
     { icon: ShieldCheck, value: verifiedStat.value, label: verifiedStat.label },
   ];
 
+  const spotlightDescription = spotlight
+    ? SPOTLIGHT_EXCERPTS[spotlight.title] ?? excerpt(spotlight.overview || "Not disclosed")
+    : "";
+
   return (
     <main>
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-16 sm:py-24">
+      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-20">
         <div
           className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
           aria-hidden
@@ -178,7 +211,7 @@ export default async function Home() {
               </div>
 
               <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-rule pt-6">
-                {["Curated listings", "Clear performance data", "Secure deal process"].map((label) => (
+                {["Reviewed listings", "Clear performance data", "Guided deal process"].map((label) => (
                   <span key={label} className="flex items-center gap-1.5 text-xs font-medium text-ink-soft">
                     <CheckCircle2 size={14} className="text-brand" />
                     {label}
@@ -222,7 +255,7 @@ export default async function Home() {
                       </div>
                     </div>
                     <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-soft">
-                      {spotlight.overview || "Not disclosed"}
+                      {spotlightDescription}
                     </p>
 
                     <div className="mono mt-4 grid grid-cols-3 gap-3 border-t border-rule pt-4 text-sm">
@@ -248,7 +281,7 @@ export default async function Home() {
                         <WishlistButton listingId={spotlight.id} />
                         <Link
                           href={`/listing/${spotlight.id}`}
-                          className="rounded-lg bg-brand-strong px-3.5 py-2 text-xs font-semibold text-white hover:bg-navy-secondary"
+                          className="flex min-h-11 items-center rounded-lg bg-brand-strong px-3.5 py-2 text-xs font-semibold text-white hover:bg-navy-secondary"
                         >
                           View Listing
                         </Link>
@@ -257,44 +290,74 @@ export default async function Home() {
                   </div>
 
                   {/* Revenue trend — computed from the spotlight listing's
-                      own monthly stats; simply not rendered when there
-                      isn't enough real history to compute it. */}
-                  {spotlightTrendPercent !== null && (
+                      own monthly stats. The percentage only ever shows when
+                      there are at least two real recorded data points to
+                      compare; with a sparkline but no clean comparison, or
+                      with no history at all, this falls back to an honest
+                      label rather than a fabricated number. */}
+                  {(spotlightTrendPercent !== null || sparkPoints.length > 0) && (
                     <div className="mt-4 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:absolute lg:-right-2 lg:-top-2 lg:mt-0">
                       <div>
-                        <p className="mono text-lg font-bold text-brand">
-                          {spotlightTrendPercent > 0 ? "+" : ""}
-                          {spotlightTrendPercent}%
-                        </p>
-                        <p className="text-[0.65rem] text-ink-faint">Revenue trend (history)</p>
+                        {spotlightTrendPercent !== null ? (
+                          <>
+                            <p className="mono text-lg font-bold text-brand">
+                              {spotlightTrendPercent > 0 ? "+" : ""}
+                              {spotlightTrendPercent}%
+                            </p>
+                            <p className="text-[0.65rem] text-ink-faint">Revenue growth</p>
+                            <p className="text-[0.6rem] text-ink-faint">{spotlightPeriodLabel}</p>
+                          </>
+                        ) : (
+                          <p className="max-w-[6.5rem] text-[0.72rem] font-semibold leading-snug text-ink-soft">
+                            12-month revenue trend
+                          </p>
+                        )}
                       </div>
-                      <div className="flex h-8 items-end gap-0.5" aria-hidden>
-                        {sparkPoints.map((v, i) => (
-                          <span
-                            key={i}
-                            className="w-1 rounded-sm bg-brand"
-                            style={{ height: `${Math.max(15, (v / sparkMax) * 100)}%` }}
-                          />
-                        ))}
-                      </div>
+                      {sparkPoints.length > 0 && (
+                        <div className="flex h-8 items-end gap-0.5" aria-hidden>
+                          {sparkPoints.map((v, i) => (
+                            <span
+                              key={i}
+                              className="w-1 rounded-sm bg-brand"
+                              style={{ height: `${Math.max(15, (v / sparkMax) * 100)}%` }}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 
                   {/* Our review process — describes Durqo's actual policy
-                      (see "Confidence is built into every step" below),
-                      not a claim that this specific listing has completed
-                      every check, per the no-fake-verification brief. */}
-                  <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:mr-8">
-                    <span className="flex items-center gap-1.5 text-xs font-semibold text-ink">
-                      <ShieldCheck size={14} className="text-brand" />
-                      Our review process:
-                    </span>
-                    {["Listing review", "Performance data", "Seller verification"].map((t) => (
-                      <span key={t} className="flex items-center gap-1.5 text-[0.72rem] text-ink-soft">
-                        <CheckCircle2 size={12} className="shrink-0 text-brand" />
-                        {t}
-                      </span>
-                    ))}
+                      (see "Confidence is built into every step" below), not
+                      a claim that this specific listing has completed every
+                      check, per the no-fake-verification brief. Renders as a
+                      single balanced line on lg+ screens (where the card has
+                      room) and as an intentional 2-column grid below that —
+                      never a lone item left to wrap by itself, per the
+                      Sep 6 2026 refinement pass. */}
+                  <div className="mt-4 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:mr-8">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                      <ShieldCheck size={14} className="shrink-0 text-brand" />
+                      Our review process
+                    </p>
+                    <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 lg:mt-1.5 lg:flex lg:flex-nowrap lg:items-center lg:gap-0">
+                      {REVIEW_ITEMS.map((t, i) => (
+                        <span
+                          key={t}
+                          className={`flex items-center gap-1.5 whitespace-nowrap text-[0.72rem] text-ink-soft ${
+                            i === 2 ? "col-span-2" : ""
+                          }`}
+                        >
+                          <CheckCircle2 size={11} className="shrink-0 text-brand lg:hidden" aria-hidden />
+                          {i > 0 && (
+                            <span className="hidden text-ink-faint lg:mr-2 lg:inline" aria-hidden>
+                              ·
+                            </span>
+                          )}
+                          {t}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -308,7 +371,7 @@ export default async function Home() {
       </section>
 
       {/* STATS BAR */}
-      <section className="bg-brand-strong py-8 sm:py-10">
+      <section className="bg-brand-strong py-7 sm:py-9">
         <Container>
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
             {statsBar.map(({ icon: Icon, value, label }) => (
@@ -327,7 +390,7 @@ export default async function Home() {
       </section>
 
       {/* CATEGORIES */}
-      <section className="border-b border-rule py-16 sm:py-20">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -343,16 +406,27 @@ export default async function Home() {
             {topCategories.map((c, i) => {
               const Icon = CATEGORY_ICONS[c.id];
               const count = categoryCounts.get(c.id) ?? 0;
+              // Every tile shares the same default appearance now — the
+              // green border/background only ever appears on hover or
+              // keyboard focus. The leading tile is real inventory's most
+              // active category (topCategories is sorted by live listing
+              // count), so it earns a "Popular" label instead of looking
+              // pre-selected by default — and only when it genuinely has
+              // listings, never on an empty catalog.
+              const isPopular = i === 0 && count > 0;
               return (
                 <Link
                   key={c.id}
                   href={`/buy?category=${c.id}`}
                   data-reveal
-                  className={`group flex flex-col items-center gap-2.5 rounded-xl border p-5 text-center transition hover:-translate-y-0.5 hover:border-brand hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] ${
-                    i === 0 ? "border-brand bg-brand-soft/40" : "border-rule bg-paper-raised"
-                  }`}
+                  className="group relative flex flex-col items-center gap-2.5 rounded-xl border border-rule bg-paper-raised p-5 text-center transition hover:-translate-y-0.5 hover:border-brand hover:bg-brand-soft/40 hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:-translate-y-0.5 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                 >
-                  <span className="grid h-11 w-11 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand group-hover:text-white">
+                  {isPopular && (
+                    <span className="absolute -top-2 right-3 rounded-full bg-brand px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide text-white">
+                      Popular
+                    </span>
+                  )}
+                  <span className="grid h-11 w-11 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand group-hover:text-white group-focus-visible:bg-brand group-focus-visible:text-white">
                     <Icon size={19} />
                   </span>
                   <span className="text-sm font-semibold text-ink">{c.name}</span>
@@ -367,9 +441,9 @@ export default async function Home() {
       </section>
 
       {/* BUSINESSES GAINING ATTENTION */}
-      <section className="border-b border-rule py-16 sm:py-20">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <DashEyebrow>Featured listings</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Businesses gaining attention</h2>
@@ -377,7 +451,7 @@ export default async function Home() {
                 A selection of opportunities currently drawing buyer interest.
               </p>
             </div>
-            <Button href="/buy" variant="secondary">
+            <Button href="/buy" variant="secondary" className="min-h-11">
               View all listings
               <ArrowRight size={15} />
             </Button>
@@ -398,24 +472,30 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* FOR BUYERS / FOR SELLERS */}
-      <section className="py-16 sm:py-20">
+      {/* FOR BUYERS / FOR SELLERS — kept compact and balanced (Sep 6 2026
+          refinement pass): both panels now carry the same content density
+          (a headline, one line of copy, a CTA, and a 3-4 line checklist),
+          rather than the buyer panel alone also carrying a decorative
+          chart card. The seller panel's checklist states Durqo's real,
+          published fee policy (see /sell and /terms — Success Fee section)
+          rather than a generic reassurance line. */}
+      <section className="py-12 sm:py-16">
         <Container>
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="relative overflow-hidden rounded-2xl bg-brand-strong p-8 sm:p-10">
+            <div className="relative overflow-hidden rounded-2xl bg-brand-strong p-6 sm:p-8">
               <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-brand/10 blur-3xl" aria-hidden />
               <div className="relative">
                 <DashEyebrow onDark>For buyers</DashEyebrow>
                 <h3 className="text-3xl text-white">Acquire with a clearer picture.</h3>
                 <p className="mt-3 max-w-[42ch] text-white/70">
-                  Make smarter decisions with vetted listings, transparent data and direct seller communication.
+                  Make smarter decisions with reviewed listings, transparent data and direct seller communication.
                 </p>
                 <Button href="/buy" size="lg" className="mt-6">
                   Browse opportunities
                   <ArrowRight size={16} />
                 </Button>
-                <div className="mt-8 flex flex-col gap-2.5">
-                  {["Vetted listings", "Performance data", "Direct seller communication"].map((t) => (
+                <div className="mt-6 flex flex-col gap-2.5">
+                  {["Reviewed listings", "Performance data", "Direct seller communication"].map((t) => (
                     <span key={t} className="flex items-center gap-2 text-sm text-white/80">
                       <CheckCircle2 size={15} className="text-brand" />
                       {t}
@@ -423,7 +503,7 @@ export default async function Home() {
                   ))}
                 </div>
 
-                <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
                   <p className="text-[0.7rem] uppercase tracking-wide text-white/50">Better data. Smarter acquisitions.</p>
                   <svg viewBox="0 0 200 56" className="mt-3 h-12 w-full text-brand" fill="none" aria-hidden>
                     <polyline
@@ -438,7 +518,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl bg-brand-soft p-8 sm:p-10">
+            <div className="relative overflow-hidden rounded-2xl bg-brand-soft p-6 sm:p-8">
               <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-brand/15 blur-3xl" aria-hidden />
               <div className="pointer-events-none absolute -left-8 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-brand/10 blur-2xl" aria-hidden />
               <div className="relative">
@@ -451,10 +531,19 @@ export default async function Home() {
                   Get a free valuation
                   <ArrowRight size={16} />
                 </Button>
-                <p className="mt-8 flex items-center gap-2 text-sm text-ink-soft">
-                  <CheckCircle2 size={15} className="text-brand" />
-                  Professional support from listing to close.
-                </p>
+                <div className="mt-6 flex flex-col gap-2.5">
+                  {[
+                    "Free valuation",
+                    "No upfront listing fee",
+                    "Success fee only when sold — starting at 10%",
+                    "Professional support from listing to close",
+                  ].map((t) => (
+                    <span key={t} className="flex items-center gap-2 text-sm text-ink-soft">
+                      <CheckCircle2 size={15} className="shrink-0 text-brand" />
+                      {t}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -462,13 +551,13 @@ export default async function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="border-b border-rule py-16 sm:py-20">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <div className="mb-14 text-center">
+          <div className="mb-10 text-center">
             <DashEyebrow center>How it works</DashEyebrow>
             <h2 className="text-2xl sm:text-3xl">A clearer path from discovery to transfer</h2>
           </div>
-          <div className="relative grid gap-10 sm:grid-cols-3">
+          <div className="relative grid gap-8 sm:grid-cols-3">
             <div className="pointer-events-none absolute left-[8%] right-[8%] top-6 hidden h-px bg-rule sm:block" aria-hidden />
             {STEPS.map(({ title, body }, i) => (
               <div key={title} data-reveal className="relative flex flex-col items-start">
@@ -484,9 +573,9 @@ export default async function Home() {
       </section>
 
       {/* CONFIDENCE / TRUST */}
-      <section className="bg-brand-strong py-16 sm:py-20">
+      <section className="bg-brand-strong py-14 sm:py-16">
         <Container>
-          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
+          <div className="grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
             <div>
               <DashEyebrow onDark>Our commitment</DashEyebrow>
               <h2 className="text-2xl text-white sm:text-3xl">Confidence is built into every step.</h2>
@@ -494,12 +583,12 @@ export default async function Home() {
                 A trusted marketplace with the checks and balances serious buyers and sellers expect.
               </p>
             </div>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-5">
               {CONFIDENCE.map(({ icon: Icon, title, body }, i) => (
                 <div
                   key={title}
                   data-reveal
-                  className={`flex gap-4 ${i < CONFIDENCE.length - 1 ? "border-b border-white/10 pb-6" : ""}`}
+                  className={`flex gap-4 ${i < CONFIDENCE.length - 1 ? "border-b border-white/10 pb-5" : ""}`}
                 >
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
                     <Icon size={18} />
@@ -515,17 +604,18 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="relative overflow-hidden py-16 sm:py-24">
+      {/* FINAL CTA — trimmed to a compact ~280-320px band on desktop
+          (Sep 6 2026 refinement pass); content and both buttons unchanged. */}
+      <section className="relative overflow-hidden py-10 sm:py-11">
         <div className="pointer-events-none absolute -bottom-20 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-brand/5 blur-3xl" aria-hidden />
         <Container className="relative">
           <div className="mx-auto max-w-[620px] text-center">
             <span className="eyebrow mx-auto">Digital businesses. Real opportunities.</span>
             <h2 className="mt-4 text-3xl sm:text-4xl">Ready to find your next opportunity?</h2>
             <p className="mt-3 text-ink-soft">
-              Browse verified listings, or get a free valuation on the business you&rsquo;re ready to sell.
+              Browse reviewed listings, or get a free valuation on the business you&rsquo;re ready to sell.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button href="/buy" size="lg">
                 Explore businesses
                 <ArrowRight size={16} />
