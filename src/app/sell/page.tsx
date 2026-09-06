@@ -14,8 +14,9 @@ import {
   Tag,
   TrendingUp,
 } from "lucide-react";
-import { CATEGORY_MAP } from "@/lib/categories";
+import { CATEGORIES } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
+import { getPublishedListings } from "@/lib/data/listings.server";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import SellFaq from "./SellFaq";
@@ -101,13 +102,6 @@ const PROCESS_STEPS = [
   { n: "04", title: "Complete the transfer", body: "Agree on the terms and complete the business transfer." },
 ];
 
-// Real categories only — every id below exists in CATEGORY_MAP and links to
-// a real /buy?category= filter, per the "only make an item clickable when a
-// relevant destination exists" instruction. The mockup's "Mobile Apps" is
-// this catalog's actual "Android & iOS Apps" category — using the real name
-// rather than inventing a category that doesn't exist in the data.
-const SELL_CATEGORY_IDS = ["websites", "saas", "ai-apps-tools", "e-commerce", "apps-tools", "domains"];
-
 // Boundaries match this project's real, published tiered policy (see /terms
 // Section 05 for the legal fee table, which currently differs from this —
 // flagged separately, not changed here) and this page's own FAQ answer:
@@ -162,7 +156,19 @@ const SELL_FAQS = [
   },
 ];
 
-export default function SellPage() {
+export default async function SellPage() {
+  // Real per-category listing counts (Sep 6, 2026 "What You Can Sell"
+  // rework) — same computation the homepage's own category grid already
+  // uses (getPublishedListings() + a categoryId -> count map), so this
+  // section's counts are never hardcoded/estimated and self-update as
+  // listings publish. Falls back to bundled mock data automatically when
+  // Supabase isn't reachable, same as every other page using this helper.
+  const listings = await getPublishedListings();
+  const categoryCounts = new Map<string, number>();
+  for (const l of listings) {
+    categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
+  }
+
   return (
     <main>
       {/* HERO — 52/48 desktop split via fr units (not percent), same
@@ -321,31 +327,46 @@ export default function SellPage() {
         </Container>
       </section>
 
-      {/* WHAT YOU CAN SELL — one unified bordered surface, not six
-          floating cards; each cell is a real, clickable category filter. */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      {/* WHAT YOU CAN SELL — Sep 6, 2026 rework: every active main category
+          from the shared CATEGORIES source (src/lib/categories.ts), not a
+          hardcoded shortlist — so a newly-added category appears here with
+          zero changes to this file. Each tile is its own bordered/rounded
+          surface (rather than one shared divide-x strip) so a 16-category
+          grid reads as a clean multi-row layout instead of one unified bar;
+          listing counts are computed live from real published listings,
+          never hardcoded, and hidden entirely for a category with none. */}
+      <section className="border-b border-rule py-20">
         <Container>
-          <Inner>
+          <div className="mx-auto max-w-[1240px]">
             <DashEyebrow>What you can sell</DashEyebrow>
-            <h2 className="mb-8 text-2xl sm:text-3xl">List more than just websites.</h2>
-            <div className="grid grid-cols-2 divide-x divide-y divide-rule overflow-hidden rounded-xl border border-rule bg-paper-raised sm:grid-cols-3 lg:grid-cols-6">
-              {SELL_CATEGORY_IDS.map((id) => {
-                const category = CATEGORY_MAP[id];
-                const Icon = CATEGORY_ICONS[id];
-                if (!category) return null;
+            <h2 className="text-2xl sm:text-3xl">Sell any type of digital business.</h2>
+            <p className="mb-8 mt-2 max-w-[60ch] text-[0.95rem] leading-relaxed text-ink-soft">
+              Explore all the digital business categories you can list and sell on Durqo.
+            </p>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
+              {CATEGORIES.map((category) => {
+                const Icon = CATEGORY_ICONS[category.id];
+                const count = categoryCounts.get(category.id) ?? 0;
                 return (
                   <Link
-                    key={id}
-                    href={`/buy?category=${id}`}
-                    className="relative z-0 flex flex-col items-center gap-2.5 px-4 py-6 text-center transition hover:bg-brand-soft/40 focus-visible:z-10 focus-visible:bg-brand-soft/40 focus-visible:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+                    key={category.id}
+                    href={`/buy?category=${category.id}`}
+                    className="flex h-full min-h-[7rem] flex-col items-center justify-center gap-2.5 rounded-xl border border-rule bg-paper-raised px-4 py-6 text-center transition hover:border-brand hover:bg-brand-soft/40 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                   >
-                    <Icon size={20} className="text-brand-strong" />
+                    <span className="grid h-11 w-11 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand">
+                      <Icon size={19} />
+                    </span>
                     <span className="text-sm font-semibold text-ink">{category.name}</span>
+                    {count > 0 && (
+                      <span className="mono text-xs text-brand-hover">
+                        {count} active listing{count === 1 ? "" : "s"}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
             </div>
-          </Inner>
+          </div>
         </Container>
       </section>
 
