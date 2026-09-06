@@ -1,22 +1,73 @@
+import type { Metadata } from "next";
 import Container from "@/components/ui/Container";
+import PrivacyToc from "./PrivacyToc";
 
-export const metadata = { title: "Privacy Policy | Durqo" };
+// Sep 6, 2026 Privacy-page rebuild — see claude/build-plan-and-decisions.md
+// and this session's Terms-page audit (src/app/terms/page.tsx) for the
+// fuller trail. This page had three real inaccuracies, found by checking
+// this claim against the actual codebase rather than assuming the existing
+// copy was already correct:
+//
+// 1. Section 04 ("How We Use Your Information") and the old provider list
+//    both described Durqo sharing data with "our Escrow Provider" and
+//    "connecting Buyers and Sellers through escrow." No escrow integration
+//    exists anywhere in this codebase (no escrow SDK dependency, no escrow
+//    env vars, no escrow API route) — Stripe Checkout pays straight into
+//    Durqo's own Stripe balance, and seller payout is a manual admin step.
+//    Same finding as the Terms-page audit; fixed the same way.
+// 2. The old Cookies section claimed "Functional cookies... remember your
+//    saved searches or wishlist." The wishlist feature is actually backed
+//    by a Supabase table (`wishlists`, RLS-scoped to the signed-in user —
+//    see src/lib/data/wishlist.client.ts), not a cookie. A full repo grep
+//    turned up exactly one cookie-writing code path in this app: the
+//    Supabase auth session cookie set by @supabase/ssr in
+//    src/lib/supabase/server.ts and src/proxy.ts. There is no separate
+//    functional, analytics, or marketing cookie anywhere in the codebase,
+//    and no localStorage usage either.
+// 3. This page only exported `{ title: "Privacy Policy | Durqo" }`, so
+//    Next.js fell back to the root layout's homepage-tuned
+//    description/OpenGraph copy ("Buy What's Already Working...") on a
+//    legal page that has nothing to do with it. Given full page-specific
+//    metadata below, same fix already applied to /terms.
+//
+// The effective date was bumped because these are substantive corrections
+// to what the policy actually says, not a cosmetic redesign — flagged in
+// the implementation report for the owner's/a lawyer's final sign-off,
+// same as the Terms-page date bump.
+const EFFECTIVE_DATE = "September 6, 2026";
 
-const EFFECTIVE_DATE = "September 2, 2026";
+export const metadata: Metadata = {
+  title: "Privacy Policy | Durqo",
+  description:
+    "Learn how Durqo collects, uses, shares and protects personal information across its digital-business marketplace.",
+  openGraph: {
+    title: "Privacy Policy | Durqo",
+    description:
+      "Learn how Durqo collects, uses, shares and protects personal information across its digital-business marketplace.",
+  },
+  twitter: {
+    title: "Privacy Policy | Durqo",
+    description:
+      "Learn how Durqo collects, uses, shares and protects personal information across its digital-business marketplace.",
+  },
+  alternates: { canonical: "https://www.durqo.com/privacy" },
+};
 
 const SECTIONS = [
-  { id: "introduction", num: "01", title: "Introduction & Scope" },
+  { id: "scope", num: "01", title: "Scope and Who We Are" },
   { id: "information-we-collect", num: "02", title: "Information We Collect" },
-  { id: "how-we-use", num: "03", title: "How We Use Your Information" },
-  { id: "how-we-share", num: "04", title: "How We Share Your Information" },
-  { id: "cookies", num: "05", title: "Cookies & Tracking Technologies" },
-  { id: "security", num: "06", title: "Data Security" },
-  { id: "retention", num: "07", title: "Data Retention" },
-  { id: "rights", num: "08", title: "Your Privacy Rights & Choices" },
-  { id: "children", num: "09", title: "Children's Privacy" },
-  { id: "international", num: "10", title: "International Users" },
-  { id: "third-party-links", num: "11", title: "Third-Party Links" },
-  { id: "changes", num: "12", title: "Changes to This Policy & Contact" },
+  { id: "sources", num: "03", title: "Sources of Information" },
+  { id: "how-we-use", num: "04", title: "How We Use Information" },
+  { id: "consent", num: "05", title: "Consent and Applicable Processing Grounds" },
+  { id: "how-we-disclose", num: "06", title: "How We Disclose Information" },
+  { id: "providers", num: "07", title: "Payments, Escrow and Service Providers" },
+  { id: "cookies", num: "08", title: "Cookies and Analytics" },
+  { id: "retention", num: "09", title: "Data Retention" },
+  { id: "security", num: "10", title: "Security and Privacy Incidents" },
+  { id: "international", num: "11", title: "International Processing and Transfers" },
+  { id: "rights", num: "12", title: "Privacy Rights and Choices" },
+  { id: "children", num: "13", title: "Children's Privacy" },
+  { id: "changes", num: "14", title: "Changes, Complaints and Contact" },
 ] as const;
 
 function Section({
@@ -36,45 +87,208 @@ function Section({
         <span className="mono text-xs font-semibold text-brand-strong">{num}</span>
         <h2 className="text-xl sm:text-2xl">{title}</h2>
       </div>
-      <div className="flex max-w-[70ch] flex-col gap-3.5 text-justify leading-relaxed text-ink-soft">{children}</div>
+      <div className="flex max-w-[70ch] flex-col gap-3.5 text-left leading-relaxed text-ink-soft">{children}</div>
     </section>
   );
+}
+
+function SubHeading({ children }: { children: React.ReactNode }) {
+  return <h3 className="mt-2 text-sm font-semibold uppercase tracking-wide text-ink">{children}</h3>;
 }
 
 function List({ items }: { items: React.ReactNode[] }) {
   return (
     <ul className="list-disc space-y-2 pl-5 marker:text-rule-strong">
       {items.map((item, i) => (
-        <li key={i}>{item}</li>
+        <li key={i} className="text-left">
+          {item}
+        </li>
       ))}
     </ul>
   );
 }
 
-function DataTable() {
-  const rows: [string, string, string][] = [
-    ["Account & identity", "Name, email address, phone number, verification documents", "Creating and securing your account, identity verification for Sellers"],
-    ["Payment information", "Billing details processed by our payment provider", "Processing purchases, Success Fees, and payouts"],
-    ["Business & listing data", "Listing details, financial figures, traffic data, Google Analytics data you connect", "Publishing and verifying listings, showing accurate data to Buyers"],
-    ["Technical data", "IP address, browser type, device information, cookies", "Keeping the Platform secure and working correctly"],
-    ["Usage data", "Pages viewed, searches, messages sent through the Platform", "Improving the Platform and responding to support requests"],
-  ];
+// A small, unmissable status tag — same component/reasoning as
+// src/app/terms/page.tsx's StatusBadge — so a reader can't mistake a
+// planned integration for something operational today.
+function StatusBadge({ tone, children }: { tone: "live" | "planned"; children: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-rule">
-      <table className="w-full min-w-[560px] text-sm">
+    <span
+      className={`mono inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wide ${
+        tone === "live" ? "bg-brand-soft text-brand-strong" : "bg-paper-sunk text-ink-faint"
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function SummaryCard({ icon, eyebrow, children }: { icon: React.ReactNode; eyebrow: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-lg border border-rule bg-paper-raised p-5">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-soft text-brand-strong" aria-hidden>
+        {icon}
+      </span>
+      <div>
+        <p className="mono mb-1.5 text-xs font-semibold uppercase tracking-wide text-brand-strong">{eyebrow}</p>
+        <p className="text-left text-sm leading-relaxed text-ink-soft">{children}</p>
+      </div>
+    </div>
+  );
+}
+
+// Desktop: category / examples / purpose columns. Mobile: the same data
+// stacks as labelled rows instead of squeezing a wide table — Section 19 of
+// the brief explicitly calls out not shipping a squeezed desktop table to
+// mobile.
+type InfoCategory = { category: string; examples: string; purpose?: string };
+
+function InfoCategoryTable({ rows }: { rows: InfoCategory[] }) {
+  return (
+    <div className="rounded-lg border border-rule">
+      {/* Desktop */}
+      <table className="hidden w-full text-sm sm:table">
+        <caption className="sr-only">Categories of personal information Durqo collects</caption>
         <thead>
           <tr className="bg-paper-sunk text-left text-xs uppercase tracking-wide text-ink-faint">
-            <th className="px-4 py-2.5 font-semibold">Category</th>
-            <th className="px-4 py-2.5 font-semibold">Examples</th>
-            <th className="px-4 py-2.5 font-semibold">Why we collect it</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">Category</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">Examples</th>
           </tr>
         </thead>
         <tbody>
-          {rows.map(([category, examples, purpose]) => (
-            <tr key={category} className="border-t border-rule align-top">
-              <td className="px-4 py-3 font-semibold text-ink">{category}</td>
-              <td className="px-4 py-3 text-ink-soft">{examples}</td>
-              <td className="px-4 py-3 text-ink-soft">{purpose}</td>
+          {rows.map((row) => (
+            <tr key={row.category} className="border-t border-rule align-top">
+              <td className="w-[220px] px-4 py-3 font-semibold text-ink">{row.category}</td>
+              <td className="px-4 py-3 text-ink-soft">{row.examples}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* Mobile: stacked cards, no horizontal scroll */}
+      <div className="flex flex-col divide-y divide-rule sm:hidden">
+        {rows.map((row) => (
+          <div key={row.category} className="flex flex-col gap-1 p-4">
+            <p className="text-sm font-semibold text-ink">{row.category}</p>
+            <p className="text-left text-sm text-ink-soft">{row.examples}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const INFO_CATEGORIES: InfoCategory[] = [
+  { category: "Account & identity", examples: "Name, email address, account credentials, and, where required, seller identity-verification information." },
+  { category: "Business & listing", examples: "Information about the businesses you list, inquire about, or transact on, including business details and supporting documents." },
+  { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment provider (see Section 07)." },
+  { category: "Messages & support", examples: "Messages with other users and with our support team, and related records." },
+  { category: "Device & usage", examples: "Information about your device, browser, IP address, and how you use the Platform (pages viewed, features used)." },
+  { category: "Connected analytics", examples: "If a Seller connects a Google Analytics 4 property to their own Listing, we access aggregated, read-only performance metrics for that property only (see Section 08)." },
+];
+
+// Provider table: every row's status reflects what's actually confirmed in
+// the codebase today, not the confirmed FINAL architecture. See src/lib/fees.ts
+// and src/app/terms/page.tsx for the fuller citation trail — the same
+// audit finding applies here: no escrow provider or SSLCommerz integration
+// exists in this codebase, and Stripe's role today (processing a Buyer's
+// full payment) is not the same as the fee-only role planned for eligible
+// international Sellers. Per the owner's explicit instruction, this table
+// does not name an escrow provider until one is confirmed and operational.
+type Provider = { name: string; purpose: React.ReactNode; tone: "live" | "planned" };
+
+const PROVIDERS: Provider[] = [
+  {
+    name: "Independent escrow provider",
+    purpose:
+      "Planned: transaction administration, funding status, inspection, dispute and release information, and identity/KYC information where required. Durqo has not yet integrated an escrow provider, so no information is shared this way today.",
+    tone: "planned",
+  },
+  {
+    name: "Stripe",
+    purpose:
+      "In use today to process a Buyer's payment for a purchase on the Platform. Using Stripe specifically to collect an eligible international Seller's Success Fee is part of Durqo's planned payment architecture and is not yet operational. Stripe is a payment processor, not an escrow provider.",
+    tone: "live",
+  },
+  {
+    name: "SSLCommerz",
+    purpose:
+      "Planned: eligible Bangladeshi Seller Success Fee payments and related transaction-status information. Not yet integrated — no information is shared with SSLCommerz today. SSLCommerz is a payment gateway/processor, not an escrow provider.",
+    tone: "planned",
+  },
+  {
+    name: "Supabase",
+    purpose: "Database, authentication, and storage services for the Platform.",
+    tone: "live",
+  },
+  {
+    name: "Vercel",
+    purpose: "Website hosting and delivery for the Platform.",
+    tone: "live",
+  },
+  {
+    name: "Google",
+    purpose:
+      "OAuth authorization and read-only Google Analytics 4 metrics, only for a Listing whose Seller has chosen to connect their own GA4 property.",
+    tone: "live",
+  },
+];
+
+function ProviderTable() {
+  return (
+    <div className="flex flex-col divide-y divide-rule rounded-lg border border-rule bg-paper-raised">
+      {PROVIDERS.map((p) => (
+        <div key={p.name} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+          <div className="flex items-center gap-2 sm:w-[200px] sm:shrink-0">
+            <p className="text-sm font-semibold text-ink">{p.name}</p>
+            <StatusBadge tone={p.tone}>{p.tone === "live" ? "In use today" : "Not yet available"}</StatusBadge>
+          </div>
+          <p className="text-left text-sm leading-relaxed text-ink-soft">{p.purpose}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Cookie inventory: this is the actual, complete list from a full repo
+// grep for cookie-writing code (`cookies(`, `.cookies.set(`), not a
+// generic four-category template. Today there is exactly one cookie in
+// this app — the Supabase auth session cookie set by @supabase/ssr in
+// src/lib/supabase/server.ts (server components) and src/proxy.ts
+// (middleware, keeps the session refreshed). There is no functional,
+// analytics, or marketing cookie, and no localStorage usage, anywhere in
+// the codebase — the wishlist and cart features are both backed by
+// Supabase database tables tied to the signed-in user, not cookies.
+function CookieTable() {
+  const rows: { name: string; provider: string; purpose: string; category: string; duration: string }[] = [
+    {
+      name: "Supabase authentication session",
+      provider: "Supabase (first-party)",
+      purpose: "Keeps you signed in and secures your session across page loads.",
+      category: "Strictly necessary",
+      duration: "Session, refreshed automatically while you're signed in; cleared on sign-out or expiry.",
+    },
+  ];
+  return (
+    <div className="overflow-x-auto rounded-lg border border-rule">
+      <table className="w-full min-w-[640px] text-sm">
+        <caption className="sr-only">Cookies used by the Durqo Platform</caption>
+        <thead>
+          <tr className="bg-paper-sunk text-left text-xs uppercase tracking-wide text-ink-faint">
+            <th scope="col" className="px-4 py-2.5 font-semibold">Name</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">Provider</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">Purpose</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">Category</th>
+            <th scope="col" className="px-4 py-2.5 font-semibold">Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.name} className="border-t border-rule align-top">
+              <td className="px-4 py-3 font-semibold text-ink">{r.name}</td>
+              <td className="px-4 py-3 text-ink-soft">{r.provider}</td>
+              <td className="px-4 py-3 text-ink-soft">{r.purpose}</td>
+              <td className="px-4 py-3 text-ink-soft">{r.category}</td>
+              <td className="px-4 py-3 text-ink-soft">{r.duration}</td>
             </tr>
           ))}
         </tbody>
@@ -83,218 +297,284 @@ function DataTable() {
   );
 }
 
+const RETENTION_ROWS: { category: string; criteria: string }[] = [
+  { category: "Account information", criteria: "For as long as your account is active, plus a reasonable period afterward to meet legal, tax, and accounting obligations and to resolve disputes." },
+  { category: "Verification documents", criteria: "For as long as needed to complete and support the verification they relate to, and afterward where needed for fraud prevention or legal compliance." },
+  { category: "Listings & supporting evidence", criteria: "For as long as the listing is active, and for a reasonable period after removal to support dispute resolution or legal requirements." },
+  { category: "Messages", criteria: "For as long as needed to support the transaction or support request they relate to, and afterward where needed for dispute resolution." },
+  { category: "Transaction & payment records", criteria: "Retained longer than most other categories where needed to meet accounting, tax, or legal recordkeeping obligations, or to support a dispute." },
+  { category: "Connected GA4 metrics & OAuth tokens", criteria: "Retained only while a Listing's Google Analytics connection is active; deleted when the Seller disconnects it (see Section 08)." },
+  { category: "Support records", criteria: "For as long as reasonably necessary to resolve your request and maintain a record of our support history." },
+];
+
 export default function PrivacyPage() {
   return (
     <main>
-      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
+      <section className="border-b border-rule bg-brand-strong py-16 text-white sm:py-20">
         <Container>
-          <div className="grid gap-10 md:grid-cols-2 md:items-start">
-            <div>
-              <p className="eyebrow mb-3">Legal</p>
-              <h1 className="mb-4 text-4xl">Privacy Policy</h1>
-              <p className="max-w-[52ch] text-justify text-ink-soft">
-                At Durqo, we know you&rsquo;re trusting us with sensitive business and financial information. This
-                policy explains, in plain language, what we collect, how we use it, and the choices you have.
-              </p>
-            </div>
-            <div className="rounded-xl border border-rule-strong bg-paper-raised p-8">
-              <p className="mono mb-2 text-xs text-ink-faint">EFFECTIVE {EFFECTIVE_DATE.toUpperCase()}</p>
-              <h3 className="mb-1 text-2xl">Questions about your data?</h3>
-              <p className="mb-4 text-justify text-ink-soft">Reach out any time; we&rsquo;ll answer directly, no ticket queue.</p>
-              <a href="mailto:support@durqo.com" className="inline-block text-sm font-semibold text-brand-hover">
+          <p className="eyebrow mb-3 text-brand">Legal</p>
+          <h1 className="mb-4 text-4xl text-white">Privacy Policy</h1>
+          <p className="max-w-[70ch] text-left text-white/70">
+            This Privacy Policy explains how Durqo collects, uses, shares and protects your information when you
+            use our marketplace. We aim to be clear and transparent about your data and your choices.
+          </p>
+          <div className="mt-6 flex flex-col gap-1 text-sm text-white/60 sm:flex-row sm:items-center sm:gap-4">
+            <p className="mono">Effective date: {EFFECTIVE_DATE}</p>
+            <p>
+              Questions? Contact us at{" "}
+              <a href="mailto:support@durqo.com" className="font-semibold text-brand hover:text-white">
                 support@durqo.com
               </a>
-            </div>
+            </p>
           </div>
         </Container>
       </section>
 
       <section className="py-16 sm:py-20">
         <Container>
-          <div className="grid gap-12 lg:grid-cols-[240px_1fr]">
-            {/* Table of contents */}
-            <nav aria-label="Table of contents" className="hidden lg:block">
-              <div className="sticky top-24 flex flex-col gap-1 border-l border-rule pl-4">
-                <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">On this page</p>
-                {SECTIONS.map((s) => (
-                  <a
-                    key={s.id}
-                    href={`#${s.id}`}
-                    className="rounded-md px-2 py-1.5 text-sm text-ink-soft transition-colors hover:bg-paper-sunk hover:text-brand-hover"
-                  >
-                    {s.num}. {s.title}
-                  </a>
-                ))}
-              </div>
-            </nav>
+          <div className="mb-12 grid gap-4 sm:grid-cols-3">
+            <SummaryCard eyebrow="Purpose limited" icon={<span aria-hidden>◎</span>}>
+              We collect and use personal information only for identified and permitted purposes.
+            </SummaryCard>
+            <SummaryCard eyebrow="No data sales" icon={<span aria-hidden>⊘</span>}>
+              We do not sell personal information.
+            </SummaryCard>
+            <SummaryCard eyebrow="User control" icon={<span aria-hidden>◐</span>}>
+              You may have choices and rights over your information, subject to applicable law.
+            </SummaryCard>
+          </div>
 
-            <div className="flex flex-col gap-10">
-              <Section id="introduction" num="01" title="Introduction & Scope">
+          {/* grid-cols use minmax(0, 1fr) rather than plain 1fr — without the
+              explicit 0 minimum, a CSS Grid track's automatic minimum size
+              is based on its content's min-content width, so the wide
+              (min-w-[640px]) cookie table a few levels down would otherwise
+              stretch this whole column (and everything sharing its track,
+              including the mobile TOC button) past the viewport instead of
+              scrolling inside its own overflow-x-auto wrapper. */}
+          <div className="grid grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-12">
+            <PrivacyToc items={SECTIONS.map((s) => ({ id: s.id, num: s.num, title: s.title }))} />
+
+            <div className="flex min-w-0 max-w-[760px] flex-col gap-10">
+              <Section id="scope" num="01" title="Scope and Who We Are">
                 <p>
-                  This Privacy Policy explains how Durqo (&ldquo;Durqo,&rdquo; &ldquo;we,&rdquo; &ldquo;us&rdquo;)
-                  collects, uses, shares, and protects information when you visit our website, create an
-                  account, list a business for sale, or purchase a business through our marketplace (together,
-                  the &ldquo;Platform&rdquo;). It applies to Buyers, Sellers, and visitors alike. By using the
-                  Platform, you agree to the collection and use of information as described here; if you
-                  don&rsquo;t agree, please don&rsquo;t use the Platform.
+                  This Privacy Policy applies to the Durqo website, marketplace, and related services (together,
+                  the &ldquo;Services&rdquo;). Durqo is a digital-business marketplace that connects Buyers and
+                  Sellers. For the purposes of applicable data protection laws, Durqo is the controller of personal
+                  information collected through the Services, unless otherwise stated. This Policy applies to
+                  Buyers, Sellers, and visitors alike, and should be read together with our{" "}
+                  <a href="/terms" className="font-semibold text-brand-hover">
+                    Terms and Conditions
+                  </a>
+                  .
                 </p>
               </Section>
 
               <Section id="information-we-collect" num="02" title="Information We Collect">
-                <p>We collect the following categories of information in order to operate the Platform:</p>
-                <DataTable />
+                <p>We collect information you provide to us, information related to your use of the Services, and information from third-party sources. The categories we collect include:</p>
+                <InfoCategoryTable rows={INFO_CATEGORIES} />
+              </Section>
+
+              <Section id="sources" num="03" title="Sources of Information">
                 <p>
-                  Where you connect a Google Analytics 4 property to a Listing, we only ever access aggregated,
-                  read-only traffic metrics through Google&rsquo;s own authorization flow; we never request
-                  access to edit your property, and you can revoke that access from your Google Account at any
-                  time.
+                  We may collect information directly from you (for example, when you create an account or submit
+                  a Listing), from your use of the Services (for example, device and usage data), from third-party
+                  service providers who help us operate the Platform, and, where permitted, from other sources such
+                  as public records.
                 </p>
               </Section>
 
-              <Section id="how-we-use" num="03" title="How We Use Your Information">
-                <p>We use the information described above to:</p>
+              <Section id="how-we-use" num="04" title="How We Use Information">
+                <p>We use information to:</p>
                 <List
                   items={[
-                    "Create, secure, and manage your account, including verifying Seller identity where required.",
-                    "Process transactions, Success Fees, and payouts, and connect Buyers and Sellers through escrow.",
-                    "Display listing data accurately to prospective Buyers, and independently verify figures a Seller has submitted.",
-                    "Maintain and improve the security, reliability, and performance of the Platform.",
-                    "Respond to support requests and send you service communications, such as order updates or verification results.",
-                    "Send occasional product updates or promotional content, always with the option to opt out.",
+                    "Provide, operate, and improve the Services, including creating and securing your account and verifying Seller identity where required.",
+                    "Facilitate transactions between Buyers and Sellers, including processing payments through the providers listed in Section 07.",
+                    "Communicate with you, including responding to support requests and sending service communications such as order or verification updates.",
+                    "Comply with legal obligations, and protect the security and integrity of the Platform.",
+                    "With your consent or opt-out, send occasional product updates or promotional content.",
                   ]}
                 />
               </Section>
 
-              <Section id="how-we-share" num="04" title="How We Share Your Information">
+              <Section id="consent" num="05" title="Consent and Applicable Processing Grounds">
                 <p>
-                  We do not sell your personal data. We share information only with the parties needed to
-                  operate the Platform and complete your transactions, including:
+                  Where applicable, we rely on legal bases such as your consent, the performance of a contract with
+                  you, our legitimate interests in operating and securing the Platform, and compliance with legal
+                  obligations. Which basis applies can depend on where you live and the specific processing
+                  activity; you may have the right to withdraw consent at any time where consent is the basis we
+                  rely on, without affecting processing already carried out.
                 </p>
+              </Section>
+
+              <Section id="how-we-disclose" num="06" title="How We Disclose Information">
+                <p>We do not sell your personal information. We may share information with:</p>
                 <List
                   items={[
-                    <>
-                      <strong className="text-ink">Payment and escrow providers:</strong> such as Stripe and our
-                      Escrow Provider, to process payments and hold funds securely during a transaction.
-                    </>,
-                    <>
-                      <strong className="text-ink">Infrastructure and hosting providers:</strong> such as
-                      Supabase, to securely store account, listing, and messaging data.
-                    </>,
-                    <>
-                      <strong className="text-ink">Other Platform users:</strong> a Buyer and Seller in an
-                      active transaction see the information reasonably necessary to complete that transaction
-                      (for example, contact details once a deal is agreed).
-                    </>,
-                    <>
-                      <strong className="text-ink">Legal and regulatory authorities:</strong> when required to
-                      comply with the law, enforce these policies, or protect the rights and safety of Durqo or
-                      our users.
-                    </>,
+                    "Service providers who help us operate the Platform, including the payment, hosting, database, and analytics providers described in Section 07.",
+                    "Other Platform users, limited to what's reasonably necessary to complete a transaction you're party to (for example, contact details once a deal is agreed).",
+                    "Professional advisers, such as legal, accounting, or insurance advisers, where necessary.",
+                    "Regulators and other third parties where required or permitted by law, to enforce our agreements, or to protect the rights and safety of Durqo or our users.",
                   ]}
                 />
               </Section>
 
-              <Section id="cookies" num="05" title="Cookies & Tracking Technologies">
-                <p>The Platform uses cookies and similar technologies to keep you signed in, remember your preferences, and understand how the Platform is used:</p>
-                <List
-                  items={[
-                    <>
-                      <strong className="text-ink">Essential cookies:</strong> required for core functionality
-                      such as staying logged in and securing your session; the Platform will not work correctly
-                      without these.
-                    </>,
-                    <>
-                      <strong className="text-ink">Functional cookies:</strong> remember preferences such as
-                      your saved searches or wishlist.
-                    </>,
-                    <>
-                      <strong className="text-ink">Analytics cookies:</strong> help us understand how the
-                      Platform is used, so we can improve it.
-                    </>,
-                  ]}
-                />
-                <p>You can disable non-essential cookies at any time through your browser settings.</p>
-              </Section>
-
-              <Section id="security" num="06" title="Data Security">
-                <p>
-                  We use encryption in transit and at rest, secure hosting infrastructure, and authentication
-                  safeguards to protect your data. Access to sensitive information, such as payment details and
-                  connected analytics credentials, is restricted to what is strictly necessary to operate the
-                  Platform. However, no method of transmission or storage is 100% secure, and we cannot guarantee
-                  absolute security.
-                </p>
-              </Section>
-
-              <Section id="retention" num="07" title="Data Retention">
-                <p>
-                  We retain personal information for as long as your account is active, and for a reasonable
-                  period afterward as needed to comply with legal, tax, and accounting obligations, resolve
-                  disputes, and enforce our agreements. Listing and transaction records connected to a completed
-                  sale may be retained longer where needed to support both parties in the event of a future
-                  dispute.
-                </p>
-              </Section>
-
-              <Section id="rights" num="08" title="Your Privacy Rights & Choices">
-                <p>Depending on where you live, you may have some or all of the following rights over your personal data:</p>
-                <List
-                  items={[
-                    "Access: request a copy of the personal data we hold about you.",
-                    "Correction: ask us to correct inaccurate or incomplete data.",
-                    "Deletion: ask us to delete your personal data, subject to our legal and contractual retention needs.",
-                    "Restriction & objection: ask us to limit how we use your data, or object to certain uses.",
-                    "Portability: request your data in a portable format.",
-                    "Opt-out: unsubscribe from marketing communications at any time using the link in any email, or by contacting us directly.",
-                  ]}
-                />
-                <p>
-                  To exercise any of these rights, contact us at{" "}
-                  <a href="mailto:support@durqo.com" className="font-semibold text-brand-hover">
-                    support@durqo.com
+              <Section id="providers" num="07" title="Payments, Escrow and Service Providers">
+                <p>We use the following providers for payments, escrow, infrastructure, and analytics. The status shown reflects what is actually operational today, not Durqo&rsquo;s planned final payment architecture:</p>
+                <ProviderTable />
+                <p className="text-left text-xs leading-relaxed text-ink-faint">
+                  Durqo is not an escrow provider and does not directly hold independent escrow funds. Stripe is a
+                  payment processor, not an escrow provider. SSLCommerz is a payment gateway/processor, not an
+                  escrow provider. We will only describe an integration above as &ldquo;In use today&rdquo; once it
+                  has actually been implemented and verified in production — see our{" "}
+                  <a href="/terms#payment-fees" className="font-semibold text-brand-hover">
+                    Terms, Section 05
                   </a>{" "}
-                  and we&rsquo;ll respond as quickly as we can.
+                  for the fuller description of today&rsquo;s real payment flow.
                 </p>
               </Section>
 
-              <Section id="children" num="09" title="Children's Privacy">
+              <Section id="cookies" num="08" title="Cookies and Analytics">
                 <p>
-                  The Platform is intended for users aged 18 and older, consistent with the eligibility
-                  requirement in our{" "}
+                  The Platform currently uses a single cookie, described below, to keep you signed in. We do not
+                  currently set functional, analytics, or marketing cookies of any kind.
+                </p>
+                <CookieTable />
+                <p>
+                  Because we don&rsquo;t currently set non-essential cookies, there is nothing beyond your
+                  browser&rsquo;s own cookie controls for you to opt out of. If that changes, we will add an
+                  in-page cookie-preference control here before any non-essential cookie is set.
+                </p>
+                <SubHeading>Google Analytics — two distinct things</SubHeading>
+                <p>
+                  Durqo does not currently run its own site-wide analytics tracking of durqo.com visitors beyond the
+                  session cookie above. Separately, a Seller can optionally connect their own Listing to their own
+                  Google Analytics 4 property:
+                </p>
+                <List
+                  items={[
+                    "The connection uses Google's OAuth flow with a single, read-only scope (analytics.readonly) — we never request permission to edit your GA4 property.",
+                    "We store the resulting access and refresh tokens in our database, accessible only through server-side, administrative code paths — never returned to any browser.",
+                    "We only ever display aggregated, read-only traffic metrics (page views, sessions, bounce rate, and similar) for the connected property, shown publicly on that Listing's page.",
+                    "A Seller can disconnect at any time from their listing dashboard; disconnecting revokes the Google token and deletes both the stored connection and the displayed metrics.",
+                    "A Seller can also revoke Durqo's access directly from their Google Account's third-party access settings at any time, independently of our own disconnect option.",
+                  ]}
+                />
+              </Section>
+
+              <Section id="retention" num="09" title="Data Retention">
+                <p>
+                  We retain personal information only for as long as reasonably necessary for the purposes
+                  described in this Policy, including providing the Platform, completing transactions, meeting
+                  legal and accounting obligations, preventing fraud, resolving disputes, and enforcing our
+                  agreements. We then delete or de-identify the information unless continued retention is required
+                  or permitted by law. We can&rsquo;t promise immediate deletion of records we&rsquo;re legally
+                  required to keep.
+                </p>
+                <div className="overflow-x-auto rounded-lg border border-rule">
+                  <table className="w-full min-w-[560px] text-sm">
+                    <caption className="sr-only">Retention criteria by information category</caption>
+                    <thead>
+                      <tr className="bg-paper-sunk text-left text-xs uppercase tracking-wide text-ink-faint">
+                        <th scope="col" className="px-4 py-2.5 font-semibold">Category</th>
+                        <th scope="col" className="px-4 py-2.5 font-semibold">Retention criteria</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {RETENTION_ROWS.map((r) => (
+                        <tr key={r.category} className="border-t border-rule align-top">
+                          <td className="w-[240px] px-4 py-3 font-semibold text-ink">{r.category}</td>
+                          <td className="px-4 py-3 text-ink-soft">{r.criteria}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Section>
+
+              <Section id="security" num="10" title="Security and Privacy Incidents">
+                <p>
+                  We use administrative, technical, and organizational safeguards appropriate to the sensitivity of
+                  the personal information we handle. Traffic to the Platform is encrypted in transit (HTTPS), and
+                  our hosting and database providers encrypt stored data at rest as a standard feature of their
+                  infrastructure. Access to sensitive information, such as payment details and connected-analytics
+                  credentials, is restricted to what is strictly necessary to operate the Platform. However, no
+                  method of transmission or storage is completely secure, and we cannot guarantee absolute
+                  security.
+                </p>
+                <p>
+                  If we become aware of a security incident affecting your personal information, we will assess it
+                  and, where required by applicable law, notify affected individuals and/or the relevant regulator
+                  within the timeframe that law requires, and keep an internal record of the incident and our
+                  response.
+                </p>
+              </Section>
+
+              <Section id="international" num="11" title="International Processing and Transfers">
+                <p>
+                  Durqo serves Buyers and Sellers in multiple countries, so your information may be processed and
+                  stored in a country other than your own. Different privacy laws may apply there, and foreign
+                  courts, regulators, or authorities may lawfully be able to access information in that country.
+                  Where this happens, we use reasonable contractual, technical, and organizational safeguards,
+                  where appropriate, in addition to relying on our service providers&rsquo; own safeguards for
+                  cross-border data transfers.
+                </p>
+              </Section>
+
+              <Section id="rights" num="12" title="Privacy Rights and Choices">
+                <p>Depending on where you live, you may have some or all of the following rights over your personal information:</p>
+                <div className="rounded-lg border border-rule bg-brand-soft/40 p-5">
+                  <p className="mb-3 text-sm font-semibold text-ink">Your privacy choices</p>
+                  <List
+                    items={[
+                      "Access — request a copy of your information.",
+                      "Correction — ask us to correct inaccurate or incomplete information.",
+                      "Deletion — request deletion of your information, subject to our legal and contractual retention needs.",
+                      "Objection / restriction — object to certain processing, or ask us to limit how we use your information.",
+                      "Portability — request your information in a portable format, where applicable.",
+                      "Marketing opt-out — unsubscribe from marketing communications at any time, using the link in any email or by contacting us.",
+                      "Complaints — where applicable, lodge a complaint with your local data protection authority.",
+                    ]}
+                  />
+                  <a
+                    href="mailto:support@durqo.com?subject=Privacy%20request"
+                    className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+                  >
+                    Submit a privacy request
+                  </a>
+                </div>
+                <p>
+                  We may need to verify your identity before acting on a request, and an authorized representative
+                  submitting a request on your behalf may need to provide proof of that authorization. Some
+                  requests may be limited by law, and certain transaction or legal records may need to be retained
+                  even after a deletion request. We will respond within the timeframe required by applicable law.
+                </p>
+              </Section>
+
+              <Section id="children" num="13" title="Children's Privacy">
+                <p>
+                  The Platform is intended only for individuals who are at least 18 years old, consistent with the
+                  eligibility requirement in our{" "}
                   <a href="/terms" className="font-semibold text-brand-hover">
                     Terms and Conditions
                   </a>
-                  . We do not knowingly collect personal information from anyone under 18. If you believe a
-                  minor has provided us with personal information, please contact us and we will take steps to
-                  delete it.
+                  . Durqo does not knowingly collect personal information from anyone under 18. If you believe a
+                  minor has provided personal information, please contact us at{" "}
+                  <a href="mailto:support@durqo.com" className="font-semibold text-brand-hover">
+                    support@durqo.com
+                  </a>
+                  .
                 </p>
               </Section>
 
-              <Section id="international" num="10" title="International Users">
-                <p>
-                  Durqo serves Buyers and Sellers in multiple countries, which means your information may be
-                  processed and stored in a country other than your own. Where this happens, we rely on our
-                  service providers&rsquo; own safeguards for cross-border data transfers, and take reasonable
-                  steps to ensure your data continues to receive an appropriate level of protection wherever it
-                  is processed.
-                </p>
-              </Section>
-
-              <Section id="third-party-links" num="11" title="Third-Party Links">
-                <p>
-                  The Platform may contain links to third-party websites, including a Seller&rsquo;s own
-                  business or website. We are not responsible for the privacy practices or content of any
-                  third-party site, and we encourage you to review the privacy policy of any site you visit.
-                </p>
-              </Section>
-
-              <Section id="changes" num="12" title="Changes to This Policy & Contact">
+              <Section id="changes" num="14" title="Changes, Complaints and Contact">
                 <p>
                   We may update this Privacy Policy from time to time to reflect changes to the Platform or
                   applicable law. When we make material changes, we will update the effective date at the top of
-                  this page, and where appropriate, notify you directly.
+                  this page, and where appropriate, notify you directly. If you have concerns about how we&rsquo;ve
+                  handled your information that we haven&rsquo;t resolved, you may have the right to lodge a
+                  complaint with your local data protection authority, in addition to contacting us directly.
                 </p>
-                <p>If you have any questions about this policy or how your data is handled, reach out; we&rsquo;re glad to explain.</p>
+                <p>If you have any questions about this Policy, please reach out.</p>
                 <a href="mailto:support@durqo.com" className="inline-block w-fit font-semibold text-brand-hover">
                   support@durqo.com
                 </a>
