@@ -3,6 +3,23 @@ export function fmtUSD(n: number | undefined | null): string {
   return "$" + Math.round(n).toLocaleString("en-US");
 }
 
+// Card-data honesty rules (buy-page redesign, Section 9): a genuinely stored
+// zero renders "$0"; a value nobody entered renders "N/A" — the two must
+// never collapse into the same "$0" reading the way fmtUSD(undefined ?? 0)
+// used to produce.
+export function fmtUSDOrNA(n: number | undefined | null): string {
+  if (n === undefined || n === null) return "N/A";
+  return fmtUSD(n);
+}
+
+// Same missing-vs-zero distinction for business age: 0 is a real "brand new
+// business" signal, undefined means nobody recorded an age at all.
+export function fmtAgeOrNA(years: number | undefined | null): string {
+  if (years === undefined || years === null) return "N/A";
+  if (years === 0) return "New";
+  return `${years} yr${years === 1 ? "" : "s"}`;
+}
+
 export function fmtNumber(n: number | undefined | null): string {
   if (n === undefined || n === null) return "—";
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
