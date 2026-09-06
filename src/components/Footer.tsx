@@ -64,8 +64,13 @@ export default function Footer() {
       <Container className="py-14">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="text-xl font-bold tracking-tight text-white">
-              DURQO<span className="text-brand">.</span>
+            {/* Sep 2026: matched to Header's logo treatment exactly (lowercase
+                "durqo", font-display, no extra tracking) — this footer mark
+                previously read "DURQO" with tracking-tight, a different
+                logo from the Header's "durqo." in effect, even though both
+                were meant to be the same wordmark. */}
+            <Link href="/" className="flex items-baseline gap-1 font-display text-xl font-bold text-white">
+              durqo<span className="text-brand">.</span>
             </Link>
             <p className="mt-3 max-w-[30ch] text-sm leading-relaxed text-white/55">
               A trusted marketplace for buying and selling digital businesses.
