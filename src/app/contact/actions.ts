@@ -23,12 +23,15 @@ export async function submitContactForm({ name, email, subject, message }: Conta
     throw new Error("Please fill in your name, email, and message.");
   }
 
+  // Reply-To is set to the submitter's own address so that replying from
+  // the support@durqo.com inbox goes straight to them, not back to Durqo.
   await sendEmail(
     ADMIN_EMAIL,
     `Contact form: ${cleanSubject} — ${cleanName}`,
     `<p><strong>From:</strong> ${cleanName} (${cleanEmail})</p>
      <p><strong>Subject:</strong> ${cleanSubject}</p>
-     <p>${cleanMessage.replace(/\n/g, "<br/>")}</p>`
+     <p>${cleanMessage.replace(/\n/g, "<br/>")}</p>`,
+    cleanEmail
   );
 
   // Confirmation copy back to whoever filled out the form, so they have a
