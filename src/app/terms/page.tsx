@@ -199,6 +199,62 @@ const PAYMENT_FLOW = [
   "The remaining balance is paid out to the Seller.",
 ];
 
+// Sep 6, 2026: the site owner confirmed this describes Durqo's intended
+// FINAL payment architecture — but repeated, twice, that no piece of it may
+// be described as operational until it is actually built, integrated and
+// verified (none of it exists in the codebase today: no escrow provider,
+// no SSLCommerz code anywhere, no Stripe fee-only charge flow). Written in
+// the future tense ("will") specifically so this reads as a roadmap even
+// to someone who skims past the "Not yet available" badge.
+const PLANNED_TRANSACTION_FLOW = [
+  {
+    title: "Buyer funds escrow",
+    body: "Buyer will pay the full purchase price to an approved independent escrow provider.",
+  },
+  {
+    title: "Assets transfer",
+    body: "Once the escrow provider verifies receipt of funds, the Seller will transfer the agreed assets to the Buyer.",
+  },
+  {
+    title: "Buyer inspects",
+    body: "Buyer will complete inspection and confirm satisfaction with the assets received.",
+  },
+  {
+    title: "Escrow releases funds",
+    body: "The escrow provider will release the remaining proceeds to the Seller, after Durqo's Success Fee is deducted where supported.",
+  },
+];
+
+const PLANNED_FEE_ROUTES = [
+  {
+    title: "International Seller → Stripe",
+    body: "International Sellers will be able to pay their Durqo Success Fee through Stripe when a direct deduction through escrow isn't available.",
+  },
+  {
+    title: "Bangladeshi Seller → SSLCommerz",
+    body: "Bangladeshi Sellers will be able to pay their Durqo Success Fee through SSLCommerz when a direct deduction through escrow isn't available.",
+  },
+];
+
+function StepFlow({ steps }: { steps: { title: string; body: string }[] }) {
+  return (
+    <ol className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {steps.map((step, i) => (
+        <li key={step.title} className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="mono flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
+              {i + 1}
+            </span>
+            {i < steps.length - 1 && <span aria-hidden className="hidden h-px flex-1 bg-rule-strong lg:block" />}
+          </div>
+          <p className="text-left text-sm font-semibold text-ink">{step.title}</p>
+          <p className="text-left text-xs leading-relaxed text-ink-soft">{step.body}</p>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export default function TermsPage() {
   return (
     <main>
@@ -336,9 +392,20 @@ export default function TermsPage() {
                   earns its Success Fee only when a Listing actually sells, calculated as a flat percentage of
                   the full final sale price (not a marginal or progressive calculation):
                 </p>
-                <FeeTable />
-
-                <FeeExample />
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="mb-2 text-left text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                      Success Fee Tiers
+                    </p>
+                    <FeeTable />
+                  </div>
+                  <div>
+                    <p className="mb-2 text-left text-xs font-semibold uppercase tracking-wide text-ink-faint">
+                      Fee Calculation Example
+                    </p>
+                    <FeeExample />
+                  </div>
+                </div>
 
                 <div className="flex items-center gap-2">
                   <SubHeading>How payment works today</SubHeading>
@@ -362,38 +429,42 @@ export default function TermsPage() {
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
-                  <SubHeading>Planned payment system</SubHeading>
+                  <SubHeading>Planned transaction flow</SubHeading>
                   <StatusBadge tone="planned">Not yet available</StatusBadge>
                 </div>
                 <p>
-                  Durqo intends to introduce the following payment methods. None of them are integrated or
-                  available to Buyers or Sellers today — each will be clearly marked as available on the
-                  Platform, and this page will be updated to describe it as operational, only once it has been
-                  built and verified:
+                  This is Durqo&rsquo;s intended final payment architecture. No part of it is built or available
+                  to Buyers or Sellers today — this page will be updated to describe each piece as operational
+                  only once it has actually been integrated and verified:
                 </p>
-                <List
-                  items={[
-                    <>
-                      <strong className="text-ink">An approved independent escrow provider</strong> to hold a
-                      Buyer&rsquo;s full purchase price until the transaction completes. <em>Coming soon.</em>
-                    </>,
-                    <>
-                      <strong className="text-ink">Stripe</strong>, used to collect Durqo&rsquo;s Success Fee
-                      directly from eligible international Sellers when deducting it from escrow isn&rsquo;t
-                      available. Stripe is a payment processor, not an escrow provider. <em>Coming soon.</em>
-                    </>,
-                    <>
-                      <strong className="text-ink">SSLCommerz</strong>, used to collect Durqo&rsquo;s Success Fee
-                      directly from eligible Bangladeshi Sellers when deducting it from escrow isn&rsquo;t
-                      available. SSLCommerz is a Bangladeshi payment gateway, not an escrow provider.{" "}
-                      <em>Not currently available.</em>
-                    </>,
-                  ]}
-                />
+                <StepFlow steps={PLANNED_TRANSACTION_FLOW} />
                 <p className="text-left text-xs leading-relaxed text-ink-faint">
-                  Under this planned system, Durqo will not directly hold escrow funds, and a Buyer&rsquo;s full
-                  purchase price will never be processed through Stripe or SSLCommerz — those two are used only
-                  to collect the Seller&rsquo;s Success Fee where a direct escrow deduction isn&rsquo;t possible.
+                  Once available, Durqo itself will not hold escrow funds, act as an escrow provider, or act as a
+                  bank, trustee, custodian, or guarantor. Nothing in these Terms limits any right or remedy that
+                  cannot lawfully be limited or excluded under applicable law.
+                </p>
+
+                <div className="mt-2 flex items-center gap-2">
+                  <SubHeading>Planned alternative Success Fee payment</SubHeading>
+                  <StatusBadge tone="planned">Not yet available</StatusBadge>
+                </div>
+                <p>
+                  Where deducting Durqo&rsquo;s Success Fee directly through escrow isn&rsquo;t available, Sellers
+                  will be able to pay it directly instead:
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {PLANNED_FEE_ROUTES.map((route) => (
+                    <div key={route.title} className="rounded-lg border border-rule bg-paper-raised p-5">
+                      <p className="text-left text-sm font-semibold text-ink">{route.title}</p>
+                      <p className="mt-1 text-left text-sm leading-relaxed text-ink-soft">{route.body}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-left text-xs leading-relaxed text-ink-faint">
+                  Stripe and SSLCommerz are independent payment processors, not escrow providers. Neither will
+                  hold or release a Buyer&rsquo;s purchase price, and a Buyer&rsquo;s full purchase price will
+                  never be routed through Stripe or SSLCommerz &mdash; both are used only to collect the
+                  Seller&rsquo;s Success Fee.
                 </p>
               </Section>
 
@@ -410,6 +481,17 @@ export default function TermsPage() {
                   Nothing in these Terms limits any right or remedy that cannot lawfully be limited or excluded
                   under applicable law, including any non-waivable consumer-protection or payment-network
                   chargeback rights you may have.
+                </p>
+                <SubHeading>Once escrow is available</SubHeading>
+                <p className="text-left text-sm text-ink-soft">
+                  Section 5 describes a planned, not-yet-available escrow-based payment flow. Once it launches,
+                  this section will be updated to separately address cancellation before a transaction is
+                  funded, cancellation while funds are held in escrow, a Buyer&rsquo;s rejection at inspection,
+                  a completed transfer, confirmed fraud or material misrepresentation, and disputes or
+                  chargebacks raised with the escrow provider or a payment processor. Durqo does not control
+                  escrow funds today and cannot itself order or guarantee a refund; that will remain true even
+                  once an escrow provider is in place, since refund authority over escrowed funds will sit with
+                  that provider under its own dispute process.
                 </p>
               </Section>
 
