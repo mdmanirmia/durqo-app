@@ -21,7 +21,7 @@ import Container from "@/components/ui/Container";
 import SectionHeader from "@/components/ui/SectionHeader";
 import Button from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
-import { fmtUSD, formatQuickStat } from "@/lib/format";
+import { fmtUSD } from "@/lib/format";
 
 const TRUST_STRIP = [
   { icon: Lock, label: "Escrow-protected payments" },
@@ -87,6 +87,12 @@ export default async function Home() {
   const spotlightChart = spotlight
     ? spotlight.monthlyStats.map((m) => ({ month: m.month, income: m.income }))
     : [];
+  const spotlightRevenue = (spotlight?.quickStats.monthly_income as number | undefined) ?? 0;
+  const spotlightExpenseTotal = spotlight
+    ? spotlight.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+    : 0;
+  const spotlightProfit =
+    spotlight && spotlight.monthlyExpenses.length > 0 ? spotlightRevenue - spotlightExpenseTotal : spotlightRevenue;
 
   // Third hero stat: once real sellers start getting Verified badges this
   // automatically switches to that (a more meaningful trust signal) instead
@@ -205,11 +211,11 @@ export default async function Home() {
                 <div className="mono mt-6 grid grid-cols-3 gap-4 border-t border-rule pt-5 text-sm">
                   <div>
                     <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Revenue/mo</span>
-                    {fmtUSD(spotlight.quickStats.monthly_income as number | undefined)}
+                    {fmtUSD(spotlightRevenue)}
                   </div>
                   <div>
-                    <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Multiple</span>
-                    {formatQuickStat("income_multiple", spotlight.quickStats.income_multiple)}
+                    <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Profit/mo</span>
+                    {fmtUSD(spotlightProfit)}
                   </div>
                   <div>
                     <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Price</span>
