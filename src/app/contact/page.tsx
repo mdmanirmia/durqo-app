@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { Mail, MessageSquare, MapPin } from "lucide-react";
 import FaqAccordion from "@/components/FaqAccordion";
 import Container from "@/components/ui/Container";
+import { submitContactForm } from "./actions";
 
 const FAQS = [
   { question: "How does Durqo verify a listing?", answer: "We request read-only access to analytics, payment processor exports and hosting records, and cross-check the numbers before a listing is marked Verified." },
@@ -21,28 +22,46 @@ const FAQS = [
 
 function ContactForm() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    setLoading(true);
+    try {
+      await submitContactForm({
+        name: String(formData.get("name") || ""),
+        email: String(formData.get("email") || ""),
+        subject: String(formData.get("subject") || ""),
+        message: String(formData.get("message") || ""),
+      });
+      setSent(true);
+      form.reset();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong — please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setSent(true);
-      }}
-      className="flex flex-col gap-4"
-    >
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-ink-soft" htmlFor="name">Name</label>
-          <input id="name" required placeholder="Your name" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none" />
+          <input id="name" name="name" required placeholder="Your name" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none" />
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-ink-soft" htmlFor="email">Email</label>
-          <input id="email" type="email" required placeholder="you@email.com" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none" />
+          <input id="email" name="email" type="email" required placeholder="you@email.com" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none" />
         </div>
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold text-ink-soft" htmlFor="subject">Subject</label>
-        <select id="subject" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none">
+        <select id="subject" name="subject" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none">
           <option>General question</option>
           <option>Help with a listing</option>
           <option>Buyer support</option>
@@ -51,9 +70,12 @@ function ContactForm() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-semibold text-ink-soft" htmlFor="message">Message</label>
-        <textarea id="message" required rows={5} placeholder="How can we help?" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none" />
+        <textarea id="message" name="message" required rows={5} placeholder="How can we help?" className="rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none" />
       </div>
-      <button className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover">Send message</button>
+      {error && <p className="text-sm text-danger">{error}</p>}
+      <button disabled={loading} className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
+        {loading ? "Sending…" : "Send message"}
+      </button>
       {sent && <p className="text-sm text-brand-strong">Message sent — we&rsquo;ll reply within one business day.</p>}
     </form>
   );
