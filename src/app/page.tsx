@@ -101,6 +101,18 @@ const CONFIDENCE = [
 // on the marketplace already carries a Verified badge.
 const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Data checked"];
 
+// Sep 2026: the stats bar (Active listings / Listed value / Verified sellers)
+// and the featured spotlight below were silently going stale — `next build`
+// was prerendering "/" as a fully static route (no `searchParams`/other
+// dynamic API forced it dynamic the way `/buy` and `/listing/[id]` already
+// are), so every visitor saw whatever numbers existed at the last deploy
+// until one of the handful of `revalidatePath("/")` calls elsewhere in the
+// app happened to fire. Forcing this route dynamic makes it recompute from
+// the live database on every request instead, matching `/buy` and
+// `/listing/[id]`'s existing behavior — the safer fix than trying to find
+// and patch every mutation path that can change these counts.
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const listings = await getPublishedListings();
   // "Businesses gaining attention" — the 3 most recently published, in the
