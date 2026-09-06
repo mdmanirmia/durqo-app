@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Container from "@/components/ui/Container";
+import { notifySellerAccountCreated } from "./actions";
 
 function RegisterForm() {
   const router = useRouter();
@@ -40,6 +41,13 @@ function RegisterForm() {
     });
     setLoading(false);
     if (error) { setError(error.message); return; }
+
+    // Admin + welcome notification for a brand-new seller account — separate
+    // from Supabase's own confirmation-link email (see register/actions.ts).
+    // Buyer signups don't get this; only sellers, per how it was scoped.
+    if (role === "seller") {
+      notifySellerAccountCreated(fullName, email);
+    }
 
     // If email confirmation is off in the Supabase project, signUp already
     // returns a live session — skip straight to the dashboard. Otherwise a
