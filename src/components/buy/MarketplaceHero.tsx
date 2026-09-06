@@ -18,7 +18,7 @@ export default function MarketplaceHero() {
         <div className="mx-auto max-w-[760px] text-center">
           <p className="eyebrow eyebrow--on-dark mx-auto">Marketplace</p>
           <h1 className="mt-3 text-3xl leading-[1.15] text-white sm:text-4xl">Find a business worth building on.</h1>
-          <p className="mx-auto mt-3 max-w-[56ch] text-[0.95rem] leading-relaxed text-white/70">
+          <p className="mx-auto mt-3 max-w-[56ch] text-center text-[0.95rem] leading-relaxed text-white/70">
             Explore verified digital businesses and compare their performance, pricing and operating history.
           </p>
 
