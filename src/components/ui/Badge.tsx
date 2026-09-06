@@ -16,12 +16,13 @@ export function Badge({
   tone = "neutral",
   icon: Icon,
   className,
+  ...rest
 }: {
   children: React.ReactNode;
   tone?: Tone;
   icon?: LucideIcon;
   className?: string;
-}) {
+} & React.HTMLAttributes<HTMLSpanElement>) {
   return (
     <span
       className={clsx(
@@ -29,6 +30,7 @@ export function Badge({
         TONE[tone],
         className
       )}
+      {...rest}
     >
       {Icon && <Icon size={11} />}
       {children}
