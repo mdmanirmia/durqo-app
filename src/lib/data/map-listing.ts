@@ -496,7 +496,20 @@ export function mapListing(
     monetizationTypeIds: row.monetization_type_ids ?? [],
     saleIncludesAssets: row.sale_includes_assets ?? "",
     saleIncludesSupport: row.sale_includes_support ?? "",
-    isVerified: !!row.is_verified,
+    // `listings.is_verified` is a dead column — no code path ever sets it
+    // true for a real listing, so reading it directly would blank the
+    // emerald "Verified" badge on every real card (Durqo /buy redesign,
+    // Sep 2026, Section 1). Durqo's actual verification step today is the
+    // admin publish action: a listing only reaches `status = "published"`
+    // (or "sold", which is only reachable from published) after manual
+    // admin review. So verified is derived from status here — the same
+    // single mapping layer every public-facing surface (marketplace cards,
+    // the /buy table, wishlist, cart, this listing's own detail page) reads
+    // through — rather than patched per call site. Anything not
+    // published/sold (draft, pending, rejected, archived) correctly maps to
+    // false, so a seller/admin previewing an unpublished listing never sees
+    // a false "Verified" claim.
+    isVerified: row.status === "published" || row.status === "sold",
     status: row.status === "sold" ? "sold" : "published",
     views: row.views ?? 0,
     createdAt: row.created_at ? String(row.created_at).slice(0, 10) : "",
