@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Eye, LifeBuoy, Mail } from "lucide-react";
 import Container from "./ui/Container";
 
@@ -21,23 +24,38 @@ const TRUST_BAR = [
 // no Fees/Seller Guide/Cookie Policy links, since those pages don't exist
 // yet and a footer link to nothing is worse than a shorter footer.
 export default function Footer() {
+  // Sep 2026 About-page redesign: the About page's own Final CTA already
+  // closes with the same "browse marketplace / sell a business" pair this
+  // strip's "Explore the marketplace" link and its two trust claims lead
+  // into — right above this very footer, so the strip would be a redundant,
+  // slightly-broader-than-intended claim sandwiched between two CTAs.
+  // Hiding it only on /about (not touching it anywhere else on the site)
+  // keeps this a page-specific presentation choice rather than a sitewide
+  // copy change — this is the "small, safe shared-component adjustment"
+  // allowance called out for this page, mirroring how Header.tsx already
+  // uses usePathname() for its own per-route active-nav state.
+  const pathname = usePathname();
+  const showTrustBar = pathname !== "/about";
+
   return (
     <footer className="mt-16 bg-brand-strong text-white/80">
-      <div className="border-b border-white/10">
-        <Container className="flex flex-wrap items-center justify-between gap-4 py-5">
-          <div className="flex flex-wrap items-center gap-x-7 gap-y-2">
-            {TRUST_BAR.map(({ icon: Icon, label }) => (
-              <span key={label} className="mono flex items-center gap-2 text-xs text-white/70">
-                <Icon size={14} className="text-brand" />
-                {label}
-              </span>
-            ))}
-          </div>
-          <Link href="/buy" className="text-xs font-semibold text-white/80 hover:text-white">
-            Explore the marketplace →
-          </Link>
-        </Container>
-      </div>
+      {showTrustBar && (
+        <div className="border-b border-white/10">
+          <Container className="flex flex-wrap items-center justify-between gap-4 py-5">
+            <div className="flex flex-wrap items-center gap-x-7 gap-y-2">
+              {TRUST_BAR.map(({ icon: Icon, label }) => (
+                <span key={label} className="mono flex items-center gap-2 text-xs text-white/70">
+                  <Icon size={14} className="text-brand" />
+                  {label}
+                </span>
+              ))}
+            </div>
+            <Link href="/buy" className="text-xs font-semibold text-white/80 hover:text-white">
+              Explore the marketplace →
+            </Link>
+          </Container>
+        </div>
+      )}
 
       <Container className="py-14">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
