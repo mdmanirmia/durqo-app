@@ -106,20 +106,35 @@ export default async function Home() {
   // order getPublishedListings() already returns (newest first).
   const featured = listings.slice(0, 3);
 
-  // Real per-category counts, computed from the same fetch used everywhere
-  // else on this page — no placeholder numbers, per the design brief.
+  // getPublishedListings() intentionally includes sold listings too (so
+  // Sold badges/social proof can render on cards/tables sitewide — see that
+  // function's own comment). But every stats-bar number below is meant to
+  // describe the catalog a visitor can actually buy from right now, which
+  // is exactly what /buy's default "Available" filter shows (Sep 2026: a
+  // seller reported the homepage's "14 Active listings" not matching /buy's
+  // "11 listings" — the gap was these 3 already-sold rows). So every count
+  // and sum below is computed from `activeListings`, not the raw fetch —
+  // "Active listings," per-category tallies, listed value, and verified
+  // sellers all stay consistent with what /buy itself shows.
+  const activeListings = listings.filter((l) => l.status !== "sold");
+
+  // Real per-category counts, computed from the same active set as the
+  // stats bar — no placeholder numbers, per the design brief, and no
+  // "3 listings" tile that turns into 2 the moment you click through to
+  // /buy's (published-only-by-default) category view.
   const categoryCounts = new Map<string, number>();
-  for (const l of listings) {
+  for (const l of activeListings) {
     categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
   }
-  // Distinct sellers with real identity verification (profiles.is_verified,
-  // surfaced as SellerInfo.isVerified via mapSeller) — deliberately NOT
+  // Distinct sellers, among those with a currently active listing, who have
+  // real identity verification (profiles.is_verified, surfaced as
+  // SellerInfo.isVerified via mapSeller) — deliberately NOT
   // `listing.isVerified`, which (Sep 2026 /buy fix) now means "this listing
   // is published," true for nearly every listing here and so would inflate
   // this into a near-duplicate of "Active listings" instead of the distinct,
   // opt-in seller-identity signal this stat is meant to show.
-  const verifiedCount = new Set(listings.filter((l) => l.seller.isVerified).map((l) => l.seller.id)).size;
-  const totalListedValue = listings.reduce((sum, l) => sum + (l.discountedPrice ?? l.price), 0);
+  const verifiedCount = new Set(activeListings.filter((l) => l.seller.isVerified).map((l) => l.seller.id)).size;
+  const totalListedValue = activeListings.reduce((sum, l) => sum + (l.discountedPrice ?? l.price), 0);
 
   // Categories sorted by how much real inventory they carry — both the
   // "Find your kind of opportunity" row (top 6) and the swap-in stat below
@@ -179,7 +194,7 @@ export default async function Home() {
   const spotlightPeriodLabel = spotlightSeries.length >= 10 ? "Last 12 months" : "Recorded history";
 
   const statsBar = [
-    { icon: Package, value: String(listings.length), label: "Active listings" },
+    { icon: Package, value: String(activeListings.length), label: "Active listings" },
     { icon: Coins, value: fmtCompactUSD(totalListedValue), label: "Listed value" },
     { icon: LayoutGrid, value: String(CATEGORIES.length), label: "Business types" },
     { icon: ShieldCheck, value: verifiedStat.value, label: verifiedStat.label },
