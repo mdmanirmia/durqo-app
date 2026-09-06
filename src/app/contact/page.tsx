@@ -8,7 +8,10 @@ import Container from "@/components/ui/Container";
 const FAQS = [
   { question: "How does Durqo verify a listing?", answer: "We request read-only access to analytics, payment processor exports and hosting records, and cross-check the numbers before a listing is marked Verified." },
   { question: "What happens to my money during a sale?", answer: "Funds are held by our third-party escrow partner and only released to the seller once asset transfer is confirmed by both parties." },
-  { question: "What does Durqo charge?", answer: "Buyers pay nothing to browse or make offers. Sellers pay a success fee of 5–10% only when a deal closes." },
+  // Sep 6, 2026: aligned with the /sell page's tiered pricing (10% under
+  // $50k, 7% $50k–$250k, 5% over $250k) instead of the old vague "5-10%"
+  // range, which didn't name the middle tier or the boundaries.
+  { question: "What does Durqo charge?", answer: "Buyers pay nothing to browse or make offers. Sellers pay a tiered success fee — 10%, 7% or 5% depending on the final sale price — only when a deal closes." },
   { question: "Can I sell a business with no revenue yet?", answer: "Yes — domains and early-stage sites are listed regularly, though they won't carry a Verified income badge." },
 ];
 
