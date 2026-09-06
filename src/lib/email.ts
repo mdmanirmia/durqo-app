@@ -24,13 +24,18 @@ const FROM = process.env.EMAIL_FROM || "Durqo <onboarding@resend.dev>";
 // already-shipped flow, not part of this pass.
 export const ADMIN_EMAIL = "support@durqo.com";
 
-export async function sendEmail(to: string | string[], subject: string, html: string): Promise<{ sent: boolean }> {
+export async function sendEmail(
+  to: string | string[],
+  subject: string,
+  html: string,
+  replyTo?: string | string[]
+): Promise<{ sent: boolean }> {
   if (!resend) {
     console.warn(`[email] RESEND_API_KEY not set — skipping "${subject}" to`, to);
     return { sent: false };
   }
   try {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    const { error } = await resend.emails.send({ from: FROM, to, subject, html, ...(replyTo ? { replyTo } : {}) });
     if (error) {
       console.error("[email] send failed:", error);
       return { sent: false };
