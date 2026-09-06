@@ -1,8 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
+import { getUserEmails } from "@/lib/notifications";
 
 // Shared by BOTH the admin edit form (dashboard/admin/listings/[id]/edit)
 // and the seller edit form (dashboard/seller/listings/[id]/edit) — one
@@ -93,7 +96,7 @@ export type ListingFullEditFields = {
 // Core listing row + every related "profile" table (quick stats live as
 // flat columns on `listings` itself, everything else is 1:1 or 1:many).
 export async function updateListingFull(listingId: string, fields: ListingFullEditFields) {
-  const { admin } = await requireEditAccess(listingId);
+  const { admin, isAdmin, sellerId } = await requireEditAccess(listingId);
 
   if (!fields.title.trim()) throw new Error("Title is required.");
   if (!Number.isFinite(fields.price) || fields.price < 0) throw new Error("Invalid price.");
@@ -221,6 +224,29 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
   revalidatePath("/dashboard/seller");
   revalidatePath("/");
   revalidatePath("/buy");
+
+  // Best-effort admin notification — only for a seller editing their own
+  // listing, never for an admin's own edit (that would just be self-noise).
+  // Failures here never surface to the seller: sendEmail already swallows
+  // its own errors, same as every other notification in this codebase.
+  if (!isAdmin) {
+    const [{ data: sellerProfile }, emails] = await Promise.all([
+      admin.from("profiles").select("full_name").eq("id", sellerId).single(),
+      getUserEmails(admin, [sellerId]),
+    ]);
+    const sellerName = sellerProfile?.full_name || "A seller";
+    const sellerEmail = emails[sellerId];
+    const hdrs = await headers();
+    const host = hdrs.get("host");
+    const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
+
+    await sendEmail(
+      ADMIN_EMAIL,
+      `Listing updated — ${fields.title}`,
+      `<p>${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""} updated their listing "${fields.title}".</p>
+       <p><a href="${origin}/dashboard/admin/listings">Review it in the admin dashboard</a>.</p>`
+    );
+  }
 }
 
 // One gallery's worth of newly-added files, uploaded straight to Storage
