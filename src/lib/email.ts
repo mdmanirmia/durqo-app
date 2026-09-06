@@ -14,6 +14,16 @@ import { Resend } from "resend";
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 const FROM = process.env.EMAIL_FROM || "Durqo <onboarding@resend.dev>";
 
+// Sep 2026 email-notifications build: every admin-facing notification
+// (new seller account, listing update, purchase, contact form) goes to this
+// one fixed inbox rather than a dynamically-resolved list of admin users —
+// that's what was actually requested, and it keeps delivery working even if
+// no `profiles.role = "admin"` row exists yet. submitVerification() below in
+// dashboard/seller/verification/actions.ts predates this and still resolves
+// admin emails dynamically; that's left as-is since it's a different,
+// already-shipped flow, not part of this pass.
+export const ADMIN_EMAIL = "support@durqo.com";
+
 export async function sendEmail(to: string | string[], subject: string, html: string): Promise<{ sent: boolean }> {
   if (!resend) {
     console.warn(`[email] RESEND_API_KEY not set — skipping "${subject}" to`, to);
