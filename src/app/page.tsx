@@ -5,53 +5,78 @@ import {
   UserCheck,
   MessageSquare,
   ArrowRight,
-  Lock,
-  BadgeCheck,
   CheckCircle2,
   Search,
-  Layers,
-  Wallet,
+  Package,
+  Coins,
+  LayoutGrid,
 } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { getPublishedListings } from "@/lib/data/listings.server";
 import ListingCard from "@/components/ListingCard";
-import TrendChart from "@/components/charts/TrendChart";
+import WishlistButton from "@/components/WishlistButton";
 import Container from "@/components/ui/Container";
-import SectionHeader from "@/components/ui/SectionHeader";
 import Button from "@/components/ui/Button";
-import { Badge } from "@/components/ui/Badge";
 import { fmtUSD } from "@/lib/format";
 
-const TRUST_STRIP = [
-  { icon: Lock, label: "Escrow-protected payments" },
-  { icon: UserCheck, label: "Verified-seller badges" },
-  { icon: ShieldCheck, label: "Financials independently checked" },
-];
+// Small dash-prefixed eyebrow used throughout this redesign (Sep 6 2026),
+// distinct from the shared pill-style `.eyebrow` class (globals.css) that
+// SectionHeader still renders elsewhere in the app (e.g. /about) — kept as
+// a local, page-scoped helper rather than changing that shared component/
+// class, so no other page's heading style shifts as a side effect.
+function DashEyebrow({
+  children,
+  onDark = false,
+  center = false,
+}: {
+  children: React.ReactNode;
+  onDark?: boolean;
+  center?: boolean;
+}) {
+  return (
+    <p
+      className={`mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider ${
+        onDark ? "text-white/70" : "text-ink-soft"
+      } ${center ? "justify-center" : ""}`}
+    >
+      <span className="h-px w-6 bg-brand" aria-hidden />
+      {children}
+    </p>
+  );
+}
+
+// Compact "$1.4M" style formatter for the stats bar — deliberately without
+// a trailing "+" (unlike the design reference): rounding to one decimal
+// already makes this an approximation, and adding "+" on top would imply
+// "at least this much" when a listed value can just as easily round down.
+function fmtCompactUSD(n: number): string {
+  if (n >= 1_000_000) return "$" + (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1_000) return "$" + (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  return fmtUSD(n);
+}
 
 const STEPS = [
-  { icon: Search, title: "Sign up & get verified", body: "Create an account and confirm your identity so both sides of every deal are accountable." },
-  { icon: LineChart, title: "Browse or list", body: "Search vetted listings by category, income and price — or submit your own business for review." },
-  { icon: CheckCircle2, title: "Close with escrow", body: "Funds and assets move through our escrow partner, released only once transfer is confirmed." },
+  { icon: Search, title: "Explore or list", body: "Browse vetted listings by category, or submit your own business to be listed." },
+  { icon: LineChart, title: "Review and connect", body: "Evaluate performance data, ask questions and connect directly with the seller." },
+  { icon: CheckCircle2, title: "Complete the transfer", body: "Agree on terms, move assets through our secure process, and take ownership with confidence." },
 ];
 
-const WHY = [
-  { icon: ShieldCheck, title: "Escrow-protected payments", body: "Every transaction runs through a licensed escrow partner — funds release only after assets transfer." },
-  { icon: LineChart, title: "Independent financial verification", body: "Revenue, traffic and SEO figures are checked against Google Analytics, Search Console, SEMrush and Ahrefs before a listing goes live." },
-  { icon: UserCheck, title: "Vetted sellers, real history", body: "Sellers can complete identity verification and earn a Verified badge — and their listings and outcomes stay attached to their profile either way." },
-  { icon: MessageSquare, title: "Direct, recorded messaging", body: "Negotiate buyer to seller inside Durqo — nothing moves to unrecorded channels." },
+const CONFIDENCE = [
+  { icon: ShieldCheck, title: "Listing review", body: "Every listing is manually reviewed for accuracy, completeness and legitimacy before it goes live." },
+  { icon: UserCheck, title: "Seller verification", body: "Sellers can complete identity verification and earn a Verified badge on their profile." },
+  { icon: LineChart, title: "Performance data", body: "Revenue, traffic and SEO figures can be independently checked against Google Analytics, Search Console, SEMrush and Ahrefs." },
+  { icon: MessageSquare, title: "Secure communication", body: "Negotiate and share information directly through Durqo's private messaging — nothing moves to unrecorded channels." },
 ];
 
 export default async function Home() {
   const listings = await getPublishedListings();
-  // "Latest listings" — the 3 most recently published, in the order
-  // getPublishedListings() already returns (newest first). This is
-  // deliberately separate from the spotlight pick below: "on the market
-  // this week" should mean newest, full stop.
+  // "Businesses gaining attention" — the 3 most recently published, in the
+  // order getPublishedListings() already returns (newest first).
   const featured = listings.slice(0, 3);
 
-  // Real per-category counts, computed from the same fetch used for the
-  // featured strip above — no placeholder numbers.
+  // Real per-category counts, computed from the same fetch used everywhere
+  // else on this page — no placeholder numbers, per the design brief.
   const categoryCounts = new Map<string, number>();
   for (const l of listings) {
     categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
@@ -59,22 +84,29 @@ export default async function Home() {
   const verifiedCount = listings.filter((l) => l.isVerified).length;
   const totalListedValue = listings.reduce((sum, l) => sum + (l.discountedPrice ?? l.price), 0);
 
-  // Categories sorted by how much real inventory they carry, so the grid
-  // leads with what a visitor can actually browse today rather than
-  // whatever order the category list happens to be defined in.
+  // Categories sorted by how much real inventory they carry — both the
+  // "Find your kind of opportunity" row (top 6) and the swap-in stat below
+  // lean on this real ordering rather than a fixed/declared order.
   const categoriesByActivity = [...CATEGORIES].sort(
     (a, b) => (categoryCounts.get(b.id) ?? 0) - (categoryCounts.get(a.id) ?? 0)
   );
+  const topCategories = categoriesByActivity.slice(0, 6);
+  const activeCategoryCount = categoriesByActivity.filter((c) => (categoryCounts.get(c.id) ?? 0) > 0).length;
 
-  // Sep 6 2026 fix: the "Featured listing" spotlight used to just be
-  // listings[0] (whichever listing was created most recently) — fine most
-  // of the time, but it meant a listing with no revenue at all (e.g. a bare
-  // Domains listing, which has no Proof of Income section to begin with)
-  // could end up as the marketplace's own homepage showcase, showing
-  // "Revenue/mo —" and "Multiple —" right at the top of the site. Pick the
-  // highest-priced listing that actually has real computed monthly income
-  // instead — a much better flagship — and only fall back to "just the
-  // newest" when nothing in the catalog has income data yet.
+  // Stats-bar 4th slot: a real, non-zero stat instead of a "0 Verified
+  // seller profiles" trust stat (verification is still opt-in sitewide, so
+  // that count is genuinely 0 today for most catalogs) — swaps to the real
+  // verified count automatically once sellers start verifying.
+  const verifiedStat =
+    verifiedCount > 0
+      ? { value: String(verifiedCount), label: "Verified seller profiles" }
+      : { value: String(activeCategoryCount), label: "Categories with live listings" };
+
+  // Featured opportunity (hero spotlight): prefer the highest-priced listing
+  // that actually has real computed monthly income, so the homepage's own
+  // showcase never ends up being a listing with no revenue data at all
+  // (e.g. a bare Domains listing) — falls back to "just the newest" only
+  // when nothing in the catalog has income data yet.
   const withRevenue = listings.filter((l) => {
     const income = l.quickStats.monthly_income;
     return typeof income === "number" && income > 0;
@@ -84,9 +116,6 @@ export default async function Home() {
     (a, b) => (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price)
   )[0];
 
-  const spotlightChart = spotlight
-    ? spotlight.monthlyStats.map((m) => ({ month: m.month, income: m.income }))
-    : [];
   const spotlightRevenue = (spotlight?.quickStats.monthly_income as number | undefined) ?? 0;
   const spotlightExpenseTotal = spotlight
     ? spotlight.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
@@ -94,173 +123,224 @@ export default async function Home() {
   const spotlightProfit =
     spotlight && spotlight.monthlyExpenses.length > 0 ? spotlightRevenue - spotlightExpenseTotal : spotlightRevenue;
 
-  // Third hero stat: once real sellers start getting Verified badges this
-  // automatically switches to that (a more meaningful trust signal) instead
-  // of silently showing "0" — until then, the combined asking price across
-  // the live catalog is a real, non-zero number worth leading with.
-  const heroThirdStat =
-    verifiedCount > 0
-      ? { value: String(verifiedCount), label: "Seller-verified" }
-      : { value: fmtUSD(totalListedValue), label: "Combined asking price" };
+  // Revenue-trend badge: a real percentage computed from the spotlight
+  // listing's own monthly stats (first vs. most recent data point) — never
+  // shown when there isn't enough real data to compute it honestly.
+  const spotlightSeries = (spotlight?.monthlyStats ?? [])
+    .map((m) => m.income)
+    .filter((v): v is number => typeof v === "number");
+  const spotlightTrendPercent =
+    spotlightSeries.length >= 2 && spotlightSeries[0] > 0
+      ? Math.round(((spotlightSeries[spotlightSeries.length - 1] - spotlightSeries[0]) / spotlightSeries[0]) * 100)
+      : null;
+  const sparkPoints = spotlightSeries.slice(-8);
+  const sparkMax = sparkPoints.length ? Math.max(...sparkPoints, 1) : 1;
+
+  const statsBar = [
+    { icon: Package, value: String(listings.length), label: "Active listings" },
+    { icon: Coins, value: fmtCompactUSD(totalListedValue), label: "Listed value" },
+    { icon: LayoutGrid, value: String(CATEGORIES.length), label: "Business types" },
+    { icon: ShieldCheck, value: verifiedStat.value, label: verifiedStat.label },
+  ];
 
   return (
     <main>
       {/* HERO */}
-      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
-        <Container>
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-16 sm:py-24">
+        <div
+          className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
+          aria-hidden
+        />
+        <Container className="relative">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
             <div>
-              <span className="eyebrow">
-                <ShieldCheck size={13} />
-                Verified digital business marketplace
-              </span>
+              <DashEyebrow>The marketplace for digital businesses</DashEyebrow>
 
-              <h1 className="mt-5 text-4xl leading-[1.1] sm:text-5xl">
-                Buy and sell online businesses with confidence
+              <h1 className="text-4xl leading-[1.1] sm:text-5xl">
+                Buy what&rsquo;s
+                <br />
+                <span className="text-brand">already working.</span>
               </h1>
 
-              <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-ink-soft">
-                Websites, SaaS products, e-commerce brands, domains and other digital businesses — every listing
-                checked, every deal held in escrow until assets transfer.
+              <p className="mt-5 max-w-[50ch] text-lg leading-relaxed text-ink-soft">
+                Discover vetted websites, SaaS products, apps and digital brands with the performance data you need
+                to move confidently.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 <Button href="/buy" size="lg">
-                  Browse the marketplace
+                  Explore businesses
                   <ArrowRight size={16} />
                 </Button>
                 <Button href="/sell" variant="secondary" size="lg">
-                  Get a free valuation
+                  Sell your business
                 </Button>
               </div>
 
               <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-rule pt-6">
-                {TRUST_STRIP.map(({ icon: Icon, label }) => (
+                {["Curated listings", "Clear performance data", "Secure deal process"].map((label) => (
                   <span key={label} className="flex items-center gap-1.5 text-xs font-medium text-ink-soft">
-                    <Icon size={14} className="text-brand" />
+                    <CheckCircle2 size={14} className="text-brand" />
                     {label}
                   </span>
                 ))}
               </div>
             </div>
 
-            {/* Real verification summary — every number here is computed
-                from the listings just fetched, not a marketing placeholder.
-                Three stats instead of two (Sep 6 2026 fix): the third slot
-                is "Seller-verified" once that count is real and non-zero,
-                and the catalog's combined asking price until then — a
-                zero-looking trust stat is worse than a true, non-zero one. */}
-            <div className="rounded-xl border border-rule bg-paper-raised shadow-[0_24px_48px_-28px_rgba(11,19,36,0.25)]">
-              <div className="flex items-center justify-between border-b border-rule bg-brand-strong px-6 py-3.5">
-                <span className="text-sm font-semibold text-white">Marketplace snapshot</span>
-                <BadgeCheck size={16} className="text-brand" />
-              </div>
-              <div className="grid grid-cols-3 divide-x divide-rule border-b border-rule">
-                <div className="p-4 sm:p-5">
-                  <div className="mono text-xl font-bold text-ink sm:text-2xl">{listings.length}</div>
-                  <div className="mt-1 text-[0.7rem] leading-tight text-ink-faint">Active listings</div>
-                </div>
-                <div className="p-4 sm:p-5">
-                  <div className="mono text-xl font-bold text-ink sm:text-2xl">{CATEGORIES.length}</div>
-                  <div className="mt-1 text-[0.7rem] leading-tight text-ink-faint">Categories</div>
-                </div>
-                <div className="p-4 sm:p-5">
-                  <div className="mono text-xl font-bold text-ink sm:text-2xl">{heroThirdStat.value}</div>
-                  <div className="mt-1 text-[0.7rem] leading-tight text-ink-faint">{heroThirdStat.label}</div>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3.5 p-5">
-                {[
-                  { icon: ShieldCheck, text: "Every listing checked before it goes live" },
-                  { icon: Wallet, text: "Funds held in escrow until assets transfer" },
-                  { icon: Layers, text: `${CATEGORIES.length} kinds of digital businesses to browse` },
-                ].map(({ icon: Icon, text }) => (
-                  <div key={text} className="flex items-center gap-3">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
-                      <Icon size={15} />
-                    </span>
-                    <p className="text-sm text-ink-soft">{text}</p>
+            {/* Featured opportunity — loaded live from the same fetch as
+                the rest of the page; the two small badges below are real
+                data too (a computed revenue trend, and this marketplace's
+                actual review/verification process) rather than decorative
+                marketing numbers. */}
+            <div className="relative">
+              <div
+                className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-brand/10 blur-3xl sm:h-72 sm:w-72"
+                aria-hidden
+              />
+              <svg
+                className="pointer-events-none absolute -right-6 -top-6 hidden h-40 w-40 text-brand/20 sm:block"
+                viewBox="0 0 100 100"
+                fill="none"
+                aria-hidden
+              >
+                <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" />
+              </svg>
+
+              {spotlight ? (
+                <div className="relative lg:pr-5 lg:pt-4">
+                  <div className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.3)] sm:p-6 lg:mr-8">
+                    <span className="eyebrow mb-4">Featured opportunity</span>
+                    <div className="flex items-start gap-3">
+                      <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand text-base font-bold text-white">
+                        {spotlight.title.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="truncate text-base font-semibold text-ink">{spotlight.title}</h3>
+                        <p className="mono text-xs uppercase tracking-wide text-ink-faint">
+                          {CATEGORY_MAP[spotlight.categoryId]?.name ?? spotlight.categoryId}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-soft">
+                      {spotlight.overview || "Not disclosed"}
+                    </p>
+
+                    <div className="mono mt-4 grid grid-cols-3 gap-3 border-t border-rule pt-4 text-sm">
+                      <div>
+                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Revenue/mo</span>
+                        {fmtUSD(spotlightRevenue)}
+                      </div>
+                      <div>
+                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Profit/mo</span>
+                        {fmtUSD(spotlightProfit)}
+                      </div>
+                      <div>
+                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Age</span>
+                        {spotlight.businessAgeYears ? `${spotlight.businessAgeYears} yrs` : "New"}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between border-t border-rule pt-4">
+                      <span className="mono text-lg font-bold text-ink">
+                        {fmtUSD(spotlight.discountedPrice ?? spotlight.price)}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <WishlistButton listingId={spotlight.id} />
+                        <Link
+                          href={`/listing/${spotlight.id}`}
+                          className="rounded-lg bg-brand-strong px-3.5 py-2 text-xs font-semibold text-white hover:bg-navy-secondary"
+                        >
+                          View Listing
+                        </Link>
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Revenue trend — computed from the spotlight listing's
+                      own monthly stats; simply not rendered when there
+                      isn't enough real history to compute it. */}
+                  {spotlightTrendPercent !== null && (
+                    <div className="mt-4 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:absolute lg:-right-2 lg:-top-2 lg:mt-0">
+                      <div>
+                        <p className="mono text-lg font-bold text-brand">
+                          {spotlightTrendPercent > 0 ? "+" : ""}
+                          {spotlightTrendPercent}%
+                        </p>
+                        <p className="text-[0.65rem] text-ink-faint">Revenue trend (history)</p>
+                      </div>
+                      <div className="flex h-8 items-end gap-0.5" aria-hidden>
+                        {sparkPoints.map((v, i) => (
+                          <span
+                            key={i}
+                            className="w-1 rounded-sm bg-brand"
+                            style={{ height: `${Math.max(15, (v / sparkMax) * 100)}%` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Our review process — describes Durqo's actual policy
+                      (see "Confidence is built into every step" below),
+                      not a claim that this specific listing has completed
+                      every check, per the no-fake-verification brief. */}
+                  <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:mr-8">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                      <ShieldCheck size={14} className="text-brand" />
+                      Our review process:
+                    </span>
+                    {["Listing review", "Performance data", "Seller verification"].map((t) => (
+                      <span key={t} className="flex items-center gap-1.5 text-[0.72rem] text-ink-soft">
+                        <CheckCircle2 size={12} className="shrink-0 text-brand" />
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="relative rounded-2xl border border-dashed border-rule-strong bg-paper-raised p-10 text-center text-sm text-ink-faint">
+                  New listings are on their way — check back soon.
+                </div>
+              )}
             </div>
           </div>
         </Container>
       </section>
 
-      {/* FEATURED LISTING (spotlight) */}
-      {spotlight && (
-        <section className="border-b border-rule py-16 sm:py-20">
-          <Container>
-            <SectionHeader eyebrow="Featured listing" title={spotlight.title} className="mb-8" />
-            <div data-reveal className="grid gap-8 rounded-xl border border-rule bg-paper-raised p-6 shadow-[0_24px_48px_-30px_rgba(11,19,36,0.2)] lg:grid-cols-[1fr_1fr] lg:p-8">
-              <div>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-ink-faint">
-                  <span className="mono uppercase tracking-wide">
-                    {CATEGORY_MAP[spotlight.categoryId]?.name ?? spotlight.categoryId}
-                  </span>
-                  {spotlight.businessAgeYears ? <span>· {spotlight.businessAgeYears} yrs old</span> : null}
-                  {spotlight.isVerified && (
-                    <Badge tone="brand" icon={BadgeCheck}>
-                      Verified
-                    </Badge>
-                  )}
+      {/* STATS BAR */}
+      <section className="bg-brand-strong py-8 sm:py-10">
+        <Container>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
+            {statsBar.map(({ icon: Icon, value, label }) => (
+              <div key={label} className="flex items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
+                  <Icon size={19} />
+                </span>
+                <div className="min-w-0">
+                  <div className="mono truncate text-xl font-bold text-white sm:text-2xl">{value}</div>
+                  <div className="text-xs leading-snug text-white/60">{label}</div>
                 </div>
-                <p className="mt-3 max-w-[56ch] text-sm leading-relaxed text-ink-soft">{spotlight.overview || "Not disclosed"}</p>
-
-                <div className="mono mt-6 grid grid-cols-3 gap-4 border-t border-rule pt-5 text-sm">
-                  <div>
-                    <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Revenue/mo</span>
-                    {fmtUSD(spotlightRevenue)}
-                  </div>
-                  <div>
-                    <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Profit/mo</span>
-                    {fmtUSD(spotlightProfit)}
-                  </div>
-                  <div>
-                    <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Price</span>
-                    {fmtUSD(spotlight.discountedPrice ?? spotlight.price)}
-                  </div>
-                </div>
-
-                <Button href={`/listing/${spotlight.id}`} className="mt-6">
-                  View listing
-                  <ArrowRight size={15} />
-                </Button>
               </div>
-
-              <div className="rounded-lg border border-rule bg-paper-sunk p-4">
-                <p className="mono mb-2 text-[0.65rem] uppercase tracking-wide text-ink-faint">Revenue, last 12 months</p>
-                {spotlightChart.length > 0 ? (
-                  <TrendChart data={spotlightChart} dataKey="income" color="#10B981" format="usd" />
-                ) : (
-                  <p className="py-12 text-center text-sm text-ink-faint">Not disclosed</p>
-                )}
-              </div>
-            </div>
-          </Container>
-        </section>
-      )}
+            ))}
+          </div>
+        </Container>
+      </section>
 
       {/* CATEGORIES */}
       <section className="border-b border-rule py-16 sm:py-20">
         <Container>
-          <SectionHeader
-            eyebrow="Categories"
-            title={`${CATEGORIES.length} kinds of digital assets, one marketplace`}
-            subtitle="Every category ships with its own quick-stats and, where relevant, independently checked financials and traffic."
-            className="mb-10"
-          />
-          {/* Sep 6 2026 fix: this heading used to say "Fourteen" — a number
-              typed by hand when the category list had 14 entries. It's grown
-              to 16 since (Startup Business, AI Apps & Tools, Android & iOS
-              Apps) without the heading being updated, so it now reads
-              CATEGORIES.length directly and can't go stale again. Cards are
-              also sorted by real listing count (categoriesByActivity, above)
-              so the categories with actual inventory lead the grid instead
-              of whatever order they happen to be declared in. */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {categoriesByActivity.map((c) => {
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <DashEyebrow>Explore</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Find your kind of opportunity</h2>
+            </div>
+            <Link href="/buy" className="flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-hover">
+              View all categories
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {topCategories.map((c, i) => {
               const Icon = CATEGORY_ICONS[c.id];
               const count = categoryCounts.get(c.id) ?? 0;
               return (
@@ -268,20 +348,17 @@ export default async function Home() {
                   key={c.id}
                   href={`/buy?category=${c.id}`}
                   data-reveal
-                  className="group flex flex-col gap-3 rounded-xl border border-rule bg-paper-raised p-5 transition hover:-translate-y-0.5 hover:border-brand hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)]"
+                  className={`group flex flex-col items-center gap-2.5 rounded-xl border p-5 text-center transition hover:-translate-y-0.5 hover:border-brand hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] ${
+                    i === 0 ? "border-brand bg-brand-soft/40" : "border-rule bg-paper-raised"
+                  }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <span className="grid h-10 w-10 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand group-hover:text-white">
-                      <Icon size={18} />
-                    </span>
-                    <span className={`mono text-xs ${count > 0 ? "text-brand-hover" : "text-ink-faint"}`}>
-                      {count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "Coming soon"}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="block text-sm font-semibold text-ink">{c.name}</span>
-                    <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">{c.description}</span>
-                  </div>
+                  <span className="grid h-11 w-11 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand group-hover:text-white">
+                    <Icon size={19} />
+                  </span>
+                  <span className="text-sm font-semibold text-ink">{c.name}</span>
+                  <span className={`mono text-xs ${count > 0 ? "text-brand-hover" : "text-ink-faint"}`}>
+                    {count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "Coming soon"}
+                  </span>
                 </Link>
               );
             })}
@@ -289,11 +366,17 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* LATEST LISTINGS */}
+      {/* BUSINESSES GAINING ATTENTION */}
       <section className="border-b border-rule py-16 sm:py-20">
         <Container>
           <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
-            <SectionHeader eyebrow="Latest listings" title="On the market this week" />
+            <div>
+              <DashEyebrow>Featured listings</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Businesses gaining attention</h2>
+              <p className="mt-2 max-w-[60ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                A selection of opportunities currently drawing buyer interest.
+              </p>
+            </div>
             <Button href="/buy" variant="secondary">
               View all listings
               <ArrowRight size={15} />
@@ -315,69 +398,140 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* HOW IT WORKS — the one deliberately dark, full-bleed section, used
-          once as a contrast beat rather than as a recurring pattern. */}
-      <section id="how-it-works" className="bg-brand-strong py-16 sm:py-20">
+      {/* FOR BUYERS / FOR SELLERS */}
+      <section className="py-16 sm:py-20">
         <Container>
-          <SectionHeader
-            eyebrow="How it works"
-            title="From browsing to close, in three steps"
-            onDark
-            className="mb-10"
-          />
-          <div className="grid gap-5 sm:grid-cols-3">
-            {STEPS.map(({ icon: Icon, title, body }, i) => (
-              <div key={title} data-reveal className="rounded-xl border border-white/10 bg-white/[0.04] p-6 transition hover:border-white/20 hover:bg-white/[0.06]">
-                <span className="mono mb-4 flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-xs font-semibold text-white">
-                  0{i + 1}
-                </span>
-                <span className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-white/10 text-brand">
-                  <Icon size={17} />
-                </span>
-                <h4 className="text-base font-semibold text-white">{title}</h4>
-                <p className="mt-1.5 text-sm leading-relaxed text-white/60">{body}</p>
-              </div>
-            ))}
-          </div>
-        </Container>
-      </section>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="relative overflow-hidden rounded-2xl bg-brand-strong p-8 sm:p-10">
+              <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-brand/10 blur-3xl" aria-hidden />
+              <div className="relative">
+                <DashEyebrow onDark>For buyers</DashEyebrow>
+                <h3 className="text-3xl text-white">Acquire with a clearer picture.</h3>
+                <p className="mt-3 max-w-[42ch] text-white/70">
+                  Make smarter decisions with vetted listings, transparent data and direct seller communication.
+                </p>
+                <Button href="/buy" size="lg" className="mt-6">
+                  Browse opportunities
+                  <ArrowRight size={16} />
+                </Button>
+                <div className="mt-8 flex flex-col gap-2.5">
+                  {["Vetted listings", "Performance data", "Direct seller communication"].map((t) => (
+                    <span key={t} className="flex items-center gap-2 text-sm text-white/80">
+                      <CheckCircle2 size={15} className="text-brand" />
+                      {t}
+                    </span>
+                  ))}
+                </div>
 
-      {/* WHY DURQO */}
-      <section className="border-b border-rule py-16 sm:py-20">
-        <Container>
-          <SectionHeader eyebrow="Why Durqo" title="Built for people who read the fine print" className="mb-10" />
-          <div className="grid gap-6 sm:grid-cols-2">
-            {WHY.map(({ icon: Icon, title, body }) => (
-              <div key={title} data-reveal className="flex gap-4 rounded-xl border border-rule bg-paper-raised p-5 transition hover:-translate-y-0.5 hover:shadow-[0_16px_32px_-24px_rgba(15,23,41,0.25)]">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
-                  <Icon size={18} />
-                </span>
-                <div>
-                  <h4 className="text-sm font-semibold text-ink">{title}</h4>
-                  <p className="mt-1 text-sm leading-relaxed text-ink-soft">{body}</p>
+                <div className="mt-8 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-[0.7rem] uppercase tracking-wide text-white/50">Better data. Smarter acquisitions.</p>
+                  <svg viewBox="0 0 200 56" className="mt-3 h-12 w-full text-brand" fill="none" aria-hidden>
+                    <polyline
+                      points="0,44 28,38 56,40 84,26 112,30 140,14 168,18 200,4"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </div>
               </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl bg-brand-soft p-8 sm:p-10">
+              <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-brand/15 blur-3xl" aria-hidden />
+              <div className="pointer-events-none absolute -left-8 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-brand/10 blur-2xl" aria-hidden />
+              <div className="relative">
+                <DashEyebrow>For sellers</DashEyebrow>
+                <h3 className="text-3xl text-ink">Turn your business into an opportunity.</h3>
+                <p className="mt-3 max-w-[42ch] text-ink-soft">
+                  Reach qualified buyers and get a fair valuation for your digital business.
+                </p>
+                <Button href="/sell" size="lg" className="mt-6">
+                  Get a free valuation
+                  <ArrowRight size={16} />
+                </Button>
+                <p className="mt-8 flex items-center gap-2 text-sm text-ink-soft">
+                  <CheckCircle2 size={15} className="text-brand" />
+                  Professional support from listing to close.
+                </p>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="border-b border-rule py-16 sm:py-20">
+        <Container>
+          <div className="mb-14 text-center">
+            <DashEyebrow center>How it works</DashEyebrow>
+            <h2 className="text-2xl sm:text-3xl">A clearer path from discovery to transfer</h2>
+          </div>
+          <div className="relative grid gap-10 sm:grid-cols-3">
+            <div className="pointer-events-none absolute left-[8%] right-[8%] top-6 hidden h-px bg-rule sm:block" aria-hidden />
+            {STEPS.map(({ title, body }, i) => (
+              <div key={title} data-reveal className="relative flex flex-col items-start">
+                <span className="mono relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong ring-8 ring-paper">
+                  0{i + 1}
+                </span>
+                <h4 className="text-base font-semibold text-ink">{title}</h4>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
+              </div>
             ))}
           </div>
         </Container>
       </section>
 
-      {/* CTA */}
+      {/* CONFIDENCE / TRUST */}
       <section className="bg-brand-strong py-16 sm:py-20">
         <Container>
-          <div className="flex flex-wrap items-center justify-between gap-8">
+          <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
             <div>
-              <h2 className="max-w-[26ch] text-3xl text-white">Ready to make your first deal?</h2>
-              <p className="mt-2 max-w-[46ch] text-white/70">
-                Browse verified listings, or get a free valuation on the business you&rsquo;re ready to sell.
+              <DashEyebrow onDark>Our commitment</DashEyebrow>
+              <h2 className="text-2xl text-white sm:text-3xl">Confidence is built into every step.</h2>
+              <p className="mt-3 max-w-[46ch] text-[0.95rem] leading-relaxed text-white/65">
+                A trusted marketplace with the checks and balances serious buyers and sellers expect.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button href="/buy" variant="on-dark" size="lg" className="!border-white !bg-white !text-brand-strong hover:!bg-white/90">
-                Browse listings
+            <div className="flex flex-col gap-6">
+              {CONFIDENCE.map(({ icon: Icon, title, body }, i) => (
+                <div
+                  key={title}
+                  data-reveal
+                  className={`flex gap-4 ${i < CONFIDENCE.length - 1 ? "border-b border-white/10 pb-6" : ""}`}
+                >
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
+                    <Icon size={18} />
+                  </span>
+                  <div>
+                    <h4 className="text-sm font-semibold text-white">{title}</h4>
+                    <p className="mt-1 text-sm leading-relaxed text-white/65">{body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="relative overflow-hidden py-16 sm:py-24">
+        <div className="pointer-events-none absolute -bottom-20 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-brand/5 blur-3xl" aria-hidden />
+        <Container className="relative">
+          <div className="mx-auto max-w-[620px] text-center">
+            <span className="eyebrow mx-auto">Digital businesses. Real opportunities.</span>
+            <h2 className="mt-4 text-3xl sm:text-4xl">Ready to find your next opportunity?</h2>
+            <p className="mt-3 text-ink-soft">
+              Browse verified listings, or get a free valuation on the business you&rsquo;re ready to sell.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Button href="/buy" size="lg">
+                Explore businesses
+                <ArrowRight size={16} />
               </Button>
-              <Button href="/sell" variant="on-dark" size="lg">
-                Get a valuation
+              <Button href="/sell" variant="secondary" size="lg">
+                Get a free valuation
               </Button>
             </div>
           </div>
