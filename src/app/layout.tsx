@@ -19,10 +19,19 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ScrollRevealInit from "@/components/ScrollReveal";
 
+// Sep 6, 2026: title/description/OG copy rewritten to drop unsupported
+// claims ("verified marketplace", implied escrow/expert-vetting) and use
+// "reviewed" for the real, described listing-review process rather than
+// "verified" (reserved for actual completed seller identity checks) —
+// consistent with the homepage's own accuracy pass the same day.
 export const metadata: Metadata = {
-  title: "Durqo — Buy and sell online businesses",
+  title: "Durqo — Buy and Sell Digital Businesses",
   description:
-    "Durqo is the verified marketplace for buying and selling websites, SaaS, domains, YouTube channels, social accounts and newsletters.",
+    "Discover reviewed websites, SaaS products, apps, e-commerce brands and other digital businesses for sale, or list your business on Durqo.",
+  openGraph: {
+    title: "Buy What's Already Working | Durqo",
+    description: "Explore reviewed digital businesses with clear performance data, or list your own business for sale.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

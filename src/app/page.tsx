@@ -81,7 +81,7 @@ function excerpt(text: string, maxChars = 108): string {
 const REVIEW_ITEMS = ["Listing reviewed", "Performance checked", "Seller verification available"];
 
 const STEPS = [
-  { icon: Search, title: "Explore or list", body: "Browse vetted listings by category, or submit your own business to be listed." },
+  { icon: Search, title: "Explore or list", body: "Browse reviewed listings by category, or submit your own business for review." },
   { icon: LineChart, title: "Review and connect", body: "Evaluate performance data, ask questions and connect directly with the seller." },
   { icon: CheckCircle2, title: "Complete the transfer", body: "Agree on terms, move assets through our secure process, and take ownership with confidence." },
 ];
@@ -203,7 +203,7 @@ export default async function Home() {
               </h1>
 
               <p className="mt-5 max-w-[50ch] text-lg leading-relaxed text-ink-soft">
-                Discover vetted websites, SaaS products, apps and digital brands with the performance data you need
+                Discover reviewed websites, SaaS products, apps and digital brands with the performance data you need
                 to move confidently.
               </p>
 
@@ -315,9 +315,10 @@ export default async function Home() {
                             <p className="text-[0.6rem] text-ink-faint">{spotlightPeriodLabel}</p>
                           </>
                         ) : (
-                          <p className="max-w-[6.5rem] text-[0.72rem] font-semibold leading-snug text-ink-soft">
-                            12-month revenue trend
-                          </p>
+                          <>
+                            <p className="text-[0.78rem] font-semibold leading-snug text-ink-soft">Revenue history</p>
+                            <p className="text-[0.65rem] text-ink-faint">{spotlightPeriodLabel}</p>
+                          </>
                         )}
                       </div>
                       {sparkPoints.length > 0 && (
@@ -347,17 +348,17 @@ export default async function Home() {
                       <ShieldCheck size={14} className="shrink-0 text-brand" />
                       Our review process
                     </p>
-                    <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 lg:mt-1.5 lg:flex lg:flex-nowrap lg:items-center lg:gap-0">
+                    <div className="mt-2.5 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:mt-2 lg:flex lg:flex-nowrap lg:items-center lg:gap-0">
                       {REVIEW_ITEMS.map((t, i) => (
                         <span
                           key={t}
-                          className={`flex items-center gap-1.5 whitespace-nowrap text-[0.72rem] text-ink-soft ${
-                            i === 2 ? "col-span-2" : ""
+                          className={`flex items-center gap-1.5 whitespace-nowrap text-[0.8rem] font-medium text-ink ${
+                            i === 2 ? "sm:col-span-2 lg:col-span-1" : ""
                           }`}
                         >
-                          <CheckCircle2 size={11} className="shrink-0 text-brand lg:hidden" aria-hidden />
+                          <CheckCircle2 size={12} className="shrink-0 text-brand lg:hidden" aria-hidden />
                           {i > 0 && (
-                            <span className="hidden text-ink-faint lg:mr-2 lg:inline" aria-hidden>
+                            <span className="hidden text-ink-soft lg:mx-2.5 lg:inline" aria-hidden>
                               ·
                             </span>
                           )}
@@ -542,7 +543,7 @@ export default async function Home() {
                   {[
                     "Free valuation",
                     "No upfront listing fee",
-                    "Success fee only when sold — starting at 10%",
+                    "Success fee starting at 10% — only when sold",
                     "Professional support from listing to close",
                   ].map((t) => (
                     <span key={t} className="flex items-center gap-2 text-sm text-ink-soft">
@@ -604,7 +605,7 @@ export default async function Home() {
                     process (see CONFIDENCE below for the fuller writeups),
                     never a guarantee that every listing/seller has already
                     completed every check. */}
-                <div className="relative mt-6 flex h-[240px] flex-col items-center justify-between overflow-hidden rounded-xl border border-[rgba(148,163,184,0.25)] bg-white/[0.04] px-6 py-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-24px_40px_-28px_rgba(0,0,0,0.35)] lg:h-[310px] lg:py-8">
+                <div className="relative mt-6 flex h-[240px] flex-col items-center justify-between gap-3 overflow-hidden rounded-xl border border-[rgba(148,163,184,0.25)] bg-white/[0.04] px-6 py-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-24px_40px_-28px_rgba(0,0,0,0.35)] lg:h-[310px] lg:py-8">
                   <svg
                     className="pointer-events-none absolute -bottom-10 -left-12 h-40 w-60 text-brand/10"
                     viewBox="0 0 220 160"
@@ -616,21 +617,21 @@ export default async function Home() {
                     <path d="M-10 108 Q 30 78 80 113 T 230 98" stroke="currentColor" strokeWidth="1.5" />
                   </svg>
 
-                  <p className="mono relative text-[0.68rem] font-semibold uppercase tracking-wider text-white/45">
+                  <p className="mono relative text-[0.68rem] font-semibold uppercase tracking-wider text-white/60">
                     The Durqo review standard
                   </p>
 
-                  <div className="relative flex h-20 w-20 items-center justify-center lg:h-24 lg:w-24">
-                    <span className="absolute inset-0 rounded-full border border-brand/20" aria-hidden />
-                    <span className="absolute inset-2 rounded-full border border-brand/15" aria-hidden />
-                    <span className="absolute inset-4 rounded-full border border-brand/10" aria-hidden />
-                    <ShieldCheck size={36} className="relative text-brand" />
+                  <div className="relative flex h-24 w-24 shrink-0 items-center justify-center lg:h-28 lg:w-28">
+                    <span className="absolute inset-0 rounded-full border border-brand/30" aria-hidden />
+                    <span className="absolute inset-2 rounded-full border border-brand/22" aria-hidden />
+                    <span className="absolute inset-4 rounded-full border border-brand/16" aria-hidden />
+                    <ShieldCheck size={44} className="relative text-brand" />
                   </div>
 
-                  <div className="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5">
+                  <div className="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
                     {REVIEW_STANDARD_ITEMS.map((t) => (
-                      <span key={t} className="flex items-center gap-1.5 text-[0.72rem] font-medium text-white/75">
-                        <CheckCircle2 size={12} className="shrink-0 text-brand" />
+                      <span key={t} className="flex items-center gap-1.5 text-sm font-medium text-white/80">
+                        <CheckCircle2 size={13} className="shrink-0 text-brand" />
                         {t}
                       </span>
                     ))}
