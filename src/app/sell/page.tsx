@@ -17,6 +17,7 @@ import {
 import { CATEGORIES } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { getPublishedListings } from "@/lib/data/listings.server";
+import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import SellFaq from "./SellFaq";
@@ -102,17 +103,11 @@ const PROCESS_STEPS = [
   { n: "04", title: "Complete the transfer", body: "Agree on the terms and complete the business transfer." },
 ];
 
-// Boundaries match this project's real, published tiered policy (see /terms
-// Section 05 for the legal fee table, which currently differs from this —
-// flagged separately, not changed here) and this page's own FAQ answer:
-// under $50,000 → 10%, $50,000 through $250,000 inclusive → 7%,
-// above $250,000 → 5%. Whole-sale-price percentage, never a marginal/
-// progressive calculation.
-const PRICING_TIERS = [
-  { label: "Under $50,000", percent: "10%" },
-  { label: "$50,000–$250,000", percent: "7%" },
-  { label: "Over $250,000", percent: "5%" },
-];
+// Sep 6, 2026: sourced from the single shared src/lib/fees.ts module rather
+// than a separate hardcoded array — this is the same schedule /terms's fee
+// table and worked example now use, closing out the conflict two earlier
+// audits flagged (see fees.ts's own comment for the history).
+const PRICING_TIERS = SUCCESS_FEE_TIERS.map((t) => ({ label: t.label, percent: fmtRate(t.rate) }));
 
 const PRICING_FOOTNOTES = [
   { icon: Tag, label: "$0 upfront listing fee" },
