@@ -31,5 +31,18 @@ export async function submitContactForm({ name, email, subject, message }: Conta
      <p>${cleanMessage.replace(/\n/g, "<br/>")}</p>`
   );
 
+  // Confirmation copy back to whoever filled out the form, so they have a
+  // record their message actually sent — separate from the admin notification
+  // above, sent to the email address they themselves typed into the form.
+  await sendEmail(
+    cleanEmail,
+    "We've received your message — Durqo",
+    `<p>Hi ${cleanName},</p>
+     <p>Thanks for reaching out to Durqo. We've received your message and will reply within one business day.</p>
+     <p><strong>Subject:</strong> ${cleanSubject}</p>
+     <p><strong>Your message:</strong><br/>${cleanMessage.replace(/\n/g, "<br/>")}</p>
+     <p>— Durqo</p>`
+  );
+
   return { ok: true };
 }
