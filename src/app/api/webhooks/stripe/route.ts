@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import type Stripe from "stripe";
 import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
+import { getUserEmails } from "@/lib/notifications";
 
 // Stripe calls this directly (not a browser) whenever a Checkout Session's
 // state changes — this is the actual source of truth for "did the buyer
@@ -81,6 +83,61 @@ export async function POST(request: Request) {
           for (const id of listingIds) revalidatePath(`/listing/${id}`);
           revalidatePath("/");
           revalidatePath("/buy");
+
+          // Best-effort purchase notifications — admin, buyer, and every
+          // seller involved. Never blocks or fails the webhook: Stripe
+          // retries a non-2xx response, and the order/listing state above is
+          // already committed by this point, so a notification failure here
+          // must not turn into a spurious retry. sendEmail already swallows
+          // its own send errors; the try/catch below only guards against a
+          // Supabase lookup itself throwing.
+          try {
+            const { data: purchasedListings } = await admin
+              .from("listings")
+              .select("id, title, price, seller_id")
+              .in("id", listingIds);
+
+            const sellerIds = Array.from(new Set((purchasedListings ?? []).map((l) => l.seller_id as string)));
+            const lookupIds = buyerId ? [buyerId, ...sellerIds] : sellerIds;
+            const emails = lookupIds.length ? await getUserEmails(admin, lookupIds) : {};
+            const buyerEmail = buyerId ? emails[buyerId] : undefined;
+
+            const itemsHtml = (purchasedListings ?? [])
+              .map((l) => `<li>${l.title} — $${Number(l.price).toLocaleString()}</li>`)
+              .join("");
+            const total = (purchasedListings ?? []).reduce((sum, l) => sum + Number(l.price || 0), 0);
+
+            await sendEmail(
+              ADMIN_EMAIL,
+              `New purchase completed — ${purchasedListings?.length ?? 0} listing(s)`,
+              `<p>${buyerEmail ?? "A buyer"} completed checkout for:</p>
+               <ul>${itemsHtml}</ul>
+               <p>Total: $${total.toLocaleString()}</p>`
+            );
+
+            if (buyerEmail) {
+              await sendEmail(
+                buyerEmail,
+                "Your Durqo purchase is confirmed",
+                `<p>Thanks for your purchase — here's what you bought:</p>
+                 <ul>${itemsHtml}</ul>
+                 <p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>`
+              );
+            }
+
+            for (const listing of purchasedListings ?? []) {
+              const sellerEmail = emails[listing.seller_id as string];
+              if (!sellerEmail) continue;
+              await sendEmail(
+                sellerEmail,
+                `Your listing "${listing.title}" has sold`,
+                `<p>Good news — "${listing.title}" sold for $${Number(listing.price).toLocaleString()}.</p>
+                 <p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
+              );
+            }
+          } catch (err) {
+            console.error("[webhook] purchase notification emails failed:", err);
+          }
         }
       }
     }
