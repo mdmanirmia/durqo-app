@@ -7,7 +7,11 @@ import Container from "@/components/ui/Container";
 
 const FAQS = [
   { question: "How does Durqo verify a listing?", answer: "We request read-only access to analytics, payment processor exports and hosting records, and cross-check the numbers before a listing is marked Verified." },
-  { question: "What happens to my money during a sale?", answer: "Funds are held by our third-party escrow partner and only released to the seller once asset transfer is confirmed by both parties." },
+  // Sep 6, 2026: corrected — Durqo has no third-party escrow integration
+  // (Stripe Checkout pays straight into Durqo's own balance; seller payout
+  // is a manual admin step). See src/lib/fees.ts and the /terms rebuild for
+  // the full accuracy pass this FAQ answer was caught by.
+  { question: "What happens to my money during a sale?", answer: "Your payment is processed through Durqo's payment provider, Stripe. Durqo holds the funds until the seller has transferred the agreed assets and you've confirmed receipt, then pays the seller their share." },
   // Sep 6, 2026: aligned with the /sell page's tiered pricing (10% under
   // $50k, 7% $50k–$250k, 5% over $250k) instead of the old vague "5-10%"
   // range, which didn't name the middle tier or the boundaries.
