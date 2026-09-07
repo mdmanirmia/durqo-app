@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { getCartListings, removeFromCart } from "@/lib/data/cart.client";
 import { CATEGORY_MAP } from "@/lib/categories";
@@ -10,6 +11,7 @@ import type { Listing } from "@/lib/types";
 import Container from "@/components/ui/Container";
 
 export default function CartPage() {
+  const router = useRouter();
   const [items, setItems] = useState<Listing[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +44,13 @@ export default function CartPage() {
     setError(null);
     try {
       const res = await fetch("/api/checkout", { method: "POST" });
+      // Matches BuyNowButton's handling — a signed-out visitor whose stale
+      // cart/session somehow got them this far is sent to /login instead of
+      // just being shown "you need to be logged in" as inline error text.
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
       const data = await res.json();
       if (!res.ok || !data.url) {
         setError(data.error ?? "Something went wrong. Please try again.");
