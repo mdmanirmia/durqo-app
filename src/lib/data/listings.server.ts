@@ -285,6 +285,34 @@ export async function getMarketplaceListings(filters: MarketplaceFilters): Promi
   }
 }
 
+// Platform-wide count of profiles that have completed identity verification
+// (profiles.is_verified) — used by the homepage stats bar's "Verified
+// sellers" tile (Sep 7 2026). Deliberately NOT scoped to whether that seller
+// currently has any active listings: a seller who has been through
+// verification should show up in this count immediately, even before their
+// first listing goes live, rather than only appearing once they also happen
+// to have live inventory (see src/app/page.tsx's own comment at the call
+// site for the full story of why this changed from the earlier
+// listings-scoped count).
+export async function getVerifiedSellerCount(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return 0;
+    const { count, error } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("is_verified", true);
+    if (error) {
+      console.warn("[listings] getVerifiedSellerCount failed:", error.message);
+      return 0;
+    }
+    return count ?? 0;
+  } catch (err) {
+    console.warn("[listings] getVerifiedSellerCount unexpected error:", err);
+    return 0;
+  }
+}
+
 export async function getListingById(id: string): Promise<Listing | undefined> {
   try {
     const supabase = await createClient();
