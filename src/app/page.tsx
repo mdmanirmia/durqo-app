@@ -206,10 +206,18 @@ export default async function Home() {
   // honestly instead of claiming a span that isn't really there.
   const spotlightPeriodLabel = spotlightSeries.length >= 10 ? "Last 12 months" : "Recorded history";
 
+  // Sep 6 2026: "Business types" used to be CATEGORIES.length (every category
+  // the app supports in code, currently 16) regardless of whether any of
+  // them actually had real listings — which read as inflated/misleading on
+  // a catalog where only Websites and E-commerce have real inventory so far.
+  // Switched to activeCategoryCount (computed above, same real per-category
+  // tallies the "Find your kind of opportunity" row already uses), so this
+  // number honestly reflects how many categories a visitor can actually buy
+  // from right now, and grows on its own as more categories get listings.
   const statsBar = [
     { icon: Package, value: String(activeListings.length), label: "Active listings" },
     { icon: Coins, value: fmtCompactUSD(totalListedValue), label: "Listed value" },
-    { icon: LayoutGrid, value: String(CATEGORIES.length), label: "Business types" },
+    { icon: LayoutGrid, value: String(activeCategoryCount), label: "Business types" },
     { icon: ShieldCheck, value: verifiedStat.value, label: verifiedStat.label },
   ];
 
