@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
-import { getPublishedListings } from "@/lib/data/listings.server";
+import { getPublishedListings, getVerifiedSellerCount } from "@/lib/data/listings.server";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import ListingCard from "@/components/ListingCard";
 import WishlistButton from "@/components/WishlistButton";
@@ -114,7 +114,7 @@ const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Dat
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const listings = await getPublishedListings();
+  const [listings, verifiedSellerCount] = await Promise.all([getPublishedListings(), getVerifiedSellerCount()]);
   // "Businesses gaining attention" — the 3 most recently published, in the
   // order getPublishedListings() already returns (newest first).
   const featured = listings.slice(0, 3);
@@ -139,14 +139,6 @@ export default async function Home() {
   for (const l of activeListings) {
     categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
   }
-  // Distinct sellers, among those with a currently active listing, who have
-  // real identity verification (profiles.is_verified, surfaced as
-  // SellerInfo.isVerified via mapSeller) — deliberately NOT
-  // `listing.isVerified`, which (Sep 2026 /buy fix) now means "this listing
-  // is published," true for nearly every listing here and so would inflate
-  // this into a near-duplicate of "Active listings" instead of the distinct,
-  // opt-in seller-identity signal this stat is meant to show.
-  const verifiedCount = new Set(activeListings.filter((l) => l.seller.isVerified).map((l) => l.seller.id)).size;
   const totalListedValue = activeListings.reduce((sum, l) => sum + (l.discountedPrice ?? l.price), 0);
 
   // Categories sorted by how much real inventory they carry — both the
@@ -162,9 +154,21 @@ export default async function Home() {
   // seller profiles" trust stat (verification is still opt-in sitewide, so
   // that count is genuinely 0 today for most catalogs) — swaps to the real
   // verified count automatically once sellers start verifying.
+  //
+  // Sep 7 2026: `verifiedSellerCount` (fetched above via
+  // `getVerifiedSellerCount()`) is a platform-wide count of every profile
+  // with `is_verified = true`, not scoped to whether that seller currently
+  // has any active listings. A user reported seeing "2 verified sellers" on
+  // the platform when this stat showed "1" — the DB genuinely has 2 verified
+  // profiles, but the old logic only counted a verified seller if they also
+  // had at least one non-sold listing, and one of the two (a verified seller
+  // with zero listings so far) was invisible under that rule. Confirmed with
+  // the user directly: this stat should count every verified seller
+  // platform-wide, so verification shows up immediately rather than being
+  // gated on inventory.
   const verifiedStat =
-    verifiedCount > 0
-      ? { value: String(verifiedCount), label: verifiedCount === 1 ? "Verified seller" : "Verified sellers" }
+    verifiedSellerCount > 0
+      ? { value: String(verifiedSellerCount), label: verifiedSellerCount === 1 ? "Verified seller" : "Verified sellers" }
       : { value: String(activeCategoryCount), label: "Categories with live listings" };
 
   // Featured opportunity (hero spotlight): prefer the highest-priced listing
