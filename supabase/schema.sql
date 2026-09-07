@@ -285,11 +285,28 @@ create policy "monetization_types_select_all" on public.monetization_types for s
 -- ============================================================
 -- Auto-create a profile row when a new auth user signs up
 -- ============================================================
+-- Also copies `role` from the signup metadata (register/page.tsx passes
+-- `{ full_name, role }` to auth.signUp()'s `options.data`) so a seller
+-- signup is a seller in `profiles.role` from the moment the row is created
+-- — this must happen here, not in application code, because it has to be
+-- correct before the user ever has a session (email confirmation runs
+-- between signUp() and the first authenticated request). Only 'seller' is
+-- accepted from metadata; anything else (including a forged 'admin', since
+-- signUp's metadata is caller-supplied on a public, unauthenticated call)
+-- falls back to the 'buyer' default. Admin accounts are never created this
+-- way — see inviteUser() in dashboard/admin/actions.ts, which sets role via
+-- an authenticated admin-only update after the invite.
 create or replace function public.handle_new_user()
 returns trigger as $$
+declare
+  meta_role text := new.raw_user_meta_data->>'role';
 begin
-  insert into public.profiles (id, full_name)
-  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', new.email));
+  insert into public.profiles (id, full_name, role)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', new.email),
+    case when meta_role = 'seller' then 'seller' else 'buyer' end
+  );
   return new;
 end;
 $$ language plpgsql security definer;
