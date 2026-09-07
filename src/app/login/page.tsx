@@ -42,15 +42,21 @@ function LoginForm() {
     // Deactivated accounts (admin "Block" — profiles.is_active) are also
     // caught on every subsequent request by proxy.ts, but checking right
     // here avoids a confusing flash of the dashboard before being bounced
-    // back to /login.
+    // back to /login. Same query also reads role, so a seller (or admin)
+    // always lands on their own dashboard on login, not the buyer default —
+    // profiles.role is set correctly from signup metadata as of migration
+    // 023, so this is reliable for every account going forward.
     if (data.user) {
-      const { data: profile } = await supabase.from("profiles").select("is_active").eq("id", data.user.id).single();
+      const { data: profile } = await supabase.from("profiles").select("role, is_active").eq("id", data.user.id).single();
       if (profile && profile.is_active === false) {
         await supabase.auth.signOut();
         setLoading(false);
         setError(CALLBACK_ERRORS.account_deactivated);
         return;
       }
+      setLoading(false);
+      router.push(profile?.role === "seller" ? "/dashboard/seller" : profile?.role === "admin" ? "/dashboard/admin" : "/dashboard/buyer");
+      return;
     }
 
     setLoading(false);
