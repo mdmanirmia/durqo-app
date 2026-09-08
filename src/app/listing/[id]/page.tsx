@@ -133,9 +133,9 @@ function StatGrid({ items, colsDesktop = 4 }: { items: StatItem[]; colsDesktop?:
   return (
     <div className={`grid grid-cols-2 gap-3 ${desktopColsClass}`}>
       {visible.map((item) => (
-        <div key={item.label} className="rounded-xl border border-rule bg-paper-sunk p-4">
-          <div className="mono text-lg font-semibold text-ink sm:text-xl">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
-          <div className="mono mt-1 text-[0.65rem] uppercase tracking-wide text-ink-faint">{item.label}</div>
+        <div key={item.label} className="rounded-xl border border-brand/10 bg-brand-soft/25 p-4">
+          <div className="mono text-lg font-semibold text-brand-strong sm:text-xl">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
+          <div className="mono mt-1 text-[0.65rem] uppercase tracking-wide text-brand-hover/60">{item.label}</div>
         </div>
       ))}
     </div>
@@ -151,7 +151,7 @@ function LabelGrid({ labels, colsDesktop = 3 }: { labels: string[]; colsDesktop?
   return (
     <div className={`grid grid-cols-2 gap-3 ${desktopColsClass}`}>
       {labels.map((label) => (
-        <div key={label} className="rounded-xl border border-rule bg-paper-sunk px-4 py-3.5 text-sm font-medium text-ink">
+        <div key={label} className="rounded-xl border border-brand/10 bg-brand-soft/25 px-4 py-3.5 text-sm font-medium text-brand-strong">
           {label}
         </div>
       ))}
@@ -696,12 +696,12 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             {/* Sales Includes */}
             <SectionCard title="Sale Includes" icon={Package}>
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-xl border border-rule bg-paper-sunk p-4">
-                  <h5 className="mono mb-1.5 text-xs uppercase tracking-wide text-ink-faint">Assets</h5>
+                <div className="rounded-xl border border-brand/10 bg-brand-soft/25 p-4">
+                  <h5 className="mono mb-1.5 text-xs uppercase tracking-wide text-brand-hover/60">Assets</h5>
                   <p className="text-sm text-ink-soft">{listing.saleIncludesAssets}</p>
                 </div>
-                <div className="rounded-xl border border-rule bg-paper-sunk p-4">
-                  <h5 className="mono mb-1.5 text-xs uppercase tracking-wide text-ink-faint">Post-sale support</h5>
+                <div className="rounded-xl border border-brand/10 bg-brand-soft/25 p-4">
+                  <h5 className="mono mb-1.5 text-xs uppercase tracking-wide text-brand-hover/60">Post-sale support</h5>
                   <p className="text-sm text-ink-soft">{listing.saleIncludesSupport}</p>
                 </div>
               </div>
