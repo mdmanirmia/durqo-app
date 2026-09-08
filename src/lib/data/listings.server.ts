@@ -384,11 +384,18 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       try {
         const [{ count: activeListingsCount }, { data: sellerOrders }, { data: authUserData }] = await Promise.all([
           admin.from("listings").select("id", { count: "exact", head: true }).eq("seller_id", row.seller_id).eq("status", "published"),
-          // "Lifetime sales" counts orders that have actually collected
-          // payment from the buyer — in_escrow (funds held, Stripe webhook
-          // already fired) and completed (released to seller) — not
-          // requested/awaiting_payment/cancelled orders that never paid.
-          admin.from("orders").select("amount").eq("seller_id", row.seller_id).in("status", ["in_escrow", "completed"]),
+          // "Completed sales" / lifetime sales $ counts only orders whose
+          // payment has actually been released to the seller (status =
+          // "completed", i.e. the "Payment Released to Seller" label in the
+          // admin dashboard) — NOT "in_escrow" ("Payment Received from
+          // Buyer"), which just means Stripe collected the buyer's payment
+          // but the funds are still held in escrow, not yet a finished sale
+          // from the seller's point of view. Originally this also counted
+          // in_escrow orders, which inflated the count/total with sales that
+          // hadn't actually paid out yet (caught Sep 8, 2026 when a real
+          // seller's panel showed 5 "completed sales" while only 2 orders
+          // had actually reached "Payment Released to Seller").
+          admin.from("orders").select("amount").eq("seller_id", row.seller_id).eq("status", "completed"),
           admin.auth.admin.getUserById(row.seller_id),
         ]);
         sellerStats = {
