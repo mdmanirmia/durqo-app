@@ -94,8 +94,9 @@ function LoginForm() {
       setError("Enter your email above, then click resend.");
       return;
     }
-    setResending(true);
+    setError(null);
     setNotice(null);
+    setResending(true);
     const supabase = createClient();
     if (!supabase) {
       setResending(false);
@@ -126,17 +127,12 @@ function LoginForm() {
           <label className="text-sm font-semibold text-ink-soft" htmlFor="password">Password</label>
           <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={fieldCls} />
         </div>
-        {error && (
-          <p className="text-sm text-danger">
-            {error}
-            {showResend && (
-              <>
-                {" "}
-                <button type="button" onClick={handleResend} disabled={resending} className="font-semibold text-brand-hover disabled:opacity-60">
-                  {resending ? "Resending…" : "Resend the link"}
-                </button>
-              </>
-            )}
+        {error && <p className="text-sm text-danger">{error}</p>}
+        {showResend && (
+          <p className="text-sm text-ink-soft">
+            <button type="button" onClick={handleResend} disabled={resending} className="font-semibold text-brand-hover disabled:opacity-60">
+              {resending ? "Resending…" : "Resend the link"}
+            </button>
           </p>
         )}
         {notice && <p className="text-sm text-brand-hover">{notice}</p>}
