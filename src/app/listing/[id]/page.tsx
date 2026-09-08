@@ -722,16 +722,30 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               single-column stacking reads Payment Terms → price/action card →
               seller details → FAQ → Comments; lg:row-span-2 keeps it spanning
               both main-content rows on desktop so it still sticks through the
-              full page height, not just the "top" chunk's height. */}
-          <aside className="min-w-0 flex h-max flex-col gap-6 lg:sticky lg:top-24 lg:row-span-2">
+              full page height, not just the "top" chunk's height.
+
+              Sep 8 2026 fix ("scroll korar somoi right er ei card 2 ta valo
+              kore visible dekhte" — both cards should stay fully visible
+              together while scrolling on desktop/laptop): the two cards
+              combined were tall enough (~714px) that on shorter laptop
+              screens (1366x768 and smaller, which is most of them once
+              browser chrome is subtracted) `lg:top-24` pushed the bottom of
+              the Seller card below the fold — the sidebar stuck, but you
+              couldn't see all of it at once. Fixed two ways: (1) trimmed the
+              header offset and internal card padding so the pair is shorter
+              overall, and (2) added a `max-h`/`overflow-y-auto` safety net
+              tied to the viewport height, so on any screen where the two
+              cards still don't fit, the sidebar scrolls internally instead
+              of ever pushing content off the bottom of the viewport. */}
+          <aside className="min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-20 lg:row-span-2 lg:max-h-[calc(100vh-6.5rem)] lg:overflow-y-auto">
             <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-              <div className="border-b border-rule px-5 py-5 text-center sm:px-6">
+              <div className="border-b border-rule px-5 py-4 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                   <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
                 )}
                 <div className="mono text-3xl font-bold text-ink">{fmtUSD(price)}</div>
               </div>
-              <div className="flex flex-col gap-2 px-5 py-5 sm:px-6">
+              <div className="flex flex-col gap-2 px-5 py-4 sm:px-6">
                 <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
                 <CartButton listingId={listing.id} sold={listing.status === "sold"} />
                 <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
@@ -750,7 +764,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 </span>
                 <h2 className="text-base font-semibold text-ink">Seller</h2>
               </div>
-              <div className="px-5 py-5 sm:px-6">
+              <div className="px-5 py-4 sm:px-6">
                 <div className="mb-1 font-semibold text-ink">{listing.seller.name}</div>
                 {listing.seller.location && <div className="mb-3 text-sm text-ink-soft">{listing.seller.location}</div>}
                 <div className="flex flex-col gap-1.5">
@@ -771,7 +785,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                     <div className="text-sm text-ink-faint">Email not yet verified</div>
                   )}
                 </div>
-                <div className="mt-4 border-t border-rule pt-4">
+                <div className="mt-3 border-t border-rule pt-3">
                   <div className="mb-1 flex items-center gap-1.5 text-sm text-ink-soft">
                     <Store size={14} className="shrink-0 text-ink-faint" />
                     {listing.seller.activeListingsCount} active listing{listing.seller.activeListingsCount === 1 ? "" : "s"}
