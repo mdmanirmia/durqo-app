@@ -9,9 +9,16 @@ import Container from "@/components/ui/Container";
 
 const CALLBACK_ERRORS: Record<string, string> = {
   backend_not_connected: "Backend isn't connected yet — this is a preview build.",
-  confirmation_failed: "That confirmation link is invalid or has expired — try registering again, or resend the email.",
+  confirmation_failed: "That verification link is invalid or has expired — try registering again, or resend the email.",
   account_deactivated: "Your account has been deactivated. Contact support if you think this is a mistake.",
 };
+
+// Supabase's own signInWithPassword() error for an unconfirmed account
+// literally reads "Email not confirmed" — replaced here with wording that
+// matches the rest of the app's "verify" language (not "confirm") and tells
+// the person what to actually do about it, rather than surfacing Supabase's
+// raw internal message verbatim.
+const EMAIL_NOT_VERIFIED_MESSAGE = "Verify your email to activate and log in to your account. A verification link has been sent to your email.";
 
 function LoginForm() {
   const router = useRouter();
@@ -37,7 +44,12 @@ function LoginForm() {
     }
     setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) { setLoading(false); setError(error.message); return; }
+    if (error) {
+      setLoading(false);
+      const isUnverified = error.message.toLowerCase().includes("not confirmed") || (error as { code?: string }).code === "email_not_confirmed";
+      setError(isUnverified ? EMAIL_NOT_VERIFIED_MESSAGE : error.message);
+      return;
+    }
 
     // Deactivated accounts (admin "Block" — profiles.is_active) are also
     // caught on every subsequent request by proxy.ts, but checking right
