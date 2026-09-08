@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { Mail, MessageSquare, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import FaqAccordion from "@/components/FaqAccordion";
 import Container from "@/components/ui/Container";
 import { submitContactForm } from "./actions";
@@ -76,7 +76,7 @@ function ContactForm() {
       <button disabled={loading} className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
         {loading ? "Sending…" : "Send message"}
       </button>
-      {sent && <p className="text-sm text-brand-strong">Message sent — we&rsquo;ll reply within one business day.</p>}
+      {sent && <p className="text-sm text-brand-strong">Message sent — we&rsquo;ll reply within 3 hours.</p>}
     </form>
   );
 }
@@ -96,15 +96,11 @@ export default function ContactPage() {
           <div>
             <div className="flex gap-3 border-t border-rule py-4">
               <Mail className="mt-0.5 text-brand-strong" size={20} />
-              <div><h4 className="text-sm font-semibold">Email</h4><p className="text-sm text-ink-soft">support@durqo.com · typical reply within one business day</p></div>
-            </div>
-            <div className="flex gap-3 border-t border-rule py-4">
-              <MessageSquare className="mt-0.5 text-brand-strong" size={20} />
-              <div><h4 className="text-sm font-semibold">Live chat</h4><p className="text-sm text-ink-soft">Available weekdays, 9am–6pm Atlantic Time, for buyers and sellers with an open deal.</p></div>
+              <div><h4 className="text-sm font-semibold">Email</h4><p className="text-sm text-ink-soft">support@durqo.com · typical reply within 3 hours</p></div>
             </div>
             <div className="flex gap-3 border-t border-b border-rule py-4">
               <MapPin className="mt-0.5 text-brand-strong" size={20} />
-              <div><h4 className="text-sm font-semibold">Office</h4><p className="text-sm text-ink-soft">St. John&rsquo;s, Newfoundland &amp; Labrador, Canada</p></div>
+              <div><h4 className="text-sm font-semibold">Office</h4><p className="text-sm text-ink-soft">40A Rutledge Crescent, St. John&rsquo;s, NL A1A 3J6</p></div>
             </div>
 
             <div className="mt-8">

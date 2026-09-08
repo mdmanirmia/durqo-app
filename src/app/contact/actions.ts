@@ -41,7 +41,7 @@ export async function submitContactForm({ name, email, subject, message }: Conta
     cleanEmail,
     "We've received your message — Durqo",
     `<p>Hi ${cleanName},</p>
-     <p>Thanks for reaching out to Durqo. We've received your message and will reply within one business day.</p>
+     <p>Thanks for reaching out to Durqo. We've received your message and will reply within 3 hours.</p>
      <p><strong>Subject:</strong> ${cleanSubject}</p>
      <p><strong>Your message:</strong><br/>${cleanMessage.replace(/\n/g, "<br/>")}</p>
      <p>— Durqo</p>`
