@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Eye, LifeBuoy, Mail } from "lucide-react";
 import Container from "./ui/Container";
+import { FacebookIcon, InstagramIcon } from "./icons/SocialIcons";
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return <h4 className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-white/45">{children}</h4>;
@@ -108,7 +109,26 @@ export default function Footer() {
 
         <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/45">
           <p>&copy; {new Date().getFullYear()} Durqo. All rights reserved.</p>
-          <p>St. John&rsquo;s, NL, Canada</p>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://www.facebook.com/Durqo"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Durqo on Facebook"
+              className="text-white/60 transition hover:text-white"
+            >
+              <FacebookIcon size={16} />
+            </a>
+            <a
+              href="https://www.instagram.com/durqomarketplace/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Durqo on Instagram"
+              className="text-white/60 transition hover:text-white"
+            >
+              <InstagramIcon size={16} />
+            </a>
+          </div>
         </div>
       </Container>
     </footer>
