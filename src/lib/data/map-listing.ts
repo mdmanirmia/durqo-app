@@ -168,9 +168,32 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
   return stats;
 }
 
-export function mapSeller(profile: Row | null | undefined): SellerInfo {
+// `stats` carries the live, computed numbers for the seller-details panel
+// (active listings, completed-sales count, lifetime sales $) — optional
+// because most callers (listing cards on /buy, wishlist, cart) only need
+// `isVerified`/`name` and never render these, so it's not worth an extra
+// round-trip of queries for every card in a grid. Only the listing detail
+// page's getListingById() actually computes and passes this in; every other
+// call site gets the zeroed/false defaults below, which is fine since
+// nothing else reads them. profiles.total_sales (the old flat column this
+// used to read) was dead — nothing in the app ever incremented it, so every
+// seller showed "0 completed sales" regardless of real activity; `stats` is
+// computed live from `orders` instead (see getListingById()).
+export function mapSeller(
+  profile: Row | null | undefined,
+  stats?: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number }
+): SellerInfo {
   if (!profile) {
-    return { id: "unknown", name: "Durqo Seller", isVerified: false, totalSales: 0, memberSince: "" };
+    return {
+      id: "unknown",
+      name: "Durqo Seller",
+      isVerified: false,
+      emailVerified: false,
+      activeListingsCount: 0,
+      totalSales: 0,
+      lifetimeSalesAmount: 0,
+      memberSince: "",
+    };
   }
   return {
     id: profile.id,
@@ -178,7 +201,10 @@ export function mapSeller(profile: Row | null | undefined): SellerInfo {
     location: profile.location ?? undefined,
     isVerified: !!profile.is_verified,
     verificationMethod: profile.verification_method ?? undefined,
-    totalSales: profile.total_sales ?? 0,
+    emailVerified: stats?.emailVerified ?? false,
+    activeListingsCount: stats?.activeListingsCount ?? 0,
+    totalSales: stats?.completedSalesCount ?? 0,
+    lifetimeSalesAmount: stats?.lifetimeSalesAmount ?? 0,
     memberSince: profile.created_at ? String(profile.created_at).slice(0, 10) : "",
   };
 }
@@ -433,6 +459,7 @@ export function mapListing(
   quickStatKeys: QuickStatKey[],
   related: {
     seller?: Row | null;
+    sellerStats?: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number };
     monthlyStats?: Row[];
     seo?: Row | null;
     socialStats?: Row[];
@@ -524,7 +551,7 @@ export function mapListing(
     socialStats,
     faqs: mapFaqs(related.faqs ?? []),
     comments: mapComments(related.comments ?? [], related.authorNames ?? {}),
-    seller: mapSeller(related.seller),
+    seller: mapSeller(related.seller, related.sellerStats),
     images: mapImages(related.images ?? []),
     gaLiveStats: mapGaLiveStats(related.gaLiveStats),
     copyrightNotes: mapCopyrightNotes(related.copyrightNotes),

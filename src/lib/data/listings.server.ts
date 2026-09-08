@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { MOCK_LISTINGS, getListingById as getMockListingById } from "@/lib/mock-data";
 import type { Listing } from "@/lib/types";
@@ -363,8 +364,47 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
       authorNames = Object.fromEntries((authors ?? []).map((a) => [a.id, a.full_name ?? "Member"]));
     }
 
+    // Live, auto-updating seller stats for the Seller panel: email-verified
+    // badge, how many of this seller's listings are currently live, and
+    // their lifetime sales total. This intentionally goes through the
+    // admin/service-role client rather than the RLS-scoped `supabase`
+    // client above: `orders` is private under RLS (orders_select_involved —
+    // only the buyer or seller can select a given order), and whether an
+    // email is confirmed lives on auth.users, which no RLS policy can ever
+    // expose. Only aggregate, non-sensitive values are read here — a count,
+    // a dollar sum, a boolean — never a raw order row, buyer identity, or
+    // the seller's actual email address — so unlike the admin dashboard's
+    // use of this same client, this is safe to compute for any visitor
+    // viewing the listing, not just the seller or an admin. Degrades to
+    // zeros/false (same graceful pattern as every other function in this
+    // file) if the service-role key isn't configured or a query fails.
+    let sellerStats: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number } | undefined;
+    const admin = createAdminClient();
+    if (admin) {
+      try {
+        const [{ count: activeListingsCount }, { data: sellerOrders }, { data: authUserData }] = await Promise.all([
+          admin.from("listings").select("id", { count: "exact", head: true }).eq("seller_id", row.seller_id).eq("status", "published"),
+          // "Lifetime sales" counts orders that have actually collected
+          // payment from the buyer — in_escrow (funds held, Stripe webhook
+          // already fired) and completed (released to seller) — not
+          // requested/awaiting_payment/cancelled orders that never paid.
+          admin.from("orders").select("amount").eq("seller_id", row.seller_id).in("status", ["in_escrow", "completed"]),
+          admin.auth.admin.getUserById(row.seller_id),
+        ]);
+        sellerStats = {
+          emailVerified: !!authUserData?.user?.email_confirmed_at,
+          activeListingsCount: activeListingsCount ?? 0,
+          completedSalesCount: (sellerOrders ?? []).length,
+          lifetimeSalesAmount: (sellerOrders ?? []).reduce((sum, o) => sum + Number(o.amount), 0),
+        };
+      } catch (err) {
+        console.warn("[listings] getListingById: seller stats lookup failed, showing zeros:", err);
+      }
+    }
+
     return mapListing(row, CATEGORY_MAP[row.category_id]?.quickStats ?? [], {
       seller,
+      sellerStats,
       monthlyStats: monthlyStats ?? [],
       seo,
       socialStats: socialStats ?? [],
