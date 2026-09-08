@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import TrendChart from "@/components/charts/TrendChart";
 import { fmtNumber } from "@/lib/format";
 import type { GaLiveStats } from "@/lib/types";
@@ -108,23 +108,9 @@ export default function GoogleAnalyticsLivePanel({
   const totalAcquisition = stats.trafficAcquisition.reduce((sum, c) => sum + c.sessions, 0);
 
   return (
-    <div className="rounded-xl border border-rule bg-paper-raised p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold text-ink">Google Analytics</h3>
-          <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand-hover">
-            <CheckCircle2 size={12} /> Connected
-          </span>
-        </div>
-        {loading && (
-          <span className="flex items-center gap-1.5 text-xs text-ink-faint">
-            <Loader2 size={12} className="animate-spin" /> Loading…
-          </span>
-        )}
-      </div>
-
+    <div className="rounded-2xl border border-[#E2E7E4] bg-white p-5 sm:p-6">
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="mono text-xs uppercase tracking-wide text-ink-faint">Date Range</span>
+        <span className="mono text-xs uppercase tracking-wide text-[#98A2B3]">Date Range</span>
         <div className="flex flex-wrap gap-1.5">
           {PRESETS.map((p) => (
             <button
@@ -135,29 +121,34 @@ export default function GoogleAnalyticsLivePanel({
               aria-pressed={preset === p.key}
               className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-60 ${
                 preset === p.key
-                  ? "border-brand bg-brand text-white"
-                  : "border-rule-strong bg-paper text-ink-soft hover:border-brand hover:text-brand-hover"
+                  ? "border-[#0EAE7A] bg-[#0EAE7A] text-white"
+                  : "border-[#E2E7E4] bg-white text-[#667085] hover:border-[#0EAE7A] hover:text-[#0EAE7A]"
               }`}
             >
               {p.label}
             </button>
           ))}
         </div>
+        {loading && (
+          <span className="flex items-center gap-1.5 text-xs text-[#98A2B3]">
+            <Loader2 size={12} className="animate-spin" /> Loading…
+          </span>
+        )}
       </div>
 
       {preset === "custom" && (
-        <div className="mb-4 flex flex-wrap items-end gap-2 rounded-md border border-rule bg-paper p-3">
-          <label className="flex flex-col gap-1 text-xs text-ink-faint">
+        <div className="mb-4 flex flex-wrap items-end gap-2 rounded-[10px] border border-[#E2E7E4] bg-[#F6F7F5] p-3">
+          <label className="flex flex-col gap-1 text-xs text-[#98A2B3]">
             From
             <input
               type="date"
               value={customStart}
               max={customEnd}
               onChange={(e) => setCustomStart(e.target.value)}
-              className="rounded-md border border-rule-strong bg-paper-raised px-2 py-1 text-sm text-ink"
+              className="rounded-md border border-[#E2E7E4] bg-white px-2 py-1 text-sm text-[#101828]"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-faint">
+          <label className="flex flex-col gap-1 text-xs text-[#98A2B3]">
             To
             <input
               type="date"
@@ -165,64 +156,64 @@ export default function GoogleAnalyticsLivePanel({
               min={customStart}
               max={todayIso()}
               onChange={(e) => setCustomEnd(e.target.value)}
-              className="rounded-md border border-rule-strong bg-paper-raised px-2 py-1 text-sm text-ink"
+              className="rounded-md border border-[#E2E7E4] bg-white px-2 py-1 text-sm text-[#101828]"
             />
           </label>
           <button
             type="button"
             disabled={loading}
             onClick={applyCustomRange}
-            className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
+            className="rounded-md bg-[#0EAE7A] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#0c9668] disabled:opacity-60"
           >
             Apply
           </button>
         </div>
       )}
 
-      {error && <p className="mb-3 text-xs text-danger">{error}</p>}
+      {error && <p className="mb-3 text-xs text-red-600">{error}</p>}
 
       <div className="mb-2 flex items-center justify-between">
-        <p className="mono text-xs uppercase tracking-wide text-ink-faint">Page Views Over Time</p>
-        <span className="text-xs text-ink-faint">{stats.dateRangeLabel}</span>
+        <p className="mono text-xs uppercase tracking-wide text-[#98A2B3]">Page Views Over Time</p>
+        <span className="text-xs text-[#98A2B3]">{stats.dateRangeLabel}</span>
       </div>
-      <TrendChart data={chartData} dataKey="views" color="#10B981" format="number" />
+      <TrendChart data={chartData} dataKey="views" color="#0EAE7A" format="number" />
 
-      <div className="mt-5 grid grid-cols-2 gap-4 border-t border-rule pt-5 sm:grid-cols-5">
+      <div className="mt-5 grid grid-cols-2 gap-4 border-t border-[#E2E7E4] pt-5 sm:grid-cols-5">
         <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtNumber(stats.pageViews)}</div>
-          <div className="text-xs text-ink-faint">Page Views</div>
+          <div className="mono text-lg font-semibold text-[#0C1830]">{fmtNumber(stats.pageViews)}</div>
+          <div className="text-xs text-[#98A2B3]">Page Views</div>
         </div>
         <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtNumber(stats.uniqueVisitors)}</div>
-          <div className="text-xs text-ink-faint">Unique Visitors</div>
+          <div className="mono text-lg font-semibold text-[#0C1830]">{fmtNumber(stats.uniqueVisitors)}</div>
+          <div className="text-xs text-[#98A2B3]">Unique Visitors</div>
         </div>
         <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtNumber(stats.sessions)}</div>
-          <div className="text-xs text-ink-faint">Sessions</div>
+          <div className="mono text-lg font-semibold text-[#0C1830]">{fmtNumber(stats.sessions)}</div>
+          <div className="text-xs text-[#98A2B3]">Sessions</div>
         </div>
         <div>
-          <div className="mono text-lg font-semibold text-ink">{stats.bounceRate}%</div>
-          <div className="text-xs text-ink-faint">Bounce Rate</div>
+          <div className="mono text-lg font-semibold text-[#0C1830]">{stats.bounceRate}%</div>
+          <div className="text-xs text-[#98A2B3]">Bounce Rate</div>
         </div>
         <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtDuration(stats.avgSessionSeconds)}</div>
-          <div className="text-xs text-ink-faint">Avg. Session</div>
+          <div className="mono text-lg font-semibold text-[#0C1830]">{fmtDuration(stats.avgSessionSeconds)}</div>
+          <div className="text-xs text-[#98A2B3]">Avg. Session</div>
         </div>
       </div>
 
       {stats.trafficAcquisition.length > 0 && (
-        <div className="mt-5 border-t border-rule pt-5">
-          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Traffic Acquisition</p>
+        <div className="mt-5 border-t border-[#E2E7E4] pt-5">
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-[#98A2B3]">Traffic Acquisition</p>
           <div className="space-y-2">
             {stats.trafficAcquisition.map((c) => {
               const pct = totalAcquisition ? Math.round((c.sessions / totalAcquisition) * 100) : 0;
               return (
                 <div key={c.channel} className="flex items-center gap-3">
-                  <span className="w-32 shrink-0 truncate text-sm text-ink-soft">{c.channel}</span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
-                    <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+                  <span className="w-32 shrink-0 truncate text-sm text-[#667085]">{c.channel}</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#F6F7F5]">
+                    <div className="h-full rounded-full bg-[#0EAE7A]" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(c.sessions)}</span>
+                  <span className="mono w-14 shrink-0 text-right text-xs text-[#98A2B3]">{fmtNumber(c.sessions)}</span>
                 </div>
               );
             })}
@@ -230,7 +221,7 @@ export default function GoogleAnalyticsLivePanel({
         </div>
       )}
 
-      <p className="mt-5 border-t border-rule pt-3 text-xs text-ink-faint">
+      <p className="mt-5 border-t border-[#E2E7E4] pt-3 text-xs text-[#98A2B3]">
         {preset === "custom" || stats !== initialStats ? "Loaded" : "Last synced"} {fmtDate(stats.lastSyncedAt.slice(0, 10))} · pulled directly
         from this seller&rsquo;s connected Google Analytics 4 property.
       </p>

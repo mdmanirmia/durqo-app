@@ -38,9 +38,9 @@ export default function ChatWithSellerButton({ sellerId, listingId }: { sellerId
       type="button"
       onClick={handleClick}
       disabled={busy}
-      className="flex items-center justify-center gap-2 rounded-lg border border-rule-strong py-2.5 text-sm font-semibold hover:border-brand-strong disabled:opacity-60"
+      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-[#E2E7E4] bg-white text-sm font-semibold text-[#0C1830] transition-colors hover:border-[#0C1830] disabled:opacity-60"
     >
-      <MessageCircle size={15} /> Chat with Seller
+      <MessageCircle size={15} aria-hidden /> Chat with Seller
     </button>
   );
 }

@@ -64,6 +64,10 @@ export default function WishlistButton({
   const title = isDemo ? "This is a sample listing — wishlist opens up once real listings are live." : undefined;
 
   if (variant === "full") {
+    // This branch is exclusive to the listing-detail page's purchase card
+    // (the icon-only branch below is the one shared with ListingCard/the
+    // homepage spotlight), so its styling was updated for that page's Sep
+    // 2026 visual redesign without touching the icon variant.
     return (
       <div className="flex flex-col gap-1">
         <button
@@ -71,9 +75,9 @@ export default function WishlistButton({
           onClick={handleClick}
           disabled={busy || isDemo}
           title={title}
-          className="flex items-center justify-center gap-2 rounded-lg border border-rule-strong py-2.5 text-sm font-semibold hover:border-brand-strong disabled:opacity-60"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-[#E2E7E4] bg-white text-sm font-semibold text-[#0C1830] transition-colors hover:border-[#0C1830] disabled:opacity-60"
         >
-          <Heart size={15} className={saved ? "fill-brand text-brand" : ""} />
+          <Heart size={15} className={saved ? "fill-[#0EAE7A] text-[#0EAE7A]" : ""} aria-hidden />
           {isDemo ? "Sample listing" : saved ? "Saved to wishlist" : "Add to wishlist"}
         </button>
         {error && <span className="text-xs text-red-600">Couldn&apos;t save — please try again.</span>}

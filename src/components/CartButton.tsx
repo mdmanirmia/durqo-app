@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ShoppingCart } from "lucide-react";
 import { isInCart, toggleCart } from "@/lib/data/cart.client";
 import { isRealListingId } from "@/lib/is-demo-listing";
 
@@ -56,8 +57,9 @@ export default function CartButton({ listingId, sold }: { listingId: string; sol
         onClick={handleClick}
         disabled={busy || locked}
         title={sold ? "This listing has already been sold." : isDemo ? "This is a sample listing — cart opens up once real listings are live." : undefined}
-        className="rounded-lg border border-rule-strong py-2.5 text-sm font-semibold hover:border-brand-strong disabled:opacity-60"
+        className="flex min-h-11 w-full items-center justify-center gap-2 rounded-[10px] border border-[#E2E7E4] bg-white text-sm font-semibold text-[#0C1830] transition-colors hover:border-[#0C1830] disabled:opacity-60"
       >
+        <ShoppingCart size={15} aria-hidden />
         {sold ? "Sold" : isDemo ? "Sample listing" : inCart ? "In Cart — Remove" : "Add to Cart"}
       </button>
       {error && <span className="text-xs text-red-600">Couldn&apos;t save — please try again.</span>}
