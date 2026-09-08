@@ -205,8 +205,8 @@ export default function GoogleAnalyticsLivePanel({
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {statCells.map((cell) => (
             <div key={cell.label} className="rounded-xl border border-brand/10 bg-brand-soft/25 p-4">
-              <div className="mono text-lg font-semibold text-brand-strong sm:text-xl">{cell.value}</div>
-              <div className="mono mt-1 text-[0.65rem] uppercase tracking-wide text-brand-hover/60">{cell.label}</div>
+              <div className="mono text-lg font-bold leading-tight tracking-tight text-brand-strong sm:text-xl">{cell.value}</div>
+              <div className="mono mt-1.5 text-[0.7rem] font-medium uppercase tracking-wider text-brand-hover/60">{cell.label}</div>
             </div>
           ))}
         </div>
