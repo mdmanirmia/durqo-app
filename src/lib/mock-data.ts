@@ -3,16 +3,19 @@ import { Listing } from "./types";
 const seller1 = {
   id: "s1", name: "Marcus Feld", location: "Toronto, Canada",
   isVerified: true, verificationMethod: "passport" as const,
-  totalSales: 6, memberSince: "2024-02-11",
+  emailVerified: true, activeListingsCount: 2,
+  totalSales: 6, lifetimeSalesAmount: 412000, memberSince: "2024-02-11",
 };
 const seller2 = {
   id: "s2", name: "Priya Nandan", location: "Bengaluru, India",
   isVerified: true, verificationMethod: "national_id" as const,
-  totalSales: 3, memberSince: "2024-08-03",
+  emailVerified: true, activeListingsCount: 1,
+  totalSales: 3, lifetimeSalesAmount: 168000, memberSince: "2024-08-03",
 };
 const seller3 = {
   id: "s3", name: "Aisha Torres", location: "St. John's, Canada",
-  isVerified: false, totalSales: 1, memberSince: "2026-01-15",
+  isVerified: false, emailVerified: false, activeListingsCount: 1,
+  totalSales: 1, lifetimeSalesAmount: 42000, memberSince: "2026-01-15",
 };
 
 function months(from: string, n: number) {

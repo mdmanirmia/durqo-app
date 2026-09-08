@@ -121,7 +121,18 @@ export interface SellerInfo {
   location?: string;
   isVerified: boolean;
   verificationMethod?: "passport" | "national_id" | "driving_license";
+  // Whether the seller's own account email is confirmed (Supabase
+  // auth.users.email_confirmed_at) — separate from `isVerified`, which is
+  // the identity-document (passport/national ID/license) review above.
+  emailVerified: boolean;
+  // How many of this seller's listings are currently live (status =
+  // "published") on the marketplace right now.
+  activeListingsCount: number;
   totalSales: number;
+  // Lifetime dollar total of this seller's completed sales (sum of
+  // orders.amount for orders that have actually collected payment —
+  // see mapSeller() for exactly which order statuses count).
+  lifetimeSalesAmount: number;
   memberSince: string;
 }
 
