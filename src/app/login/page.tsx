@@ -32,11 +32,19 @@ function LoginForm() {
     const code = params.get("error");
     return code ? (CALLBACK_ERRORS[code] ?? "Something went wrong — please try again.") : null;
   });
+  // Tracks whether the *current* error is the unverified-email case, so the
+  // "Resend the link" action only shows up for that specific error — not for
+  // a wrong password or a deactivated account.
+  const [showResend, setShowResend] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setNotice(null);
+    setShowResend(false);
     const supabase = createClient();
     if (!supabase) {
       setError("Backend isn't connected yet — this is a preview build. Once Supabase is set up, this form will log you in for real.");
@@ -48,6 +56,7 @@ function LoginForm() {
       setLoading(false);
       const isUnverified = error.message.toLowerCase().includes("not confirmed") || (error as { code?: string }).code === "email_not_confirmed";
       setError(isUnverified ? EMAIL_NOT_VERIFIED_MESSAGE : error.message);
+      setShowResend(isUnverified);
       return;
     }
 
@@ -75,6 +84,32 @@ function LoginForm() {
     router.push("/dashboard/buyer");
   }
 
+  // Mirrors the same resend call used on the register page's "Check your
+  // email" screen — the login page just surfaces it once we already know
+  // (from the "Email not confirmed" error above) that this account is stuck
+  // waiting on that link.
+  async function handleResend() {
+    if (!email) {
+      setNotice(null);
+      setError("Enter your email above, then click resend.");
+      return;
+    }
+    setResending(true);
+    setNotice(null);
+    const supabase = createClient();
+    if (!supabase) {
+      setResending(false);
+      return;
+    }
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    setResending(false);
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setNotice("Sent again — check your inbox.");
+  }
+
   const fieldCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
 
   return (
@@ -91,7 +126,20 @@ function LoginForm() {
           <label className="text-sm font-semibold text-ink-soft" htmlFor="password">Password</label>
           <input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className={fieldCls} />
         </div>
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && (
+          <p className="text-sm text-danger">
+            {error}
+            {showResend && (
+              <>
+                {" "}
+                <button type="button" onClick={handleResend} disabled={resending} className="font-semibold text-brand-hover disabled:opacity-60">
+                  {resending ? "Resending…" : "Resend the link"}
+                </button>
+              </>
+            )}
+          </p>
+        )}
+        {notice && <p className="text-sm text-brand-hover">{notice}</p>}
         <button disabled={loading} className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
           {loading ? "Logging in…" : "Log in"}
         </button>
