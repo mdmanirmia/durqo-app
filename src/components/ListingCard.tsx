@@ -25,7 +25,12 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   const revenue = listing.quickStats.monthly_income as number | undefined;
   const expenseTotal = listing.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   const profit = revenue !== undefined ? (listing.monthlyExpenses.length > 0 ? revenue - expenseTotal : revenue) : undefined;
-  const location = (listing.quickStats.location as string | undefined) ?? listing.location ?? undefined;
+  // Sep 8 2026 ("jei sob listing er location thakbena, oi sob listing er
+  // card e location Remote deya thakbe" — a listing with no location set
+  // should show "Remote" on its card instead of leaving the spot blank):
+  // `||` (not `??`) so an empty-string value falls back too, same as the
+  // truthiness check this used to gate on below.
+  const location = (listing.quickStats.location as string | undefined) || listing.location || "Remote";
 
   const allTags = (listing.monetizationTypeIds ?? []).map((id) => MONETIZATION_MAP[id]).filter(Boolean);
   const tags = allTags.slice(0, 2);
@@ -52,14 +57,10 @@ export default function ListingCard({ listing }: { listing: Listing }) {
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-center justify-between gap-2">
-          {location ? (
-            <span className="flex items-center gap-1 text-xs text-ink-faint">
-              <MapPin size={11} />
-              {location}
-            </span>
-          ) : (
-            <span />
-          )}
+          <span className="flex items-center gap-1 text-xs text-ink-faint">
+            <MapPin size={11} />
+            {location}
+          </span>
           <WishlistButton listingId={listing.id} size="lg" />
         </div>
 
