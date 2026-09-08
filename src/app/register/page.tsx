@@ -77,7 +77,7 @@ function RegisterForm() {
       <div className="w-full max-w-md rounded-xl border border-rule bg-paper-raised p-7 sm:p-8">
         <h1 className="mb-1 text-2xl">Check your email</h1>
         <p className="mb-8 text-sm text-ink-soft">
-          We sent a confirmation link to <span className="font-semibold text-ink">{email}</span>. Click it to activate your account — you&rsquo;ll be
+          We sent a verification link to <span className="font-semibold text-ink">{email}</span>. Click it to activate your account — you&rsquo;ll be
           signed in automatically.
         </p>
         {notice && <p className="mb-4 text-sm text-brand-hover">{notice}</p>}
