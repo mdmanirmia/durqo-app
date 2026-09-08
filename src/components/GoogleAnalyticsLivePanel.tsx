@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { Loader2, TrendingUp } from "lucide-react";
 import TrendChart from "@/components/charts/TrendChart";
 import { fmtNumber } from "@/lib/format";
 import type { GaLiveStats } from "@/lib/types";
@@ -42,8 +42,9 @@ const PRESETS: { key: Preset; label: string }[] = [
 // Session / Avg. Session Duration / Bounce Rate, auto-updated on a
 // schedule), rendered on the public listing page once a seller has
 // connected via OAuth (src/lib/google-analytics.ts) and at least one sync
-// has completed. Styled to Durqo's own navy/emerald design tokens rather
-// than copying the reference screenshot's dark/purple theme.
+// has completed. Styled to Durqo's own navy/emerald design tokens, matching
+// the premium card chrome (icon+heading header, individually-boxed stat
+// tiles) every other section on the listing page uses.
 //
 // `initialStats` is the last periodic-sync snapshot (always a fixed
 // 90-day window — see src/lib/data/ga-sync.server.ts) and is what renders
@@ -107,111 +108,112 @@ export default function GoogleAnalyticsLivePanel({
   const chartData = stats.dailyPageViews.map((d) => ({ month: d.date, views: d.value }));
   const totalAcquisition = stats.trafficAcquisition.reduce((sum, c) => sum + c.sessions, 0);
 
+  const statCells: { label: string; value: string }[] = [
+    { label: "Page Views", value: fmtNumber(stats.pageViews) },
+    { label: "Unique Visitors", value: fmtNumber(stats.uniqueVisitors) },
+    { label: "Sessions", value: fmtNumber(stats.sessions) },
+    { label: "Bounce Rate", value: `${stats.bounceRate}%` },
+    { label: "Avg. Session", value: fmtDuration(stats.avgSessionSeconds) },
+  ];
+
   return (
-    <div className="rounded-xl border border-rule bg-paper-raised p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <h3 className="text-base font-semibold text-ink">Google Analytics</h3>
-          <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand-hover">
-            <CheckCircle2 size={12} /> Connected
+    <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-rule px-5 py-4 sm:px-6">
+        <div className="flex items-center gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
+            <TrendingUp size={17} />
           </span>
+          <h2 className="text-base font-semibold text-ink sm:text-lg">Google Analytics Data</h2>
         </div>
-        {loading && (
-          <span className="flex items-center gap-1.5 text-xs text-ink-faint">
-            <Loader2 size={12} className="animate-spin" /> Loading…
-          </span>
-        )}
+        <span className="flex items-center gap-1.5 text-xs font-medium text-ink-soft">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand" /> Connected
+        </span>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <span className="mono text-xs uppercase tracking-wide text-ink-faint">Date Range</span>
-        <div className="flex flex-wrap gap-1.5">
-          {PRESETS.map((p) => (
+      <div className="p-5 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="mono text-xs uppercase tracking-wide text-ink-faint">Date Range</span>
+          <div className="flex flex-wrap gap-1.5">
+            {PRESETS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                disabled={loading}
+                onClick={() => selectPreset(p.key)}
+                aria-pressed={preset === p.key}
+                className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-60 ${
+                  preset === p.key
+                    ? "border-brand bg-brand text-white"
+                    : "border-rule-strong bg-paper text-ink-soft hover:border-brand hover:text-brand-hover"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          {loading && (
+            <span className="flex items-center gap-1.5 text-xs text-ink-faint">
+              <Loader2 size={12} className="animate-spin" /> Loading…
+            </span>
+          )}
+        </div>
+
+        {preset === "custom" && (
+          <div className="mb-4 flex flex-wrap items-end gap-2 rounded-md border border-rule bg-paper p-3">
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+              From
+              <input
+                type="date"
+                value={customStart}
+                max={customEnd}
+                onChange={(e) => setCustomStart(e.target.value)}
+                className="rounded-md border border-rule-strong bg-paper-raised px-2 py-1 text-sm text-ink"
+              />
+            </label>
+            <label className="flex flex-col gap-1 text-xs text-ink-faint">
+              To
+              <input
+                type="date"
+                value={customEnd}
+                min={customStart}
+                max={todayIso()}
+                onChange={(e) => setCustomEnd(e.target.value)}
+                className="rounded-md border border-rule-strong bg-paper-raised px-2 py-1 text-sm text-ink"
+              />
+            </label>
             <button
-              key={p.key}
               type="button"
               disabled={loading}
-              onClick={() => selectPreset(p.key)}
-              aria-pressed={preset === p.key}
-              className={`rounded-md border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-60 ${
-                preset === p.key
-                  ? "border-brand bg-brand text-white"
-                  : "border-rule-strong bg-paper text-ink-soft hover:border-brand hover:text-brand-hover"
-              }`}
+              onClick={applyCustomRange}
+              className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
             >
-              {p.label}
+              Apply
             </button>
+          </div>
+        )}
+
+        {error && <p className="mb-3 text-xs text-danger">{error}</p>}
+
+        <div className="mb-2 flex items-center justify-between">
+          <p className="mono text-xs uppercase tracking-wide text-ink-faint">Page Views Over Time</p>
+          <span className="text-xs text-ink-faint">{stats.dateRangeLabel}</span>
+        </div>
+        <TrendChart data={chartData} dataKey="views" color="#10B981" format="number" />
+      </div>
+
+      <div className="border-t border-rule p-5 sm:p-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {statCells.map((cell) => (
+            <div key={cell.label} className="rounded-xl border border-rule bg-paper-sunk p-4">
+              <div className="mono text-lg font-semibold text-ink sm:text-xl">{cell.value}</div>
+              <div className="mono mt-1 text-[0.65rem] uppercase tracking-wide text-ink-faint">{cell.label}</div>
+            </div>
           ))}
         </div>
       </div>
 
-      {preset === "custom" && (
-        <div className="mb-4 flex flex-wrap items-end gap-2 rounded-md border border-rule bg-paper p-3">
-          <label className="flex flex-col gap-1 text-xs text-ink-faint">
-            From
-            <input
-              type="date"
-              value={customStart}
-              max={customEnd}
-              onChange={(e) => setCustomStart(e.target.value)}
-              className="rounded-md border border-rule-strong bg-paper-raised px-2 py-1 text-sm text-ink"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-ink-faint">
-            To
-            <input
-              type="date"
-              value={customEnd}
-              min={customStart}
-              max={todayIso()}
-              onChange={(e) => setCustomEnd(e.target.value)}
-              className="rounded-md border border-rule-strong bg-paper-raised px-2 py-1 text-sm text-ink"
-            />
-          </label>
-          <button
-            type="button"
-            disabled={loading}
-            onClick={applyCustomRange}
-            className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
-          >
-            Apply
-          </button>
-        </div>
-      )}
-
-      {error && <p className="mb-3 text-xs text-danger">{error}</p>}
-
-      <div className="mb-2 flex items-center justify-between">
-        <p className="mono text-xs uppercase tracking-wide text-ink-faint">Page Views Over Time</p>
-        <span className="text-xs text-ink-faint">{stats.dateRangeLabel}</span>
-      </div>
-      <TrendChart data={chartData} dataKey="views" color="#10B981" format="number" />
-
-      <div className="mt-5 grid grid-cols-2 gap-4 border-t border-rule pt-5 sm:grid-cols-5">
-        <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtNumber(stats.pageViews)}</div>
-          <div className="text-xs text-ink-faint">Page Views</div>
-        </div>
-        <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtNumber(stats.uniqueVisitors)}</div>
-          <div className="text-xs text-ink-faint">Unique Visitors</div>
-        </div>
-        <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtNumber(stats.sessions)}</div>
-          <div className="text-xs text-ink-faint">Sessions</div>
-        </div>
-        <div>
-          <div className="mono text-lg font-semibold text-ink">{stats.bounceRate}%</div>
-          <div className="text-xs text-ink-faint">Bounce Rate</div>
-        </div>
-        <div>
-          <div className="mono text-lg font-semibold text-ink">{fmtDuration(stats.avgSessionSeconds)}</div>
-          <div className="text-xs text-ink-faint">Avg. Session</div>
-        </div>
-      </div>
-
       {stats.trafficAcquisition.length > 0 && (
-        <div className="mt-5 border-t border-rule pt-5">
+        <div className="border-t border-rule px-5 py-5 sm:px-6">
           <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Traffic Acquisition</p>
           <div className="space-y-2">
             {stats.trafficAcquisition.map((c) => {
@@ -230,7 +232,7 @@ export default function GoogleAnalyticsLivePanel({
         </div>
       )}
 
-      <p className="mt-5 border-t border-rule pt-3 text-xs text-ink-faint">
+      <p className="border-t border-rule px-5 py-3 text-xs text-ink-faint sm:px-6">
         {preset === "custom" || stats !== initialStats ? "Loaded" : "Last synced"} {fmtDate(stats.lastSyncedAt.slice(0, 10))} · pulled directly
         from this seller&rsquo;s connected Google Analytics 4 property.
       </p>

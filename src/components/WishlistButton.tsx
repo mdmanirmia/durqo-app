@@ -71,7 +71,7 @@ export default function WishlistButton({
           onClick={handleClick}
           disabled={busy || isDemo}
           title={title}
-          className="flex items-center justify-center gap-2 rounded-lg border border-rule-strong py-2.5 text-sm font-semibold hover:border-brand-strong disabled:opacity-60"
+          className="flex items-center justify-center gap-2 rounded-xl border border-rule-strong py-3 text-sm font-semibold transition-colors hover:border-brand-strong disabled:opacity-60"
         >
           <Heart size={15} className={saved ? "fill-brand text-brand" : ""} />
           {isDemo ? "Sample listing" : saved ? "Saved to wishlist" : "Add to wishlist"}

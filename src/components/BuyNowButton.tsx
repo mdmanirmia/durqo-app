@@ -52,7 +52,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         onClick={handleClick}
         disabled={busy || locked}
         title={sold ? "This listing has already been sold." : isDemo ? "This is a sample listing — buying opens up once real listings are live." : undefined}
-        className="rounded-lg bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised hover:bg-brand disabled:opacity-60"
+        className="rounded-xl bg-brand-strong py-3 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-colors hover:bg-brand disabled:opacity-60"
       >
         {sold ? "Sold" : isDemo ? "Sample listing" : busy ? "Starting checkout…" : "Buy Now"}
       </button>

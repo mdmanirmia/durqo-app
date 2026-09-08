@@ -56,7 +56,7 @@ export default function CartButton({ listingId, sold }: { listingId: string; sol
         onClick={handleClick}
         disabled={busy || locked}
         title={sold ? "This listing has already been sold." : isDemo ? "This is a sample listing — cart opens up once real listings are live." : undefined}
-        className="rounded-lg border border-rule-strong py-2.5 text-sm font-semibold hover:border-brand-strong disabled:opacity-60"
+        className="rounded-xl border border-rule-strong py-3 text-sm font-semibold transition-colors hover:border-brand-strong disabled:opacity-60"
       >
         {sold ? "Sold" : isDemo ? "Sample listing" : inCart ? "In Cart — Remove" : "Add to Cart"}
       </button>

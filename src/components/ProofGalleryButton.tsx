@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Images, X, ChevronLeft, ChevronRight } from "lucide-react";
 
-// Mirrors the real durqo.com listing page: a solid green pill button under
-// each verified-data section that opens a lightbox with the seller's
-// uploaded proof screenshots. Buyers can view these — they are not
-// admin-only. `images` are real uploaded URLs from Supabase Storage, when
-// there are any; otherwise this falls back to a labeled placeholder frame
-// (used for the bundled mock listings, which predate real uploads).
+// A verified-data section's proof-of-upload trigger: a refined outline
+// button (Sep 2026 premium redesign, v2 — a lighter touch than a solid
+// green pill, matching the sidebar's outline buttons) that opens a
+// lightbox with the seller's uploaded proof screenshots. Buyers can view
+// these — they are not admin-only. Callers now place this inside the same
+// card as the data it documents (its own footer strip), so it carries no
+// outer margin of its own. `images` are real uploaded URLs from Supabase
+// Storage, when there are any; otherwise this falls back to a labeled
+// placeholder frame (used for the bundled mock listings, which predate
+// real uploads).
 export default function ProofGalleryButton({ label, images, count = 3 }: { label: string; images?: string[]; count?: number }) {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
@@ -23,9 +27,9 @@ export default function ProofGalleryButton({ label, images, count = 3 }: { label
           setIndex(0);
           setOpen(true);
         }}
-        className="mt-4 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90"
+        className="inline-flex items-center gap-2 rounded-lg border border-rule-strong bg-paper-raised px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:border-brand-strong hover:text-ink"
       >
-        View {label} Images
+        <Images size={15} /> View {label} Images
       </button>
 
       {open && (
