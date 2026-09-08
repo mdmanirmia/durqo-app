@@ -18,6 +18,7 @@ import { CATEGORIES } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { getPublishedListings } from "@/lib/data/listings.server";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
+import { createClient } from "@/lib/supabase/server";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import SellFaq from "./SellFaq";
@@ -164,6 +165,21 @@ export default async function SellPage() {
     categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
   }
 
+  // Sep 8 2026 ("list your business e click korle jodi keu log in kora
+  // thake tahole business list korar page e niye jabe, log in na kora
+  // thakle login/register korar page e" — the hero CTA should route a
+  // signed-in visitor straight to the listing form instead of always
+  // sending everyone to registration): checked server-side so the link is
+  // correct on first paint, no client flash. requireSession() (mounted on
+  // the dashboard/seller layout) is still the real gate — an unauthenticated
+  // visitor who somehow lands on that route gets bounced to /login there —
+  // this just picks the right destination up front.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  const listBusinessHref = user ? "/dashboard/seller/listings/new" : "/register?as=seller";
+
   return (
     <main>
       {/* HERO — 52/48 desktop split via fr units (not percent), same
@@ -194,7 +210,7 @@ export default async function SellPage() {
                     Get a free valuation
                     <ArrowRight size={16} />
                   </Button>
-                  <Button href="/register?as=seller" variant="on-dark" size="lg">
+                  <Button href={listBusinessHref} variant="on-dark" size="lg">
                     List your business
                   </Button>
                 </div>
