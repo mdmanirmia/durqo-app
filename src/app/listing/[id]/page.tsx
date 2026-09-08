@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, ChevronRight, Lock, ExternalLink, Eye, ThumbsUp, Clock, Calendar, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, ChevronRight, Lock, ExternalLink, Eye, ThumbsUp, Clock, Calendar, CheckCircle2, MailCheck, Store } from "lucide-react";
 import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { NICHE_MAP } from "@/lib/niches";
@@ -607,14 +607,29 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               <div className="mb-1 font-semibold text-ink">{listing.seller.name}</div>
               {listing.seller.location && <div className="mb-2 text-sm text-ink-soft">{listing.seller.location}</div>}
               {listing.seller.isVerified ? (
-                <div className="mb-2 flex items-center gap-1.5 text-sm text-brand-hover">
+                <div className="mb-1.5 flex items-center gap-1.5 text-sm text-brand-hover">
                   <ShieldCheck size={15} />
                   Verified {listing.seller.verificationMethod?.replace("_", " ")}
                 </div>
               ) : (
-                <div className="mb-2 text-sm text-ink-faint">Identity not yet verified</div>
+                <div className="mb-1.5 text-sm text-ink-faint">Identity not yet verified</div>
               )}
-              <div className="mono text-sm text-ink-soft">{listing.seller.totalSales} completed sale{listing.seller.totalSales === 1 ? "" : "s"}</div>
+              {listing.seller.emailVerified ? (
+                <div className="mb-2 flex items-center gap-1.5 text-sm text-brand-hover">
+                  <MailCheck size={15} />
+                  Email verified
+                </div>
+              ) : (
+                <div className="mb-2 text-sm text-ink-faint">Email not yet verified</div>
+              )}
+              <div className="mb-1 flex items-center gap-1.5 text-sm text-ink-soft">
+                <Store size={14} className="shrink-0 text-ink-faint" />
+                {listing.seller.activeListingsCount} active listing{listing.seller.activeListingsCount === 1 ? "" : "s"}
+              </div>
+              <div className="mono text-sm text-ink-soft">
+                {listing.seller.totalSales} completed sale{listing.seller.totalSales === 1 ? "" : "s"}
+                {listing.seller.lifetimeSalesAmount > 0 && <> &middot; {fmtUSD(listing.seller.lifetimeSalesAmount)} lifetime</>}
+              </div>
               <div className="text-xs text-ink-faint">Member since {listing.seller.memberSince}</div>
             </div>
           </aside>
