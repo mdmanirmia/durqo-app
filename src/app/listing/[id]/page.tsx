@@ -134,8 +134,8 @@ function StatGrid({ items, colsDesktop = 4 }: { items: StatItem[]; colsDesktop?:
     <div className={`grid grid-cols-2 gap-3 ${desktopColsClass}`}>
       {visible.map((item) => (
         <div key={item.label} className="rounded-xl border border-brand/10 bg-brand-soft/25 p-4">
-          <div className="mono text-lg font-semibold text-brand-strong sm:text-xl">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
-          <div className="mono mt-1 text-[0.65rem] uppercase tracking-wide text-brand-hover/60">{item.label}</div>
+          <div className="mono text-lg font-bold leading-tight tracking-tight text-brand-strong sm:text-xl">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
+          <div className="mono mt-1.5 text-[0.7rem] font-medium uppercase tracking-wider text-brand-hover/60">{item.label}</div>
         </div>
       ))}
     </div>
