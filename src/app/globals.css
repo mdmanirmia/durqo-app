@@ -186,3 +186,30 @@ h1 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Opposite of .scrollbar-hide, and deliberately so: the listing page's sticky
+   sidebar (acquisition + Seller cards) falls back to scrolling internally on
+   short viewports where the two cards don't both fit above the fold. That
+   fallback caused real, repeated confusion ("scroll korar somoi o" — even
+   while scrolling — kept coming back) because a default OS scrollbar there
+   is either invisible (macOS overlay scrollbars, auto-hidden until you're
+   already mid-drag) or so thin it reads as "the page is just cut off" rather
+   than "there's a scrollable box here." This keeps a slim, permanently
+   visible scrollbar on that one region so its scrollability is obvious
+   before the user ever touches it. Chrome/Edge/Safari via ::-webkit-*
+   (unprefixed scrollbar-* isn't supported there yet); Firefox via the
+   standard scrollbar-width/-color properties. */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--rule-strong);
+  border-radius: 9999px;
+}
