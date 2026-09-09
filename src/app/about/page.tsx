@@ -38,11 +38,21 @@ import Button from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "About Durqo | Digital Business Marketplace",
   description:
-    "Learn why Durqo was created and how the marketplace brings greater clarity and structure to buying and selling digital businesses.",
+    "Learn about Durqo, a marketplace connecting buyers and sellers of websites, SaaS products, apps and other digital businesses.",
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "About Durqo | A Clearer Digital Business Marketplace",
+    type: "website",
+    siteName: "Durqo",
+    title: "About Durqo | Digital Business Marketplace",
     description:
-      "Discover Durqo's approach to creating a clearer, more structured marketplace for digital-business buyers and sellers.",
+      "Learn about Durqo, a marketplace connecting buyers and sellers of websites, SaaS products, apps and other digital businesses.",
+    url: "https://www.durqo.com/about",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Durqo | Digital Business Marketplace",
+    description:
+      "Learn about Durqo, a marketplace connecting buyers and sellers of websites, SaaS products, apps and other digital businesses.",
   },
   alternates: { canonical: "https://www.durqo.com/about" },
 };
