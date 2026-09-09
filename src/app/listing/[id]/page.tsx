@@ -39,6 +39,7 @@ import { INDUSTRY_ID_SPACE_CATEGORIES } from "@/lib/categories";
 import { APP_NICHE_MAP } from "@/lib/app-niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
+import { ONLINE_DEPOSIT_CAP } from "@/lib/payment-terms";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -820,11 +821,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               </div>
             </SectionCard>
 
-            {/* Payment Terms */}
+            {/* Payment Terms — the actual Stripe/SSLCommerz charge at
+                checkout is capped to match this copy exactly; see
+                src/lib/payment-terms.ts. */}
             <SectionCard title="Payment Terms" icon={CreditCard}>
               <p className="max-w-[65ch] text-sm leading-relaxed text-ink-soft">
-                {price > 2000
-                  ? "To purchase this business, we require a payment of $2,000 via the website, followed by the remainder via wire transfer/credit card/debit card."
+                {price > ONLINE_DEPOSIT_CAP
+                  ? `To purchase this business, we require a payment of $${ONLINE_DEPOSIT_CAP.toLocaleString()} via the website, followed by the remainder via wire transfer/credit card/debit card.`
                   : "To purchase this business, we require full payment via the website."}
               </p>
             </SectionCard>
