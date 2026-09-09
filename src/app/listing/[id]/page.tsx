@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
@@ -54,6 +55,57 @@ import { Badge, StatusBadge } from "@/components/ui/Badge";
 // build time, so this page renders per-request instead of being statically
 // generated for a hardcoded list of mock IDs.
 export const dynamic = "force-dynamic";
+
+// Sep 8, 2026 technical-SEO pass (Section 8/9/12): dynamic per-listing
+// metadata built only from real, already-public Supabase fields — no
+// hardcoded copy, no invented data. `getListingById` returns a row
+// regardless of status (drafts/pending/archived included — that's existing,
+// pre-SEO-pass behavior this task doesn't change), so `robots` is forced to
+// noindex,nofollow for anything that isn't actually public yet (Section 10).
+// The OG image is always the site default: this data model has no
+// public-facing marketing photo (the only per-listing images are proof-of-
+// income/GA/GSC/SEMrush/Ahrefs verification screenshots — evidence, not
+// something to publish via a social-share preview, per Section 25).
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const listing = await getListingById(id);
+  if (!listing) return {};
+
+  const category = CATEGORY_MAP[listing.categoryId];
+  const categoryName = category?.name ?? listing.categoryId;
+  const canonical = `https://www.durqo.com/listing/${listing.id}`;
+  const isPublic = listing.status === "published" || listing.status === "sold";
+
+  const longTitle = `${listing.title} - ${categoryName} for Sale | Durqo`;
+  const title = longTitle.length > 65 ? `${listing.title} for Sale | Durqo` : longTitle;
+
+  const askingPrice = listing.discountedPrice ?? listing.price;
+  const description =
+    askingPrice != null
+      ? `${listing.title} is a ${categoryName} listed for sale on Durqo. Review its available business information and asking price of ${fmtUSD(askingPrice)}.`
+      : `${listing.title} is a ${categoryName} listed for sale on Durqo. Review its available business information and asking price.`;
+
+  return {
+    title,
+    description,
+    robots: isPublic ? { index: true, follow: true } : { index: false, follow: false },
+    alternates: { canonical },
+    openGraph: {
+      type: "website",
+      siteName: "Durqo",
+      title,
+      description,
+      url: canonical,
+      images: [{ url: "/og/durqo-home.jpg", width: 1200, height: 630, alt: "Durqo marketplace for buying and selling digital businesses" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: ["/og/durqo-home.jpg"],
+    },
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Premium card design system (Sep 2026 redesign, v2) — every section on this
@@ -294,16 +346,77 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
     listing.seo?.ahrefsTotalKeywords !== undefined ||
     listing.seo?.ahrefsTotalBacklinks !== undefined;
 
+  // Structured data (Section 13) — every field below comes straight from
+  // this listing's own already-public data (the same values rendered on
+  // the page). No invented SKU, brand, review, aggregate rating, price
+  // validity date, inventory or seller identity.
+  const listingUrl = `https://www.durqo.com/listing/${listing.id}`;
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://www.durqo.com" },
+      { "@type": "ListItem", position: 2, name: "Marketplace", item: "https://www.durqo.com/buy" },
+      { "@type": "ListItem", position: 3, name: category?.name ?? listing.categoryId, item: `https://www.durqo.com/buy/${listing.categoryId}` },
+      { "@type": "ListItem", position: 4, name: listing.title, item: listingUrl },
+    ],
+  };
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: listing.title,
+    category: category?.name ?? listing.categoryId,
+    description: listing.overview || undefined,
+    url: listingUrl,
+    offers: {
+      "@type": "Offer",
+      price,
+      priceCurrency: "USD",
+      url: listingUrl,
+      availability: listing.status === "sold" ? "https://schema.org/SoldOut" : "https://schema.org/InStock",
+    },
+  };
+
+  // SoftwareApplication — only for the Android & iOS Apps category, and
+  // only using rating/review-count fields that are genuinely present in
+  // this listing's Quick Statistics (seller-entered, already shown on the
+  // page below). Never fabricated when absent.
+  const appRating = listing.quickStats.rating;
+  const appReviews = listing.quickStats.total_reviews;
+  const ratingValue = typeof appRating === "number" ? appRating : typeof appRating === "string" ? Number(appRating) : undefined;
+  const reviewCount = typeof appReviews === "number" ? appReviews : typeof appReviews === "string" ? Number(appReviews) : undefined;
+  const softwareApplicationJsonLd =
+    listing.categoryId === "apps-tools"
+      ? {
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: listing.title,
+          url: listingUrl,
+          ...(typeof listing.quickStats.platform === "string" ? { operatingSystem: listing.quickStats.platform } : {}),
+          offers: { "@type": "Offer", price, priceCurrency: "USD", url: listingUrl },
+          ...(ratingValue && !Number.isNaN(ratingValue) && reviewCount && !Number.isNaN(reviewCount)
+            ? { aggregateRating: { "@type": "AggregateRating", ratingValue, reviewCount } }
+            : {}),
+        }
+      : null;
+
   return (
     <main className="py-8 sm:py-10">
       <Container>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+        {softwareApplicationJsonLd && (
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationJsonLd) }} />
+        )}
+
         {/* Breadcrumbs */}
         <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-ink-faint">
           <Link href="/" className="hover:text-ink">Home</Link>
           <ChevronRight size={12} />
           <Link href="/buy" className="hover:text-ink">Marketplace</Link>
           <ChevronRight size={12} />
-          <Link href={`/buy?category=${listing.categoryId}`} className="hover:text-ink">{category?.name ?? listing.categoryId}</Link>
+          <Link href={`/buy/${listing.categoryId}`} className="hover:text-ink">{category?.name ?? listing.categoryId}</Link>
           <ChevronRight size={12} />
           <span className="text-ink-soft">{listing.title}</span>
         </nav>
