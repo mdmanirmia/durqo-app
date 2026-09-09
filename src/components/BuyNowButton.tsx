@@ -153,7 +153,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         type="button"
         onClick={openSslModal}
         disabled={stripeBusy || sslStatus !== "closed"}
-        className="rounded-xl border border-brand-strong bg-transparent py-2.5 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand-soft disabled:opacity-60"
+        className="rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-colors hover:bg-brand disabled:opacity-60"
       >
         Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)
       </button>
