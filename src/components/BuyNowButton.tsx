@@ -132,7 +132,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         type="button"
         disabled
         title={sold ? "This listing has already been sold." : "This is a sample listing — buying opens up once real listings are live."}
-        className="rounded-xl bg-brand-strong py-3 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] opacity-60"
+        className="rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] opacity-60"
       >
         {sold ? "Sold" : "Sample listing"}
       </button>
@@ -140,12 +140,12 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-1.5">
       <button
         type="button"
         onClick={handleStripe}
         disabled={stripeBusy || sslStatus !== "closed"}
-        className="rounded-xl bg-brand-strong py-3 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-colors hover:bg-brand disabled:opacity-60"
+        className="rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-colors hover:bg-brand disabled:opacity-60"
       >
         {stripeBusy ? "Starting checkout…" : "Buy Now — Card (Stripe)"}
       </button>
@@ -153,7 +153,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         type="button"
         onClick={openSslModal}
         disabled={stripeBusy || sslStatus !== "closed"}
-        className="rounded-xl border border-brand-strong bg-transparent py-3 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand-soft disabled:opacity-60"
+        className="rounded-xl border border-brand-strong bg-transparent py-2.5 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand-soft disabled:opacity-60"
       >
         Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)
       </button>
@@ -166,7 +166,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         type="button"
         disabled
         title="Coming soon"
-        className="rounded-xl border border-rule-strong bg-transparent py-3 text-sm font-semibold text-ink-faint opacity-60"
+        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink-faint opacity-60"
       >
         Buy Now — Escrow (coming soon)
       </button>
