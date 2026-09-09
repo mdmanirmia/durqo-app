@@ -60,6 +60,14 @@ export const metadata: Metadata = {
     apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   manifest: "/manifest.webmanifest",
+  // Sep 9, 2026: Google Search Console ownership verification (HTML tag
+  // method) — like `icons`/`manifest` above, `verification` isn't set by
+  // any individual page's own metadata, so it's inherited site-wide from
+  // here. Do not remove: GSC re-checks this tag to keep the property
+  // verified, even after the initial verification succeeds.
+  verification: {
+    google: "wUIyprtmUX1oDC3jT6cHMZMLuI6t5Dy-XJDCpCSUCtg",
+  },
   openGraph: {
     type: "website",
     siteName: "Durqo",
