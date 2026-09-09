@@ -38,17 +38,19 @@ const EFFECTIVE_DATE = "September 6, 2026";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Durqo",
-  description:
-    "Learn how Durqo collects, uses, shares and protects personal information across its digital-business marketplace.",
+  description: "Learn how Durqo collects, uses, stores and protects personal information.",
+  robots: { index: true, follow: true },
   openGraph: {
+    type: "website",
+    siteName: "Durqo",
     title: "Privacy Policy | Durqo",
-    description:
-      "Learn how Durqo collects, uses, shares and protects personal information across its digital-business marketplace.",
+    description: "Learn how Durqo collects, uses, stores and protects personal information.",
+    url: "https://www.durqo.com/privacy",
   },
   twitter: {
+    card: "summary_large_image",
     title: "Privacy Policy | Durqo",
-    description:
-      "Learn how Durqo collects, uses, shares and protects personal information across its digital-business marketplace.",
+    description: "Learn how Durqo collects, uses, stores and protects personal information.",
   },
   alternates: { canonical: "https://www.durqo.com/privacy" },
 };
