@@ -11,17 +11,22 @@ import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 
 // Where Stripe Checkout's success_url sends the buyer back after a
-// successful payment (see src/app/api/checkout/route.ts). This page is
-// purely a confirmation screen — it doesn't itself verify or update
-// anything server-side. The actual order-status update (awaiting_payment
-// -> in_escrow) happens out-of-band via the Stripe webhook
-// (src/app/api/webhooks/stripe/route.ts), which is the only source of
-// truth for "did this really get paid" — a buyer's browser landing here
-// proves Stripe redirected them, not that the webhook has already run, so
-// the copy below deliberately says "confirming" rather than "confirmed".
+// successful payment (see src/app/api/checkout/route.ts) — and, since Sep
+// 9, 2026, where SSLCommerz's success_url forwards the buyer too, via
+// /api/sslcommerz/success (which sets `tran_id`/`gateway` instead of
+// `session_id`). This page is purely a confirmation screen — it doesn't
+// itself verify or update anything server-side. The actual order-status
+// update (awaiting_payment -> in_escrow) happens out-of-band via the
+// relevant gateway's own server-to-server callback (the Stripe webhook, or
+// the SSLCommerz IPN handler re-validated against their Validation API),
+// which is the only source of truth for "did this really get paid" — a
+// buyer's browser landing here proves the gateway redirected them, not
+// that the backend confirmation has already run.
 function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
+  const tranId = searchParams.get("tran_id");
+  const reference = sessionId ?? tranId;
 
   return (
     <main className="py-20">
@@ -35,7 +40,7 @@ function CheckoutSuccessContent() {
             Thanks — your payment went through and your order is moving into escrow. We&rsquo;ll connect you with the seller
             to coordinate the handover, and you can track progress from your orders page.
           </p>
-          {sessionId && <p className="mono text-xs text-ink-faint">Reference: {sessionId.slice(0, 24)}&hellip;</p>}
+          {reference && <p className="mono text-xs text-ink-faint">Reference: {reference.slice(0, 24)}&hellip;</p>}
           <div className="mt-4 flex gap-3">
             <Button href="/dashboard/buyer/orders" variant="primary">
               View my orders
