@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
   ShieldCheck,
   LineChart,
@@ -20,6 +21,80 @@ import WishlistButton from "@/components/WishlistButton";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import { fmtUSD } from "@/lib/format";
+
+// Sep 8, 2026 (technical SEO pass, Section 3): explicit homepage metadata
+// rather than relying on the root layout's fallback title/description —
+// this is the one page whose title must match the spec's exact string
+// (a plain hyphen, not the layout's em dash), so it needs its own
+// unconditional `metadata` export instead of the layout's `title.template`
+// merging in. Visible content (the H1 at line ~245: "Buy what's already
+// working.") is unchanged — this only affects the <head> tag and the
+// browser tab / link-preview text.
+export const metadata: Metadata = {
+  title: "Durqo - Buy and Sell Digital Businesses",
+  description:
+    "Discover reviewed websites, SaaS products, apps, e-commerce stores and other digital businesses for sale. Buy confidently or list your business on Durqo.",
+  alternates: { canonical: "https://www.durqo.com/" },
+  robots: { index: true, follow: true, "max-image-preview": "large" },
+  openGraph: {
+    type: "website",
+    siteName: "Durqo",
+    title: "Durqo - Buy and Sell Digital Businesses",
+    description: "Discover reviewed websites, SaaS products, apps, e-commerce stores and other digital businesses for sale.",
+    url: "https://www.durqo.com/",
+    images: [
+      {
+        url: "/og/durqo-home.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Durqo marketplace for buying and selling digital businesses",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Durqo - Buy and Sell Digital Businesses",
+    description: "Discover reviewed digital businesses or list your business for sale on Durqo.",
+    images: ["/og/durqo-home.jpg"],
+  },
+};
+
+// Organization + WebSite JSON-LD (Section 13) — server-rendered on the
+// homepage only, using only information that's already publicly visible
+// elsewhere on the site: the support email and office address both appear
+// on /contact, and the Facebook/Instagram links are the same official,
+// already-live ones in the site footer. No private data, no invented
+// fields. SearchAction points at /buy?q=..., which is a real, stable,
+// crawlable URL (src/lib/marketplace-filters.ts reads the `q` param).
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Durqo",
+  url: "https://www.durqo.com",
+  logo: "https://www.durqo.com/android-chrome-512x512.png",
+  email: "support@durqo.com",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "40A Rutledge Crescent",
+    addressLocality: "St. John's",
+    addressRegion: "NL",
+    postalCode: "A1A 3J6",
+    addressCountry: "CA",
+  },
+  sameAs: ["https://www.facebook.com/Durqo", "https://www.instagram.com/durqomarketplace/"],
+};
+
+const WEBSITE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Durqo",
+  url: "https://www.durqo.com",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://www.durqo.com/buy?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+};
 
 // Small dash-prefixed eyebrow used throughout this redesign (Sep 6 2026),
 // distinct from the shared pill-style `.eyebrow` class (globals.css) that
@@ -231,6 +306,16 @@ export default async function Home() {
 
   return (
     <main>
+      {/* Structured data only — no visible output. See Section 13. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
+      />
+
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-20">
         <div
@@ -471,7 +556,7 @@ export default async function Home() {
               return (
                 <Link
                   key={c.id}
-                  href={`/buy?category=${c.id}`}
+                  href={`/buy/${c.id}`}
                   data-reveal
                   className="group relative flex flex-col items-center gap-2.5 rounded-xl border border-rule bg-paper-raised p-5 text-center transition hover:-translate-y-0.5 hover:border-brand hover:bg-brand-soft/40 hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:-translate-y-0.5 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                 >
