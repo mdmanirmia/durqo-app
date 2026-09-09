@@ -4,14 +4,18 @@
 // page.tsx needs to be a Server Component to export a server-rendered
 // noindex robots tag. Same component, same logic — only the file changed.
 //
-// Sep 9, 2026: gained a second payment rail (SSLCommerz, for
-// bKash/Nagad/local-card buyers in Bangladesh) alongside the existing
-// Stripe checkout — the buyer picks which one to use, matching how
-// BuyNowButton on the listing detail page offers the same choice. Reading
-// `sslcommerz_error` off the URL (set by /api/sslcommerz/fail|cancel when
-// SSLCommerz sends the buyer back here) needs useSearchParams, which
-// requires a Suspense boundary — same pattern already used in
-// CheckoutSuccessView.tsx.
+// Sep 9, 2026: gained a second payment rail (SSLCommerz, for bKash/Rocket/
+// Nagad/bank buyers in Bangladesh) alongside the existing Stripe checkout —
+// the buyer picks which one to use, matching how BuyNowButton on the
+// listing detail page offers the same choice. No country detection/gating:
+// the button is just labeled "SSLCommerz (bKash/Rocket/Nagad/Bank)", which
+// is self-explanatory to Bangladeshi buyers and meaningless to anyone else
+// — per the merchant's own call, that's enough to keep non-Bangladeshi
+// buyers from picking a payment method that can't actually charge them
+// (SSLCommerz only settles in BDT). Reading `sslcommerz_error` off the URL
+// (set by /api/sslcommerz/fail|cancel when SSLCommerz sends the buyer back
+// here) needs useSearchParams, which requires a Suspense boundary — same
+// pattern already used in CheckoutSuccessView.tsx.
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -157,13 +161,13 @@ function CartContent() {
                 disabled={busyGateway !== null}
                 className="w-full rounded-md border border-brand bg-transparent py-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft disabled:opacity-60"
               >
-                {busyGateway === "sslcommerz" ? "Redirecting to checkout…" : "Pay with bKash/Nagad/Card"}
+                {busyGateway === "sslcommerz" ? "Redirecting to checkout…" : "SSLCommerz (bKash/Rocket/Nagad/Bank)"}
               </button>
             </div>
             {error && <p className="mt-3 text-center text-sm text-danger">{error}</p>}
             <p className="mt-3 text-center text-xs text-ink-faint">
-              You&rsquo;ll pay securely via Stripe or our Bangladesh payment gateway, then we&rsquo;ll connect you with each
-              seller to release escrow.
+              You&rsquo;ll pay securely via Stripe or SSLCommerz, then we&rsquo;ll connect you with each seller to release
+              escrow.
             </p>
           </div>
         </div>
