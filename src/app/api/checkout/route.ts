@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe";
+import { onlineChargeAmount } from "@/lib/payment-terms";
 
 // Turns either the signed-in buyer's cart, or (when the request body
 // includes a `listingId`) a single listing bought directly via "Buy Now",
@@ -108,11 +109,17 @@ export async function POST(request: Request) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      // Charges only what each listing's own "Payment Terms" section
+      // promises the buyer (src/lib/payment-terms.ts) — full price up to
+      // $2,000, capped at $2,000 above that, with the remainder settled
+      // directly between buyer and seller off-platform. `orders.amount`
+      // above still records the full agreed sale price; this is only the
+      // portion Stripe actually processes.
       line_items: listings.map((l) => ({
         quantity: 1,
         price_data: {
           currency: "usd",
-          unit_amount: Math.round(Number(l.discounted_price ?? l.price) * 100),
+          unit_amount: Math.round(onlineChargeAmount(Number(l.discounted_price ?? l.price)) * 100),
           product_data: { name: l.title },
         },
       })),
