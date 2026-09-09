@@ -855,49 +855,59 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             </SectionCard>
           </div>
 
-          {/* SIDEBAR — acquisition panel + seller details. Placed here (between
-              MAIN CONTENT TOP and MAIN CONTENT BOTTOM) so mobile's
+          {/* SIDEBAR — acquisition panel + seller details, sticky. Placed here
+              (between MAIN CONTENT TOP and MAIN CONTENT BOTTOM) so mobile's
               single-column stacking reads Payment Terms → price/action card →
-              seller details → FAQ → Comments; lg:row-span-2 keeps this grid
-              cell spanning both main-content rows on desktop so the sticky
-              acquisition card below can track scroll through the full page
-              height, not just the "top" chunk's height.
+              seller details → FAQ → Comments; lg:row-span-2 keeps it spanning
+              both main-content rows on desktop so it still sticks through the
+              full page height, not just the "top" chunk's height.
 
-              Sep 8 2026 fix and Sep 9 2026 follow-up (both since superseded):
-              made the *entire* aside sticky with a `max-h`/`overflow-y-auto`
-              safety net sized off `calc(100vh - ...)`, on the theory that if
-              the two cards combined ever got taller than the viewport, an
-              internal scrollbar would catch the overflow. In practice this
-              needed the safety net's budget to exactly out-guess (a) every
-              future content change — adding the 3rd "Buy Now — Escrow"
-              button already broke it once — and (b) every real viewport
-              height, and it broke again on a *discounted* listing (Sep 9
-              2026, "full writing texts valo kore dekha jassena" round 2):
-              the extra strikethrough-price line above the asking price is
-              only rendered when `discountedPrice` is set, so it wasn't in
-              the case that got tuned/tested, and it was just enough to push
-              the pair past the safety net's margin on an ordinary laptop
-              window. Even where the net did catch it, scrolling inside a
-              narrow strip nested inside a sticky element is easy to miss —
-              which is exactly what "scroll korar somoi o" (even while
-              scrolling) kept describing.
+              This card pair has been through three attempts (all Sep 2026)
+              because two requirements were in tension: "stay visible while
+              scrolling" (the original ask) and "the full text of both cards
+              must always be readable" (every follow-up). Attempt 1 (Sep 8)
+              and attempt 2 (Sep 9) kept the whole aside sticky behind a
+              `max-h`/`overflow-y-auto` safety net sized off a hand-tuned
+              `calc(100vh - ...)` budget — reasonable in theory, but the
+              budget had to correctly out-guess *every* future content change
+              (adding the 3rd "Buy Now — Escrow" button broke it once; a
+              *discounted* listing's extra strikethrough-price line — only
+              rendered when `discountedPrice` is set, so it wasn't in the
+              case that got tested — broke it again) and every real viewport
+              height, and even where the net caught the overflow correctly,
+              scrolling inside a narrow strip nested inside a sticky element
+              is genuinely easy to miss, which is exactly what "scroll korar
+              somoi o" (even while scrolling) kept describing both times.
 
-              Sep 9 2026 3rd fix: stop trying to budget pixels at all. Only
-              the acquisition card (price + buttons) is sticky now — it's
-              short and roughly fixed in height, so it reliably fits above
-              the fold on its own. The Seller card below is plain, in-flow
-              content with no `max-h`/`overflow` — like Payment Terms above
-              it, its full text is *always* fully visible, guaranteed by
-              normal document flow rather than by a viewport-height guess,
-              no matter how tall a future discount badge, seller stat, or
-              extra button makes either card. The one visible trade-off: while
-              the page scrolls past the point where the acquisition card
-              becomes stuck, the Seller card (an in-flow sibling right below
-              it) can be seen sliding behind the acquisition card's opaque
-              background for a moment — a common, harmless sticky-sidebar
-              artifact — rather than ever having its own text cut off. */}
-          <aside className="min-w-0 flex h-max flex-col gap-4 lg:row-span-2">
-            <div className="lg:sticky lg:top-16 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+              Attempt 3 made only the acquisition card sticky and let the
+              Seller card sit below it as plain in-flow content — no
+              `max-h`, so its text could never be *clipped*. But normal-flow
+              content directly below a sticky sibling gets scrolled *behind*
+              it instead: past a certain scroll position the Seller card
+              disappeared under the acquisition card's opaque background for
+              the rest of the page, which is worse than clipped — not
+              "hard to notice you can reach it," but unreachable without
+              scrolling back up. Reverted.
+
+              This 3rd fix keeps both cards sticky together as one unit
+              (attempt 1/2's structure) — the only way to keep the Seller
+              card on-screen for the entire page scroll — but stops trying to
+              win the pixel-budget game: `top-4`/`max-h-[calc(100vh-2rem)]`
+              give back the ~50px attempts 1/2 were reserving for a offset/
+              margin that isn't load-bearing, so the pair now fits without
+              any internal scrolling on most ordinary laptop screens even
+              with a discount badge and all 4 buttons. Where a screen is
+              short enough that the pair still doesn't fit, `overflow-y-auto`
+              still catches it — but this time paired with the new
+              `.sidebar-scroll` class (globals.css) that keeps that internal
+              scrollbar permanently visible instead of relying on the
+              default hidden/overlay OS scrollbar, so a viewer can *see*
+              there's a scrollable box there before they ever try to scroll
+              it — directly answering the "easy to miss" half of both prior
+              reports. `lg:pb-4` still adds breathing room below the last
+              line in that fallback case. */}
+          <aside className="sidebar-scroll min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-4 lg:row-span-2 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pb-4">
+            <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
               <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                   <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
