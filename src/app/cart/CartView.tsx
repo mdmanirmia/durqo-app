@@ -226,7 +226,7 @@ function CartContent() {
                 type="button"
                 onClick={openSslModal}
                 disabled={stripeBusy || sslStatus !== "closed"}
-                className="w-full rounded-md border border-brand bg-transparent py-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft disabled:opacity-60"
+                className="w-full rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
               >
                 SSLCommerz (bKash/Rocket/Nagad/Bank)
               </button>
