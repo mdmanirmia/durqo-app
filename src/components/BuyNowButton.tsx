@@ -13,6 +13,9 @@ type Gateway = "stripe" | "sslcommerz";
 // sold (or is a demo/mock listing with nothing real in the database to
 // buy). Sep 9, 2026: gained the SSLCommerz option alongside the
 // already-live Stripe one, matching the same choice CartView now offers.
+// No country detection/gating — the label itself ("bKash/Rocket/Nagad/
+// Bank") is the filter: only makes sense to a Bangladeshi buyer, so that's
+// who picks it. See the longer note in CartView.tsx.
 export default function BuyNowButton({ listingId, sold }: { listingId: string; sold?: boolean }) {
   const router = useRouter();
   const [busyGateway, setBusyGateway] = useState<Gateway | null>(null);
@@ -80,7 +83,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         disabled={busyGateway !== null}
         className="rounded-xl border border-brand-strong bg-transparent py-3 text-sm font-semibold text-brand-strong transition-colors hover:bg-brand-soft disabled:opacity-60"
       >
-        {busyGateway === "sslcommerz" ? "Starting checkout…" : "Buy Now — bKash/Nagad/Card"}
+        {busyGateway === "sslcommerz" ? "Starting checkout…" : "Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)"}
       </button>
       {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
