@@ -12,6 +12,17 @@ export interface OrderRow {
   amount: number;
   status: OrderStatus;
   date: string;
+  // Payment breakdown (Sep 2026) — how much of `amount` was actually
+  // charged online vs. left for buyer/seller to settle directly
+  // (src/lib/payment-terms.ts), plus, when paid via SSLCommerz, the exact
+  // BDT amount and USD->BDT rate applied at checkout (src/lib/currency.ts).
+  // All optional/undefined for older orders placed before these columns
+  // existed.
+  paymentChannel: string | null;
+  onlineChargeUsd: number | undefined;
+  remainderUsd: number | undefined;
+  sslcommerzBdtAmount: number | undefined;
+  sslcommerzRate: number | undefined;
 }
 
 // Shared by both dashboards — `side` picks which foreign key identifies "me"
@@ -50,6 +61,11 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
     amount: Number(r.amount),
     status: r.status as OrderStatus,
     date: (r.created_at as string).slice(0, 10),
+    paymentChannel: (r.payment_channel as string | null) ?? null,
+    onlineChargeUsd: r.online_charge_usd === null || r.online_charge_usd === undefined ? undefined : Number(r.online_charge_usd),
+    remainderUsd: r.remainder_usd === null || r.remainder_usd === undefined ? undefined : Number(r.remainder_usd),
+    sslcommerzBdtAmount: r.sslcommerz_bdt_amount === null || r.sslcommerz_bdt_amount === undefined ? undefined : Number(r.sslcommerz_bdt_amount),
+    sslcommerzRate: r.sslcommerz_rate === null || r.sslcommerz_rate === undefined ? undefined : Number(r.sslcommerz_rate),
   }));
 }
 
