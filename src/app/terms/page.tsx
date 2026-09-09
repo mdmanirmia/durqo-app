@@ -30,11 +30,20 @@ import { fmtUSD } from "@/lib/format";
 const EFFECTIVE_DATE = "September 6, 2026";
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | Durqo",
-  description: "Read the terms governing access to and use of the Durqo digital-business marketplace.",
+  title: "Terms of Service | Durqo",
+  description: "Read the terms and conditions governing the use of the Durqo digital-business marketplace.",
+  robots: { index: true, follow: true },
   openGraph: {
-    title: "Terms and Conditions | Durqo",
-    description: "Read the terms governing access to and use of the Durqo digital-business marketplace.",
+    type: "website",
+    siteName: "Durqo",
+    title: "Terms of Service | Durqo",
+    description: "Read the terms and conditions governing the use of the Durqo digital-business marketplace.",
+    url: "https://www.durqo.com/terms",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Terms of Service | Durqo",
+    description: "Read the terms and conditions governing the use of the Durqo digital-business marketplace.",
   },
   alternates: { canonical: "https://www.durqo.com/terms" },
 };
