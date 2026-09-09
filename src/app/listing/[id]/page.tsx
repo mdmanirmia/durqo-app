@@ -933,9 +933,35 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               scrolling the sidebar's own box now moves the Seller card's
               last line fully back within its bounds — before this, the
               same test left it clipped with the scroll position stuck at 0,
-              i.e. nothing to scroll. */}
+              i.e. nothing to scroll.
+
+              Sep 9 2026 4th fix ("school korle jeno 2 ta card er full
+              details e valo kore dekha jai, ekhon price ta dekha jassena" —
+              while scrolling, both cards' full details should stay nicely
+              visible; now the price isn't visible): once the fix above made
+              `overflow-y-auto` genuinely work, scrolling the sidebar's own
+              box to read the rest of the Seller card does what any normal
+              scroll box does — it scrolls the price/buttons at the top out
+              of view along with everything else. That's correct for a
+              plain scroll box, but wrong for this one: the price and Buy
+              Now buttons are the one thing on this page that should never
+              have to be scrolled away to find. Fix: the acquisition card
+              itself is now ALSO sticky (`lg:sticky lg:top-0`), nested
+              inside the already-sticky/scrollable `<aside>`. `<aside>`'s
+              `overflow-y-auto` makes it the acquisition card's nearest
+              scrolling ancestor, so this sticky is scoped to *that* box,
+              not the page — it only does anything during the internal
+              fallback scroll from the fix above, and has zero effect on
+              ordinary page scrolling (where `<aside>` isn't scrolling
+              internally at all). Net effect: price + all 4 buttons stay
+              pinned at the top of the sidebar the whole time, while the
+              Seller card scrolls up underneath to reveal its full text —
+              both requirements ("full details visible" and "price never
+              disappears") satisfied at once, instead of trading one for the
+              other. `z-10` keeps it painted above the Seller card as it
+              slides past underneath. */}
           <aside className="sidebar-scroll min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-4 lg:row-span-2 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pb-4">
-            <div className="shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <div className="z-10 shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)] lg:sticky lg:top-0">
               <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                   <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
