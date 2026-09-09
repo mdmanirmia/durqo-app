@@ -79,13 +79,23 @@ export async function POST(request: Request) {
     );
   }
 
-  const orderRows = listings.map((l) => ({
-    listing_id: l.id,
-    buyer_id: buyerId,
-    seller_id: l.seller_id,
-    amount: Number(l.discounted_price ?? l.price),
-    status: "awaiting_payment" as const,
-  }));
+  const orderRows = listings.map((l) => {
+    const price = Number(l.discounted_price ?? l.price);
+    const charged = onlineChargeAmount(price);
+    return {
+      listing_id: l.id,
+      buyer_id: buyerId,
+      seller_id: l.seller_id,
+      amount: price,
+      // What Stripe actually charges vs. what's left for buyer/seller to
+      // settle directly (src/lib/payment-terms.ts) — recorded here so the
+      // buyer/seller/admin order views can show it later, not just at
+      // checkout time.
+      online_charge_usd: charged,
+      remainder_usd: Math.round((price - charged) * 100) / 100,
+      status: "awaiting_payment" as const,
+    };
+  });
 
   const { data: insertedOrders, error: insertError } = await supabase
     .from("orders")
