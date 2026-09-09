@@ -3,6 +3,15 @@ export function fmtUSD(n: number | undefined | null): string {
   return "$" + Math.round(n).toLocaleString("en-US");
 }
 
+// For SSLCommerz's BDT amounts specifically (src/lib/currency.ts) — shown
+// only on the Bangladeshi-buyer payment path, never for Stripe/USD amounts.
+// Keeps the 2 decimal places SSLCommerz itself charges to (e.g. "৳257.72"),
+// unlike fmtUSD's rounded-to-the-dollar display.
+export function fmtBDT(n: number | undefined | null): string {
+  if (n === undefined || n === null) return "—";
+  return "৳" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 // Card-data honesty rules (buy-page redesign, Section 9): a genuinely stored
 // zero renders "$0"; a value nobody entered renders "N/A" — the two must
 // never collapse into the same "$0" reading the way fmtUSD(undefined ?? 0)
