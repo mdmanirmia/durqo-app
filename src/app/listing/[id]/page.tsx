@@ -905,9 +905,38 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               there's a scrollable box there before they ever try to scroll
               it — directly answering the "easy to miss" half of both prior
               reports. `lg:pb-4` still adds breathing room below the last
-              line in that fallback case. */}
+              line in that fallback case.
+
+              THE ACTUAL BUG, found only after this 3rd fix still failed
+              live-testing: `overflow-y-auto` here was never the thing
+              failing — it never got the chance to run. This `<aside>` is a
+              `flex flex-col`, and each card below is a flex item with its
+              own `overflow-hidden` (only there to clip square corners to
+              the card's `rounded-2xl`). Per the flexbox spec, a flex item's
+              *automatic* minimum size — the floor the flex algorithm won't
+              shrink it past — collapses to ~0 the moment the item (or its
+              own box) has `overflow` other than `visible`. So once the pair
+              was taller than `max-h`, the browser didn't overflow the
+              `<aside>` and hand it to the scrollbar at all: it shrank the
+              cards themselves — squeezing their box below their content's
+              real height — and each card's *own* `overflow-hidden` then
+              silently clipped whatever no longer fit, with no scrollbar
+              anywhere, on either box. That's the actual mechanism behind
+              every "ekhono thik hoini / scroll korle o dekha jasse na" (still
+              not fixed / not visible even scrolling) report — there was
+              never anything to scroll; the cards were being compressed.
+              `shrink-0` on both card divs below is the fix: it stops
+              flexbox from ever shrinking them, so once they no longer fit
+              in `max-h`, the excess now correctly overflows the `<aside>`
+              itself — which is what actually hands it to
+              `overflow-y-auto`/`.sidebar-scroll` for the first time. Verified
+              directly (not just visually): forcing a short `max-h` and
+              scrolling the sidebar's own box now moves the Seller card's
+              last line fully back within its bounds — before this, the
+              same test left it clipped with the scroll position stuck at 0,
+              i.e. nothing to scroll. */}
           <aside className="sidebar-scroll min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-4 lg:row-span-2 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pb-4">
-            <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <div className="shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
               <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                   <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
@@ -926,7 +955,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+            <div className="shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
               <div className="flex items-center gap-2 border-b border-rule px-5 py-3 sm:px-6">
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
                   <Store size={17} />
