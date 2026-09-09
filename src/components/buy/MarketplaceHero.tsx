@@ -11,13 +11,20 @@ const TRUST_POINTS = [
 // Compact navy marketplace hero (Section 4). Deliberately shorter than the
 // homepage/sell-page heroes — this page's job is search + browse, not a
 // pitch — matching the mockup's compact treatment.
-export default function MarketplaceHero() {
+//
+// Sep 8, 2026 (technical SEO pass): `headingLevel` lets the new per-category
+// pages (/buy/[category]) reuse this exact hero — unchanged pixel-for-pixel
+// — while demoting its heading to h2, since those pages render their own
+// category-specific h1 below the hero (one h1 per page). /buy itself never
+// passes this prop, so its output is byte-identical to before.
+export default function MarketplaceHero({ headingLevel = "h1" }: { headingLevel?: "h1" | "h2" }) {
+  const Heading = headingLevel;
   return (
     <section className="border-b border-rule bg-brand-strong py-10 sm:py-12">
       <Container>
         <div className="mx-auto max-w-[760px] text-center">
           <p className="eyebrow eyebrow--on-dark mx-auto">Marketplace</p>
-          <h1 className="mt-3 text-3xl leading-[1.15] text-white sm:text-4xl">Find a business worth building on.</h1>
+          <Heading className="mt-3 text-3xl leading-[1.15] text-white sm:text-4xl">Find a business worth building on.</Heading>
           <p className="mx-auto mt-3 max-w-[56ch] text-center text-[0.95rem] leading-relaxed text-white/70">
             Explore verified digital businesses and compare their performance, pricing and operating history.
           </p>
