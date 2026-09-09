@@ -959,8 +959,33 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               both requirements ("full details visible" and "price never
               disappears") satisfied at once, instead of trading one for the
               other. `z-10` keeps it painted above the Seller card as it
-              slides past underneath. */}
-          <aside className="sidebar-scroll min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-4 lg:row-span-2 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:pb-4">
+              slides past underneath.
+
+              Sep 9 2026 5th fix ("fix hoini... now when i scrol the price is
+              not visible" — reported on an ORDINARY page scroll, not the
+              internal sidebar fallback the 4th fix targeted): reproduced by
+              scrolling the actual page (not the sidebar's own box) past the
+              point where `<aside>` becomes stuck. The site header
+              (`Header.tsx`) is `sticky top-0 z-40 h-[72px]` — 72px tall. This
+              `<aside>` was using `lg:top-4` (16px), so once stuck, its top
+              edge sat only 16px from the viewport top: 56px of the
+              acquisition card's price section rendered directly *underneath*
+              the header, which paints above it (`z-40` vs. this card's
+              `z-10`) and visually hid it — not clipped, not scrolled away,
+              just covered by opaque header chrome. Every other sticky
+              sidebar in this codebase already accounts for the header and
+              was never touched by this bug: `DesktopFilterSidebar.tsx`
+              (`md:top-24` / `md:max-h-[calc(100vh-7rem)]`) and both
+              `TermsToc.tsx`/`PrivacyToc.tsx` (`top-24` /
+              `max-h-[calc(100vh-7rem)]`) all clear the 72px header with a
+              96px offset. This `<aside>` was the one place that didn't
+              follow that convention. Fix: `lg:top-4` → `lg:top-24` and
+              `lg:max-h-[calc(100vh-2rem)]` → `lg:max-h-[calc(100vh-7rem)]`,
+              matching those three exactly. The inner acquisition card's
+              `lg:top-0` is unchanged and still correct — it's relative to
+              `<aside>`'s own box, not the viewport, so it just needs
+              `<aside>` itself positioned below the header. */}
+          <aside className="sidebar-scroll min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-24 lg:row-span-2 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pb-4">
             <div className="z-10 shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)] lg:sticky lg:top-0">
               <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
