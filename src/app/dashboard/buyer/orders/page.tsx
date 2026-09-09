@@ -6,6 +6,7 @@ import { StatusBadge } from "@/components/ui/Badge";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD } from "@/lib/format";
 import { getBuyerOrders, type OrderRow } from "@/lib/data/orders.client";
+import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
 
 export default function BuyerOrdersPage() {
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
@@ -46,7 +47,16 @@ export default function BuyerOrdersPage() {
                   <td className="px-4 py-3 text-ink-soft">{o.id.slice(0, 8)}</td>
                   <td className="px-4 py-3 font-sans font-medium text-ink">{o.listingTitle}</td>
                   <td className="px-4 py-3 font-sans text-ink-soft">{o.counterpartyName}</td>
-                  <td className="px-4 py-3">{fmtUSD(o.amount)}</td>
+                  <td className="px-4 py-3">
+                    {fmtUSD(o.amount)}
+                    <OrderAmountBreakdown
+                      paymentChannel={o.paymentChannel}
+                      onlineChargeUsd={o.onlineChargeUsd}
+                      remainderUsd={o.remainderUsd}
+                      sslcommerzBdtAmount={o.sslcommerzBdtAmount}
+                      sslcommerzRate={o.sslcommerzRate}
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={o.status} />
                   </td>
