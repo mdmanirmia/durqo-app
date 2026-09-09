@@ -1,4 +1,4 @@
-import { getMarketplaceListings } from "@/lib/data/listings.server";
+import { getMarketplaceListings, MarketplaceQueryResult } from "@/lib/data/listings.server";
 import { MarketplaceFilters } from "@/lib/marketplace-filters";
 import ListingCard from "@/components/ListingCard";
 import ResultsToolbar from "@/components/buy/ResultsToolbar";
@@ -13,8 +13,20 @@ import Pagination from "@/components/buy/Pagination";
 // boundary (see page.tsx) so every filter/sort/page change re-suspends and
 // shows ResultsSkeleton rather than silently swapping in new results (or,
 // worse, flashing a false "no results" state mid-fetch).
-export default async function MarketplaceMain({ filters }: { filters: MarketplaceFilters }) {
-  const { listings, total, error } = await getMarketplaceListings(filters);
+//
+// `data` is optional (Sep 8, 2026 technical-SEO pass): /buy/[category] needs
+// the same listings both for this grid and for its CollectionPage/ItemList
+// JSON-LD, so it fetches once and passes the result down here instead of
+// this component re-querying Supabase a second time. /buy itself never
+// passes `data`, so its behavior is unchanged.
+export default async function MarketplaceMain({
+  filters,
+  data,
+}: {
+  filters: MarketplaceFilters;
+  data?: MarketplaceQueryResult;
+}) {
+  const { listings, total, error } = data ?? (await getMarketplaceListings(filters));
 
   return (
     // min-w-0 keeps this grid item shrinkable below its content's min-content
