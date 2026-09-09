@@ -821,16 +821,21 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               </div>
             </SectionCard>
 
-            {/* Payment Terms — the actual Stripe/SSLCommerz charge at
-                checkout is capped to match this copy exactly; see
-                src/lib/payment-terms.ts. Sep 9 2026: this used to read as
-                if the $ figure were the only way to pay, with no mention
-                that Bangladeshi buyers paying via SSLCommerz are charged
-                the BDT equivalent, not the USD figure itself — clarified
-                per the merchant's request so the USD/Stripe path and the
-                BDT/SSLCommerz path are both spelled out here, not just
-                surfaced later in the SSLCommerz confirmation modal
-                (SslcommerzConfirmModal.tsx). */}
+            {/* Payment Terms — the first paragraph below is the existing
+                general/Stripe (USD) terms, unchanged. The second paragraph
+                is the BDT-specific terms for Bangladesh-based buyers paying
+                via SSLCommerz — branched on the listing's server-side price
+                (never a client-supplied value) against the same
+                ONLINE_DEPOSIT_CAP both Stripe and SSLCommerz checkout
+                actually charge against (src/lib/payment-terms.ts), so the
+                copy can never drift from what checkout actually does. A
+                price at exactly the cap takes the "full payment" branch
+                (price > cap is false there), matching the same
+                onlineChargeAmount() semantics the checkout routes use.
+                Sep 9 2026: reworded to the merchant's exact required copy
+                for each bracket and to drop "Durqo's conversion margin"
+                from buyer-facing text — see SslcommerzConfirmModal.tsx for
+                the matching pre-payment confirmation copy. */}
             <SectionCard title="Payment Terms" icon={CreditCard}>
               <p className="max-w-[65ch] text-sm leading-relaxed text-ink-soft">
                 {price > ONLINE_DEPOSIT_CAP
@@ -838,10 +843,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   : "To purchase this business, we require full payment via the website."}
               </p>
               <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-ink-soft">
-                Paying with a card charges the exact amount above in USD via Stripe. Bangladeshi buyers paying in Taka
-                (bKash/Rocket/Nagad/Bank via SSLCommerz) are instead charged the BDT equivalent, converted at that
-                day&rsquo;s exchange rate plus Durqo&rsquo;s small conversion margin — the exact BDT amount and rate are
-                shown for confirmation before you pay.
+                {price > ONLINE_DEPOSIT_CAP
+                  ? `Bangladesh-based buyers who choose to pay in BDT must pay the BDT equivalent of USD ${ONLINE_DEPOSIT_CAP.toLocaleString()} through SSLCommerz at checkout. Once the initial payment is confirmed, Durqo will email the buyer with instructions for paying the remaining balance by bank wire transfer, credit card, or debit card. The applicable exchange rate and exact BDT amount will be shown before payment is confirmed, and the purchase will be completed only after the full balance has been received and verified.`
+                  : "Bangladesh-based buyers who choose to pay in BDT must pay the full purchase price through SSLCommerz at checkout. The applicable exchange rate and exact BDT amount will be shown before payment is confirmed. The purchase will be completed after the full payment has been received and verified."}
               </p>
             </SectionCard>
           </div>
