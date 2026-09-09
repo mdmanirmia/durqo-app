@@ -13,7 +13,9 @@ export default async function AdminOrders() {
   if (admin) {
     const { data: orders } = await admin
       .from("orders")
-      .select("id, listing_id, buyer_id, seller_id, amount, status, payment_channel, created_at")
+      .select(
+        "id, listing_id, buyer_id, seller_id, amount, status, payment_channel, created_at, online_charge_usd, remainder_usd, sslcommerz_bdt_amount, sslcommerz_rate"
+      )
       .order("created_at", { ascending: false });
 
     const listingIds = [...new Set((orders ?? []).map((o) => o.listing_id))];
@@ -34,6 +36,11 @@ export default async function AdminOrders() {
       status: o.status,
       paymentChannel: o.payment_channel ?? "stripe",
       createdAt: (o.created_at as string).slice(0, 10),
+      onlineChargeUsd: o.online_charge_usd === null || o.online_charge_usd === undefined ? undefined : Number(o.online_charge_usd),
+      remainderUsd: o.remainder_usd === null || o.remainder_usd === undefined ? undefined : Number(o.remainder_usd),
+      sslcommerzBdtAmount:
+        o.sslcommerz_bdt_amount === null || o.sslcommerz_bdt_amount === undefined ? undefined : Number(o.sslcommerz_bdt_amount),
+      sslcommerzRate: o.sslcommerz_rate === null || o.sslcommerz_rate === undefined ? undefined : Number(o.sslcommerz_rate),
     }));
   }
 

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { StatusBadge } from "@/components/ui/Badge";
 import { fmtUSD } from "@/lib/format";
 import { setOrderStatus, setOrderPaymentChannel } from "../actions";
+import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
 
 export interface AdminOrderRow {
   id: string;
@@ -14,6 +15,11 @@ export interface AdminOrderRow {
   status: string;
   paymentChannel: string;
   createdAt: string;
+  // Payment breakdown (Sep 2026) — see OrderAmountBreakdown.tsx.
+  onlineChargeUsd: number | undefined;
+  remainderUsd: number | undefined;
+  sslcommerzBdtAmount: number | undefined;
+  sslcommerzRate: number | undefined;
 }
 
 const STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
@@ -114,7 +120,16 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                 <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
                 <td className="px-4 py-3 text-ink-soft">{o.buyerName}</td>
                 <td className="px-4 py-3 text-ink-soft">{o.sellerName}</td>
-                <td className="mono px-4 py-3">{fmtUSD(o.amount)}</td>
+                <td className="px-4 py-3">
+                  <span className="mono">{fmtUSD(o.amount)}</span>
+                  <OrderAmountBreakdown
+                    paymentChannel={o.paymentChannel}
+                    onlineChargeUsd={o.onlineChargeUsd}
+                    remainderUsd={o.remainderUsd}
+                    sslcommerzBdtAmount={o.sslcommerzBdtAmount}
+                    sslcommerzRate={o.sslcommerzRate}
+                  />
+                </td>
                 <td className="px-4 py-3">
                   <StatusBadge status={o.status} className="mb-1" />
                   <select
