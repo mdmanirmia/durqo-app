@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getSslcommerzConfig, createSslcommerzSession } from "@/lib/sslcommerz";
 import { convertUsdToBdt } from "@/lib/currency";
+import { onlineChargeAmount } from "@/lib/payment-terms";
 
 // SSLCommerz counterpart to /api/checkout/route.ts (Stripe). Same shape —
 // either the signed-in buyer's cart, or a single `{ listingId }` for Buy
@@ -20,6 +21,12 @@ import { convertUsdToBdt } from "@/lib/currency";
 // SSLCommerz session total that's converted, via convertUsdToBdt()
 // (src/lib/currency.ts): current market USD->BDT rate + a flat 6 BDT
 // margin, per the merchant's explicit instruction.
+//
+// Payment Terms note: the USD amount fed into that conversion is also
+// capped per listing via onlineChargeAmount() (src/lib/payment-terms.ts)
+// — the same $2,000-per-listing cap Stripe checkout applies — so SSLCommerz
+// never charges more than what each listing's own "Payment Terms" section
+// told the buyer they'd pay online.
 export async function POST(request: Request) {
   const supabase = await createClient();
   if (!supabase) {
@@ -73,6 +80,11 @@ export async function POST(request: Request) {
   }
 
   const totalAmount = listings.reduce((sum, l) => sum + Number(l.discounted_price ?? l.price), 0);
+  // What SSLCommerz actually charges — capped per listing to match each
+  // listing's own "Payment Terms" copy (src/lib/payment-terms.ts), same
+  // cap Stripe checkout applies. `totalAmount` above (full price) is still
+  // what's recorded on the orders below.
+  const onlineTotal = listings.reduce((sum, l) => sum + onlineChargeAmount(Number(l.discounted_price ?? l.price)), 0);
   const productName = listings.map((l) => l.title).join(", ").slice(0, 255);
 
   const orderRows = listings.map((l) => ({
@@ -114,7 +126,7 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin;
 
-  const { bdtAmount, appliedRate, source: rateSource } = await convertUsdToBdt(totalAmount);
+  const { bdtAmount, appliedRate, source: rateSource } = await convertUsdToBdt(onlineTotal);
   if (rateSource === "fallback") {
     // Not a blocker — checkout still works off the fallback rate — but
     // worth a loud log line since it means a real buyer is about to be
@@ -123,7 +135,7 @@ export async function POST(request: Request) {
   }
   // Rate is logged (not just used) so a real charge's BDT total is always
   // traceable back to the USD->BDT rate applied at the moment of purchase.
-  console.log(`[sslcommerz-init] tran ${tranId}: $${totalAmount} USD -> ${bdtAmount} BDT @ rate ${appliedRate} (${rateSource})`);
+  console.log(`[sslcommerz-init] tran ${tranId}: sale $${totalAmount} USD, charging $${onlineTotal} USD -> ${bdtAmount} BDT @ rate ${appliedRate} (${rateSource})`);
 
   try {
     const session = await createSslcommerzSession(config, {
