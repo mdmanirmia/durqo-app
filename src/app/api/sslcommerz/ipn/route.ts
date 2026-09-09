@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const { data: matchingOrders } = await admin
     .from("orders")
-    .select("id, listing_id, amount, status")
+    .select("id, listing_id, amount, status, buyer_id, remainder_usd")
     .eq("sslcommerz_tran_id", tranId);
 
   if (!matchingOrders || matchingOrders.length === 0) {
@@ -93,8 +93,7 @@ export async function POST(request: Request) {
         .from("listings")
         .select("id, title, price, seller_id")
         .in("id", listingIds);
-      const { data: orderRows } = await admin.from("orders").select("buyer_id").in("id", orderIds).limit(1);
-      const buyerId = orderRows?.[0]?.buyer_id as string | undefined;
+      const buyerId = matchingOrders[0]?.buyer_id as string | undefined;
 
       const sellerIds = Array.from(new Set((paidListings ?? []).map((l) => l.seller_id as string)));
       const lookupIds = buyerId ? [buyerId, ...sellerIds] : sellerIds;
@@ -105,27 +104,63 @@ export async function POST(request: Request) {
         await admin.from("cart_items").delete().eq("user_id", buyerId).in("listing_id", listingIds);
       }
 
-      const itemsHtml = (paidListings ?? []).map((l) => `<li>${l.title}</li>`).join("");
+      // Per-listing remaining-balance amounts, from the same remainder_usd
+      // this order's own checkout math already computed and stored
+      // (src/lib/payment-terms.ts's onlineChargeAmount(), applied in
+      // /api/sslcommerz/init) — never recomputed here, so this can never
+      // drift from what the buyer actually saw and agreed to pay before
+      // checkout. A listing at or under the deposit cap has remainder_usd
+      // 0/null and gets no balance note.
+      const remainderByListingId = new Map(matchingOrders.map((o) => [o.listing_id, Number(o.remainder_usd ?? 0)]));
+      const totalRemainderUsd = matchingOrders.reduce((sum, o) => sum + Number(o.remainder_usd ?? 0), 0);
+      const hasRemainder = totalRemainderUsd > 0;
+
+      const itemsHtml = (paidListings ?? [])
+        .map((l) => {
+          const remainder = remainderByListingId.get(l.id) ?? 0;
+          return `<li>${l.title}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
+        })
+        .join("");
       const riskNote = isRisky
         ? `<p style="color:#b91c1c"><strong>Risk flag:</strong> SSLCommerz marked this transaction risk_level=1 (${validation.riskTitle ?? "unspecified"}). Please verify the customer before releasing escrow.</p>`
+        : "";
+      const balanceOpsNote = hasRemainder
+        ? `<p><strong>Remaining balance owed:</strong> $${totalRemainderUsd.toLocaleString()} USD. Follow up with the buyer with wire transfer/credit card/debit card instructions — do not mark this order completed until the full balance is received and verified.</p>`
         : "";
 
       await sendEmail(
         ADMIN_EMAIL,
-        `New SSLCommerz purchase — ${paidListings?.length ?? 0} listing(s)${isRisky ? " [RISK FLAG]" : ""}`,
+        `New SSLCommerz purchase — ${paidListings?.length ?? 0} listing(s)${isRisky ? " [RISK FLAG]" : ""}${hasRemainder ? " [BALANCE DUE]" : ""}`,
         `<p>${buyerEmail ?? "A buyer"} completed checkout via SSLCommerz for:</p>
          <ul>${itemsHtml}</ul>
          <p>Amount: ${validation.amount ?? "?"} ${validation.currency ?? "BDT"} (tran_id ${tranId})</p>
-         ${riskNote}`
+         ${riskNote}
+         ${balanceOpsNote}`
       );
 
       if (buyerEmail) {
+        // Two distinct buyer emails depending on whether this purchase was
+        // fully paid through SSLCommerz or only the deposit-capped initial
+        // payment (src/lib/payment-terms.ts) — matching the Payment Terms
+        // copy on the listing page and the pre-payment confirmation modal
+        // (SslcommerzConfirmModal.tsx) word for word: only the initial
+        // payment is confirmed here, the purchase itself isn't complete
+        // until the remaining balance is received and verified, and no
+        // "conversion margin" language is used in buyer-facing copy.
+        const balanceNote = hasRemainder
+          ? `<p>This was the initial payment on your purchase. To complete it, you&rsquo;ll need to pay the remaining
+             balance of $${totalRemainderUsd.toLocaleString()} USD by bank wire transfer, credit card, or debit card
+             — our team will contact you shortly with instructions for paying it.</p>
+             <p>Your purchase will be completed only after we&rsquo;ve received and verified the full remaining
+             balance.</p>`
+          : `<p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>`;
+
         await sendEmail(
           buyerEmail,
-          "Your Durqo purchase is confirmed",
+          hasRemainder ? "Your Durqo purchase — remaining balance due" : "Your Durqo purchase is confirmed",
           `<p>Thanks for your purchase — here's what you bought:</p>
            <ul>${itemsHtml}</ul>
-           <p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>`
+           ${balanceNote}`
         );
       }
 
