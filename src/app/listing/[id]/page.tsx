@@ -874,21 +874,43 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               overall, and (2) added a `max-h`/`overflow-y-auto` safety net
               tied to the viewport height, so on any screen where the two
               cards still don't fit, the sidebar scrolls internally instead
-              of ever pushing content off the bottom of the viewport. */}
-          <aside className="min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-20 lg:row-span-2 lg:max-h-[calc(100vh-6.5rem)] lg:overflow-y-auto">
+              of ever pushing content off the bottom of the viewport.
+
+              Sep 9 2026 follow-up ("full writing texts valo kore dekha
+              jassena, scroll korar somoi o" — full card text still wasn't
+              visible, even while scrolling): adding the 3rd "Buy Now —
+              Escrow" button pushed the acquisition card's height up enough
+              that the two cards together (~800px) now regularly exceeded
+              the `max-h` safety net on common laptop viewports, so the
+              bottom of the Seller card sat inside the `overflow-y-auto`
+              region — and scrolling *inside* that narrow strip is easy to
+              miss/mistake for the page not responding, exactly what got
+              reported. Fixed by (1) trimming every action button and card
+              header/body from `py-3`/`py-4` down to `py-2.5`/`py-3`
+              (BuyNowButton.tsx, CartButton.tsx, ChatWithSellerButton.tsx,
+              WishlistButton.tsx, and both card shells below) so the pair
+              fits within the safety net on ordinary screens again without
+              needing to scroll at all, (2) loosening the offset/cap from
+              `top-20`/`max-h-[calc(100vh-6.5rem)]` to `top-16`/
+              `max-h-[calc(100vh-5rem)]` to reclaim ~24px of usable height,
+              and (3) adding `lg:pb-4` so that on any screen still too short
+              to fit both cards, the last line of text gets breathing room
+              before the scrollable region's edge instead of sitting flush
+              against it. */}
+          <aside className="min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-16 lg:row-span-2 lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pb-4">
             <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-              <div className="border-b border-rule px-5 py-4 text-center sm:px-6">
+              <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                   <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
                 )}
                 <div className="mono text-3xl font-bold text-ink">{fmtUSD(price)}</div>
               </div>
-              <div className="flex flex-col gap-2 px-5 py-4 sm:px-6">
+              <div className="flex flex-col gap-1.5 px-5 py-3 sm:px-6">
                 <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
                 <CartButton listingId={listing.id} sold={listing.status === "sold"} />
                 <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
                 <WishlistButton listingId={listing.id} variant="full" />
-                <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
+                <p className="mt-1.5 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
                   <Lock size={12} className="mt-0.5 shrink-0" />
                   Your identity and message stay confidential to the seller until you choose to share more.
                 </p>
@@ -896,13 +918,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             </div>
 
             <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-              <div className="flex items-center gap-2 border-b border-rule px-5 py-4 sm:px-6">
+              <div className="flex items-center gap-2 border-b border-rule px-5 py-3 sm:px-6">
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
                   <Store size={17} />
                 </span>
                 <h2 className="text-base font-semibold text-ink">Seller</h2>
               </div>
-              <div className="px-5 py-4 sm:px-6">
+              <div className="px-5 py-3 sm:px-6">
                 <div className="mb-1 font-semibold text-ink">{listing.seller.name}</div>
                 {listing.seller.location && <div className="mb-3 text-sm text-ink-soft">{listing.seller.location}</div>}
                 <div className="flex flex-col gap-1.5">
