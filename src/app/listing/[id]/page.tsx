@@ -837,9 +837,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 follow-up: removed the general/Stripe (USD) lead-in sentence
                 per the merchant's request ("ei line dorkar nei") — this
                 section is BDT/SSLCommerz-only now; Stripe's own checkout
-                flow and copy elsewhere on the page are unchanged. */}
+                flow and copy elsewhere on the page are unchanged. Sep 9 2026
+                2nd follow-up: with only one paragraph left, the old
+                `max-w-[65ch]` line-length cap (sized for when this sat next
+                to a second paragraph) left a large empty gap on the right of
+                the card ("onek jaiga faka thaktche" — a lot of space stays
+                empty). Dropped the cap so the paragraph fills the full card
+                width like every other SectionCard's body text, and added
+                `text-justify` so the now-wider lines get flush left AND
+                right edges ("justify hobe") instead of a ragged right edge. */}
             <SectionCard title="Payment Terms" icon={CreditCard}>
-              <p className="max-w-[65ch] text-sm leading-relaxed text-ink-soft">
+              <p className="text-justify text-sm leading-relaxed text-ink-soft">
                 {price > ONLINE_DEPOSIT_CAP
                   ? `Bangladesh-based buyers who choose to pay in BDT must pay the BDT equivalent of USD ${ONLINE_DEPOSIT_CAP.toLocaleString()} through SSLCommerz at checkout. Once the initial payment is confirmed, Durqo will email the buyer with instructions for paying the remaining balance by bank wire transfer, credit card, or debit card. The applicable exchange rate and exact BDT amount will be shown before payment is confirmed, and the purchase will be completed only after the full balance has been received and verified.`
                   : "Bangladesh-based buyers who choose to pay in BDT must pay the full purchase price through SSLCommerz at checkout. The applicable exchange rate and exact BDT amount will be shown before payment is confirmed. The purchase will be completed after the full payment has been received and verified."}
