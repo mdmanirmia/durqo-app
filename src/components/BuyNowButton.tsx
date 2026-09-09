@@ -157,6 +157,19 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
       >
         Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)
       </button>
+      {/* Placeholder only — per the merchant ("banaiye rakho, pore details add
+          korbo"): the button should exist now, with the actual escrow
+          payment flow (checkout route, terms copy, confirmation step, etc.)
+          wired up in a later pass. Disabled so it can't be clicked into a
+          dead end in the meantime; no onClick, no backend call. */}
+      <button
+        type="button"
+        disabled
+        title="Coming soon"
+        className="rounded-xl border border-rule-strong bg-transparent py-3 text-sm font-semibold text-ink-faint opacity-60"
+      >
+        Buy Now — Escrow (coming soon)
+      </button>
       {error && <span className="text-xs text-red-600">{error}</span>}
 
       {sslStatus !== "closed" && (
