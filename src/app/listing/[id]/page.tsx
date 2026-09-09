@@ -855,50 +855,49 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             </SectionCard>
           </div>
 
-          {/* SIDEBAR — acquisition panel + seller details, sticky. Placed here
-              (between MAIN CONTENT TOP and MAIN CONTENT BOTTOM) so mobile's
+          {/* SIDEBAR — acquisition panel + seller details. Placed here (between
+              MAIN CONTENT TOP and MAIN CONTENT BOTTOM) so mobile's
               single-column stacking reads Payment Terms → price/action card →
-              seller details → FAQ → Comments; lg:row-span-2 keeps it spanning
-              both main-content rows on desktop so it still sticks through the
-              full page height, not just the "top" chunk's height.
+              seller details → FAQ → Comments; lg:row-span-2 keeps this grid
+              cell spanning both main-content rows on desktop so the sticky
+              acquisition card below can track scroll through the full page
+              height, not just the "top" chunk's height.
 
-              Sep 8 2026 fix ("scroll korar somoi right er ei card 2 ta valo
-              kore visible dekhte" — both cards should stay fully visible
-              together while scrolling on desktop/laptop): the two cards
-              combined were tall enough (~714px) that on shorter laptop
-              screens (1366x768 and smaller, which is most of them once
-              browser chrome is subtracted) `lg:top-24` pushed the bottom of
-              the Seller card below the fold — the sidebar stuck, but you
-              couldn't see all of it at once. Fixed two ways: (1) trimmed the
-              header offset and internal card padding so the pair is shorter
-              overall, and (2) added a `max-h`/`overflow-y-auto` safety net
-              tied to the viewport height, so on any screen where the two
-              cards still don't fit, the sidebar scrolls internally instead
-              of ever pushing content off the bottom of the viewport.
+              Sep 8 2026 fix and Sep 9 2026 follow-up (both since superseded):
+              made the *entire* aside sticky with a `max-h`/`overflow-y-auto`
+              safety net sized off `calc(100vh - ...)`, on the theory that if
+              the two cards combined ever got taller than the viewport, an
+              internal scrollbar would catch the overflow. In practice this
+              needed the safety net's budget to exactly out-guess (a) every
+              future content change — adding the 3rd "Buy Now — Escrow"
+              button already broke it once — and (b) every real viewport
+              height, and it broke again on a *discounted* listing (Sep 9
+              2026, "full writing texts valo kore dekha jassena" round 2):
+              the extra strikethrough-price line above the asking price is
+              only rendered when `discountedPrice` is set, so it wasn't in
+              the case that got tuned/tested, and it was just enough to push
+              the pair past the safety net's margin on an ordinary laptop
+              window. Even where the net did catch it, scrolling inside a
+              narrow strip nested inside a sticky element is easy to miss —
+              which is exactly what "scroll korar somoi o" (even while
+              scrolling) kept describing.
 
-              Sep 9 2026 follow-up ("full writing texts valo kore dekha
-              jassena, scroll korar somoi o" — full card text still wasn't
-              visible, even while scrolling): adding the 3rd "Buy Now —
-              Escrow" button pushed the acquisition card's height up enough
-              that the two cards together (~800px) now regularly exceeded
-              the `max-h` safety net on common laptop viewports, so the
-              bottom of the Seller card sat inside the `overflow-y-auto`
-              region — and scrolling *inside* that narrow strip is easy to
-              miss/mistake for the page not responding, exactly what got
-              reported. Fixed by (1) trimming every action button and card
-              header/body from `py-3`/`py-4` down to `py-2.5`/`py-3`
-              (BuyNowButton.tsx, CartButton.tsx, ChatWithSellerButton.tsx,
-              WishlistButton.tsx, and both card shells below) so the pair
-              fits within the safety net on ordinary screens again without
-              needing to scroll at all, (2) loosening the offset/cap from
-              `top-20`/`max-h-[calc(100vh-6.5rem)]` to `top-16`/
-              `max-h-[calc(100vh-5rem)]` to reclaim ~24px of usable height,
-              and (3) adding `lg:pb-4` so that on any screen still too short
-              to fit both cards, the last line of text gets breathing room
-              before the scrollable region's edge instead of sitting flush
-              against it. */}
-          <aside className="min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-16 lg:row-span-2 lg:max-h-[calc(100vh-5rem)] lg:overflow-y-auto lg:pb-4">
-            <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
+              Sep 9 2026 3rd fix: stop trying to budget pixels at all. Only
+              the acquisition card (price + buttons) is sticky now — it's
+              short and roughly fixed in height, so it reliably fits above
+              the fold on its own. The Seller card below is plain, in-flow
+              content with no `max-h`/`overflow` — like Payment Terms above
+              it, its full text is *always* fully visible, guaranteed by
+              normal document flow rather than by a viewport-height guess,
+              no matter how tall a future discount badge, seller stat, or
+              extra button makes either card. The one visible trade-off: while
+              the page scrolls past the point where the acquisition card
+              becomes stuck, the Seller card (an in-flow sibling right below
+              it) can be seen sliding behind the acquisition card's opaque
+              background for a moment — a common, harmless sticky-sidebar
+              artifact — rather than ever having its own text cut off. */}
+          <aside className="min-w-0 flex h-max flex-col gap-4 lg:row-span-2">
+            <div className="lg:sticky lg:top-16 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
               <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                   <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
