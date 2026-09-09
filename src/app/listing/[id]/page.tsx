@@ -823,12 +823,25 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
 
             {/* Payment Terms — the actual Stripe/SSLCommerz charge at
                 checkout is capped to match this copy exactly; see
-                src/lib/payment-terms.ts. */}
+                src/lib/payment-terms.ts. Sep 9 2026: this used to read as
+                if the $ figure were the only way to pay, with no mention
+                that Bangladeshi buyers paying via SSLCommerz are charged
+                the BDT equivalent, not the USD figure itself — clarified
+                per the merchant's request so the USD/Stripe path and the
+                BDT/SSLCommerz path are both spelled out here, not just
+                surfaced later in the SSLCommerz confirmation modal
+                (SslcommerzConfirmModal.tsx). */}
             <SectionCard title="Payment Terms" icon={CreditCard}>
               <p className="max-w-[65ch] text-sm leading-relaxed text-ink-soft">
                 {price > ONLINE_DEPOSIT_CAP
                   ? `To purchase this business, we require a payment of $${ONLINE_DEPOSIT_CAP.toLocaleString()} via the website, followed by the remainder via wire transfer/credit card/debit card.`
                   : "To purchase this business, we require full payment via the website."}
+              </p>
+              <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-ink-soft">
+                Paying with a card charges the exact amount above in USD via Stripe. Bangladeshi buyers paying in Taka
+                (bKash/Rocket/Nagad/Bank via SSLCommerz) are instead charged the BDT equivalent, converted at that
+                day&rsquo;s exchange rate plus Durqo&rsquo;s small conversion margin — the exact BDT amount and rate are
+                shown for confirmation before you pay.
               </p>
             </SectionCard>
           </div>
