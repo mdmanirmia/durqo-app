@@ -31,12 +31,19 @@ import SellFaq from "./SellFaq";
 
 export const metadata: Metadata = {
   title: "Sell Your Digital Business | Durqo",
-  description:
-    "Get a free valuation and list your website, SaaS product, app, e-commerce brand, domain or other digital business for sale on Durqo.",
+  description: "List your website, SaaS product, app, e-commerce store or other digital business for sale on Durqo.",
+  robots: { index: true, follow: true },
   openGraph: {
+    type: "website",
+    siteName: "Durqo",
     title: "Sell Your Digital Business | Durqo",
-    description:
-      "Create a reviewed listing, connect with interested buyers and pay a tiered success fee only when your business sells.",
+    description: "List your website, SaaS product, app, e-commerce store or other digital business for sale on Durqo.",
+    url: "https://www.durqo.com/sell",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Sell Your Digital Business | Durqo",
+    description: "List your website, SaaS product, app, e-commerce store or other digital business for sale on Durqo.",
   },
   alternates: { canonical: "https://www.durqo.com/sell" },
 };
@@ -361,7 +368,7 @@ export default async function SellPage() {
                 return (
                   <Link
                     key={category.id}
-                    href={`/buy?category=${category.id}`}
+                    href={`/buy/${category.id}`}
                     className="flex h-full min-h-[7rem] flex-col items-center justify-center gap-2.5 rounded-xl border border-rule bg-paper-raised px-4 py-6 text-center transition hover:border-brand hover:bg-brand-soft/40 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                   >
                     <span className="grid h-11 w-11 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand">
