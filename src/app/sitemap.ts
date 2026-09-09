@@ -16,7 +16,7 @@ const BASE_URL = "https://www.durqo.com";
 // non-SEO change worth doing later.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries: MetadataRoute.Sitemap = [
-    { url: BASE_URL, changeFrequency: "weekly", priority: 1 },
+    { url: `${BASE_URL}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE_URL}/buy`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/sell`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/about`, changeFrequency: "yearly", priority: 0.5 },
