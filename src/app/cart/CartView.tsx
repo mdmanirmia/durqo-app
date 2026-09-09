@@ -16,6 +16,13 @@
 // (set by /api/sslcommerz/fail|cancel when SSLCommerz sends the buyer back
 // here) needs useSearchParams, which requires a Suspense boundary — same
 // pattern already used in CheckoutSuccessView.tsx.
+//
+// The SSLCommerz button no longer redirects straight to the gateway: it
+// first fetches a quote (/api/sslcommerz/quote) and shows
+// SslcommerzConfirmModal so the buyer sees the exact BDT amount, the
+// USD->BDT rate, and (for a listing over the online deposit cap) how the
+// remainder is handled, before ever leaving Durqo. Stripe has no such step
+// — it charges USD directly, so "Pay with card" still redirects immediately.
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -25,8 +32,7 @@ import { CATEGORY_MAP } from "@/lib/categories";
 import { fmtUSD } from "@/lib/format";
 import type { Listing } from "@/lib/types";
 import Container from "@/components/ui/Container";
-
-type Gateway = "stripe" | "sslcommerz";
+import SslcommerzConfirmModal, { type SslcommerzQuote } from "@/components/SslcommerzConfirmModal";
 
 // Reads the one-time `sslcommerz_error` redirect flag into an initial error
 // message. Computed as a plain function (not an effect) since the value is
@@ -49,8 +55,14 @@ function CartContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [items, setItems] = useState<Listing[] | null>(null);
-  const [busyGateway, setBusyGateway] = useState<Gateway | null>(null);
+  const [stripeBusy, setStripeBusy] = useState(false);
   const [error, setError] = useState<string | null>(() => initialSslErrorMessage(searchParams));
+
+  // SSLCommerz confirm-modal state — "closed" means no modal is shown.
+  const [sslStatus, setSslStatus] = useState<"closed" | "loading" | "ready" | "error">("closed");
+  const [sslQuote, setSslQuote] = useState<SslcommerzQuote | null>(null);
+  const [sslError, setSslError] = useState<string | null>(null);
+  const [sslConfirming, setSslConfirming] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,13 +86,12 @@ function CartContent() {
     }
   }
 
-  async function handleRequest(gateway: Gateway) {
-    if (!items || items.length === 0 || busyGateway) return;
-    setBusyGateway(gateway);
+  async function handleStripe() {
+    if (!items || items.length === 0 || stripeBusy) return;
+    setStripeBusy(true);
     setError(null);
     try {
-      const endpoint = gateway === "stripe" ? "/api/checkout" : "/api/sslcommerz/init";
-      const res = await fetch(endpoint, { method: "POST" });
+      const res = await fetch("/api/checkout", { method: "POST" });
       // Matches BuyNowButton's handling — a signed-out visitor whose stale
       // cart/session somehow got them this far is sent to /login instead of
       // just being shown "you need to be logged in" as inline error text.
@@ -91,19 +102,75 @@ function CartContent() {
       const data = await res.json();
       if (!res.ok || !data.url) {
         setError(data.error ?? "Something went wrong. Please try again.");
-        setBusyGateway(null);
+        setStripeBusy(false);
         return;
       }
-      // Full browser navigation to the gateway's hosted checkout page — the
-      // buyer pays there, then gets redirected back to /checkout/success
-      // (or back here on cancel/fail). Deliberately not resetting
-      // `busyGateway` on success: this component is about to be torn down
-      // by the navigation, and staying disabled avoids a flash of the
-      // enabled button in the moment before that happens.
+      // Full browser navigation to Stripe's hosted checkout page — staying
+      // disabled avoids a flash of the enabled button before the
+      // navigation tears this component down.
       window.location.href = data.url;
     } catch {
       setError("Something went wrong. Please try again.");
-      setBusyGateway(null);
+      setStripeBusy(false);
+    }
+  }
+
+  async function openSslModal() {
+    if (!items || items.length === 0) return;
+    setError(null);
+    setSslStatus("loading");
+    setSslQuote(null);
+    setSslError(null);
+    try {
+      const res = await fetch("/api/sslcommerz/quote");
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        setSslError(data.error ?? "Couldn't calculate this order's total. Please try again.");
+        setSslStatus("error");
+        return;
+      }
+      setSslQuote(data);
+      setSslStatus("ready");
+    } catch {
+      setSslError("Couldn't calculate this order's total. Please try again.");
+      setSslStatus("error");
+    }
+  }
+
+  function closeSslModal() {
+    if (sslConfirming) return;
+    setSslStatus("closed");
+    setSslQuote(null);
+    setSslError(null);
+  }
+
+  async function confirmSsl() {
+    if (sslConfirming) return;
+    setSslConfirming(true);
+    try {
+      const res = await fetch("/api/sslcommerz/init", { method: "POST" });
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        setSslError(data.error ?? "Something went wrong. Please try again.");
+        setSslStatus("error");
+        setSslConfirming(false);
+        return;
+      }
+      // Deliberately not resetting `sslConfirming` on success — this
+      // component is about to be torn down by the navigation.
+      window.location.href = data.url;
+    } catch {
+      setSslError("Something went wrong. Please try again.");
+      setSslStatus("error");
+      setSslConfirming(false);
     }
   }
 
@@ -149,19 +216,19 @@ function CartContent() {
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
-                onClick={() => handleRequest("stripe")}
-                disabled={busyGateway !== null}
+                onClick={handleStripe}
+                disabled={stripeBusy || sslStatus !== "closed"}
                 className="w-full rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
               >
-                {busyGateway === "stripe" ? "Redirecting to checkout…" : "Pay with card (Stripe)"}
+                {stripeBusy ? "Redirecting to checkout…" : "Pay with card (Stripe)"}
               </button>
               <button
                 type="button"
-                onClick={() => handleRequest("sslcommerz")}
-                disabled={busyGateway !== null}
+                onClick={openSslModal}
+                disabled={stripeBusy || sslStatus !== "closed"}
                 className="w-full rounded-md border border-brand bg-transparent py-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft disabled:opacity-60"
               >
-                {busyGateway === "sslcommerz" ? "Redirecting to checkout…" : "SSLCommerz (bKash/Rocket/Nagad/Bank)"}
+                SSLCommerz (bKash/Rocket/Nagad/Bank)
               </button>
             </div>
             {error && <p className="mt-3 text-center text-sm text-danger">{error}</p>}
@@ -171,6 +238,17 @@ function CartContent() {
             </p>
           </div>
         </div>
+      )}
+
+      {sslStatus !== "closed" && (
+        <SslcommerzConfirmModal
+          status={sslStatus}
+          quote={sslQuote}
+          error={sslError}
+          confirming={sslConfirming}
+          onConfirm={confirmSsl}
+          onCancel={closeSslModal}
+        />
       )}
     </Container>
   );
