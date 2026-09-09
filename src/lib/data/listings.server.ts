@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
@@ -314,7 +315,12 @@ export async function getVerifiedSellerCount(): Promise<number> {
   }
 }
 
-export async function getListingById(id: string): Promise<Listing | undefined> {
+// Sep 8, 2026 technical-SEO pass (Section 23, "avoid duplicate Supabase
+// requests"): wrapped in React's per-request cache() because the listing
+// page's generateMetadata() and the page component itself both need the
+// same listing — without this they'd each hit Supabase separately for
+// every single page view.
+export const getListingById = cache(async function getListingById(id: string): Promise<Listing | undefined> {
   try {
     const supabase = await createClient();
     if (!supabase) return getMockListingById(id);
@@ -428,4 +434,4 @@ export async function getListingById(id: string): Promise<Listing | undefined> {
     console.warn("[listings] getListingById falling back to mock data (unexpected error):", err);
     return getMockListingById(id);
   }
-}
+});
