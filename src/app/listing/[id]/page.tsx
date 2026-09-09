@@ -5,7 +5,6 @@ import clsx from "clsx";
 import {
   ShieldCheck,
   ChevronRight,
-  Lock,
   ExternalLink,
   Eye,
   ThumbsUp,
@@ -948,10 +947,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 <CartButton listingId={listing.id} sold={listing.status === "sold"} />
                 <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
                 <WishlistButton listingId={listing.id} variant="full" />
-                <p className="mt-1.5 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
-                  <Lock size={12} className="mt-0.5 shrink-0" />
-                  Your identity and message stay confidential to the seller until you choose to share more.
-                </p>
               </div>
             </div>
 
