@@ -87,14 +87,20 @@ export async function POST(request: Request) {
   const onlineTotal = listings.reduce((sum, l) => sum + onlineChargeAmount(Number(l.discounted_price ?? l.price)), 0);
   const productName = listings.map((l) => l.title).join(", ").slice(0, 255);
 
-  const orderRows = listings.map((l) => ({
-    listing_id: l.id,
-    buyer_id: buyerId,
-    seller_id: l.seller_id,
-    amount: Number(l.discounted_price ?? l.price),
-    status: "awaiting_payment" as const,
-    payment_channel: "bangladesh_gateway" as const,
-  }));
+  const orderRows = listings.map((l) => {
+    const price = Number(l.discounted_price ?? l.price);
+    const charged = onlineChargeAmount(price);
+    return {
+      listing_id: l.id,
+      buyer_id: buyerId,
+      seller_id: l.seller_id,
+      amount: price,
+      online_charge_usd: charged,
+      remainder_usd: Math.round((price - charged) * 100) / 100,
+      status: "awaiting_payment" as const,
+      payment_channel: "bangladesh_gateway" as const,
+    };
+  });
 
   const { data: insertedOrders, error: insertError } = await supabase
     .from("orders")
@@ -165,6 +171,25 @@ export async function POST(request: Request) {
       .from("orders")
       .update({ sslcommerz_tran_id: tranId })
       .in("id", insertedOrders.map((o) => o.id));
+
+    // Records each order's own BDT amount (its share of onlineTotal, same
+    // appliedRate the whole transaction used) so the buyer/seller/admin
+    // order views can show "you paid ৳X at rate Y" without recomputing —
+    // and without depending on today's rate still being the applied one by
+    // the time someone looks. Best-effort: a failure here doesn't affect
+    // the payment itself, which has already succeeded above.
+    const onlineChargeByListingId = new Map(listings.map((l) => [l.id, onlineChargeAmount(Number(l.discounted_price ?? l.price))]));
+    await Promise.all(
+      insertedOrders.map((o) =>
+        supabase
+          .from("orders")
+          .update({
+            sslcommerz_bdt_amount: Math.round((onlineChargeByListingId.get(o.listing_id) ?? 0) * appliedRate * 100) / 100,
+            sslcommerz_rate: appliedRate,
+          })
+          .eq("id", o.id)
+      )
+    );
 
     return NextResponse.json({ url: session.gatewayPageUrl });
   } catch (err) {
