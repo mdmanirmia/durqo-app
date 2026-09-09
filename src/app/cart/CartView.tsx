@@ -3,9 +3,18 @@
 // Split out of cart/page.tsx (Sep 8, 2026 technical-SEO pass, Section 15):
 // page.tsx needs to be a Server Component to export a server-rendered
 // noindex robots tag. Same component, same logic — only the file changed.
-import { useEffect, useState } from "react";
+//
+// Sep 9, 2026: gained a second payment rail (SSLCommerz, for
+// bKash/Nagad/local-card buyers in Bangladesh) alongside the existing
+// Stripe checkout — the buyer picks which one to use, matching how
+// BuyNowButton on the listing detail page offers the same choice. Reading
+// `sslcommerz_error` off the URL (set by /api/sslcommerz/fail|cancel when
+// SSLCommerz sends the buyer back here) needs useSearchParams, which
+// requires a Suspense boundary — same pattern already used in
+// CheckoutSuccessView.tsx.
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { X } from "lucide-react";
 import { getCartListings, removeFromCart } from "@/lib/data/cart.client";
 import { CATEGORY_MAP } from "@/lib/categories";
@@ -13,11 +22,31 @@ import { fmtUSD } from "@/lib/format";
 import type { Listing } from "@/lib/types";
 import Container from "@/components/ui/Container";
 
-export default function CartView() {
+type Gateway = "stripe" | "sslcommerz";
+
+// Reads the one-time `sslcommerz_error` redirect flag into an initial error
+// message. Computed as a plain function (not an effect) since the value is
+// already available synchronously from the URL on first render — a
+// `useEffect` calling `setState` here would just trigger an avoidable extra
+// render, the same `react-hooks/set-state-in-effect` pitfall this codebase
+// already hit and fixed elsewhere (see seller/page.tsx, GaPropertyPicker.tsx).
+function initialSslErrorMessage(searchParams: URLSearchParams): string | null {
+  const sslError = searchParams.get("sslcommerz_error");
+  if (sslError === "failed") {
+    return "Your Bangladesh payment gateway checkout couldn't be completed. Please try again.";
+  }
+  if (sslError === "cancelled") {
+    return "You cancelled the Bangladesh payment gateway checkout.";
+  }
+  return null;
+}
+
+function CartContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [items, setItems] = useState<Listing[] | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [busyGateway, setBusyGateway] = useState<Gateway | null>(null);
+  const [error, setError] = useState<string | null>(() => initialSslErrorMessage(searchParams));
 
   useEffect(() => {
     let cancelled = false;
@@ -41,12 +70,13 @@ export default function CartView() {
     }
   }
 
-  async function handleRequest() {
-    if (!items || items.length === 0 || busy) return;
-    setBusy(true);
+  async function handleRequest(gateway: Gateway) {
+    if (!items || items.length === 0 || busyGateway) return;
+    setBusyGateway(gateway);
     setError(null);
     try {
-      const res = await fetch("/api/checkout", { method: "POST" });
+      const endpoint = gateway === "stripe" ? "/api/checkout" : "/api/sslcommerz/init";
+      const res = await fetch(endpoint, { method: "POST" });
       // Matches BuyNowButton's handling — a signed-out visitor whose stale
       // cart/session somehow got them this far is sent to /login instead of
       // just being shown "you need to be logged in" as inline error text.
@@ -57,19 +87,19 @@ export default function CartView() {
       const data = await res.json();
       if (!res.ok || !data.url) {
         setError(data.error ?? "Something went wrong. Please try again.");
-        setBusy(false);
+        setBusyGateway(null);
         return;
       }
-      // Full browser navigation to Stripe's hosted checkout page — the
-      // buyer pays there, then Stripe redirects back to /checkout/success
-      // (or straight back here on cancel). Deliberately not resetting
-      // `busy` on success: this component is about to be torn down by the
-      // navigation, and staying disabled avoids a flash of the enabled
-      // button in the moment before that happens.
+      // Full browser navigation to the gateway's hosted checkout page — the
+      // buyer pays there, then gets redirected back to /checkout/success
+      // (or back here on cancel/fail). Deliberately not resetting
+      // `busyGateway` on success: this component is about to be torn down
+      // by the navigation, and staying disabled avoids a flash of the
+      // enabled button in the moment before that happens.
       window.location.href = data.url;
     } catch {
       setError("Something went wrong. Please try again.");
-      setBusy(false);
+      setBusyGateway(null);
     }
   }
 
@@ -112,21 +142,40 @@ export default function CartView() {
               <span>Total</span>
               <span className="font-semibold">{fmtUSD(total)}</span>
             </div>
-            <button
-              type="button"
-              onClick={handleRequest}
-              disabled={busy}
-              className="w-full rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
-            >
-              {busy ? "Redirecting to checkout…" : "Request to purchase"}
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => handleRequest("stripe")}
+                disabled={busyGateway !== null}
+                className="w-full rounded-md bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
+              >
+                {busyGateway === "stripe" ? "Redirecting to checkout…" : "Pay with card (Stripe)"}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRequest("sslcommerz")}
+                disabled={busyGateway !== null}
+                className="w-full rounded-md border border-brand bg-transparent py-3 text-sm font-semibold text-brand-strong hover:bg-brand-soft disabled:opacity-60"
+              >
+                {busyGateway === "sslcommerz" ? "Redirecting to checkout…" : "Pay with bKash/Nagad/Card"}
+              </button>
+            </div>
             {error && <p className="mt-3 text-center text-sm text-danger">{error}</p>}
             <p className="mt-3 text-center text-xs text-ink-faint">
-              You&rsquo;ll pay securely via Stripe, then we&rsquo;ll connect you with each seller to release escrow.
+              You&rsquo;ll pay securely via Stripe or our Bangladesh payment gateway, then we&rsquo;ll connect you with each
+              seller to release escrow.
             </p>
           </div>
         </div>
       )}
     </Container>
+  );
+}
+
+export default function CartView() {
+  return (
+    <Suspense fallback={<Container className="max-w-3xl py-12 text-ink-faint">Loading&hellip;</Container>}>
+      <CartContent />
+    </Suspense>
   );
 }
