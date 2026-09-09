@@ -1,11 +1,16 @@
 // Shared with the "Payment Terms" copy shown on every listing page
 // (src/app/listing/[id]/page.tsx): businesses priced above this cap are
 // paid ONLINE_DEPOSIT_CAP through Durqo's own checkout (Stripe or
-// SSLCommerz), with the remainder settled directly between buyer and
-// seller off-platform (wire transfer/credit card/debit card, per that
-// copy) — Durqo never processes the remainder itself. Businesses at or
-// under the cap are charged in full online, since there's no "remainder"
-// to speak of.
+// SSLCommerz), with the remainder settled by wire transfer, credit card,
+// or debit card. For Stripe that remainder is settled directly between
+// buyer and seller off-platform. For SSLCommerz (Bangladesh-based buyers
+// paying in BDT), Durqo instead emails the buyer with instructions for
+// paying that remainder, and the purchase isn't considered complete until
+// Durqo has received and verified it (see /api/sslcommerz/ipn and
+// SslcommerzConfirmModal.tsx) — the two rails differ here even though the
+// cap math (this function) is identical for both. Businesses at or under
+// the cap are charged in full online, since there's no "remainder" to
+// speak of, on either rail.
 //
 // Sep 9, 2026: this used to be display-only text with no matching
 // enforcement — every checkout route actually charged the listing's full
