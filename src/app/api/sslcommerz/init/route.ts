@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getSslcommerzConfig, createSslcommerzSession } from "@/lib/sslcommerz";
+import { convertUsdToBdt } from "@/lib/currency";
 
 // SSLCommerz counterpart to /api/checkout/route.ts (Stripe). Same shape —
 // either the signed-in buyer's cart, or a single `{ listingId }` for Buy
@@ -13,15 +14,12 @@ import { getSslcommerzConfig, createSslcommerzSession } from "@/lib/sslcommerz";
 // SSLCommerz's Validation API — this route only ever creates
 // "awaiting_payment" rows, matching the Stripe route's same reasoning.
 //
-// Currency note: SSLCommerz is a Bangladesh-market gateway and expects
-// amounts in BDT (or another currency your merchant account is enabled
-// for — sandbox accepts BDT regardless). Every listing price in this app
-// is stored and displayed in USD. Sandbox testing below sends the raw USD
-// number through as-is with currency "BDT" purely to exercise the
-// integration end-to-end; going live needs an explicit decision on real
-// USD→BDT conversion (a fixed rate, a live FX lookup, or pricing Durqo
-// listings in BDT for Bangladesh buyers) before this can charge a real
-// buyer a correct amount. Flagged here deliberately rather than guessed.
+// Currency note: SSLCommerz is a Bangladesh-market gateway and charges in
+// BDT. Every listing price in this app is stored and displayed in USD, and
+// `orders.amount` below stays in USD to match that — it's just the
+// SSLCommerz session total that's converted, via convertUsdToBdt()
+// (src/lib/currency.ts): current market USD->BDT rate + a flat 6 BDT
+// margin, per the merchant's explicit instruction.
 export async function POST(request: Request) {
   const supabase = await createClient();
   if (!supabase) {
@@ -116,10 +114,21 @@ export async function POST(request: Request) {
 
   const origin = new URL(request.url).origin;
 
+  const { bdtAmount, appliedRate, source: rateSource } = await convertUsdToBdt(totalAmount);
+  if (rateSource === "fallback") {
+    // Not a blocker — checkout still works off the fallback rate — but
+    // worth a loud log line since it means a real buyer is about to be
+    // charged off a stale hardcoded rate rather than today's market rate.
+    console.error(`[sslcommerz-init] USD->BDT live rate lookup failed; charging tran ${tranId} off the fallback rate.`);
+  }
+  // Rate is logged (not just used) so a real charge's BDT total is always
+  // traceable back to the USD->BDT rate applied at the moment of purchase.
+  console.log(`[sslcommerz-init] tran ${tranId}: $${totalAmount} USD -> ${bdtAmount} BDT @ rate ${appliedRate} (${rateSource})`);
+
   try {
     const session = await createSslcommerzSession(config, {
       tranId,
-      totalAmount,
+      totalAmount: bdtAmount,
       currency: "BDT",
       productName: productName || "Durqo listing purchase",
       productCategory: "Digital Business",
