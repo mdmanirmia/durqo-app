@@ -7,6 +7,12 @@ import { fmtUSD, fmtBDT } from "@/lib/format";
 // (buyer dashboard, seller dashboard, admin). Renders nothing for orders
 // placed before these columns existed (all fields undefined) or where the
 // full price was simply charged online with no BDT conversion involved.
+// Sep 9 2026: the remainder note now branches by channel — SSLCommerz's
+// remaining balance is coordinated by Durqo (an email with wire/card
+// instructions, purchase not complete until that balance verifies), which
+// is a different policy from Stripe's "settled directly, not through
+// Durqo" — so only the SSLCommerz wording changed here; Stripe's is
+// untouched.
 export default function OrderAmountBreakdown({
   paymentChannel,
   onlineChargeUsd,
@@ -37,7 +43,13 @@ export default function OrderAmountBreakdown({
       {!hasBdt && typeof onlineChargeUsd === "number" && (
         <span>{fmtUSD(onlineChargeUsd)} online</span>
       )}
-      {hasRemainder && <span>+ {fmtUSD(remainderUsd)} settled directly (wire/card), not through Durqo</span>}
+      {hasRemainder && (
+        <span>
+          {isSslcommerz
+            ? `+ ${fmtUSD(remainderUsd)} balance due — pay by wire/card once Durqo emails instructions; not yet completed`
+            : `+ ${fmtUSD(remainderUsd)} settled directly (wire/card), not through Durqo`}
+        </span>
+      )}
     </div>
   );
 }

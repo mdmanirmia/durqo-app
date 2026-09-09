@@ -8,10 +8,20 @@ import { fmtUSD, fmtBDT } from "@/lib/format";
 // entirely. Sep 2026: added because the buyer was being redirected
 // straight to SSLCommerz's hosted page with no on-site indication of the
 // BDT amount, the rate used, or (for listings over the online deposit cap)
-// that a remainder is settled offline — this closes that gap by asking the
-// buyer to confirm those specifics before they ever leave Durqo. Used by
-// both CartView.tsx and BuyNowButton.tsx against the same
+// how the remaining balance is handled — this closes that gap by asking
+// the buyer to confirm those specifics before they ever leave Durqo. Used
+// by both CartView.tsx and BuyNowButton.tsx against the same
 // /api/sslcommerz/quote response shape.
+//
+// Sep 9 2026 follow-up: reworded per the merchant's exact required copy —
+// at or under the $ONLINE_DEPOSIT_CAP threshold the buyer pays the full
+// price and the purchase completes once that payment verifies; above it,
+// only the BDT equivalent of the cap is charged now and Durqo follows up
+// by email with instructions for the remaining balance (wire/card), with
+// completion held until that balance is received and verified. Dropped
+// "Durqo's conversion margin" wording — the margin is still applied
+// server-side (src/lib/currency.ts) but is never named in buyer-facing
+// copy.
 export interface SslcommerzQuote {
   fullPriceUsd: number;
   onlineChargeUsd: number;
@@ -79,16 +89,22 @@ export default function SslcommerzConfirmModal({
               </div>
               <p className="mono mt-1 text-xs text-ink-faint">&asymp; {fmtUSD(quote.onlineChargeUsd)} USD</p>
               <p className="mt-3 text-xs text-ink-soft">
-                Exchange rate used: <span className="mono">1 USD = {fmtBDT(quote.rate)}</span> (today&rsquo;s market rate, plus
-                Durqo&rsquo;s small conversion margin).
+                Exchange rate used: <span className="mono">1 USD = {fmtBDT(quote.rate)}</span> (today&rsquo;s exchange
+                rate).
               </p>
             </div>
 
-            {quote.remainderUsd > 0 && (
+            {quote.remainderUsd > 0 ? (
               <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-                This listing is priced at {fmtUSD(quote.fullPriceUsd)}. Per its Payment Terms, only the first{" "}
-                {fmtUSD(quote.depositCap)} is paid online — the remaining {fmtUSD(quote.remainderUsd)} is settled directly
-                with the seller (wire transfer, credit card, or debit card) after this purchase, not through Durqo.
+                This listing is priced at {fmtUSD(quote.fullPriceUsd)}. You&rsquo;re paying the BDT equivalent of{" "}
+                {fmtUSD(quote.depositCap)} now through SSLCommerz. Once this payment is confirmed, Durqo will email
+                you with instructions for paying the remaining {fmtUSD(quote.remainderUsd)} by bank wire transfer,
+                credit card, or debit card — your purchase will be completed only after that balance has been
+                received and verified.
+              </p>
+            ) : (
+              <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+                Your purchase will be completed after this payment has been received and verified.
               </p>
             )}
 
