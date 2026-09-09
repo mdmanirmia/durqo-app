@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/require-session";
+
+// Section 15: every authenticated seller-dashboard page is private and
+// per-account — noindex,nofollow.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 // Gates every page under /dashboard/seller — overview, orders, messages,
 // verification, and crucially the "Add New Business" form and listing-edit
