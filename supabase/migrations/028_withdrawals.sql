@@ -55,6 +55,14 @@ alter table public.withdrawal_requests enable row level security;
 -- client-supplied id), and the only way to change status is the
 -- service-role admin client (src/lib/supabase/admin.ts), exactly like
 -- every other money- or verification-adjacent flow in this app.
+--
+-- Postgres has no CREATE POLICY IF NOT EXISTS, so this migration
+-- re-running against a database that already has the policy (e.g. this
+-- file was already applied once) would otherwise fail with "policy ...
+-- already exists" even though every other statement here is safely
+-- re-runnable (create table if not exists, create or replace function,
+-- grant). Drop-then-create makes the whole file idempotent.
+drop policy if exists "withdrawal_requests_select_own" on public.withdrawal_requests;
 create policy "withdrawal_requests_select_own" on public.withdrawal_requests for select
   using (auth.uid() = seller_id);
 
