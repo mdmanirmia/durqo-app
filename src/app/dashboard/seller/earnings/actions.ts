@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { fmtUSD } from "@/lib/format";
-import { getUsdToBdtMarketRate } from "@/lib/currency";
+import { getUsdToBdtWithdrawalRate } from "@/lib/currency";
 
 const PAYOUT_METHODS = ["bank_transfer", "bkash", "rocket", "nagad", "paypal", "wise"] as const;
 type PayoutMethod = (typeof PAYOUT_METHODS)[number];
@@ -41,8 +41,11 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
   const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
 
   // Only fetched for bKash/Rocket/Nagad — the daily/monthly BDT caps are
-  // meaningless (and unenforced) for Bank Transfer, PayPal and Wise.
-  const bdtRate = MFS_METHODS.includes(payoutMethod) ? (await getUsdToBdtMarketRate()).rate : null;
+  // meaningless (and unenforced) for Bank Transfer, PayPal and Wise. This
+  // is the market rate minus ৳1.50 (getUsdToBdtWithdrawalRate() in
+  // src/lib/currency.ts), not the plain market rate — a deliberate
+  // product decision, the mirror image of the +6 BDT checkout margin.
+  const bdtRate = MFS_METHODS.includes(payoutMethod) ? (await getUsdToBdtWithdrawalRate()).rate : null;
 
   const { data: request, error } = await supabase
     .rpc("create_withdrawal_request", { p_payout_method: payoutMethod, p_payout_details: payoutDetails.trim(), p_bdt_rate: bdtRate })
