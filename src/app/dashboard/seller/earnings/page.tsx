@@ -73,9 +73,16 @@ export default function SellerEarningsPage() {
     setNotice(null);
     setSubmitting(true);
     try {
-      await requestWithdrawal(methodId, details);
+      const result = await requestWithdrawal(methodId, details);
       setDetails("");
-      setNotice("Withdrawal request submitted — we'll email you once it's reviewed.");
+      // For bKash/Rocket/Nagad the amount actually claimed can be less
+      // than the balance shown above (see the notice under the payout
+      // buttons) — state the real amount so it's never a surprise.
+      setNotice(
+        result.netAmount !== null
+          ? `Withdrawal request submitted for ${fmtUSD(result.netAmount)} — we'll email you once it's reviewed.`
+          : "Withdrawal request submitted — we'll email you once it's reviewed."
+      );
       reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong — please try again.");
@@ -146,7 +153,8 @@ export default function SellerEarningsPage() {
 
             {(methodId === "bkash" || methodId === "rocket" || methodId === "nagad") && (
               <p className="mb-4 text-xs text-ink-faint">
-                bKash, Rocket and Nagad withdrawals are capped at ৳50,000/day and ৳300,000/month combined.
+                bKash, Rocket and Nagad withdrawals are limited to ৳50,000 at a time, and ৳300,000/month combined. If your balance is higher, we&rsquo;ll
+                withdraw as much as your limit allows now and the rest will stay available for your next request.
               </p>
             )}
 
