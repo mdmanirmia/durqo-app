@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { fmtUSD } from "@/lib/format";
 
-const PAYOUT_METHODS = ["bank_transfer", "bkash", "rocket", "nagad"] as const;
+const PAYOUT_METHODS = ["bank_transfer", "bkash", "rocket", "nagad", "paypal", "wise"] as const;
 type PayoutMethod = (typeof PAYOUT_METHODS)[number];
 
 // Submits a withdrawal request. The actual claiming of orders and Success
