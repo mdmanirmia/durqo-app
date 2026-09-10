@@ -63,3 +63,13 @@ export async function convertUsdToBdt(usdAmount: number): Promise<UsdToBdtConver
   const bdtAmount = Math.round(usdAmount * appliedRate * 100) / 100;
   return { bdtAmount, marketRate, appliedRate, source };
 }
+
+// The plain market rate (no +6 checkout margin) — used where BDT is a
+// real-world figure rather than a buyer-facing charge, e.g. the bKash/
+// Rocket/Nagad daily & monthly withdrawal caps in
+// src/app/dashboard/seller/earnings/actions.ts. Shares the same cache as
+// convertUsdToBdt() above.
+export async function getUsdToBdtMarketRate(): Promise<{ rate: number; source: "live" | "fallback" }> {
+  const { marketRate, source } = await getMarketUsdToBdtRate();
+  return { rate: marketRate, source };
+}
