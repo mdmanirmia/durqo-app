@@ -72,7 +72,10 @@ export default function CommentsPanel({
       {comments.map((c, i) => (
         <div key={c.id} className={clsx("px-5 py-4 sm:px-6", i < comments.length - 1 && "border-b border-rule")}>
           <div className="mb-1 flex items-baseline justify-between">
-            <span className="text-sm font-semibold text-ink">{c.author}</span>
+            <span className="text-sm font-semibold text-ink">
+              {c.author}
+              {c.isSeller && <span className="font-normal text-ink-faint"> (Seller)</span>}
+            </span>
             <span className="text-xs text-ink-faint">{c.createdAt}</span>
           </div>
           <p className="text-sm text-ink-soft">{c.body}</p>
@@ -80,7 +83,10 @@ export default function CommentsPanel({
           {c.replies?.map((r) => (
             <div key={r.id} className="mt-3 ml-4 border-l-2 border-rule pl-4">
               <div className="mb-1 flex items-baseline justify-between">
-                <span className="text-sm font-semibold text-ink">{r.author}</span>
+                <span className="text-sm font-semibold text-ink">
+                  {r.author}
+                  {r.isSeller && <span className="font-normal text-ink-faint"> (Seller)</span>}
+                </span>
                 <span className="text-xs text-ink-faint">{r.createdAt}</span>
               </div>
               <p className="text-sm text-ink-soft">{r.body}</p>
