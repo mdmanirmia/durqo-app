@@ -18,6 +18,7 @@ export const SELLER_NAV: DashboardNavItem[] = [
   { href: "/dashboard/seller/questions", label: "Comments" },
   { href: "/dashboard/seller/messages", label: "Messages" },
   { href: "/dashboard/seller/verification", label: "Verification" },
+  { href: "/dashboard/seller/earnings", label: "Earnings" },
 ];
 
 export const ADMIN_NAV: DashboardNavItem[] = [
@@ -26,4 +27,5 @@ export const ADMIN_NAV: DashboardNavItem[] = [
   { href: "/dashboard/admin/users", label: "Users" },
   { href: "/dashboard/admin/verification", label: "Verification" },
   { href: "/dashboard/admin/orders", label: "Orders" },
+  { href: "/dashboard/admin/withdrawals", label: "Withdrawals" },
 ];
