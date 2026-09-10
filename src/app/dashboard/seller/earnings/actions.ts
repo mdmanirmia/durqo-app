@@ -5,9 +5,16 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { fmtUSD } from "@/lib/format";
+import { getUsdToBdtMarketRate } from "@/lib/currency";
 
 const PAYOUT_METHODS = ["bank_transfer", "bkash", "rocket", "nagad", "paypal", "wise"] as const;
 type PayoutMethod = (typeof PAYOUT_METHODS)[number];
+
+// Mobile financial services — capped at ৳50,000/day and ৳300,000/month
+// combined, enforced inside create_withdrawal_request() itself
+// (030_withdrawal_mfs_limits.sql). Bank Transfer, PayPal and Wise aren't
+// capped.
+const MFS_METHODS: readonly string[] = ["bkash", "rocket", "nagad"];
 
 // Submits a withdrawal request. The actual claiming of orders and Success
 // Fee math happens atomically inside create_withdrawal_request()
@@ -33,8 +40,12 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
 
   const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
 
+  // Only fetched for bKash/Rocket/Nagad — the daily/monthly BDT caps are
+  // meaningless (and unenforced) for Bank Transfer, PayPal and Wise.
+  const bdtRate = MFS_METHODS.includes(payoutMethod) ? (await getUsdToBdtMarketRate()).rate : null;
+
   const { data: request, error } = await supabase
-    .rpc("create_withdrawal_request", { p_payout_method: payoutMethod, p_payout_details: payoutDetails.trim() })
+    .rpc("create_withdrawal_request", { p_payout_method: payoutMethod, p_payout_details: payoutDetails.trim(), p_bdt_rate: bdtRate })
     .single();
   if (error) throw new Error(error.message);
 
