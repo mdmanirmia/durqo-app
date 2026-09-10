@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { FileText } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/ui/Badge";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
@@ -39,6 +41,7 @@ export default function SellerOrdersPage() {
                 <th className="px-4 py-3 font-medium">Amount</th>
                 <th className="px-4 py-3 font-medium">Status</th>
                 <th className="px-4 py-3 font-medium">Date</th>
+                <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
             <tbody>
@@ -61,6 +64,11 @@ export default function SellerOrdersPage() {
                     <StatusBadge status={o.status} />
                   </td>
                   <td className="mono px-4 py-3 text-ink-faint">{o.date}</td>
+                  <td className="px-4 py-3 text-right">
+                    <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                      <FileText size={13} /> Receipt
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>
