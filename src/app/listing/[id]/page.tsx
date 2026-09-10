@@ -1094,6 +1094,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   comments={listing.comments}
                   isSeller={isListingSeller}
                   loggedIn={!!viewer}
+                  viewerId={viewer?.id}
                 />
               </div>
             </SectionCard>
