@@ -64,12 +64,19 @@ export async function convertUsdToBdt(usdAmount: number): Promise<UsdToBdtConver
   return { bdtAmount, marketRate, appliedRate, source };
 }
 
-// The plain market rate (no +6 checkout margin) — used where BDT is a
-// real-world figure rather than a buyer-facing charge, e.g. the bKash/
-// Rocket/Nagad daily & monthly withdrawal caps in
-// src/app/dashboard/seller/earnings/actions.ts. Shares the same cache as
-// convertUsdToBdt() above.
-export async function getUsdToBdtMarketRate(): Promise<{ rate: number; source: "live" | "fallback" }> {
+// Deducted (not added) from the market rate for withdrawal conversions —
+// the mirror image of convertUsdToBdt()'s +6 BDT checkout margin. Product
+// decision (site owner, Sep 10 2026): "google theke 1.50 BDT kom
+// dekhabe" — the rate used for bKash/Rocket/Nagad withdrawal caps should
+// show ৳1.50 less than Google's (i.e. open.er-api.com's) rate.
+const WITHDRAWAL_MARGIN_BDT = 1.5;
+
+// The rate used to convert the bKash/Rocket/Nagad withdrawal caps
+// (৳50,000/day, ৳300,000/month — 030_withdrawal_mfs_limits.sql,
+// 031_withdrawal_mfs_partial_claim.sql) from BDT into USD in
+// src/app/dashboard/seller/earnings/actions.ts: the market rate minus
+// WITHDRAWAL_MARGIN_BDT. Shares the same cache as convertUsdToBdt() above.
+export async function getUsdToBdtWithdrawalRate(): Promise<{ rate: number; source: "live" | "fallback" }> {
   const { marketRate, source } = await getMarketUsdToBdtRate();
-  return { rate: marketRate, source };
+  return { rate: marketRate - WITHDRAWAL_MARGIN_BDT, source };
 }
