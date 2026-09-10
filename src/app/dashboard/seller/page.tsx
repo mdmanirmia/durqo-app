@@ -8,7 +8,7 @@ import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { fmtUSD } from "@/lib/format";
 import { getMyListings, type SellerListingRow } from "@/lib/data/seller-listings.client";
-import { getSellerOrders } from "@/lib/data/orders.client";
+import { getAvailableBalance } from "@/lib/data/earnings.client";
 import { getGaConnectionStatuses, type GaConnectionStatus } from "@/lib/data/ga-connection.client";
 import { StatusBadge } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -24,8 +24,13 @@ export default function SellerOverview() {
     getMyListings().then((data) => {
       if (!cancelled) setMyListings(data);
     });
-    getSellerOrders().then((orders) => {
-      if (!cancelled) setBalance(orders.filter((o) => o.status === "completed").reduce((sum, o) => sum + o.amount, 0));
+    // Matches the seller Earnings page's "Available to withdraw" exactly
+    // (net of Success Fee, excluding orders already claimed by a
+    // withdrawal request) — this card used to sum every completed order's
+    // raw amount regardless of withdrawal_id, so it kept showing the full
+    // balance even after a withdrawal was approved/paid out.
+    getAvailableBalance().then((b) => {
+      if (!cancelled) setBalance(b.netAmount);
     });
     getGaConnectionStatuses().then((data) => {
       if (!cancelled) setGaStatuses(data);
