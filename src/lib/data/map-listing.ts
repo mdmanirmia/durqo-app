@@ -309,8 +309,11 @@ export function mapFaqs(rows: Row[]): FaqItem[] {
 }
 
 // Flat `comments` rows (self-referencing via parent_id) -> one level of
-// nested replies, matching how the listing page renders them.
-export function mapComments(rows: Row[], authorNames: Record<string, string>): CommentItem[] {
+// nested replies, matching how the listing page renders them. `sellerId` is
+// the listing's own seller — every comment authored by them (in practice,
+// only ever a reply, since postComment() only lets the seller reply) is
+// flagged `isSeller` so the UI can show "<name> (Seller)" (Sep 10, 2026).
+export function mapComments(rows: Row[], authorNames: Record<string, string>, sellerId?: string): CommentItem[] {
   const byId = new Map<string, CommentItem>();
   const top: CommentItem[] = [];
 
@@ -319,6 +322,7 @@ export function mapComments(rows: Row[], authorNames: Record<string, string>): C
     byId.set(r.id, {
       id: r.id,
       author: authorNames[r.author_id] ?? "Member",
+      isSeller: !!sellerId && r.author_id === sellerId,
       body: r.body,
       createdAt: String(r.created_at).slice(0, 10),
       replies: [],
@@ -550,7 +554,7 @@ export function mapListing(
     seo,
     socialStats,
     faqs: mapFaqs(related.faqs ?? []),
-    comments: mapComments(related.comments ?? [], related.authorNames ?? {}),
+    comments: mapComments(related.comments ?? [], related.authorNames ?? {}, related.seller?.id ?? row.seller_id),
     seller: mapSeller(related.seller, related.sellerStats),
     images: mapImages(related.images ?? []),
     gaLiveStats: mapGaLiveStats(related.gaLiveStats),
