@@ -23,7 +23,12 @@ export interface AdminWithdrawalRow {
 
 const METHOD_LABEL: Record<string, string> = {
   bank_transfer: "Bank Transfer",
+  bkash: "bKash",
+  rocket: "Rocket",
+  nagad: "Nagad",
   paypal: "PayPal",
+  wise: "Wise",
+  // Historical requests only — no longer offered to sellers.
   other: "Other",
 };
 
