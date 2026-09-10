@@ -144,6 +144,12 @@ export default function SellerEarningsPage() {
               ))}
             </div>
 
+            {(methodId === "bkash" || methodId === "rocket" || methodId === "nagad") && (
+              <p className="mb-4 text-xs text-ink-faint">
+                bKash, Rocket and Nagad withdrawals are capped at ৳50,000/day and ৳300,000/month combined.
+              </p>
+            )}
+
             <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">Payout details</p>
             <textarea
               value={details}
