@@ -51,18 +51,30 @@ export async function GET(request: Request) {
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
 
 async function remindStaleComments(admin: AdminClient, cutoff: string) {
-  const { data: rows, error } = await admin.from("comments").select("id, listing_id, parent_id, created_at, reminder_sent_at");
+  const { data: rows, error } = await admin
+    .from("comments")
+    .select("id, listing_id, author_id, parent_id, created_at, reminder_sent_at");
   if (error || !rows) return { checked: 0, reminded: 0, error: error?.message };
 
-  const repliedParentIds = new Set(rows.filter((r) => r.parent_id).map((r) => r.parent_id as string));
+  // Every listing any of these comments belongs to — needed up front (not
+  // just for the overdue candidates) because "answered" now has to mean
+  // "the *seller* replied", not just "some reply exists": postComment() lets
+  // the original asker post a flat follow-up too (Sep 10, 2026), and that
+  // alone must not silently clear a question off this reminder sweep.
+  const listingIds = [...new Set(rows.map((r) => r.listing_id as string))];
+  const { data: listings } = await admin.from("listings").select("id, title, seller_id").in("id", listingIds);
+  const listingById = new Map((listings ?? []).map((l) => [l.id, l]));
+
+  const repliedBySellerParentIds = new Set(
+    rows
+      .filter((r) => r.parent_id && listingById.get(r.listing_id as string)?.seller_id === r.author_id)
+      .map((r) => r.parent_id as string)
+  );
   const overdue = rows.filter(
-    (r) => !r.parent_id && !r.reminder_sent_at && !repliedParentIds.has(r.id) && r.created_at < cutoff
+    (r) => !r.parent_id && !r.reminder_sent_at && !repliedBySellerParentIds.has(r.id) && r.created_at < cutoff
   );
   if (overdue.length === 0) return { checked: rows.length, reminded: 0 };
 
-  const listingIds = [...new Set(overdue.map((c) => c.listing_id as string))];
-  const { data: listings } = await admin.from("listings").select("id, title, seller_id").in("id", listingIds);
-  const listingById = new Map((listings ?? []).map((l) => [l.id, l]));
   const sellerEmails = await getUserEmails(admin, [...new Set((listings ?? []).map((l) => l.seller_id as string))]);
 
   let reminded = 0;
