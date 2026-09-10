@@ -77,5 +77,12 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
      <p><a href="${origin}/dashboard/admin/withdrawals">Review it in the admin dashboard</a>.</p>`
   );
 
-  return { ok: true };
+  // netAmount is what create_withdrawal_request() actually claimed, which
+  // for bKash/Rocket/Nagad can be less than the seller's full available
+  // balance (031_withdrawal_mfs_partial_claim.sql claims only as many
+  // orders as fit under the remaining ৳50,000/day or ৳300,000/month
+  // allowance, leaving the rest for a future request). The caller uses
+  // this to tell the seller exactly what was withdrawn, since it may not
+  // match the balance shown before they clicked "Request".
+  return { ok: true, netAmount };
 }
