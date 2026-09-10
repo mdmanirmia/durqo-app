@@ -12,7 +12,7 @@ export const SELLER_NAV: DashboardNavItem[] = [
   { href: "/dashboard/seller", label: "My Listings", badge: 3 },
   { href: "/dashboard/seller/listings/new", label: "Add New Business" },
   { href: "/dashboard/seller/orders", label: "Orders", badge: 1 },
-  { href: "/dashboard/seller/questions", label: "Questions" },
+  { href: "/dashboard/seller/questions", label: "Comments" },
   { href: "/dashboard/seller/messages", label: "Messages" },
   { href: "/dashboard/seller/verification", label: "Verification" },
 ];

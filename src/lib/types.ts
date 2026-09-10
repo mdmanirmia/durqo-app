@@ -54,6 +54,13 @@ export interface FaqItem {
 export interface CommentItem {
   id: string;
   author: string;
+  // True when this comment's author is the listing's own seller — lets the
+  // UI show "<name> (Seller)" so a buyer reading the thread can tell the
+  // seller's own reply apart from another buyer's question at a glance
+  // (Sep 10, 2026 request). Optional so the bundled mock listings (which
+  // predate this field) don't all need updating — omitted just means "not
+  // the seller", same as explicit false.
+  isSeller?: boolean;
   body: string;
   createdAt: string;
   replies?: CommentItem[];
