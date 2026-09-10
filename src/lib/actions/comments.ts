@@ -25,9 +25,17 @@ import { getUserEmails } from "@/lib/notifications";
 // a row with their own `auth.uid()` as author_id — that alone stops someone
 // from posting *as* another user, but doesn't stop any logged-in buyer from
 // posting a *reply* (a `parent_id`-set row) pretending to be the seller's
-// answer. That's enforced here instead, at the application layer, the same
-// "defense in depth, never trust the client" pattern used by
-// requireEditAccess() in listing-edit.ts and requireAdmin() elsewhere.
+// answer, or jumping into someone else's question thread. That's enforced
+// here instead, at the application layer, the same "defense in depth, never
+// trust the client" pattern used by requireEditAccess() in listing-edit.ts
+// and requireAdmin() elsewhere.
+//
+// Sep 10, 2026 follow-up: a reply is no longer seller-only. The listing's
+// seller AND the original asker can both post into a question's `replies`
+// (still exactly one level deep — "Can't reply to a reply" below is
+// unchanged), so a thread reads as a flat, chronological back-and-forth
+// ("buyer asks -> seller answers -> buyer follows up -> ...") instead of
+// always exactly one seller answer. Anyone else is still refused.
 export async function postComment(
   listingId: string,
   body: string,
@@ -52,21 +60,19 @@ export async function postComment(
     .maybeSingle();
   if (!listing) return { error: "Listing not found." };
 
+  let parent: { id: string; listing_id: string; parent_id: string | null; author_id: string } | null = null;
   if (parentId) {
-    // A reply is the seller answering a buyer's question — restricted to
-    // the listing's own seller only (no admin override here: unlike the
-    // admin listing-edit form, there's no admin UI for this yet, and
-    // impersonating a seller's answer isn't something to add casually).
-    if (user.id !== listing.seller_id) {
-      return { error: "Only the seller can reply to a question." };
-    }
-    const { data: parent } = await supabase
+    const { data } = await supabase
       .from("comments")
-      .select("id, listing_id, parent_id")
+      .select("id, listing_id, parent_id, author_id")
       .eq("id", parentId)
       .maybeSingle();
+    parent = data;
     if (!parent || parent.listing_id !== listingId) return { error: "That question no longer exists." };
     if (parent.parent_id) return { error: "Can't reply to a reply." };
+    if (user.id !== listing.seller_id && user.id !== parent.author_id) {
+      return { error: "Only the seller or the person who asked can reply here." };
+    }
   }
 
   const { error: insertError } = await supabase.from("comments").insert({
@@ -79,30 +85,47 @@ export async function postComment(
 
   revalidatePath(`/listing/${listingId}`);
   revalidatePath("/dashboard/seller/questions");
+  revalidatePath("/dashboard/buyer/comments");
 
-  // Notify the seller only for a brand-new question, not their own reply,
-  // and not when a seller happens to be commenting on their own listing.
-  if (!parentId && user.id !== listing.seller_id) {
+  // Email whichever side of the conversation didn't just post — never the
+  // poster themselves, and never when seller and asker are the same person
+  // (a seller asking on their own listing, an edge case but easy to hit
+  // while testing).
+  const notifyUserId = !parentId
+    ? listing.seller_id // brand-new question -> tell the seller
+    : user.id === listing.seller_id
+      ? parent!.author_id // seller replied -> tell the original asker
+      : listing.seller_id; // asker followed up -> tell the seller
+  if (notifyUserId !== user.id) {
     const admin = createAdminClient();
     if (admin) {
       try {
-        const [emails, { data: asker }] = await Promise.all([
-          getUserEmails(admin, [listing.seller_id]),
+        const [emails, { data: poster }] = await Promise.all([
+          getUserEmails(admin, [notifyUserId]),
           supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
         ]);
-        const sellerEmail = emails[listing.seller_id];
-        if (sellerEmail) {
+        const toEmail = emails[notifyUserId];
+        if (toEmail) {
+          const posterName = poster?.full_name ?? "A Durqo user";
+          const isNewQuestion = !parentId;
+          const sellerReplying = !!parentId && user.id === listing.seller_id;
+          const subject = isNewQuestion
+            ? `New question on "${listing.title}"`
+            : sellerReplying
+              ? `Your question on "${listing.title}" has been answered`
+              : `New reply on "${listing.title}"`;
+          const replyHref = notifyUserId === listing.seller_id ? "/dashboard/seller/questions" : "/dashboard/buyer/comments";
           await sendEmail(
-            sellerEmail,
-            `New question on "${listing.title}"`,
-            `<p><strong>${asker?.full_name ?? "A buyer"}</strong> asked a question on your listing <strong>${listing.title}</strong>:</p>
+            toEmail,
+            subject,
+            `<p><strong>${posterName}</strong> ${isNewQuestion ? "asked a question" : "replied"} on <strong>${listing.title}</strong>:</p>
              <p style="white-space:pre-wrap">${text}</p>
-             <p><a href="https://www.durqo.com/dashboard/seller/questions">Reply on Durqo</a></p>`
+             <p><a href="https://www.durqo.com${replyHref}">View on Durqo</a></p>`
           );
         }
       } catch (err) {
         // Never let a notification failure undo an already-saved comment.
-        console.warn("[comments] seller notification email failed:", err);
+        console.warn("[comments] notification email failed:", err);
       }
     }
   }
