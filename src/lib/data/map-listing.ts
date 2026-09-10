@@ -310,9 +310,12 @@ export function mapFaqs(rows: Row[]): FaqItem[] {
 
 // Flat `comments` rows (self-referencing via parent_id) -> one level of
 // nested replies, matching how the listing page renders them. `sellerId` is
-// the listing's own seller — every comment authored by them (in practice,
-// only ever a reply, since postComment() only lets the seller reply) is
-// flagged `isSeller` so the UI can show "<name> (Seller)" (Sep 10, 2026).
+// the listing's own seller — every comment authored by them is flagged
+// `isSeller` so the UI can show "<name> (Seller)" (Sep 10, 2026). A parent's
+// `replies` array can now hold more than one entry either way — postComment()
+// used to only ever let the seller reply, but now the original asker can add
+// a follow-up too (same Sep 10, 2026 request), so a thread reads as a flat,
+// chronological back-and-forth rather than always exactly one seller answer.
 export function mapComments(rows: Row[], authorNames: Record<string, string>, sellerId?: string): CommentItem[] {
   const byId = new Map<string, CommentItem>();
   const top: CommentItem[] = [];
@@ -322,6 +325,7 @@ export function mapComments(rows: Row[], authorNames: Record<string, string>, se
     byId.set(r.id, {
       id: r.id,
       author: authorNames[r.author_id] ?? "Member",
+      authorId: r.author_id,
       isSeller: !!sellerId && r.author_id === sellerId,
       body: r.body,
       createdAt: String(r.created_at).slice(0, 10),
