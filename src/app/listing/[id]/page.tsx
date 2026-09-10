@@ -27,9 +27,9 @@ import {
   Package,
   CreditCard,
   HelpCircle,
-  MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
 import { getListingById } from "@/lib/data/listings.server";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { NICHE_MAP } from "@/lib/niches";
@@ -42,6 +42,7 @@ import { ONLINE_DEPOSIT_CAP } from "@/lib/payment-terms";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import FaqAccordion from "@/components/FaqAccordion";
+import CommentsPanel from "@/components/CommentsPanel";
 import ProofGalleryButton from "@/components/ProofGalleryButton";
 import CartButton from "@/components/CartButton";
 import BuyNowButton from "@/components/BuyNowButton";
@@ -215,6 +216,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   const { id } = await params;
   const listing = await getListingById(id);
   if (!listing) notFound();
+
+  // Sep 9, 2026: who's viewing decides what the merged FAQ/comments section
+  // below can do — a logged-in visitor can post a new question, and only
+  // the listing's own seller sees the "Reply as seller" control on an
+  // unanswered one. See src/components/CommentsPanel.tsx and
+  // src/lib/actions/comments.ts for the rest of this feature.
+  const supabase = await createClient();
+  const {
+    data: { user: viewer },
+  } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
+  const isListingSeller = !!viewer && viewer.id === listing.seller.id;
 
   const category = CATEGORY_MAP[listing.categoryId];
   const price = listing.discountedPrice ?? listing.price;
@@ -1044,41 +1056,45 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             </div>
           </aside>
 
-          {/* MAIN CONTENT — BOTTOM (FAQ + Comments). min-w-0 for the same
-              grid-overflow-guard reason as MAIN CONTENT TOP above. */}
-          <div className="min-w-0 flex flex-col gap-6">
-            {/* FAQ */}
-            <SectionCard title="FAQ with Seller" icon={HelpCircle}>
-              <FaqAccordion items={listing.faqs} />
-            </SectionCard>
+          {/* MAIN CONTENT — BOTTOM (FAQ with Seller, now including the live
+              question/answer feed). min-w-0 for the same grid-overflow-guard
+              reason as MAIN CONTENT TOP above.
 
-            {/* Comments */}
-            <SectionCard title="Comments" icon={MessagesSquare} bodyClassName="p-0">
+              Sep 9, 2026: this used to be two separate cards — a static,
+              read-only "FAQ with Seller" accordion and, right below it, a
+              "Comments" card that displayed real `comments` rows behind a
+              dead "Log in to leave a comment" link with no actual submit
+              path anywhere in the app. Per the user's request ("FAQ with
+              Seller er majhei comment and seller answer korar sujog thakbe.
+              Comments ta delete kore dao" — the ability to comment, and for
+              the seller to answer, should live inside FAQ with Seller
+              itself; delete the separate Comments card), they're now one
+              card: any seller-authored FAQ pairs (`listing.faqs`, still a
+              plain accordion) render first, followed by the live comment
+              feed and a real working composer/reply flow
+              (CommentsPanel — see src/lib/actions/comments.ts for the new
+              postComment() Server Action this calls). Posting a question
+              requires login (a dead-end "Log in to leave a comment" link
+              otherwise); replying is restricted to the listing's own
+              seller, enforced server-side, not just hidden in the UI. A new
+              top-level question also emails the seller and shows up on
+              their new /dashboard/seller/questions page — see
+              dashboard-nav.ts and that page for the "dashboard
+              notification" half of the request. */}
+          <div className="min-w-0 flex flex-col gap-6">
+            <SectionCard title="FAQ with Seller" icon={HelpCircle} bodyClassName="p-0">
               <div className="flex flex-col">
-                {listing.comments.length === 0 && <p className="px-5 py-4 text-sm text-ink-faint sm:px-6">No comments yet — be the first to ask a question.</p>}
-                {listing.comments.map((c, i) => (
-                  <div key={c.id} className={clsx("px-5 py-4 sm:px-6", i < listing.comments.length - 1 && "border-b border-rule")}>
-                    <div className="mb-1 flex items-baseline justify-between">
-                      <span className="text-sm font-semibold text-ink">{c.author}</span>
-                      <span className="text-xs text-ink-faint">{c.createdAt}</span>
-                    </div>
-                    <p className="text-sm text-ink-soft">{c.body}</p>
-                    {c.replies?.map((r) => (
-                      <div key={r.id} className="mt-3 ml-4 border-l-2 border-rule pl-4">
-                        <div className="mb-1 flex items-baseline justify-between">
-                          <span className="text-sm font-semibold text-ink">{r.author}</span>
-                          <span className="text-xs text-ink-faint">{r.createdAt}</span>
-                        </div>
-                        <p className="text-sm text-ink-soft">{r.body}</p>
-                      </div>
-                    ))}
+                {listing.faqs.length > 0 && (
+                  <div className="border-b border-rule px-5 sm:px-6">
+                    <FaqAccordion items={listing.faqs} />
                   </div>
-                ))}
-                <div className="border-t border-rule bg-paper-sunk px-5 py-4 sm:px-6">
-                  <Link href="/login" className="text-sm font-semibold text-brand-hover">
-                    Log in to leave a comment &rarr;
-                  </Link>
-                </div>
+                )}
+                <CommentsPanel
+                  listingId={listing.id}
+                  comments={listing.comments}
+                  isSeller={isListingSeller}
+                  loggedIn={!!viewer}
+                />
               </div>
             </SectionCard>
           </div>
