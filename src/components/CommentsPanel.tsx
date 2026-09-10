@@ -14,17 +14,25 @@ import { emitCountsChanged } from "@/lib/count-events";
 // comment" link) is gone; this is what replaced both its display and, new
 // this pass, an actual working submit path for both a buyer's question and
 // the seller's reply. See src/lib/actions/comments.ts for the write side and
-// the auth rules (only the listing's own seller may reply).
+// the auth rules.
+//
+// Sep 10, 2026: a reply is no longer seller-only — the buyer who asked the
+// original question can also follow up (e.g. after the seller answers), so
+// `viewerId` is compared against each comment's `authorId` to decide whether
+// *this* logged-in visitor is its original asker, alongside the existing
+// `isSeller` (listing-wide) check.
 export default function CommentsPanel({
   listingId,
   comments,
   isSeller,
   loggedIn,
+  viewerId,
 }: {
   listingId: string;
   comments: CommentItem[];
   isSeller: boolean;
   loggedIn: boolean;
+  viewerId?: string;
 }) {
   const router = useRouter();
   const [replyOpenFor, setReplyOpenFor] = useState<string | null>(null);
@@ -72,7 +80,17 @@ export default function CommentsPanel({
       {comments.length === 0 && (
         <p className="px-5 py-4 text-sm text-ink-faint sm:px-6">No questions yet — ask one below.</p>
       )}
-      {comments.map((c, i) => (
+      {comments.map((c, i) => {
+        const hasSellerReply = !!c.replies?.some((r) => r.isSeller);
+        const isAsker = !!viewerId && viewerId === c.authorId;
+        // Seller can always jump in (initial answer or a further follow-up);
+        // the original asker can add their own follow-up once the seller has
+        // answered at least once — see the Sep 10, 2026 comment on
+        // postComment() for why the write side allows this too.
+        const canSellerReply = isSeller;
+        const canAskerReply = isAsker && hasSellerReply;
+        const canReply = canSellerReply || canAskerReply;
+        return (
         <div key={c.id} className={clsx("px-5 py-4 sm:px-6", i < comments.length - 1 && "border-b border-rule")}>
           <div className="mb-1 flex items-baseline justify-between">
             <span className="text-sm font-semibold text-ink">
@@ -96,7 +114,7 @@ export default function CommentsPanel({
             </div>
           ))}
 
-          {isSeller && !c.replies?.length && (
+          {canReply && (
             <div className="mt-3 ml-4">
               {replyOpenFor === c.id ? (
                 <div className="flex flex-col gap-2">
@@ -104,7 +122,7 @@ export default function CommentsPanel({
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     rows={2}
-                    placeholder="Write your answer…"
+                    placeholder={canSellerReply ? "Write your answer…" : "Write your reply…"}
                     className="rounded-lg border border-rule bg-paper px-3 py-2 text-sm text-ink outline-none focus:border-brand"
                   />
                   {replyError && <span className="text-xs text-red-600">{replyError}</span>}
@@ -115,7 +133,7 @@ export default function CommentsPanel({
                       disabled={replyBusy || !replyText.trim()}
                       className="rounded-md bg-brand-strong px-3 py-1.5 text-xs font-semibold text-paper-raised disabled:opacity-60"
                     >
-                      {replyBusy ? "Posting…" : "Post answer"}
+                      {replyBusy ? "Posting…" : canSellerReply ? "Post answer" : "Post reply"}
                     </button>
                     <button
                       type="button"
@@ -139,13 +157,14 @@ export default function CommentsPanel({
                   }}
                   className="text-xs font-semibold text-brand-hover"
                 >
-                  Reply as seller &rarr;
+                  {canSellerReply ? "Reply as seller" : "Reply"} &rarr;
                 </button>
               )}
             </div>
           )}
         </div>
-      ))}
+        );
+      })}
 
       <div className="border-t border-rule bg-paper-sunk px-5 py-4 sm:px-6">
         {loggedIn ? (
