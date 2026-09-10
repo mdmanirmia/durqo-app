@@ -28,8 +28,8 @@ export default async function SellerQuestionsPage() {
   if (!user) redirect("/login");
 
   const questions = await getSellerQuestions(user.id);
-  const unanswered = questions.filter((q) => !q.reply);
-  const answered = questions.filter((q) => q.reply);
+  const unanswered = questions.filter((q) => !q.hasSellerReply);
+  const answered = questions.filter((q) => q.hasSellerReply);
 
   return (
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
@@ -56,6 +56,19 @@ export default async function SellerQuestionsPage() {
               </div>
               <div className="mb-2 text-sm font-semibold text-ink">{q.author}</div>
               <p className="mb-3 text-sm text-ink-soft">{q.body}</p>
+              {/* A buyer can follow up on their own question before the seller
+                  ever answers it (postComment() allows the original asker to
+                  reply too, Sep 10, 2026) — show those here so an "unanswered"
+                  question with extra buyer context isn't silently hidden. */}
+              {q.replies.map((r, i) => (
+                <div key={i} className="mb-3 ml-4 border-l-2 border-rule pl-4">
+                  <div className="mb-1 flex items-baseline justify-between">
+                    <span className="text-sm font-semibold text-ink">{r.author}</span>
+                    <span className="text-xs text-ink-faint">{r.createdAt}</span>
+                  </div>
+                  <p className="text-sm text-ink-soft">{r.body}</p>
+                </div>
+              ))}
               <SellerQuestionReply questionId={q.id} listingId={q.listingId} />
             </div>
           ))}
@@ -73,18 +86,21 @@ export default async function SellerQuestionsPage() {
                   </div>
                   <div className="mb-2 text-sm font-semibold text-ink">{q.author}</div>
                   <p className="mb-3 text-sm text-ink-soft">{q.body}</p>
-                  {q.reply && (
-                    <div className="ml-4 border-l-2 border-rule pl-4">
+                  {/* Sep 10, 2026: the buyer can keep replying after being
+                      answered, so this is the full flat thread (chronological),
+                      not just the one seller reply it used to always be. */}
+                  {q.replies.map((r, i) => (
+                    <div key={i} className="mb-3 ml-4 border-l-2 border-rule pl-4">
                       <div className="mb-1 flex items-baseline justify-between">
                         <span className="text-sm font-semibold text-ink">
-                          {q.reply.author}
-                          <span className="font-normal text-ink-faint"> (Seller)</span>
+                          {r.author}
+                          {r.isSeller && <span className="font-normal text-ink-faint"> (Seller)</span>}
                         </span>
-                        <span className="text-xs text-ink-faint">{q.reply.createdAt}</span>
+                        <span className="text-xs text-ink-faint">{r.createdAt}</span>
                       </div>
-                      <p className="text-sm text-ink-soft">{q.reply.body}</p>
+                      <p className="text-sm text-ink-soft">{r.body}</p>
                     </div>
-                  )}
+                  ))}
                 </div>
               ))}
             </>
