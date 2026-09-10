@@ -6,12 +6,13 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { getWishlistedListings } from "@/lib/data/wishlist.client";
 import { getBuyerOrderCounts } from "@/lib/data/cart.client";
+import { fmtUSD } from "@/lib/format";
 import ListingCard from "@/components/ListingCard";
 import type { Listing } from "@/lib/types";
 
 export default function BuyerOverview() {
   const [wishlisted, setWishlisted] = useState<Listing[] | null>(null);
-  const [counts, setCounts] = useState<{ open: number; completed: number } | null>(null);
+  const [counts, setCounts] = useState<{ open: number; completed: number; totalSpent: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,7 +29,11 @@ export default function BuyerOverview() {
 
   return (
     <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="mono text-2xl font-semibold text-brand-strong">{counts ? fmtUSD(counts.totalSpent) : "…"}</div>
+          <div className="text-sm text-ink-faint">Total spent</div>
+        </div>
         <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{counts ? counts.open : "…"}</div>
           <div className="text-sm text-ink-faint">Open orders</div>
