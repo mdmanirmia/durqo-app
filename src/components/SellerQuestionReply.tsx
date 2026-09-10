@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { postComment } from "@/lib/actions/comments";
+import { emitCountsChanged } from "@/lib/count-events";
 
 // Reply box for one open question on /dashboard/seller/questions. Deliberately
 // separate from CommentsPanel (the listing page's own feed) rather than
@@ -28,6 +29,7 @@ export default function SellerQuestionReply({ questionId, listingId }: { questio
     }
     setText("");
     setOpen(false);
+    emitCountsChanged();
     router.refresh();
   }
 

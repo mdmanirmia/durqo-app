@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import type { CommentItem } from "@/lib/types";
 import { postComment } from "@/lib/actions/comments";
+import { emitCountsChanged } from "@/lib/count-events";
 
 // Sep 9, 2026: the live question/answer feed that now lives directly inside
 // the listing page's single "FAQ with Seller" card — the separate "Comments"
@@ -47,6 +48,7 @@ export default function CommentsPanel({
     }
     setReplyText("");
     setReplyOpenFor(null);
+    emitCountsChanged();
     router.refresh();
   }
 
@@ -61,6 +63,7 @@ export default function CommentsPanel({
       return;
     }
     setNewText("");
+    emitCountsChanged();
     router.refresh();
   }
 
