@@ -33,7 +33,7 @@ export default async function SellerQuestionsPage() {
 
   return (
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <h2 className="mb-1 text-xl">Questions</h2>
+      <h2 className="mb-1 text-xl">Comments</h2>
       <p className="mb-4 text-sm text-ink-faint">
         {unanswered.length === 0
           ? "You're all caught up — no open questions."
@@ -76,7 +76,10 @@ export default async function SellerQuestionsPage() {
                   {q.reply && (
                     <div className="ml-4 border-l-2 border-rule pl-4">
                       <div className="mb-1 flex items-baseline justify-between">
-                        <span className="text-sm font-semibold text-ink">{q.reply.author}</span>
+                        <span className="text-sm font-semibold text-ink">
+                          {q.reply.author}
+                          <span className="font-normal text-ink-faint"> (Seller)</span>
+                        </span>
                         <span className="text-xs text-ink-faint">{q.reply.createdAt}</span>
                       </div>
                       <p className="text-sm text-ink-soft">{q.reply.body}</p>
