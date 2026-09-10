@@ -4,16 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { isRealListingId } from "@/lib/is-demo-listing";
 import SslcommerzConfirmModal, { type SslcommerzQuote } from "@/components/SslcommerzConfirmModal";
+import EscrowConfirmModal, { type EscrowQuote } from "@/components/EscrowConfirmModal";
 
 // "Buy Now" — skips the cart entirely and starts a checkout session for
-// just this one listing, via either Stripe (/api/checkout) or SSLCommerz's
-// Bangladesh payment gateway (/api/sslcommerz/init), buyer's choice. Locked
-// once the listing is sold (or is a demo/mock listing with nothing real in
-// the database to buy). Sep 9, 2026: gained the SSLCommerz option alongside
-// the already-live Stripe one, matching the same choice CartView now
-// offers. No country detection/gating — the label itself ("bKash/Rocket/
-// Nagad/Bank") is the filter: only makes sense to a Bangladeshi buyer, so
-// that's who picks it. See the longer note in CartView.tsx.
+// just this one listing, via Stripe (/api/checkout), SSLCommerz's
+// Bangladesh payment gateway (/api/sslcommerz/init), or Escrow.com
+// (/api/escrow/init), buyer's choice. Locked once the listing is sold (or
+// is a demo/mock listing with nothing real in the database to buy). Sep 9,
+// 2026: gained the SSLCommerz option alongside the already-live Stripe one,
+// matching the same choice CartView now offers. No country detection/
+// gating — the label itself ("bKash/Rocket/Nagad/Bank") is the filter: only
+// makes sense to a Bangladeshi buyer, so that's who picks it. See the
+// longer note in CartView.tsx.
 //
 // Mirrors CartView.tsx's SSLCommerz flow: instead of redirecting straight
 // to the gateway, it first fetches a quote (/api/sslcommerz/quote?listingId=)
@@ -21,6 +23,15 @@ import SslcommerzConfirmModal, { type SslcommerzQuote } from "@/components/Sslco
 // the USD->BDT rate, and (for a listing over the online deposit cap) how
 // the remainder is handled, before ever leaving Durqo. Stripe has no such
 // step — it charges USD directly, so it still redirects immediately.
+//
+// Sep 10, 2026: the "Buy Now — Escrow (coming soon)" placeholder button is
+// now live, using the exact same quote-then-confirm-then-redirect shape as
+// the SSLCommerz option, via EscrowConfirmModal.tsx / api/escrow/quote
+// /api/escrow/init. Only difference in the confirm step: no currency
+// conversion to show (Escrow.com charges the full USD price directly), and
+// the copy sets expectations that the buyer will finish payment on
+// Escrow.com's own hosted page, possibly signing into (or being issued) an
+// Escrow.com account along the way.
 export default function BuyNowButton({ listingId, sold }: { listingId: string; sold?: boolean }) {
   const router = useRouter();
   const [stripeBusy, setStripeBusy] = useState(false);
@@ -34,8 +45,16 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
   const [sslError, setSslError] = useState<string | null>(null);
   const [sslConfirming, setSslConfirming] = useState(false);
 
+  // Escrow.com confirm-modal state — same "closed means hidden" shape as
+  // the SSLCommerz one above. Sep 10, 2026: replaces the disabled "coming
+  // soon" placeholder that used to sit here.
+  const [escrowStatus, setEscrowStatus] = useState<"closed" | "loading" | "ready" | "error">("closed");
+  const [escrowQuote, setEscrowQuote] = useState<EscrowQuote | null>(null);
+  const [escrowError, setEscrowError] = useState<string | null>(null);
+  const [escrowConfirming, setEscrowConfirming] = useState(false);
+
   async function handleStripe() {
-    if (stripeBusy || locked || sslStatus !== "closed") return;
+    if (stripeBusy || locked || sslStatus !== "closed" || escrowStatus !== "closed") return;
     setStripeBusy(true);
     setError(null);
     try {
@@ -64,7 +83,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
   }
 
   async function openSslModal() {
-    if (stripeBusy || locked) return;
+    if (stripeBusy || locked || escrowStatus !== "closed") return;
     setError(null);
     setSslStatus("loading");
     setSslQuote(null);
@@ -126,6 +145,69 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
     }
   }
 
+  async function openEscrowModal() {
+    if (stripeBusy || locked || sslStatus !== "closed") return;
+    setError(null);
+    setEscrowStatus("loading");
+    setEscrowQuote(null);
+    setEscrowError(null);
+    try {
+      const res = await fetch(`/api/escrow/quote?listingId=${encodeURIComponent(listingId)}`);
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok) {
+        setEscrowError(data.error ?? "Couldn't calculate this order's total. Please try again.");
+        setEscrowStatus("error");
+        return;
+      }
+      setEscrowQuote(data);
+      setEscrowStatus("ready");
+    } catch {
+      setEscrowError("Couldn't calculate this order's total. Please try again.");
+      setEscrowStatus("error");
+    }
+  }
+
+  function closeEscrowModal() {
+    if (escrowConfirming) return;
+    setEscrowStatus("closed");
+    setEscrowQuote(null);
+    setEscrowError(null);
+  }
+
+  async function confirmEscrow() {
+    if (escrowConfirming) return;
+    setEscrowConfirming(true);
+    try {
+      const res = await fetch("/api/escrow/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId }),
+      });
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        setEscrowError(data.error ?? "Something went wrong. Please try again.");
+        setEscrowStatus("error");
+        setEscrowConfirming(false);
+        return;
+      }
+      // Deliberately not resetting `escrowConfirming` on success — this
+      // component is about to be torn down by the navigation.
+      window.location.href = data.url;
+    } catch {
+      setEscrowError("Something went wrong. Please try again.");
+      setEscrowStatus("error");
+      setEscrowConfirming(false);
+    }
+  }
+
   if (sold || isDemo) {
     return (
       <button
@@ -152,23 +234,18 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
       <button
         type="button"
         onClick={openSslModal}
-        disabled={stripeBusy || sslStatus !== "closed"}
+        disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
         className="rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-colors hover:bg-brand disabled:opacity-60"
       >
         Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)
       </button>
-      {/* Placeholder only — per the merchant ("banaiye rakho, pore details add
-          korbo"): the button should exist now, with the actual escrow
-          payment flow (checkout route, terms copy, confirmation step, etc.)
-          wired up in a later pass. Disabled so it can't be clicked into a
-          dead end in the meantime; no onClick, no backend call. */}
       <button
         type="button"
-        disabled
-        title="Coming soon"
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink-faint opacity-60"
+        onClick={openEscrowModal}
+        disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
+        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
       >
-        Buy Now — Escrow (coming soon)
+        Buy Now — Escrow.com
       </button>
       {error && <span className="text-xs text-red-600">{error}</span>}
 
@@ -180,6 +257,17 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
           confirming={sslConfirming}
           onConfirm={confirmSsl}
           onCancel={closeSslModal}
+        />
+      )}
+
+      {escrowStatus !== "closed" && (
+        <EscrowConfirmModal
+          status={escrowStatus}
+          quote={escrowQuote}
+          error={escrowError}
+          confirming={escrowConfirming}
+          onConfirm={confirmEscrow}
+          onCancel={closeEscrowModal}
         />
       )}
     </div>
