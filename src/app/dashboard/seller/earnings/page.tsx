@@ -19,8 +19,9 @@ import { requestWithdrawal } from "./actions";
 
 const PAYOUT_METHODS = [
   { id: "bank_transfer", label: "Bank Transfer" },
-  { id: "paypal", label: "PayPal" },
-  { id: "other", label: "Other" },
+  { id: "bkash", label: "bKash" },
+  { id: "rocket", label: "Rocket" },
+  { id: "nagad", label: "Nagad" },
 ] as const;
 
 const STATUS_LABEL: Record<WithdrawalStatus, string> = {
@@ -148,9 +149,11 @@ export default function SellerEarningsPage() {
               placeholder={
                 methodId === "bank_transfer"
                   ? "Bank name, account name, account number, routing/SWIFT"
-                  : methodId === "paypal"
-                  ? "PayPal email address"
-                  : "Where should this payout go?"
+                  : methodId === "bkash"
+                  ? "bKash number (Personal/Agent) and account holder name"
+                  : methodId === "rocket"
+                  ? "Rocket number and account holder name"
+                  : "Nagad number and account holder name"
               }
               rows={3}
               className="mb-4 w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm focus:border-brand-strong focus:outline-none"
