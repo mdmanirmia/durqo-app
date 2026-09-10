@@ -265,3 +265,75 @@ export async function setVerificationStatus(userId: string, decision: Verificati
     await sendEmail(sellerEmail, subject, html);
   }
 }
+
+const WITHDRAWAL_DECISIONS = ["approved", "rejected", "paid"] as const;
+type WithdrawalDecision = (typeof WITHDRAWAL_DECISIONS)[number];
+
+// The ONLY place a withdrawal_requests row can move out of "pending" — the
+// seller's own requestWithdrawal() action (dashboard/seller/earnings/
+// actions.ts) can only ever create one in "pending" via the
+// create_withdrawal_request() RPC (028_withdrawals.sql). Same manual
+// review shape as setVerificationStatus() above: "approved" means admin
+// has agreed to pay it out (money hasn't necessarily moved yet — this app
+// has no automated payout rail), "paid" is the admin confirming they've
+// actually sent it, and "rejected" releases the claimed orders back to the
+// seller's available balance (withdrawal_id cleared) so that money isn't
+// stuck unwithdrawable forever.
+export async function setWithdrawalStatus(requestId: string, decision: WithdrawalDecision, adminNote?: string) {
+  await requireAdmin();
+  if (!WITHDRAWAL_DECISIONS.includes(decision)) throw new Error("Invalid decision");
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const { data: request } = await admin.from("withdrawal_requests").select("*").eq("id", requestId).single();
+  if (!request) throw new Error("Withdrawal request not found");
+
+  if (decision === "paid" && request.status !== "approved") {
+    throw new Error("Only an approved request can be marked paid.");
+  }
+  if ((decision === "approved" || decision === "rejected") && request.status !== "pending") {
+    throw new Error("This request has already been reviewed.");
+  }
+
+  const update: Record<string, unknown> = { status: decision };
+  if (adminNote !== undefined) update.admin_note = adminNote.trim() || null;
+  if (decision === "approved" || decision === "rejected") update.reviewed_at = new Date().toISOString();
+  if (decision === "paid") update.paid_at = new Date().toISOString();
+
+  const { error } = await admin.from("withdrawal_requests").update(update).eq("id", requestId);
+  if (error) throw new Error(error.message);
+
+  if (decision === "rejected") {
+    await admin.from("orders").update({ withdrawal_id: null }).eq("withdrawal_id", requestId);
+  }
+
+  revalidatePath("/dashboard/admin/withdrawals");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/seller/earnings");
+
+  // Best-effort: let the seller know the outcome.
+  const { data: sellerProfile } = await admin.from("profiles").select("full_name").eq("id", request.seller_id).single();
+  const { data: usersList } = await admin.auth.admin.listUsers();
+  const sellerEmail = usersList?.users.find((u) => u.id === request.seller_id)?.email;
+  const sellerName = sellerProfile?.full_name || "there";
+  const netAmountLabel = `$${Math.round(Number(request.net_amount)).toLocaleString("en-US")}`;
+
+  if (sellerEmail) {
+    const subject =
+      decision === "approved"
+        ? "Your withdrawal request was approved"
+        : decision === "paid"
+        ? "Your withdrawal has been paid"
+        : "Your withdrawal request wasn't approved";
+    const html =
+      decision === "approved"
+        ? `<p>Hi ${sellerName},</p><p>Your withdrawal request for ${netAmountLabel} has been approved and is being processed to your ${request.payout_method.replace("_", " ")} details on file.</p><p>— Durqo</p>`
+        : decision === "paid"
+        ? `<p>Hi ${sellerName},</p><p>Your withdrawal of ${netAmountLabel} has been paid out. Thanks for selling on Durqo!</p><p>— Durqo</p>`
+        : `<p>Hi ${sellerName},</p><p>We weren't able to approve your withdrawal request for ${netAmountLabel}.${
+            adminNote?.trim() ? ` Note from our team: ${adminNote.trim()}` : ""
+          } The related orders are available in your balance again, so you can submit a new request from your seller dashboard.</p><p>— Durqo</p>`;
+    await sendEmail(sellerEmail, subject, html);
+  }
+}
