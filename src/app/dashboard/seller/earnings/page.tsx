@@ -22,6 +22,8 @@ const PAYOUT_METHODS = [
   { id: "bkash", label: "bKash" },
   { id: "rocket", label: "Rocket" },
   { id: "nagad", label: "Nagad" },
+  { id: "paypal", label: "PayPal" },
+  { id: "wise", label: "Wise" },
 ] as const;
 
 const STATUS_LABEL: Record<WithdrawalStatus, string> = {
@@ -153,7 +155,11 @@ export default function SellerEarningsPage() {
                   ? "bKash number (Personal/Agent) and account holder name"
                   : methodId === "rocket"
                   ? "Rocket number and account holder name"
-                  : "Nagad number and account holder name"
+                  : methodId === "nagad"
+                  ? "Nagad number and account holder name"
+                  : methodId === "paypal"
+                  ? "PayPal email address"
+                  : "Wise email address or account details"
               }
               rows={3}
               className="mb-4 w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm focus:border-brand-strong focus:outline-none"
