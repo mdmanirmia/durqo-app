@@ -43,13 +43,19 @@ const STATUS_LABEL: Record<string, string> = {
 // mean a gateway is actually wired up yet — it's just a bucket admin can
 // pick for a sale settled that way outside Stripe. "In Escrow" is for a
 // payment currently held (not yet released) rather than a rail of its own.
-const PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway", "escrow"] as const;
+// "Escrow.com" (Sep 10, 2026) is different from all of the above: it's set
+// automatically by /api/escrow/init, not picked by hand, for an order that
+// actually went through the real Escrow.com API integration — kept as a
+// selectable option here too so admin can still correct it by hand if ever
+// needed, same as every other channel.
+const PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway", "escrow", "escrow_com"] as const;
 
 const PAYMENT_CHANNEL_LABEL: Record<string, string> = {
   stripe: "In Stripe",
   durqo_platform: "In Durqo Platform",
   bangladesh_gateway: "In Bangladesh Payment Gateway",
   escrow: "In Escrow",
+  escrow_com: "Escrow.com",
 };
 
 // Status here is a manual admin override of the tracking label only — it
