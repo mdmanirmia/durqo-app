@@ -5,6 +5,9 @@ export const BUYER_NAV: DashboardNavItem[] = [
   { href: "/dashboard/buyer/orders", label: "Orders", badge: 2 },
   { href: "/dashboard/buyer/wishlist", label: "Wishlist", badge: 3 },
   { href: "/dashboard/buyer/messages", label: "Messages" },
+  // Sep 10, 2026: mirrors the seller's own "Comments" tab — the buyer's
+  // side of the same FAQ/Q&A thread (see /dashboard/buyer/comments/page.tsx).
+  { href: "/dashboard/buyer/comments", label: "Comments" },
   { href: "/dashboard/buyer/account", label: "Account Details" },
 ];
 

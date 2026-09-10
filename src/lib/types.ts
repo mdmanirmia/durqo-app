@@ -54,6 +54,13 @@ export interface FaqItem {
 export interface CommentItem {
   id: string;
   author: string;
+  // The comment row's own author_id (raw auth uid) — already public via
+  // comments_select_all's RLS, so exposing it here isn't a new leak. Lets a
+  // client component (CommentsPanel) tell whether the *current viewer* is
+  // the original asker, e.g. to show a "Reply" control on their own question
+  // once the seller has answered it (Sep 10, 2026 buyer-can-reply-too
+  // request). Optional for the same reason as isSeller below.
+  authorId?: string;
   // True when this comment's author is the listing's own seller — lets the
   // UI show "<name> (Seller)" so a buyer reading the thread can tell the
   // seller's own reply apart from another buyer's question at a glance
