@@ -121,16 +121,23 @@ export async function requestPurchase(listings: Listing[]): Promise<void> {
 
 // Counts for the buyer dashboard's stat tiles. "Open" is anything not yet
 // completed or cancelled (requested / awaiting_payment / in_escrow).
-export async function getBuyerOrderCounts(): Promise<{ open: number; completed: number }> {
+export async function getBuyerOrderCounts(): Promise<{ open: number; completed: number; totalSpent: number }> {
+  const empty = { open: 0, completed: 0, totalSpent: 0 };
   const supabase = createClient();
-  if (!supabase) return { open: 0, completed: 0 };
+  if (!supabase) return empty;
   const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) return { open: 0, completed: 0 };
+  if (!userData.user) return empty;
 
-  const { data, error } = await supabase.from("orders").select("status").eq("buyer_id", userData.user.id);
-  if (error || !data) return { open: 0, completed: 0 };
+  const { data, error } = await supabase.from("orders").select("status, amount").eq("buyer_id", userData.user.id);
+  if (error || !data) return empty;
 
   const completed = data.filter((o) => o.status === "completed").length;
   const open = data.filter((o) => o.status !== "completed" && o.status !== "cancelled").length;
-  return { open, completed };
+  // Spending summary (Sep 10, 2026): total actually paid, i.e. every
+  // completed order's full sale price — deliberately the same definition
+  // already used for the seller's own balance (dashboard/seller/page.tsx),
+  // not just the online-charged portion (payment-terms.ts's $2,000 cap),
+  // since a buyer who settled a remainder directly still paid it.
+  const totalSpent = data.filter((o) => o.status === "completed").reduce((sum, o) => sum + Number(o.amount), 0);
+  return { open, completed, totalSpent };
 }
