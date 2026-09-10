@@ -13,6 +13,12 @@ import { fmtUSD, fmtBDT } from "@/lib/format";
 // is a different policy from Stripe's "settled directly, not through
 // Durqo" — so only the SSLCommerz wording changed here; Stripe's is
 // untouched.
+// Sep 10 2026: the SSLCommerz remainder now also shows its BDT equivalent
+// (remainderUsd * sslcommerzRate, the same rate already stored for the
+// online-charge portion of this same order) — same gap/fix as
+// SslcommerzConfirmModal's confirmation screen, so the balance a
+// Bangladeshi buyer sees quoted at checkout still reads in BDT once it
+// shows up again here on the order record.
 export default function OrderAmountBreakdown({
   paymentChannel,
   onlineChargeUsd,
@@ -46,7 +52,11 @@ export default function OrderAmountBreakdown({
       {hasRemainder && (
         <span>
           {isSslcommerz
-            ? `+ ${fmtUSD(remainderUsd)} balance due — pay by wire/card once Durqo emails instructions; not yet completed`
+            ? `+ ${fmtUSD(remainderUsd)}${
+                typeof sslcommerzRate === "number"
+                  ? ` (≈ ${fmtBDT(Math.round(remainderUsd! * sslcommerzRate * 100) / 100)})`
+                  : ""
+              } balance due — pay by wire/card once Durqo emails instructions; not yet completed`
             : `+ ${fmtUSD(remainderUsd)} settled directly (wire/card), not through Durqo`}
         </span>
       )}

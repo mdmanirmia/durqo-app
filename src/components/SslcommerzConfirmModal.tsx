@@ -22,6 +22,13 @@ import { fmtUSD, fmtBDT } from "@/lib/format";
 // "Durqo's conversion margin" wording — the margin is still applied
 // server-side (src/lib/currency.ts) but is never named in buyer-facing
 // copy.
+//
+// Sep 10 2026 follow-up: the remaining-balance line only ever showed the USD
+// figure, but that balance is still paid via a BDT rail for these buyers —
+// added the BDT equivalent (computed client-side from `remainderUsd *
+// rate`, the same today's-rate already shown above, rather than a second
+// API round trip) so the number they'll actually be asked to pay isn't a
+// surprise in the follow-up email.
 export interface SslcommerzQuote {
   fullPriceUsd: number;
   onlineChargeUsd: number;
@@ -98,9 +105,10 @@ export default function SslcommerzConfirmModal({
               <p className="mt-4 text-sm leading-relaxed text-ink-soft">
                 This listing is priced at {fmtUSD(quote.fullPriceUsd)}. You&rsquo;re paying the BDT equivalent of{" "}
                 {fmtUSD(quote.depositCap)} now through SSLCommerz. Once this payment is confirmed, Durqo will email
-                you with instructions for paying the remaining {fmtUSD(quote.remainderUsd)} by bank wire transfer,
-                credit card, or debit card — your purchase will be completed only after that balance has been
-                received and verified.
+                you with instructions for paying the remaining {fmtUSD(quote.remainderUsd)} (&asymp;{" "}
+                {fmtBDT(Math.round(quote.remainderUsd * quote.rate * 100) / 100)}, at today&rsquo;s rate) by bank
+                wire transfer, credit card, or debit card — your purchase will be completed only after that balance
+                has been received and verified.
               </p>
             ) : (
               <p className="mt-4 text-sm leading-relaxed text-ink-soft">
