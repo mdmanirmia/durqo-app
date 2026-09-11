@@ -34,7 +34,31 @@ import PrivacyToc from "./PrivacyToc";
 // to what the policy actually says, not a cosmetic redesign — flagged in
 // the implementation report for the owner's/a lawyer's final sign-off,
 // same as the Terms-page date bump.
-const EFFECTIVE_DATE = "September 6, 2026";
+//
+// Update — Sep 11, 2026: re-checked against the current codebase (mirroring
+// the same-day Terms-page re-check, src/app/terms/page.tsx) and updated
+// because the Platform has shipped real integrations the Sep 6 copy above
+// still described as not-yet-built:
+// 1. Escrow.com (src/lib/escrow.ts) is a live, independent, licensed
+//    escrow provider as of Sep 10, 2026. The provider table's old
+//    "Independent escrow provider — not yet integrated" row is replaced
+//    with a real "Escrow.com" row describing what it actually receives.
+// 2. SSLCommerz has processed live Bangladeshi Buyer payments since
+//    Sep 9, 2026 (src/components/BuyNowButton.tsx) — its row flips from
+//    "planned" to "live," and its purpose text is corrected: it collects a
+//    Buyer's BDT payment, not a Seller's Success Fee (that mechanism was
+//    never built — see the Terms-page Sep 11 update for what replaced it).
+// 3. Stripe's row is corrected the same way — its purpose text no longer
+//    claims a planned Stripe-based Seller Success Fee payment.
+// 4. A new provider-table row discloses the payout-method data flow added
+//    by the seller withdrawal system (supabase/migrations 028-033,
+//    src/app/dashboard/seller/earnings): the structured payout account
+//    details (bank account number, bKash/Rocket/Nagad number, PayPal/Wise
+//    email) a Seller enters to request a withdrawal. Section 02's
+//    "Payment & transaction" row is updated to mention this too.
+// Same discipline as the Sep 6 rebuild: a row is only marked "In use
+// today" once the integration is actually confirmed live in the codebase.
+const EFFECTIVE_DATE = "September 11, 2026";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Durqo",
@@ -182,40 +206,44 @@ function InfoCategoryTable({ rows }: { rows: InfoCategory[] }) {
 const INFO_CATEGORIES: InfoCategory[] = [
   { category: "Account & identity", examples: "Name, email address, account credentials, and, where required, seller identity-verification information." },
   { category: "Business & listing", examples: "Information about the businesses you list, inquire about, or transact on, including business details and supporting documents." },
-  { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment provider (see Section 07)." },
+  { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment providers; and, if you request a withdrawal as a Seller, the payout account details you provide (such as a bank account number, mobile financial service number, or PayPal/Wise email — see Section 07)." },
   { category: "Messages & support", examples: "Messages with other users and with our support team, and related records." },
   { category: "Device & usage", examples: "Information about your device, browser, IP address, and how you use the Platform (pages viewed, features used)." },
   { category: "Connected analytics", examples: "If a Seller connects a Google Analytics 4 property to their own Listing, we access aggregated, read-only performance metrics for that property only (see Section 08)." },
 ];
 
 // Provider table: every row's status reflects what's actually confirmed in
-// the codebase today, not the confirmed FINAL architecture. See src/lib/fees.ts
-// and src/app/terms/page.tsx for the fuller citation trail — the same
-// audit finding applies here: no escrow provider or SSLCommerz integration
-// exists in this codebase, and Stripe's role today (processing a Buyer's
-// full payment) is not the same as the fee-only role planned for eligible
-// international Sellers. Per the owner's explicit instruction, this table
-// does not name an escrow provider until one is confirmed and operational.
+// the codebase today. See src/lib/escrow.ts, src/components/BuyNowButton.tsx,
+// and src/app/terms/page.tsx (Sep 11, 2026 update) for the fuller citation
+// trail. Escrow.com and SSLCommerz are both confirmed live integrations as
+// of that update; a row is only marked "live" once it's actually confirmed
+// operational this way, same discipline as the original Sep 6, 2026 audit.
 type Provider = { name: string; purpose: React.ReactNode; tone: "live" | "planned" };
 
 const PROVIDERS: Provider[] = [
   {
-    name: "Independent escrow provider",
+    name: "Escrow.com",
     purpose:
-      "Planned: transaction administration, funding status, inspection, dispute and release information, and identity/KYC information where required. Durqo has not yet integrated an escrow provider, so no information is shared this way today.",
-    tone: "planned",
+      "In use today when a Buyer and Seller choose to complete a transaction through Escrow.com instead of paying through Durqo directly. Escrow.com receives the Buyer's and Seller's email addresses, the transaction description and amount, and information related to funding, asset transfer, inspection, and release of the transaction. Escrow.com is a genuine, independent, licensed escrow provider, not part of Durqo, and its own privacy policy governs the information it holds directly.",
+    tone: "live",
   },
   {
     name: "Stripe",
     purpose:
-      "In use today to process a Buyer's payment for a purchase on the Platform. Using Stripe specifically to collect an eligible international Seller's Success Fee is part of Durqo's planned payment architecture and is not yet operational. Stripe is a payment processor, not an escrow provider.",
+      "In use today to process a Buyer's card payment for a purchase on the Platform. Stripe is a payment processor, not an escrow provider.",
     tone: "live",
   },
   {
     name: "SSLCommerz",
     purpose:
-      "Planned: eligible Bangladeshi Seller Success Fee payments and related transaction-status information. Not yet integrated — no information is shared with SSLCommerz today. SSLCommerz is a payment gateway/processor, not an escrow provider.",
-    tone: "planned",
+      "In use today to process a Bangladeshi Buyer's payment, in Bangladeshi Taka via bKash, Rocket, Nagad, or bank transfer, for a purchase on the Platform. SSLCommerz is a payment gateway/processor, not an escrow provider.",
+    tone: "live",
+  },
+  {
+    name: "Payout providers (Bank Transfer, bKash, Rocket, Nagad, PayPal, Wise)",
+    purpose:
+      "In use today when a Seller requests a withdrawal of their sale proceeds. We share the payout account details the Seller provides (such as a bank account number, mobile financial service number, or PayPal/Wise email) with the relevant bank or payment service needed to complete that specific payout.",
+    tone: "live",
   },
   {
     name: "Supabase",
@@ -421,13 +449,14 @@ export default function PrivacyPage() {
               </Section>
 
               <Section id="providers" num="07" title="Payments, Escrow and Service Providers">
-                <p>We use the following providers for payments, escrow, infrastructure, and analytics. The status shown reflects what is actually operational today, not Durqo&rsquo;s planned final payment architecture:</p>
+                <p>We use the following providers for payments, escrow, payouts, hosting, and analytics. The status shown reflects what is actually operational today:</p>
                 <ProviderTable />
                 <p className="text-left text-xs leading-relaxed text-ink-faint">
-                  Durqo is not an escrow provider and does not directly hold independent escrow funds. Stripe is a
-                  payment processor, not an escrow provider. SSLCommerz is a payment gateway/processor, not an
-                  escrow provider. We will only describe an integration above as &ldquo;In use today&rdquo; once it
-                  has actually been implemented and verified in production — see our{" "}
+                  Durqo itself is not an escrow provider and does not directly hold or control Escrow.com&rsquo;s
+                  funds. Stripe is a payment processor, not an escrow provider. SSLCommerz is a payment
+                  gateway/processor, not an escrow provider. We will only describe an integration above as
+                  &ldquo;In use today&rdquo; once it has actually been implemented and verified in production —
+                  see our{" "}
                   <a href="/terms#payment-fees" className="font-semibold text-brand-hover">
                     Terms, Section 05
                   </a>{" "}
