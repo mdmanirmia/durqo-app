@@ -835,12 +835,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             {/* Payment Terms — BDT-specific terms only, for Bangladesh-based
                 buyers paying via SSLCommerz. Branched on the listing's
                 server-side price (never a client-supplied value) against the
-                same ONLINE_DEPOSIT_CAP both Stripe and SSLCommerz checkout
-                actually charge against (src/lib/payment-terms.ts), so the
-                copy can never drift from what checkout actually does. A
-                price at exactly the cap takes the "full payment" branch
-                (price > cap is false there), matching the same
-                onlineChargeAmount() semantics the checkout routes use.
+                same ONLINE_DEPOSIT_CAP the SSLCommerz checkout route actually
+                charges against (src/lib/payment-terms.ts), so the copy can
+                never drift from what checkout actually does. A price at
+                exactly the cap takes the "full payment" branch (price > cap
+                is false there), matching the same onlineChargeAmount()
+                semantics that checkout route uses. Sep 11, 2026: this cap
+                used to apply to Stripe checkout too, but per the merchant's
+                request Stripe now always charges the full price in one
+                payment — this section was already SSLCommerz-only (see the
+                Sep 9 follow-up note below), so nothing here needed to change
+                besides this comment.
                 Sep 9 2026: reworded to the merchant's exact required copy
                 for each bracket and to drop "Durqo's conversion margin"
                 from buyer-facing text — see SslcommerzConfirmModal.tsx for
