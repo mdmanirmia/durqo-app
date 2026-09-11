@@ -247,8 +247,20 @@ export default function SellerEarningsPage() {
                 <button
                   key={m.id}
                   type="button"
-                  onClick={() => setMethodId(m.id)}
-                  className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
+                  onClick={() => {
+                    // Switching methods used to leave a stale error/notice
+                    // from a previous submit attempt on screen — e.g. a
+                    // seller who tried Rocket, hit a rejection, then
+                    // switched to bKash would still see Rocket's old error
+                    // message sitting there, looking like it applied to
+                    // the newly-selected method (site owner, Sep 11 2026:
+                    // reported confusion from exactly this). Clearing both
+                    // on every method switch keeps the messages scoped to
+                    // whichever method was actually just submitted.
+                    setMethodId(m.id);
+                    setError(null);
+                    setNotice(null);
+                  }}                  className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
                     methodId === m.id ? "border-brand-strong bg-brand-soft text-brand-strong" : "border-rule-strong text-ink-soft hover:border-brand-strong"
                   }`}
                 >
