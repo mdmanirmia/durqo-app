@@ -260,7 +260,8 @@ export default function SellerEarningsPage() {
                     setMethodId(m.id);
                     setError(null);
                     setNotice(null);
-                  }}                  className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
+                  }}
+                  className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
                     methodId === m.id ? "border-brand-strong bg-brand-soft text-brand-strong" : "border-rule-strong text-ink-soft hover:border-brand-strong"
                   }`}
                 >
