@@ -12,6 +12,25 @@ export function fmtBDT(n: number | undefined | null): string {
   return "৳" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// 2-decimal USD display — unlike fmtUSD() above (which rounds to the
+// nearest whole dollar for general balance display), this keeps cents for
+// amounts that must show an exact conversion, e.g. the USD equivalent of a
+// round BDT withdrawal cap on the seller Earnings page
+// (dashboard/seller/earnings/page.tsx: "$413.22 (৳50,000)").
+export function fmtUSD2(n: number | undefined | null): string {
+  if (n === undefined || n === null) return "—";
+  return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Whole-taka BDT display with no decimals — for the same MFS
+// withdrawal-cap UI above, which shows the BDT side as a round number
+// ("৳50,000"), unlike fmtBDT() above which always keeps 2 decimals for
+// SSLCommerz's exact checkout charges.
+export function fmtBDTWhole(n: number | undefined | null): string {
+  if (n === undefined || n === null) return "—";
+  return "৳" + Math.round(n).toLocaleString("en-US");
+}
+
 // Card-data honesty rules (buy-page redesign, Section 9): a genuinely stored
 // zero renders "$0"; a value nobody entered renders "N/A" — the two must
 // never collapse into the same "$0" reading the way fmtUSD(undefined ?? 0)
@@ -128,7 +147,7 @@ export function youtubeThumbnailUrl(videoUrl: string | null | undefined): string
 // for legacy custom-URL and username links too in the vast majority of
 // cases). Returns null for anything that isn't a recognizable channel URL,
 // so the Channel Overview auto-fill can fall back to manual entry instead of
-// surfacing a hard error over a nice-to-have.
+// surfacing a hard error.
 export function extractYoutubeChannelIdentifier(
   channelUrl: string | null | undefined
 ): { type: "id"; value: string } | { type: "handle"; value: string } | null {
