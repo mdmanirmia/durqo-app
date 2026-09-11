@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe";
-import { onlineChargeAmount } from "@/lib/payment-terms";
 
 // Turns either the signed-in buyer's cart, or (when the request body
 // includes a `listingId`) a single listing bought directly via "Buy Now",
@@ -79,20 +78,28 @@ export async function POST(request: Request) {
     );
   }
 
+  // Sep 11, 2026: Stripe used to cap the online charge at
+  // ONLINE_DEPOSIT_CAP (src/lib/payment-terms.ts) and leave a remainder
+  // for buyer/seller to settle directly off-platform, the same way
+  // SSLCommerz still does today. Per the merchant's explicit request, that
+  // cap was removed for Stripe specifically — Stripe now always charges
+  // the full listing price in one payment, same as Escrow.com. The cap
+  // remains in place for SSLCommerz only (Bangladeshi Taka buyers), since
+  // Durqo still needs to coordinate a large BDT remainder manually there —
+  // see api/sslcommerz/init/route.ts and payment-terms.ts's own comment.
   const orderRows = listings.map((l) => {
     const price = Number(l.discounted_price ?? l.price);
-    const charged = onlineChargeAmount(price);
     return {
       listing_id: l.id,
       buyer_id: buyerId,
       seller_id: l.seller_id,
       amount: price,
-      // What Stripe actually charges vs. what's left for buyer/seller to
-      // settle directly (src/lib/payment-terms.ts) — recorded here so the
-      // buyer/seller/admin order views can show it later, not just at
-      // checkout time.
-      online_charge_usd: charged,
-      remainder_usd: Math.round((price - charged) * 100) / 100,
+      // Full price is charged directly through Stripe now — no split, so
+      // online_charge_usd always equals amount and remainder_usd is 0.
+      // Recorded explicitly (rather than left null) so order views that
+      // read these columns behave the same as they always have.
+      online_charge_usd: price,
+      remainder_usd: 0,
       status: "awaiting_payment" as const,
     };
   });
@@ -119,17 +126,13 @@ export async function POST(request: Request) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      // Charges only what each listing's own "Payment Terms" section
-      // promises the buyer (src/lib/payment-terms.ts) — full price up to
-      // $2,000, capped at $2,000 above that, with the remainder settled
-      // directly between buyer and seller off-platform. `orders.amount`
-      // above still records the full agreed sale price; this is only the
-      // portion Stripe actually processes.
+      // Charges the full listing price in one payment — no online-deposit
+      // cap for Stripe (see the comment above orderRows).
       line_items: listings.map((l) => ({
         quantity: 1,
         price_data: {
           currency: "usd",
-          unit_amount: Math.round(onlineChargeAmount(Number(l.discounted_price ?? l.price)) * 100),
+          unit_amount: Math.round(Number(l.discounted_price ?? l.price) * 100),
           product_data: { name: l.title },
         },
       })),
