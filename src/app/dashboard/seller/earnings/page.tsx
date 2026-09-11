@@ -206,7 +206,7 @@ export default function SellerEarningsPage() {
         Your available balance is what&rsquo;s left of your completed orders after any previous withdrawal requests, minus Durqo&rsquo;s Success Fee.
       </p>
 
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold text-brand-strong">{balance === null ? "…" : fmtUSD(balance.netAmount)}</div>
           <div className="text-sm text-ink-faint">Available to withdraw</div>
@@ -336,37 +336,77 @@ export default function SellerEarningsPage() {
       ) : withdrawals.length === 0 ? (
         <p className="text-sm text-ink-faint">No withdrawal requests yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-rule">
-          <table className="w-full min-w-[720px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
-                <th className="px-4 py-3 font-medium">Requested</th>
-                <th className="px-4 py-3 font-medium">Orders</th>
-                <th className="px-4 py-3 font-medium">Gross</th>
-                <th className="px-4 py-3 font-medium">Fee</th>
-                <th className="px-4 py-3 font-medium">Net</th>
-                <th className="px-4 py-3 font-medium">Method</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {withdrawals.map((w) => (
-                <tr key={w.id} className="border-b border-rule align-top last:border-b-0">
-                  <td className="mono px-4 py-3 text-ink-soft">{w.requestedAt}</td>
-                  <td className="mono px-4 py-3">{w.orderCount}</td>
-                  <td className="mono px-4 py-3">{fmtUSD(w.grossAmount)}</td>
-                  <td className="mono px-4 py-3 text-ink-faint">-{fmtUSD(w.successFeeAmount)}</td>
-                  <td className="mono px-4 py-3 font-semibold">{fmtUSD(w.netAmount)}</td>
-                  <td className="px-4 py-3 text-ink-soft">{PAYOUT_METHODS.find((m) => m.id === w.payoutMethod)?.label ?? w.payoutMethod}</td>
-                  <td className="px-4 py-3">
-                    <Badge tone={STATUS_TONE[w.status]}>{STATUS_LABEL[w.status]}</Badge>
-                    {w.status === "rejected" && w.adminNote && <div className="mt-1 text-xs text-ink-faint">{w.adminNote}</div>}
-                  </td>
+        <>
+          {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
+          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+            <table className="w-full min-w-[720px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+                  <th className="px-4 py-3 font-medium">Requested</th>
+                  <th className="px-4 py-3 font-medium">Orders</th>
+                  <th className="px-4 py-3 font-medium">Gross</th>
+                  <th className="px-4 py-3 font-medium">Fee</th>
+                  <th className="px-4 py-3 font-medium">Net</th>
+                  <th className="px-4 py-3 font-medium">Method</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {withdrawals.map((w) => (
+                  <tr key={w.id} className="border-b border-rule align-top last:border-b-0">
+                    <td className="mono px-4 py-3 text-ink-soft">{w.requestedAt}</td>
+                    <td className="mono px-4 py-3">{w.orderCount}</td>
+                    <td className="mono px-4 py-3">{fmtUSD(w.grossAmount)}</td>
+                    <td className="mono px-4 py-3 text-ink-faint">-{fmtUSD(w.successFeeAmount)}</td>
+                    <td className="mono px-4 py-3 font-semibold">{fmtUSD(w.netAmount)}</td>
+                    <td className="px-4 py-3 text-ink-soft">{PAYOUT_METHODS.find((m) => m.id === w.payoutMethod)?.label ?? w.payoutMethod}</td>
+                    <td className="px-4 py-3">
+                      <Badge tone={STATUS_TONE[w.status]}>{STATUS_LABEL[w.status]}</Badge>
+                      {w.status === "rejected" && w.adminNote && <div className="mt-1 text-xs text-ink-faint">{w.adminNote}</div>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: same data as a stacked card list — date + status pill up
+              top, then a 2-column key:value grid beneath (site owner, Sep 11
+              2026 screenshots: this table was cut off on phones). */}
+          <div className="grid gap-3 md:hidden">
+            {withdrawals.map((w) => (
+              <div key={w.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span className="mono text-sm text-ink-soft">{w.requestedAt}</span>
+                  <Badge tone={STATUS_TONE[w.status]}>{STATUS_LABEL[w.status]}</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <div className="text-xs text-ink-faint">Orders</div>
+                    <div className="mono">{w.orderCount}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-ink-faint">Method</div>
+                    <div className="text-ink-soft">{PAYOUT_METHODS.find((m) => m.id === w.payoutMethod)?.label ?? w.payoutMethod}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-ink-faint">Gross</div>
+                    <div className="mono">{fmtUSD(w.grossAmount)}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-ink-faint">Fee</div>
+                    <div className="mono text-ink-faint">-{fmtUSD(w.successFeeAmount)}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-ink-faint">Net</div>
+                    <div className="mono font-semibold">{fmtUSD(w.netAmount)}</div>
+                  </div>
+                </div>
+                {w.status === "rejected" && w.adminNote && <div className="mt-3 border-t border-rule pt-2 text-xs text-ink-faint">{w.adminNote}</div>}
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </DashboardShell>
   );
