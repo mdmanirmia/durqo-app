@@ -5,9 +5,12 @@ import { createClient } from "@/lib/supabase/server";
 // mirrors /api/sslcommerz/quote's shape (no orders created, nothing
 // written) but there's no currency conversion to preview here: Escrow.com
 // charges in USD directly, same as every listing price in this app, and
-// the full price goes through escrow (unlike SSLCommerz/Stripe, which cap
-// the online charge at ONLINE_DEPOSIT_CAP and leave a remainder to settle
-// off-platform — see src/lib/payment-terms.ts). Single-listing (Buy Now)
+// the full price goes through escrow (unlike SSLCommerz, which caps the
+// online charge at ONLINE_DEPOSIT_CAP and leaves a remainder to settle by
+// wire — see src/lib/payment-terms.ts. Stripe used to be capped the same
+// way; as of Sep 11, 2026 Stripe also always charges the full price in
+// one payment, so Escrow.com and Stripe now behave the same way here —
+// only SSLCommerz still splits). Single-listing (Buy Now)
 // only for now — BuyNowButton.tsx is the only place the Escrow.com option
 // is offered; Escrow.com transactions are single-seller, so a multi-seller
 // cart checkout would need one transaction per seller, not built yet.
