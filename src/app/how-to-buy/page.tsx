@@ -25,13 +25,19 @@ import Button from "@/components/ui/Button";
 // Every claim below is grounded in what's actually live in this codebase,
 // not aspirational copy: the three real Buy Now payment options and their
 // exact button labels (src/components/BuyNowButton.tsx — Stripe, SSLCommerz,
-// Escrow.com), the $2,000 online-deposit-cap behavior for Stripe/SSLCommerz
-// (src/lib/payment-terms.ts, the Sep 9 SSLCommerz addendum), and the "Durqo
-// holds payment until the seller transfers the agreed assets and confirms
-// receipt" framing straight from /terms's own "How payment works today"
-// section — never the word "escrow" for Stripe/SSLCommerz, since /terms is
-// explicit that Durqo has no third-party escrow provider for those two
-// rails (Escrow.com, the third option, genuinely is one).
+// Escrow.com), and the "Durqo holds payment until the seller transfers the
+// agreed assets and confirms receipt" framing straight from /terms's own
+// "How payment works today" section — never the word "escrow" for Stripe/
+// SSLCommerz, since /terms is explicit that Durqo has no third-party
+// escrow provider for those two rails (Escrow.com, the third option,
+// genuinely is one).
+//
+// Sep 11, 2026 same-day follow-up: the $2,000 online-deposit-cap behavior
+// (src/lib/payment-terms.ts, the Sep 9 SSLCommerz addendum) used to apply
+// to both Stripe and SSLCommerz. Per the merchant's request, that cap was
+// removed for Stripe — Stripe now always charges the full price in one
+// payment, same as Escrow.com. It's SSLCommerz-only now (Bangladeshi Taka
+// buyers). The PAYMENT_METHODS footnote below was corrected accordingly.
 export const metadata: Metadata = {
   title: "How to Buy a Business | Durqo",
   description: "A step-by-step guide to browsing, reviewing and buying a digital business on Durqo, including how payments are held until your purchase is complete.",
@@ -253,9 +259,10 @@ export default function HowToBuyPage() {
               ))}
             </div>
             <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-ink-faint">
-              For purchases above $2,000 paid by card or SSLCommerz, Durqo collects the first $2,000 (or its BDT
-              equivalent) online, and the exact amount and remaining-balance process is shown before you confirm.
-              See{" "}
+              Card (Stripe) and Escrow.com purchases are always charged in full, in one payment. Only for
+              Bangladeshi buyers paying above $2,000 in Bangladeshi Taka through SSLCommerz does Durqo collect the
+              BDT equivalent of the first $2,000 online and coordinate the remaining balance separately — the
+              exact amount and remaining-balance process is shown before you confirm. See{" "}
               <Link href="/payments" className="font-semibold text-brand-strong hover:underline">
                 Payment &amp; Withdrawal
               </Link>{" "}
