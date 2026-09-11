@@ -108,6 +108,7 @@ export default function ReceiptView({ data }: { data: ReceiptData }) {
               remainderUsd={data.remainderUsd}
               sslcommerzBdtAmount={data.sslcommerzBdtAmount}
               sslcommerzRate={data.sslcommerzRate}
+              orderStatus={data.status}
             />
             <div className="mt-3 flex items-center justify-between border-t border-rule pt-3 text-sm">
               <span className="text-ink-soft">Payment method</span>
