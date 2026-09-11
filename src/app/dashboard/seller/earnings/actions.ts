@@ -16,6 +16,26 @@ type PayoutMethod = (typeof PAYOUT_METHODS)[number];
 // capped.
 const MFS_METHODS: readonly string[] = ["bkash", "rocket", "nagad"];
 
+// Expected-error result shape for requestWithdrawal() below. Site owner
+// (Sep 11 2026) reported a live "Minified React error #441" appearing on
+// the Earnings page whenever a withdrawal request hit a business-rule
+// rejection (invalid method, RLS/auth issue, or one of
+// create_withdrawal_request()'s own raise exception messages — e.g. the
+// bKash/Rocket/Nagad daily/monthly cap). Root cause: in this Next.js
+// version, a Server Action invoked alongside revalidatePath() has its
+// thrown errors treated as uncaught exceptions and redacted to a generic
+// digest-only message in production — see "Handling expected errors" /
+// "avoid using try/catch blocks and throw errors ... model expected
+// errors as return values" in the Next.js docs bundled with this repo
+// (node_modules/next/dist/docs/01-app/01-getting-started/10-error-handling.md).
+// requestWithdrawal() now follows that pattern: every expected failure
+// (bad input, no session, the RPC's own validation) returns
+// { ok: false, message } instead of throwing, so its real message always
+// reaches the client. A thrown error can still occur for a genuinely
+// unexpected failure (e.g. a network blip) — the caller's try/catch
+// around the await handles that with a generic fallback.
+export type RequestWithdrawalResult = { ok: true; netAmount: number | null } | { ok: false; message: string };
+
 // Exposes today's bKash/Rocket/Nagad withdrawal rate to the client (site
 // owner, Sep 11 2026): src/lib/currency.ts is "server-only", so the
 // "use client" Earnings page can't import getUsdToBdtWithdrawalRate()
@@ -40,17 +60,17 @@ export async function getMfsWithdrawalRate() {
 // setWithdrawalStatus() in dashboard/admin/actions.ts, using the
 // service-role client, after a human reviews it. Same shape as
 // submitVerification() in dashboard/seller/verification/actions.ts.
-export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetails: string) {
-  if (!PAYOUT_METHODS.includes(payoutMethod)) throw new Error("Invalid payout method");
-  if (!payoutDetails.trim()) throw new Error("Payout details are required");
+export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetails: string): Promise<RequestWithdrawalResult> {
+  if (!PAYOUT_METHODS.includes(payoutMethod)) return { ok: false, message: "Invalid payout method" };
+  if (!payoutDetails.trim()) return { ok: false, message: "Payout details are required" };
 
   const supabase = await createClient();
-  if (!supabase) throw new Error("Backend not connected");
+  if (!supabase) return { ok: false, message: "Backend not connected" };
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Not signed in");
+  if (!user) return { ok: false, message: "Not signed in" };
 
   const { data: profile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
 
@@ -64,14 +84,13 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
   const { data: request, error } = await supabase
     .rpc("create_withdrawal_request", { p_payout_method: payoutMethod, p_payout_details: payoutDetails.trim(), p_bdt_rate: bdtRate })
     .single();
-  if (error) throw new Error(error.message);
+  if (error) return { ok: false, message: error.message };
 
   revalidatePath("/dashboard/seller/earnings");
 
   const sellerName = profile?.full_name || "A seller";
   const sellerEmail = user.email;
   const netAmount = request ? Number((request as { net_amount: number }).net_amount) : null;
-
   const hdrs = await headers();
   const host = hdrs.get("host");
   const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
@@ -103,3 +122,7 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
   // match the balance shown before they clicked "Request".
   return { ok: true, netAmount };
 }
+
+// NOTE: getMfsWithdrawalRate() above never throws (getUsdToBdtWithdrawalRate()
+// already falls back to a safe default rate on its own fetch failure — see
+// src/lib/currency.ts) so it doesn't need the same return-value treatment.
