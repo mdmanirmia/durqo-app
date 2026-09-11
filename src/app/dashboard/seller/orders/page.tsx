@@ -31,27 +31,70 @@ export default function SellerOrdersPage() {
       ) : orders.length === 0 ? (
         <p className="text-sm text-ink-faint">No orders yet — purchase requests from buyers will show up here.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-rule">
-          <table className="w-full min-w-[560px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
-                <th className="px-4 py-3 font-medium">Order</th>
-                <th className="px-4 py-3 font-medium">Listing</th>
-                <th className="px-4 py-3 font-medium">Buyer</th>
-                <th className="px-4 py-3 font-medium">Amount</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Date</th>
-                <th className="px-4 py-3 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => (
-                <tr key={o.id} className="border-b border-rule last:border-b-0">
-                  <td className="mono px-4 py-3 text-ink-soft">{o.id.slice(0, 8)}</td>
-                  <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
-                  <td className="px-4 py-3 text-ink-soft">{o.counterpartyName}</td>
-                  <td className="px-4 py-3">
-                    <span className="mono">{fmtUSD(o.amount)}</span>
+        <>
+          {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
+          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+            <table className="w-full min-w-[560px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+                  <th className="px-4 py-3 font-medium">Order</th>
+                  <th className="px-4 py-3 font-medium">Listing</th>
+                  <th className="px-4 py-3 font-medium">Buyer</th>
+                  <th className="px-4 py-3 font-medium">Amount</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Date</th>
+                  <th className="px-4 py-3 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => (
+                  <tr key={o.id} className="border-b border-rule last:border-b-0">
+                    <td className="mono px-4 py-3 text-ink-soft">{o.id.slice(0, 8)}</td>
+                    <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
+                    <td className="px-4 py-3 text-ink-soft">{o.counterpartyName}</td>
+                    <td className="px-4 py-3">
+                      <span className="mono">{fmtUSD(o.amount)}</span>
+                      <OrderAmountBreakdown
+                        paymentChannel={o.paymentChannel}
+                        onlineChargeUsd={o.onlineChargeUsd}
+                        remainderUsd={o.remainderUsd}
+                        sslcommerzBdtAmount={o.sslcommerzBdtAmount}
+                        sslcommerzRate={o.sslcommerzRate}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <StatusBadge status={o.status} />
+                    </td>
+                    <td className="mono px-4 py-3 text-ink-faint">{o.date}</td>
+                    <td className="px-4 py-3 text-right">
+                      <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                        <FileText size={13} /> Receipt
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: same data as a stacked card list instead of a
+              horizontally-scrolling table. Matches the pattern established
+              for /dashboard/buyer/orders — see dashboard-mobile-redesign
+              addendum for the min-w-0 overflow fix this relies on. */}
+          <div className="grid gap-3 md:hidden">
+            {orders.map((o) => (
+              <div key={o.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <span className="mono text-xs text-ink-faint">{o.id.slice(0, 8)}</span>
+                  <StatusBadge status={o.status} />
+                </div>
+                <div className="mb-3 min-w-0">
+                  <div className="truncate font-medium text-ink">{o.listingTitle}</div>
+                  <div className="text-xs text-ink-faint">{o.counterpartyName}</div>
+                </div>
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div>
+                    <div className="mono text-sm font-semibold">{fmtUSD(o.amount)}</div>
                     <OrderAmountBreakdown
                       paymentChannel={o.paymentChannel}
                       onlineChargeUsd={o.onlineChargeUsd}
@@ -59,21 +102,18 @@ export default function SellerOrdersPage() {
                       sslcommerzBdtAmount={o.sslcommerzBdtAmount}
                       sslcommerzRate={o.sslcommerzRate}
                     />
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={o.status} />
-                  </td>
-                  <td className="mono px-4 py-3 text-ink-faint">{o.date}</td>
-                  <td className="px-4 py-3 text-right">
-                    <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
-                      <FileText size={13} /> Receipt
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                  <span className="mono shrink-0 text-xs text-ink-faint">{o.date}</span>
+                </div>
+                <div className="border-t border-rule pt-3">
+                  <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                    <FileText size={13} /> Receipt
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </DashboardShell>
   );
