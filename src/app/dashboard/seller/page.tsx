@@ -187,7 +187,6 @@ export default function SellerOverview() {
                   <th className="px-4 py-3 font-medium">Category</th>
                   <th className="px-4 py-3 font-medium">Status</th>
                   <th className="px-4 py-3 font-medium">Price</th>
-                  <th className="px-4 py-3 font-medium">Views</th>
                   <th className="px-4 py-3 font-medium">Google Analytics</th>
                   <th className="px-4 py-3 font-medium"></th>
                 </tr>
@@ -204,7 +203,6 @@ export default function SellerOverview() {
                         <StatusBadge status={l.status} />
                       </td>
                       <td className="mono px-4 py-3">{fmtUSD(l.price)}</td>
-                      <td className="mono px-4 py-3">{l.views}</td>
                       <td className="px-4 py-3">
                         <GaStatusCell hasSeoData={hasSeoData} ga={ga} listingId={l.id} onSync={handleSync} />
                       </td>
@@ -229,7 +227,7 @@ export default function SellerOverview() {
               const hasSeoData = CATEGORY_MAP[l.categoryId]?.hasSeoData;
               const ga = gaStatuses[l.id];
               return (
-                <div key={l.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+                <div key={l.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="truncate font-medium text-ink">{l.title}</div>
@@ -237,16 +235,12 @@ export default function SellerOverview() {
                     </div>
                     <StatusBadge className="shrink-0" status={l.status} />
                   </div>
-                  <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div className="mb-3 flex flex-col gap-2 text-sm">
                     <div>
                       <div className="text-xs text-ink-faint">Price</div>
                       <div className="mono">{fmtUSD(l.price)}</div>
                     </div>
                     <div>
-                      <div className="text-xs text-ink-faint">Views</div>
-                      <div className="mono">{l.views}</div>
-                    </div>
-                    <div className="col-span-2">
                       <div className="mb-1 text-xs text-ink-faint">Google Analytics</div>
                       <GaStatusCell hasSeoData={hasSeoData} ga={ga} listingId={l.id} onSync={handleSync} />
                     </div>
