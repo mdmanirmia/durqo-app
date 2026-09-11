@@ -179,7 +179,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
           const busy = isPending && pendingId === o.id;
           const channelBusy = isChannelPending && pendingChannelId === o.id;
           return (
-            <div key={o.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+            <div key={o.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="truncate font-medium text-ink">{o.listingTitle}</div>
