@@ -81,7 +81,7 @@ export default function BuyerOrdersPage() {
               horizontally-scrolling table. */}
           <div className="grid gap-3 md:hidden">
             {orders.map((o) => (
-              <div key={o.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+              <div key={o.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <span className="mono text-xs text-ink-faint">{o.id.slice(0, 8)}</span>
                   <StatusBadge status={o.status} />
