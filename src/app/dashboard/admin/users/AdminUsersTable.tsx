@@ -233,7 +233,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
               const busy = isPending && pendingId === u.id;
               const isSelf = u.id === selfId;
               return (
-                <div key={u.id} className={`rounded-xl border border-rule bg-paper-raised p-4 ${!u.isActive ? "opacity-60" : ""}`}>
+                <div key={u.id} className={`min-w-0 rounded-xl border border-rule bg-paper-raised p-4 ${!u.isActive ? "opacity-60" : ""}`}>
                   <div className="mb-3 min-w-0">
                     <div className="truncate font-medium text-ink">{u.fullName}</div>
                     <div className="truncate text-xs text-ink-faint">{u.email}</div>
