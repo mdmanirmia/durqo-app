@@ -24,6 +24,13 @@ const TRUST_BAR = [
 // Every href below points to a route that actually exists in this app —
 // no Fees/Seller Guide/Cookie Policy links, since those pages don't exist
 // yet and a footer link to nothing is worse than a shorter footer.
+//
+// Sep 11, 2026: added a "Resources" column linking to the 5 new guide/FAQ
+// pages (How to Buy, How to Sell, Buyer FAQ, Seller FAQ, Payment &
+// Withdrawal — see those pages' own top-of-file comments for the accuracy
+// trail behind their content). The desktop grid widened from 4 to 5
+// columns to fit it; the brand column still spans 2 of 2 on mobile so the
+// existing mobile wrap behavior is unchanged, just one row longer.
 export default function Footer() {
   // Sep 2026 About-page redesign: the About page's own Final CTA already
   // closes with the same "browse marketplace / sell a business" pair this
@@ -63,7 +70,7 @@ export default function Footer() {
       )}
 
       <Container className="py-14">
-        <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-10 md:grid-cols-5">
           <div className="col-span-2 md:col-span-1">
             {/* Sep 2026: matched to Header's logo treatment exactly (lowercase
                 "durqo", font-display, no extra tracking) — this footer mark
@@ -87,6 +94,17 @@ export default function Footer() {
             <ul className="flex flex-col gap-2.5 text-sm text-white/65">
               <li><Link href="/buy" className="hover:text-white">Browse listings</Link></li>
               <li><Link href="/sell" className="hover:text-white">Sell a business</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <ColumnHeading>Resources</ColumnHeading>
+            <ul className="flex flex-col gap-2.5 text-sm text-white/65">
+              <li><Link href="/how-to-buy" className="hover:text-white">How to buy</Link></li>
+              <li><Link href="/how-to-sell" className="hover:text-white">How to sell</Link></li>
+              <li><Link href="/buyer-faq" className="hover:text-white">Buyer FAQ</Link></li>
+              <li><Link href="/seller-faq" className="hover:text-white">Seller FAQ</Link></li>
+              <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
             </ul>
           </div>
 
