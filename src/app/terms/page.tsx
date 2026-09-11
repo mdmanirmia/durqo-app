@@ -62,6 +62,16 @@ import { fmtUSD } from "@/lib/format";
 // wording unless it's actually been integrated and verified in production,
 // and this remains a substantive correction warranting the owner's/a
 // lawyer's review before being treated as fully final.
+//
+// Same-day follow-up (Sep 11, 2026): the merchant asked to remove the
+// $2,000 online-deposit cap for Stripe card payments specifically — Stripe
+// now always charges the Buyer's full purchase price in one payment
+// (src/app/api/checkout/route.ts), same as Escrow.com. The cap remains in
+// place for SSLCommerz only (Bangladeshi Taka payments), since Durqo still
+// needs to coordinate a large BDT remainder by email — see
+// src/lib/payment-terms.ts's own updated comment. The "How payment works
+// today" footnote below was corrected to describe this split by rail
+// instead of lumping Stripe and SSLCommerz together.
 const EFFECTIVE_DATE = "September 11, 2026";
 
 export const metadata: Metadata = {
@@ -488,12 +498,14 @@ export default function TermsPage() {
                   ))}
                 </ol>
                 <p className="text-left text-xs leading-relaxed text-ink-faint">
-                  For a Listing priced above $2,000, Durqo charges $2,000 online and the remaining balance is
-                  settled separately: for Stripe, directly between Buyer and Seller off-platform; for SSLCommerz,
-                  Durqo emails the Buyer payment instructions and the sale isn&rsquo;t treated as complete until
-                  that remainder has been received and verified. Stripe and SSLCommerz are independent payment
-                  processors, not escrow providers — neither holds funds on Durqo&rsquo;s behalf pending a
-                  separate release condition, and this section will be updated if that changes.
+                  Stripe (card) charges the Buyer&rsquo;s full purchase price in one payment, however large. For a
+                  Bangladeshi Buyer paying in Bangladeshi Taka through SSLCommerz on a Listing priced above
+                  $2,000, Durqo instead collects only the BDT equivalent of the first $2,000 through SSLCommerz at
+                  checkout; Durqo then emails the Buyer payment instructions for the remaining balance, and the
+                  sale isn&rsquo;t treated as complete until that remainder has been received and verified. Stripe
+                  and SSLCommerz are independent payment processors, not escrow providers — neither holds funds
+                  on Durqo&rsquo;s behalf pending a separate release condition, and this section will be updated
+                  if that changes.
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
