@@ -33,6 +33,95 @@ const BTN_CONFIRM =
 const BTN_DANGER =
   "rounded-md border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger-soft disabled:opacity-60";
 
+// Shared between the desktop table cell and the mobile card layout below so
+// the GA badge/Loom-link/verify-button logic isn't duplicated between the
+// two. Plain functions called as `{gaSection(...)}` rather than JSX
+// components (`<GaSection />`) — the latter, defined inside a component's
+// render body, would trip react-hooks/static-components.
+function gaSection(l: AdminListingRow, busy: boolean, toggleGaVerified: (id: string, verified: boolean) => void) {
+  return (
+    <>
+      {l.gaVerified ? (
+        <Badge tone="brand">GA Verified</Badge>
+      ) : l.gaAccessConfirmed ? (
+        <Badge tone="gold">Access confirmed</Badge>
+      ) : (
+        <Badge tone="neutral">No access yet</Badge>
+      )}
+      {l.loomVideoUrl && (
+        <a
+          href={l.loomVideoUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-1 text-xs font-semibold text-brand-strong hover:text-brand-hover"
+        >
+          <PlaySquare size={12} /> Loom
+        </a>
+      )}
+      {l.gaAccessConfirmed && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => toggleGaVerified(l.id, !l.gaVerified)}
+          className={`${BTN_NEUTRAL} !px-2 !py-1`}
+        >
+          {l.gaVerified ? "Unverify" : "Mark GA Verified"}
+        </button>
+      )}
+    </>
+  );
+}
+
+function actionButtons(l: AdminListingRow, busy: boolean, updateStatus: (id: string, status: string) => void) {
+  return (
+    <>
+      <Link href={`/dashboard/admin/listings/${l.id}/edit`} className={BTN_NEUTRAL}>
+        Edit
+      </Link>
+      {l.status === "draft" && (
+        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")} className={BTN_CONFIRM}>
+          Publish
+        </button>
+      )}
+      {l.status === "pending_review" && (
+        <>
+          <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")} className={BTN_CONFIRM}>
+            Approve
+          </button>
+          <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "archived")} className={BTN_DANGER}>
+            Reject
+          </button>
+        </>
+      )}
+      {l.status === "published" && (
+        <>
+          <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "sold")} className={BTN_NEUTRAL}>
+            Mark as Sold
+          </button>
+          <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "draft")} className={BTN_NEUTRAL}>
+            Unpublish
+          </button>
+        </>
+      )}
+      {l.status === "sold" && (
+        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")} className={BTN_NEUTRAL}>
+          Revert to Published
+        </button>
+      )}
+      {l.status !== "archived" && (
+        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "archived")} className={BTN_DANGER}>
+          Delete
+        </button>
+      )}
+      {l.status === "archived" && (
+        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "draft")} className={BTN_NEUTRAL}>
+          Restore
+        </button>
+      )}
+    </>
+  );
+}
+
 export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
@@ -71,130 +160,85 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-rule">
-      <table className="w-full min-w-[820px] border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
-            <th className="px-4 py-3 font-medium">Name</th>
-            <th className="px-4 py-3 font-medium">Seller</th>
-            <th className="px-4 py-3 font-medium">Category</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">GA</th>
-            <th className="px-4 py-3 font-medium">Price</th>
-            <th className="px-4 py-3 font-medium">Listed</th>
-            <th className="px-4 py-3 font-medium"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((l) => {
-            const busy = isPending && pendingId === l.id;
-            return (
-              <tr key={l.id} className="border-b border-rule align-top last:border-b-0 hover:bg-paper-sunk">
-                <td className="px-4 py-3 font-medium text-ink">
-                  <Link href={`/listing/${l.id}`} className="hover:text-brand-strong">{l.title}</Link>
-                </td>
-                <td className="px-4 py-3 text-ink-soft">{l.sellerName}</td>
-                <td className="px-4 py-3 text-ink-soft">{CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}</td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={l.status} />
-                  {errorId === l.id && <div className="mt-1 text-xs text-danger">Action failed — try again.</div>}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-col items-start gap-1.5">
-                    {l.gaVerified ? (
-                      <Badge tone="brand">GA Verified</Badge>
-                    ) : l.gaAccessConfirmed ? (
-                      <Badge tone="gold">Access confirmed</Badge>
-                    ) : (
-                      <Badge tone="neutral">No access yet</Badge>
-                    )}
-                    {l.loomVideoUrl && (
-                      <a
-                        href={l.loomVideoUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-1 text-xs font-semibold text-brand-strong hover:text-brand-hover"
-                      >
-                        <PlaySquare size={12} /> Loom
-                      </a>
-                    )}
-                    {l.gaAccessConfirmed && (
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => toggleGaVerified(l.id, !l.gaVerified)}
-                        className={`${BTN_NEUTRAL} !px-2 !py-1`}
-                      >
-                        {l.gaVerified ? "Unverify" : "Mark GA Verified"}
-                      </button>
-                    )}
+    <>
+      {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
+      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+        <table className="w-full min-w-[820px] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+              <th className="px-4 py-3 font-medium">Name</th>
+              <th className="px-4 py-3 font-medium">Seller</th>
+              <th className="px-4 py-3 font-medium">Category</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">GA</th>
+              <th className="px-4 py-3 font-medium">Price</th>
+              <th className="px-4 py-3 font-medium">Listed</th>
+              <th className="px-4 py-3 font-medium"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((l) => {
+              const busy = isPending && pendingId === l.id;
+              return (
+                <tr key={l.id} className="border-b border-rule align-top last:border-b-0 hover:bg-paper-sunk">
+                  <td className="px-4 py-3 font-medium text-ink">
+                    <Link href={`/listing/${l.id}`} className="hover:text-brand-strong">{l.title}</Link>
+                  </td>
+                  <td className="px-4 py-3 text-ink-soft">{l.sellerName}</td>
+                  <td className="px-4 py-3 text-ink-soft">{CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}</td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={l.status} />
+                    {errorId === l.id && <div className="mt-1 text-xs text-danger">Action failed — try again.</div>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col items-start gap-1.5">{gaSection(l, busy, toggleGaVerified)}</div>
+                  </td>
+                  <td className="mono px-4 py-3">{fmtUSD(l.price)}</td>
+                  <td className="mono px-4 py-3 text-ink-faint">{l.createdAt}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap justify-end gap-2">{actionButtons(l, busy, updateStatus)}</div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile: same data as a stacked card list. */}
+      <div className="grid gap-3 md:hidden">
+        {rows.map((l) => {
+          const busy = isPending && pendingId === l.id;
+          return (
+            <div key={l.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <Link href={`/listing/${l.id}`} className="block truncate font-medium text-ink hover:text-brand-strong">
+                    {l.title}
+                  </Link>
+                  <div className="text-xs text-ink-faint">
+                    {l.sellerName} &middot; {CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}
                   </div>
-                </td>
-                <td className="mono px-4 py-3">{fmtUSD(l.price)}</td>
-                <td className="mono px-4 py-3 text-ink-faint">{l.createdAt}</td>
-                <td className="px-4 py-3">
-                  <div className="flex flex-wrap justify-end gap-2">
-                    <Link
-                      href={`/dashboard/admin/listings/${l.id}/edit`}
-                      className={BTN_NEUTRAL}
-                    >
-                      Edit
-                    </Link>
-                    {l.status === "draft" && (
-                      <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")}
-                        className={BTN_CONFIRM}>
-                        Publish
-                      </button>
-                    )}
-                    {l.status === "pending_review" && (
-                      <>
-                        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")}
-                          className={BTN_CONFIRM}>
-                          Approve
-                        </button>
-                        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "archived")}
-                          className={BTN_DANGER}>
-                          Reject
-                        </button>
-                      </>
-                    )}
-                    {l.status === "published" && (
-                      <>
-                        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "sold")}
-                          className={BTN_NEUTRAL}>
-                          Mark as Sold
-                        </button>
-                        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "draft")}
-                          className={BTN_NEUTRAL}>
-                          Unpublish
-                        </button>
-                      </>
-                    )}
-                    {l.status === "sold" && (
-                      <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")}
-                        className={BTN_NEUTRAL}>
-                        Revert to Published
-                      </button>
-                    )}
-                    {l.status !== "archived" && (
-                      <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "archived")}
-                        className={BTN_DANGER}>
-                        Delete
-                      </button>
-                    )}
-                    {l.status === "archived" && (
-                      <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "draft")}
-                        className={BTN_NEUTRAL}>
-                        Restore
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                </div>
+                <StatusBadge className="shrink-0" status={l.status} />
+              </div>
+              {errorId === l.id && <div className="mb-2 text-xs text-danger">Action failed — try again.</div>}
+              <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <div className="text-xs text-ink-faint">Price</div>
+                  <div className="mono">{fmtUSD(l.price)}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-ink-faint">Listed</div>
+                  <div className="mono text-ink-faint">{l.createdAt}</div>
+                </div>
+              </div>
+              <div className="mb-3 flex flex-wrap items-center gap-1.5">{gaSection(l, busy, toggleGaVerified)}</div>
+              <div className="flex flex-wrap gap-2 border-t border-rule pt-3">{actionButtons(l, busy, updateStatus)}</div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
