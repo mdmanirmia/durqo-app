@@ -16,6 +16,20 @@ type PayoutMethod = (typeof PAYOUT_METHODS)[number];
 // capped.
 const MFS_METHODS: readonly string[] = ["bkash", "rocket", "nagad"];
 
+// Exposes today's bKash/Rocket/Nagad withdrawal rate to the client (site
+// owner, Sep 11 2026): src/lib/currency.ts is "server-only", so the
+// "use client" Earnings page can't import getUsdToBdtWithdrawalRate()
+// directly — it goes through this action instead, the same way
+// requestWithdrawal() below does when actually submitting. Lets the page
+// show the seller the live USD equivalent of the ৳50,000/day cap (and the
+// BDT equivalent of their own balance) *before* they submit, not just
+// after (requestWithdrawal()'s returned netAmount still has the final
+// word, since a seller's remaining daily/monthly allowance can be less
+// than the flat ৳50,000/day figure this only estimates from).
+export async function getMfsWithdrawalRate() {
+  return getUsdToBdtWithdrawalRate();
+}
+
 // Submits a withdrawal request. The actual claiming of orders and Success
 // Fee math happens atomically inside create_withdrawal_request()
 // (028_withdrawals.sql, SECURITY DEFINER, identity from auth.uid()) — this
