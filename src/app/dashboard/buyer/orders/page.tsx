@@ -60,6 +60,7 @@ export default function BuyerOrdersPage() {
                         remainderUsd={o.remainderUsd}
                         sslcommerzBdtAmount={o.sslcommerzBdtAmount}
                         sslcommerzRate={o.sslcommerzRate}
+                        orderStatus={o.status}
                       />
                     </td>
                     <td className="px-4 py-3">
@@ -99,6 +100,7 @@ export default function BuyerOrdersPage() {
                       remainderUsd={o.remainderUsd}
                       sslcommerzBdtAmount={o.sslcommerzBdtAmount}
                       sslcommerzRate={o.sslcommerzRate}
+                      orderStatus={o.status}
                     />
                   </div>
                   <span className="mono shrink-0 text-xs text-ink-faint">{o.date}</span>
