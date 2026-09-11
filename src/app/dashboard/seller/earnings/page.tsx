@@ -33,6 +33,41 @@ type PayoutMethodId = (typeof PAYOUT_METHODS)[number]["id"];
 // are never subject to any of this UI.
 const MFS_METHOD_IDS = new Set<PayoutMethodId>(["bkash", "rocket", "nagad"]);
 
+// Per-method payout-detail fields, shown as a small structured form instead
+// of one free-text box (site owner, Sep 11 2026: "alada kore input deyar
+// option koro like form fill up er moto" — separate inputs per field, like
+// filling out a form). Each field's value is combined into a single
+// "Label: value, Label: value" string before submission (buildPayoutDetails
+// below), so no backend/database change was needed — the RPC and
+// withdrawal_requests table still just store one payout_details string.
+type PayoutField = { key: string; label: string; placeholder: string; optional?: boolean };
+
+const METHOD_FIELDS: Record<PayoutMethodId, PayoutField[]> = {
+  bank_transfer: [
+    { key: "bankName", label: "Bank Name", placeholder: "e.g. Dutch-Bangla Bank" },
+    { key: "accountName", label: "Account Name", placeholder: "Account holder's full name" },
+    { key: "accountNumber", label: "Account Number", placeholder: "Account number" },
+    { key: "routingSwift", label: "Routing / SWIFT", placeholder: "Routing number or SWIFT code" },
+  ],
+  bkash: [
+    { key: "number", label: "bKash Number", placeholder: "01XXXXXXXXX" },
+    { key: "accountName", label: "Account Holder Name", placeholder: "Name on the bKash account" },
+  ],
+  rocket: [
+    { key: "number", label: "Rocket Number", placeholder: "01XXXXXXXXX" },
+    { key: "accountName", label: "Account Holder Name", placeholder: "Name on the Rocket account" },
+  ],
+  nagad: [
+    { key: "number", label: "Nagad Number", placeholder: "01XXXXXXXXX" },
+    { key: "accountName", label: "Account Holder Name", placeholder: "Name on the Nagad account" },
+  ],
+  paypal: [{ key: "email", label: "PayPal Email", placeholder: "you@example.com" }],
+  wise: [
+    { key: "email", label: "Wise Email", placeholder: "you@example.com" },
+    { key: "details", label: "Additional Account Details", placeholder: "Any extra details Wise needs", optional: true },
+  ],
+};
+
 // Daily MFS cap in BDT (031_withdrawal_mfs_partial_claim.sql) — the USD
 // equivalent shown below is 50000 / today's withdrawal rate.
 const MFS_DAILY_CAP_BDT = 50000;
@@ -55,7 +90,10 @@ export default function SellerEarningsPage() {
   const [balance, setBalance] = useState<AvailableBalance | null>(null);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[] | null>(null);
   const [methodId, setMethodId] = useState<PayoutMethodId>("bank_transfer");
-  const [details, setDetails] = useState("");
+  // Keyed by "methodId:fieldKey" so values are preserved when the seller
+  // switches methods and switches back, and "number"/"accountName" (reused
+  // across bKash/Rocket/Nagad) don't collide with each other.
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -102,14 +140,35 @@ export default function SellerEarningsPage() {
   const mfsRequestUsd = isMfs && balance && mfsDailyCapUsd !== null ? Math.min(balance.netAmount, mfsDailyCapUsd) : null;
   const mfsRequestBdt = isMfs && mfsRate !== null && mfsRequestUsd !== null ? mfsRequestUsd * mfsRate : null;
 
+  const currentFields = METHOD_FIELDS[methodId];
+  function fieldValue(key: string) {
+    return fieldValues[`${methodId}:${key}`] ?? "";
+  }
+  function setFieldValue(key: string, value: string) {
+    setFieldValues((prev) => ({ ...prev, [`${methodId}:${key}`]: value }));
+  }
+  // Combines the structured fields back into the single string
+  // requestWithdrawal()/create_withdrawal_request() has always stored —
+  // e.g. "Bank Name: Dutch-Bangla Bank, Account Name: Jane Doe, ...".
+  function buildPayoutDetails(): string {
+    return currentFields.map((f) => `${f.label}: ${fieldValue(f.key).trim()}`).join(", ");
+  }
+  function hasMissingRequiredField(): boolean {
+    return currentFields.some((f) => !f.optional && !fieldValue(f.key).trim());
+  }
+
   async function handleSubmit() {
-    if (!details.trim()) return setError("Enter where the payout should go.");
+    if (hasMissingRequiredField()) return setError("Please fill in all payout details.");
     setError(null);
     setNotice(null);
     setSubmitting(true);
     try {
-      const result = await requestWithdrawal(methodId, details);
-      setDetails("");
+      const result = await requestWithdrawal(methodId, buildPayoutDetails());
+      setFieldValues((prev) => {
+        const next = { ...prev };
+        currentFields.forEach((f) => delete next[`${methodId}:${f.key}`]);
+        return next;
+      });
       // For bKash/Rocket/Nagad the amount actually claimed can be less
       // than the balance shown above (see the notice under the payout
       // buttons) — state the real amount so it's never a surprise.
@@ -161,7 +220,7 @@ export default function SellerEarningsPage() {
         </div>
       )}
 
-      <div className="mb-10 max-w-md rounded-xl border border-rule bg-paper-raised p-5">
+      <div className="mb-10 rounded-xl border border-rule bg-paper-raised p-5">
         <h3 className="mb-4 flex items-center gap-2 font-semibold text-ink">
           <Wallet size={17} /> Request a withdrawal
         </h3>
@@ -200,25 +259,23 @@ export default function SellerEarningsPage() {
             )}
 
             <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">Payout details</p>
-            <textarea
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder={
-                methodId === "bank_transfer"
-                  ? "Bank name, account name, account number, routing/SWIFT"
-                  : methodId === "bkash"
-                  ? "bKash number (Personal/Agent) and account holder name"
-                  : methodId === "rocket"
-                  ? "Rocket number and account holder name"
-                  : methodId === "nagad"
-                  ? "Nagad number and account holder name"
-                  : methodId === "paypal"
-                  ? "PayPal email address"
-                  : "Wise email address or account details"
-              }
-              rows={3}
-              className="mb-4 w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm focus:border-brand-strong focus:outline-none"
-            />
+            <div className="mb-4 grid gap-3 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+              {currentFields.map((f) => (
+                <div key={f.key}>
+                  <label className="mb-1 block text-xs text-ink-faint">
+                    {f.label}
+                    {f.optional ? " (optional)" : ""}
+                  </label>
+                  <input
+                    type="text"
+                    value={fieldValue(f.key)}
+                    onChange={(e) => setFieldValue(f.key, e.target.value)}
+                    placeholder={f.placeholder}
+                    className="w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm focus:border-brand-strong focus:outline-none"
+                  />
+                </div>
+              ))}
+            </div>
 
             {error && <p className="mb-3 text-sm text-danger">{error}</p>}
             {notice && <p className="mb-3 text-sm text-brand-strong">{notice}</p>}
