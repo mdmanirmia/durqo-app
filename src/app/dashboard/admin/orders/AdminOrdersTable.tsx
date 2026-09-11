@@ -104,71 +104,134 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-rule">
-      <table className="w-full min-w-[780px] border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
-            <th className="px-4 py-3 font-medium">Listing</th>
-            <th className="px-4 py-3 font-medium">Buyer</th>
-            <th className="px-4 py-3 font-medium">Seller</th>
-            <th className="px-4 py-3 font-medium">Amount</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Payment Channel</th>
-            <th className="px-4 py-3 font-medium">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((o) => {
-            const busy = isPending && pendingId === o.id;
-            const channelBusy = isChannelPending && pendingChannelId === o.id;
-            return (
-              <tr key={o.id} className="border-b border-rule align-top last:border-b-0">
-                <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
-                <td className="px-4 py-3 text-ink-soft">{o.buyerName}</td>
-                <td className="px-4 py-3 text-ink-soft">{o.sellerName}</td>
-                <td className="px-4 py-3">
-                  <span className="mono">{fmtUSD(o.amount)}</span>
-                  <OrderAmountBreakdown
-                    paymentChannel={o.paymentChannel}
-                    onlineChargeUsd={o.onlineChargeUsd}
-                    remainderUsd={o.remainderUsd}
-                    sslcommerzBdtAmount={o.sslcommerzBdtAmount}
-                    sslcommerzRate={o.sslcommerzRate}
-                  />
-                </td>
-                <td className="px-4 py-3">
-                  <StatusBadge status={o.status} className="mb-1" />
-                  <select
-                    value={o.status}
-                    disabled={busy}
-                    onChange={(e) => changeStatus(o.id, e.target.value)}
-                    className="mono block rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
-                  >
-                    {STATUSES.map((s) => (
-                      <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-                    ))}
-                  </select>
-                  {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
-                </td>
-                <td className="px-4 py-3">
-                  <select
-                    value={o.paymentChannel}
-                    disabled={channelBusy}
-                    onChange={(e) => changeChannel(o.id, e.target.value)}
-                    className="mono block rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
-                  >
-                    {PAYMENT_CHANNELS.map((c) => (
-                      <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
-                    ))}
-                  </select>
-                  {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
-                </td>
-                <td className="mono px-4 py-3 text-ink-faint">{o.createdAt}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <>
+      {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
+      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+        <table className="w-full min-w-[780px] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+              <th className="px-4 py-3 font-medium">Listing</th>
+              <th className="px-4 py-3 font-medium">Buyer</th>
+              <th className="px-4 py-3 font-medium">Seller</th>
+              <th className="px-4 py-3 font-medium">Amount</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Payment Channel</th>
+              <th className="px-4 py-3 font-medium">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((o) => {
+              const busy = isPending && pendingId === o.id;
+              const channelBusy = isChannelPending && pendingChannelId === o.id;
+              return (
+                <tr key={o.id} className="border-b border-rule align-top last:border-b-0">
+                  <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
+                  <td className="px-4 py-3 text-ink-soft">{o.buyerName}</td>
+                  <td className="px-4 py-3 text-ink-soft">{o.sellerName}</td>
+                  <td className="px-4 py-3">
+                    <span className="mono">{fmtUSD(o.amount)}</span>
+                    <OrderAmountBreakdown
+                      paymentChannel={o.paymentChannel}
+                      onlineChargeUsd={o.onlineChargeUsd}
+                      remainderUsd={o.remainderUsd}
+                      sslcommerzBdtAmount={o.sslcommerzBdtAmount}
+                      sslcommerzRate={o.sslcommerzRate}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <StatusBadge status={o.status} className="mb-1" />
+                    <select
+                      value={o.status}
+                      disabled={busy}
+                      onChange={(e) => changeStatus(o.id, e.target.value)}
+                      className="mono block rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
+                    >
+                      {STATUSES.map((s) => (
+                        <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                      ))}
+                    </select>
+                    {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+                  </td>
+                  <td className="px-4 py-3">
+                    <select
+                      value={o.paymentChannel}
+                      disabled={channelBusy}
+                      onChange={(e) => changeChannel(o.id, e.target.value)}
+                      className="mono block rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
+                    >
+                      {PAYMENT_CHANNELS.map((c) => (
+                        <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
+                      ))}
+                    </select>
+                    {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+                  </td>
+                  <td className="mono px-4 py-3 text-ink-faint">{o.createdAt}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile: same data as a stacked card list. */}
+      <div className="grid gap-3 md:hidden">
+        {rows.map((o) => {
+          const busy = isPending && pendingId === o.id;
+          const channelBusy = isChannelPending && pendingChannelId === o.id;
+          return (
+            <div key={o.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-ink">{o.listingTitle}</div>
+                  <div className="text-xs text-ink-faint">
+                    Buyer: {o.buyerName} &middot; Seller: {o.sellerName}
+                  </div>
+                </div>
+                <span className="mono shrink-0 text-xs text-ink-faint">{o.createdAt}</span>
+              </div>
+              <div className="mb-3">
+                <span className="mono text-sm font-semibold">{fmtUSD(o.amount)}</span>
+                <OrderAmountBreakdown
+                  paymentChannel={o.paymentChannel}
+                  onlineChargeUsd={o.onlineChargeUsd}
+                  remainderUsd={o.remainderUsd}
+                  sslcommerzBdtAmount={o.sslcommerzBdtAmount}
+                  sslcommerzRate={o.sslcommerzRate}
+                />
+              </div>
+              <div className="mb-3">
+                <label className="mb-1 block text-xs text-ink-faint">Status</label>
+                <StatusBadge status={o.status} className="mb-1.5" />
+                <select
+                  value={o.status}
+                  disabled={busy}
+                  onChange={(e) => changeStatus(o.id, e.target.value)}
+                  className="mono block w-full rounded-md border border-rule-strong bg-paper px-2 py-1.5 text-xs disabled:opacity-60"
+                >
+                  {STATUSES.map((s) => (
+                    <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                  ))}
+                </select>
+                {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-ink-faint">Payment Channel</label>
+                <select
+                  value={o.paymentChannel}
+                  disabled={channelBusy}
+                  onChange={(e) => changeChannel(o.id, e.target.value)}
+                  className="mono block w-full rounded-md border border-rule-strong bg-paper px-2 py-1.5 text-xs disabled:opacity-60"
+                >
+                  {PAYMENT_CHANNELS.map((c) => (
+                    <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
+                  ))}
+                </select>
+                {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
