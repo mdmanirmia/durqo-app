@@ -210,7 +210,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
         {rows.map((l) => {
           const busy = isPending && pendingId === l.id;
           return (
-            <div key={l.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+            <div key={l.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <Link href={`/listing/${l.id}`} className="block truncate font-medium text-ink hover:text-brand-strong">
