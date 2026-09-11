@@ -203,7 +203,7 @@ export default function SellerEarningsPage() {
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <h2 className="mb-2 text-xl">Earnings &amp; Withdrawals</h2>
       <p className="mb-6 max-w-[65ch] text-sm text-ink-soft">
-        Your available balance is every completed order that hasn&rsquo;t already been claimed by a withdrawal request, minus Durqo&rsquo;s Success Fee.
+        Your available balance is what&rsquo;s left of your completed orders after any previous withdrawal requests, minus Durqo&rsquo;s Success Fee.
       </p>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
