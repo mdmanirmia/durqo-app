@@ -312,6 +312,7 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
 
   const { error } = await admin.from("withdrawal_requests").update(update).eq("id", requestId);
   if (error) throw new Error(error.message);
+
   revalidatePath("/dashboard/admin/withdrawals");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/seller/earnings");
