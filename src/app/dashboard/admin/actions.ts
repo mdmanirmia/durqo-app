@@ -277,8 +277,17 @@ type WithdrawalDecision = (typeof WITHDRAWAL_DECISIONS)[number];
 // has agreed to pay it out (money hasn't necessarily moved yet — this app
 // has no automated payout rail), "paid" is the admin confirming they've
 // actually sent it, and "rejected" releases the claimed orders back to the
-// seller's available balance (withdrawal_id cleared) so that money isn't
-// stuck unwithdrawable forever.
+// seller's available balance so that money isn't stuck unwithdrawable
+// forever — automatically, with no extra write needed here: every
+// remaining-balance calculation (order_remaining_balances view,
+// create_withdrawal_request() itself) already excludes any claim tied to
+// a `rejected` withdrawal_requests row (033_withdrawal_order_splitting.sql).
+// Before that migration this branch also ran
+// `update orders set withdrawal_id = null where withdrawal_id = requestId`
+// to release whole orders back to null — no longer possible or needed,
+// since a rejected request may have only partially claimed some of its
+// orders, and the ledger-exclusion above covers both whole and partial
+// claims identically.
 export async function setWithdrawalStatus(requestId: string, decision: WithdrawalDecision, adminNote?: string) {
   await requireAdmin();
   if (!WITHDRAWAL_DECISIONS.includes(decision)) throw new Error("Invalid decision");
@@ -303,11 +312,6 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
 
   const { error } = await admin.from("withdrawal_requests").update(update).eq("id", requestId);
   if (error) throw new Error(error.message);
-
-  if (decision === "rejected") {
-    await admin.from("orders").update({ withdrawal_id: null }).eq("withdrawal_id", requestId);
-  }
-
   revalidatePath("/dashboard/admin/withdrawals");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/seller/earnings");
