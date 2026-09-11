@@ -10,10 +10,12 @@ import { getUsdToBdtWithdrawalRate } from "@/lib/currency";
 const PAYOUT_METHODS = ["bank_transfer", "bkash", "rocket", "nagad", "paypal", "wise"] as const;
 type PayoutMethod = (typeof PAYOUT_METHODS)[number];
 
-// Mobile financial services — capped at ৳50,000/day and ৳300,000/month
-// combined, enforced inside create_withdrawal_request() itself
-// (030_withdrawal_mfs_limits.sql). Bank Transfer, PayPal and Wise aren't
-// capped.
+// Mobile financial services — each of bKash, Rocket and Nagad has its own
+// independent ৳50,000/day and ৳300,000/month cap (a request on one method
+// only counts against that method's own allowance, not a shared pool
+// across all three — 032_withdrawal_mfs_per_method_caps.sql), enforced
+// inside create_withdrawal_request() itself. Bank Transfer, PayPal and
+// Wise aren't capped.
 const MFS_METHODS: readonly string[] = ["bkash", "rocket", "nagad"];
 
 // Expected-error result shape for requestWithdrawal() below. Site owner
