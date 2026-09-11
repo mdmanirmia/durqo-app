@@ -22,22 +22,33 @@ export default async function AdminWithdrawals({
     const sellerIds = [...new Set((requests ?? []).map((r) => r.seller_id as string))];
     const requestIds = (requests ?? []).map((r) => r.id as string);
 
-    const [{ data: profiles }, { data: usersList }, { data: claimedOrders }] = await Promise.all([
+        const [{ data: profiles }, { data: usersList }, { data: ledgerRows }] = await Promise.all([
       sellerIds.length ? admin.from("profiles").select("id, full_name").in("id", sellerIds) : Promise.resolve({ data: [] }),
       admin.auth.admin.listUsers(),
-      requestIds.length ? admin.from("orders").select("withdrawal_id, payment_channel").in("withdrawal_id", requestIds) : Promise.resolve({ data: [] }),
+      // Which orders (whole or partially) each request actually claimed —
+      // withdrawal_request_orders (033_withdrawal_order_splitting.sql), not
+      // orders.withdrawal_id, since a large order split across several
+      // requests can no longer be found by that single scalar FK.
+      requestIds.length ? admin.from("withdrawal_request_orders").select("withdrawal_id, order_id").in("withdrawal_id", requestIds) : Promise.resolve({ data: [] }),
     ]);
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name as string | null]));
     const emailById = new Map((usersList?.users ?? []).map((u) => [u.id, u.email ?? null]));
 
-    // How many claimed orders per request went through Escrow.com vs. some
-    // other channel — surfaced so admin can see the double-payment risk
-    // (Escrow.com pays the seller directly; Durqo has no automated
-    // reconciliation against that) before approving. See 028_withdrawals.sql.
+    const claimedOrderIds = [...new Set((ledgerRows ?? []).map((l) => l.order_id as string))];
+    const { data: claimedOrders } = claimedOrderIds.length
+      ? await admin.from("orders").select("id, payment_channel").in("id", claimedOrderIds)
+      : { data: [] };
+    const channelByOrderId = new Map((claimedOrders ?? []).map((o) => [o.id as string, o.payment_channel as string | null]));
+
+    // How many claimed orders (or order-slices, for a partially-claimed
+    // order) per request went through Escrow.com vs. some other channel —
+    // surfaced so admin can see the double-payment risk (Escrow.com pays
+    // the seller directly; Durqo has no automated reconciliation against
+    // that) before approving. See 028_withdrawals.sql.
     const escrowComCountByRequest = new Map<string, number>();
-    for (const o of claimedOrders ?? []) {
-      if (o.payment_channel === "escrow_com" && o.withdrawal_id) {
-        escrowComCountByRequest.set(o.withdrawal_id as string, (escrowComCountByRequest.get(o.withdrawal_id as string) ?? 0) + 1);
+    for (const l of ledgerRows ?? []) {
+      if (channelByOrderId.get(l.order_id as string) === "escrow_com") {
+        escrowComCountByRequest.set(l.withdrawal_id as string, (escrowComCountByRequest.get(l.withdrawal_id as string) ?? 0) + 1);
       }
     }
 
