@@ -22,7 +22,7 @@ export default async function AdminWithdrawals({
     const sellerIds = [...new Set((requests ?? []).map((r) => r.seller_id as string))];
     const requestIds = (requests ?? []).map((r) => r.id as string);
 
-        const [{ data: profiles }, { data: usersList }, { data: ledgerRows }] = await Promise.all([
+    const [{ data: profiles }, { data: usersList }, { data: ledgerRows }] = await Promise.all([
       sellerIds.length ? admin.from("profiles").select("id, full_name").in("id", sellerIds) : Promise.resolve({ data: [] }),
       admin.auth.admin.listUsers(),
       // Which orders (whole or partially) each request actually claimed —
