@@ -14,8 +14,10 @@ type PayoutMethod = (typeof PAYOUT_METHODS)[number];
 // independent ৳50,000/day and ৳300,000/month cap (a request on one method
 // only counts against that method's own allowance, not a shared pool
 // across all three — 032_withdrawal_mfs_per_method_caps.sql), enforced
-// inside create_withdrawal_request() itself. Bank Transfer, PayPal and
-// Wise aren't capped.
+// inside create_withdrawal_request() itself. A single order larger than
+// that cap is no longer a dead end either — it can be split across
+// multiple requests over time (033_withdrawal_order_splitting.sql). Bank
+// Transfer, PayPal and Wise aren't capped.
 const MFS_METHODS: readonly string[] = ["bkash", "rocket", "nagad"];
 
 // Expected-error result shape for requestWithdrawal() below. Site owner
@@ -118,11 +120,13 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
 
   // netAmount is what create_withdrawal_request() actually claimed, which
   // for bKash/Rocket/Nagad can be less than the seller's full available
-  // balance (031_withdrawal_mfs_partial_claim.sql claims only as many
-  // orders as fit under the remaining ৳50,000/day or ৳300,000/month
-  // allowance, leaving the rest for a future request). The caller uses
-  // this to tell the seller exactly what was withdrawn, since it may not
-  // match the balance shown before they clicked "Request".
+  // balance — it only claims as much as fits under the remaining
+  // ৳50,000/day or ৳300,000/month allowance, leaving the rest (even a
+  // slice of a single large order — 033_withdrawal_order_splitting.sql
+  // can split one order across many requests) available for a future
+  // request. The caller uses this to tell the seller exactly what was
+  // withdrawn, since it may not match the balance shown before they
+  // clicked "Request".
   return { ok: true, netAmount };
 }
 
