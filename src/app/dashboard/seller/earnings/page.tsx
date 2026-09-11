@@ -375,7 +375,7 @@ export default function SellerEarningsPage() {
               2026 screenshots: this table was cut off on phones). */}
           <div className="grid gap-3 md:hidden">
             {withdrawals.map((w) => (
-              <div key={w.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+              <div key={w.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="mono text-sm text-ink-soft">{w.requestedAt}</span>
                   <Badge tone={STATUS_TONE[w.status]}>{STATUS_LABEL[w.status]}</Badge>
