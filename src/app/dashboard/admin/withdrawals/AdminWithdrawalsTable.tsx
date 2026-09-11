@@ -172,7 +172,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
         {rows.map((r) => {
           const busy = isPending && pendingId === r.id;
           return (
-            <div key={r.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+            <div key={r.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="truncate font-medium text-ink">{r.sellerName}</div>
