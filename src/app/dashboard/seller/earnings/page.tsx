@@ -164,6 +164,18 @@ export default function SellerEarningsPage() {
     setSubmitting(true);
     try {
       const result = await requestWithdrawal(methodId, buildPayoutDetails());
+      // requestWithdrawal() returns { ok: false, message } for every
+      // expected failure (bad input, no session, or one of
+      // create_withdrawal_request()'s own validation messages — e.g. the
+      // bKash/Rocket/Nagad daily/monthly cap) rather than throwing, so its
+      // real message always reaches the seller here instead of the
+      // generic "Minified React error #441" digest text a thrown Server
+      // Action error gets redacted to in production (see the comment on
+      // RequestWithdrawalResult in ./actions.ts).
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
       setFieldValues((prev) => {
         const next = { ...prev };
         currentFields.forEach((f) => delete next[`${methodId}:${f.key}`]);
@@ -178,8 +190,8 @@ export default function SellerEarningsPage() {
           : "Withdrawal request submitted — we'll email you once it's reviewed."
       );
       reload();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong — please try again.");
+    } catch {
+      setError("Something went wrong — please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -259,7 +271,17 @@ export default function SellerEarningsPage() {
             )}
 
             <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">Payout details</p>
-            <div className="mb-4 grid gap-3 grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+            {/* Fixed 1-col (mobile) / 2-col (sm+) grid, capped at max-w-xl —
+                the previous grid-cols-[repeat(auto-fit,minmax(200px,1fr))]
+                let CSS Grid create as many ~200px tracks as the now-wide
+                card allowed, then auto-fit stretched each filled track
+                with 1fr to fill the leftover space, spreading Bank
+                Transfer's 4 fields out unevenly with a large gap around
+                the isolated Routing/SWIFT field on wide screens (site
+                owner, Sep 11 2026 screenshot). A fixed 2-column grid with
+                a capped width keeps every field a sane, consistent size
+                regardless of how wide the card itself is. */}
+            <div className="mb-4 grid max-w-xl grid-cols-1 gap-3 sm:grid-cols-2">
               {currentFields.map((f) => (
                 <div key={f.key}>
                   <label className="mb-1 block text-xs text-ink-faint">
