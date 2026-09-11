@@ -56,85 +56,163 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-rule">
-      <table className="w-full min-w-[820px] border-collapse text-sm">
-        <thead>
-          <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
-            <th className="px-4 py-3 font-medium">Seller</th>
-            <th className="px-4 py-3 font-medium">Document type</th>
-            <th className="px-4 py-3 font-medium">Documents</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Submitted</th>
-            <th className="px-4 py-3 font-medium"></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => {
-            const busy = isPending && pendingId === r.id;
-            return (
-              <tr key={r.id} className="border-b border-rule align-top last:border-b-0">
-                <td className="px-4 py-3">
-                  <div className="font-medium text-ink">{r.sellerName}</div>
-                  {r.sellerEmail && <div className="text-xs text-ink-faint">{r.sellerEmail}</div>}
-                </td>
-                <td className="px-4 py-3 text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "—"}</td>
-                <td className="px-4 py-3">
-                  {r.documentUrls.length === 0 ? (
-                    <span className="text-ink-faint">—</span>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {r.documentUrls.map((url, i) => (
-                        <a
-                          key={url}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 rounded-md border border-rule-strong px-2 py-1 text-xs font-medium text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+    <>
+      {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
+      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+        <table className="w-full min-w-[820px] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+              <th className="px-4 py-3 font-medium">Seller</th>
+              <th className="px-4 py-3 font-medium">Document type</th>
+              <th className="px-4 py-3 font-medium">Documents</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Submitted</th>
+              <th className="px-4 py-3 font-medium"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const busy = isPending && pendingId === r.id;
+              return (
+                <tr key={r.id} className="border-b border-rule align-top last:border-b-0">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-ink">{r.sellerName}</div>
+                    {r.sellerEmail && <div className="text-xs text-ink-faint">{r.sellerEmail}</div>}
+                  </td>
+                  <td className="px-4 py-3 text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "—"}</td>
+                  <td className="px-4 py-3">
+                    {r.documentUrls.length === 0 ? (
+                      <span className="text-ink-faint">—</span>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {r.documentUrls.map((url, i) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 rounded-md border border-rule-strong px-2 py-1 text-xs font-medium text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+                          >
+                            <FileText size={13} /> Doc {i + 1}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
+                        STATUS_STYLE[r.status] ?? "border border-rule bg-paper-sunk text-ink-soft"
+                      }`}
+                    >
+                      {STATUS_LABEL[r.status] ?? r.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-ink-soft">{r.submittedAt ?? "—"}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2">
+                      {r.status !== "verified" && (
+                        <button
+                          onClick={() => decide(r.id, "verified")}
+                          disabled={busy}
+                          className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
                         >
-                          <FileText size={13} /> Doc {i + 1}
-                        </a>
-                      ))}
+                          Approve
+                        </button>
+                      )}
+                      {r.status !== "rejected" && (
+                        <button
+                          onClick={() => decide(r.id, "rejected")}
+                          disabled={busy}
+                          className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
+                        >
+                          Reject
+                        </button>
+                      )}
+                      {errorId === r.id && <span className="self-center text-xs text-danger">Failed — retry</span>}
                     </div>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
-                      STATUS_STYLE[r.status] ?? "border border-rule bg-paper-sunk text-ink-soft"
-                    }`}
-                  >
-                    {STATUS_LABEL[r.status] ?? r.status}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-ink-soft">{r.submittedAt ?? "—"}</td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-2">
-                    {r.status !== "verified" && (
-                      <button
-                        onClick={() => decide(r.id, "verified")}
-                        disabled={busy}
-                        className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile: same data as a stacked card list. */}
+      <div className="grid gap-3 md:hidden">
+        {rows.map((r) => {
+          const busy = isPending && pendingId === r.id;
+          return (
+            <div key={r.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+              <div className="mb-3 flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-ink">{r.sellerName}</div>
+                  {r.sellerEmail && <div className="truncate text-xs text-ink-faint">{r.sellerEmail}</div>}
+                </div>
+                <span
+                  className={`shrink-0 inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
+                    STATUS_STYLE[r.status] ?? "border border-rule bg-paper-sunk text-ink-soft"
+                  }`}
+                >
+                  {STATUS_LABEL[r.status] ?? r.status}
+                </span>
+              </div>
+              <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                <div>
+                  <div className="text-xs text-ink-faint">Document type</div>
+                  <div className="text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "—"}</div>
+                </div>
+                <div>
+                  <div className="text-xs text-ink-faint">Submitted</div>
+                  <div className="text-ink-soft">{r.submittedAt ?? "—"}</div>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="mb-1 text-xs text-ink-faint">Documents</div>
+                {r.documentUrls.length === 0 ? (
+                  <span className="text-sm text-ink-faint">—</span>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {r.documentUrls.map((url, i) => (
+                      <a
+                        key={url}
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 rounded-md border border-rule-strong px-2 py-1 text-xs font-medium text-ink-soft hover:border-brand-strong hover:text-brand-strong"
                       >
-                        Approve
-                      </button>
-                    )}
-                    {r.status !== "rejected" && (
-                      <button
-                        onClick={() => decide(r.id, "rejected")}
-                        disabled={busy}
-                        className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
-                      >
-                        Reject
-                      </button>
-                    )}
-                    {errorId === r.id && <span className="self-center text-xs text-danger">Failed — retry</span>}
+                        <FileText size={13} /> Doc {i + 1}
+                      </a>
+                    ))}
                   </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
+                {r.status !== "verified" && (
+                  <button
+                    onClick={() => decide(r.id, "verified")}
+                    disabled={busy}
+                    className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
+                  >
+                    Approve
+                  </button>
+                )}
+                {r.status !== "rejected" && (
+                  <button
+                    onClick={() => decide(r.id, "rejected")}
+                    disabled={busy}
+                    className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
+                  >
+                    Reject
+                  </button>
+                )}
+                {errorId === r.id && <span className="self-center text-xs text-danger">Failed — retry</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
