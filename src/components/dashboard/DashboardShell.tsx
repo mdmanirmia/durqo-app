@@ -214,7 +214,15 @@ export default function DashboardShell({
             </Link>
           </aside>
 
-          <div>{children}</div>
+          {/* min-w-0: without it, this grid item's default min-width:auto
+              lets any unbreakable content deep inside (e.g. a long unbroken
+              listing title, before its own truncate/min-w-0 chain fully
+              resolves) force this column — and with it the whole page —
+              wider than the viewport, since a grid item's box can grow to
+              fit its content's min-content by default. Site owner report,
+              Sep 11 2026: exactly this, on a listing with a long unbroken
+              title on /dashboard/seller. */}
+          <div className="min-w-0">{children}</div>
         </div>
       </Container>
 
