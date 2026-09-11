@@ -1,7 +1,6 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { computeSuccessFee } from "@/lib/fees";
 
 export type WithdrawalStatus = "pending" | "approved" | "rejected" | "paid";
 
@@ -28,11 +27,19 @@ export interface AvailableBalance {
   escrowComOrderCount: number;
 }
 
-// Mirrors the per-order tiered lookup the create_withdrawal_request() RPC
-// applies server-side (028_withdrawals.sql) — this copy is display-only, so
-// a seller sees the exact net amount they're about to request *before*
-// submitting. The RPC is the source of truth for what's actually claimed
-// and charged; if the two ever disagree, the RPC wins.
+// Reads each of the seller's completed orders' REMAINING balance — its
+// own total minus whatever earlier, non-rejected withdrawal requests
+// already claimed from it — via the order_remaining_balances view
+// (033_withdrawal_order_splitting.sql, RLS security_invoker). Before this
+// migration, an order was either 100% claimed or 100% unclaimed
+// (`.is("withdrawal_id", null)`); now a large order can be partially
+// claimed across more than one bKash/Rocket/Nagad request, so "available"
+// means "has a positive remaining_net", not "was never claimed at all".
+// The view computes the tiered Success Fee server-side (same formula as
+// src/lib/fees.ts), so this is the source of truth, not a display-only
+// estimate — if create_withdrawal_request() (the RPC actually doing the
+// claiming) ever disagrees, that's a bug in one of the two, not an
+// expected discrepancy.
 export async function getAvailableBalance(): Promise<AvailableBalance> {
   const empty: AvailableBalance = { grossAmount: 0, successFeeAmount: 0, netAmount: 0, orderCount: 0, escrowComOrderCount: 0 };
   const supabase = createClient();
@@ -40,29 +47,29 @@ export async function getAvailableBalance(): Promise<AvailableBalance> {
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) return empty;
 
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("amount, payment_channel")
+  const { data: rows } = await supabase
+    .from("order_remaining_balances")
+    .select("remaining_gross, remaining_fee, remaining_net, payment_channel")
     .eq("seller_id", userData.user.id)
-    .eq("status", "completed")
-    .is("withdrawal_id", null);
-  if (!orders || orders.length === 0) return empty;
+    .gt("remaining_net", 0);
+  if (!rows || rows.length === 0) return empty;
 
   let gross = 0;
   let fee = 0;
+  let net = 0;
   let escrowComCount = 0;
-  for (const o of orders) {
-    const amount = Number(o.amount);
-    gross += amount;
-    fee += computeSuccessFee(amount).feeCents / 100;
-    if (o.payment_channel === "escrow_com") escrowComCount += 1;
+  for (const row of rows) {
+    gross += Number(row.remaining_gross);
+    fee += Number(row.remaining_fee);
+    net += Number(row.remaining_net);
+    if (row.payment_channel === "escrow_com") escrowComCount += 1;
   }
 
   return {
     grossAmount: gross,
     successFeeAmount: fee,
-    netAmount: gross - fee,
-    orderCount: orders.length,
+    netAmount: net,
+    orderCount: rows.length,
     escrowComOrderCount: escrowComCount,
   };
 }
