@@ -188,10 +188,7 @@ export default function SellerEarningsPage() {
 
             {isMfs && (
               <p className="mb-4 text-xs text-ink-faint">
-                {PAYOUT_METHODS.find((m) => m.id === methodId)?.label} withdrawals are limited to ৳50,000 per day and ৳300,000 per month.{" "}
-                {mfsRate !== null
-                  ? `Today’s withdrawal rate is USD 1 = ৳${mfsRate.toFixed(2)}, based on the current Google exchange rate minus ৳1.50.`
-                  : "Loading today’s withdrawal rate…"}
+                {PAYOUT_METHODS.find((m) => m.id === methodId)?.label} withdrawals are limited to ৳50,000 per day and ৳300,000 per month.
               </p>
             )}
 
