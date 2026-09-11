@@ -27,7 +27,42 @@ import { fmtUSD } from "@/lib/format";
 // corrections to what the Terms actually say, not a cosmetic redesign —
 // flagged in the implementation report for the owner/legal sign-off this
 // kind of change should still get before it's treated as final.
-const EFFECTIVE_DATE = "September 6, 2026";
+//
+// Update — Sep 11, 2026: the Sep 6 rebuild above correctly described what
+// was true at the time (no escrow provider, no local Bangladeshi rails,
+// no seller payout system), but the Platform has since shipped all three.
+// This page was re-checked against the current codebase and updated so it
+// again describes only what is genuinely live:
+// 1. Escrow.com (src/lib/escrow.ts, src/components/BuyNowButton.tsx) is a
+//    real, live, third-party escrow integration as of Sep 10, 2026 — a
+//    "Buy Now — Escrow.com" option sits alongside Stripe and SSLCommerz on
+//    every listing. The former "Planned transaction flow" (an escrow flow
+//    described only in the future tense) is replaced with a live section
+//    describing how Escrow.com actually works. Stripe and SSLCommerz are
+//    still NOT escrow — Durqo holds those funds directly, exactly as
+//    before — only Escrow.com is a genuine independent escrow provider.
+// 2. SSLCommerz (bKash/Rocket/Nagad/bank, in BDT) has been a live Buyer
+//    payment option since Sep 9, 2026. The former "Planned local payment
+//    methods for Bangladesh" section (written as future-tense, Buyer-side
+//    only) is replaced with a live description covering both Buyer
+//    payment (SSLCommerz) and Seller payout (see next point).
+// 3. The former "Planned alternative Success Fee payment" section
+//    described Sellers paying their Success Fee directly through Stripe or
+//    SSLCommerz — that mechanism was never built. What actually shipped
+//    (supabase/migrations 028-033, src/app/dashboard/seller/earnings) is a
+//    manual-review withdrawal system: the Success Fee is deducted
+//    automatically from a Seller's proceeds when they request a payout via
+//    Bank Transfer, bKash, Rocket, Nagad, PayPal, or Wise, with bKash/
+//    Rocket/Nagad each independently capped at ৳50,000/day and ৳300,000/
+//    month. This section now describes that real mechanism instead.
+// 4. Section 6's "Once escrow is available" subsection is now updated to
+//    describe how disputes work now that Escrow.com is actually available,
+//    instead of describing a hypothetical future state.
+// Same discipline as the Sep 6 rebuild: nothing here is upgraded to "live"
+// wording unless it's actually been integrated and verified in production,
+// and this remains a substantive correction warranting the owner's/a
+// lawyer's review before being treated as fully final.
+const EFFECTIVE_DATE = "September 11, 2026";
 
 export const metadata: Metadata = {
   title: "Terms of Service | Durqo",
@@ -208,60 +243,60 @@ const PAYMENT_FLOW = [
   "The remaining balance is paid out to the Seller.",
 ];
 
-// Sep 6, 2026: the site owner confirmed this describes Durqo's intended
-// FINAL payment architecture — but repeated, twice, that no piece of it may
-// be described as operational until it is actually built, integrated and
-// verified (none of it exists in the codebase today: no escrow provider,
-// no SSLCommerz code anywhere, no Stripe fee-only charge flow). Written in
-// the future tense ("will") specifically so this reads as a roadmap even
-// to someone who skims past the "Not yet available" badge.
-const PLANNED_TRANSACTION_FLOW = [
+// Sep 10, 2026: Escrow.com (src/lib/escrow.ts) went live as a third
+// checkout option alongside Stripe and SSLCommerz (see BuyNowButton.tsx,
+// "Buy Now — Escrow.com"). Escrow.com is a genuine, independent, licensed
+// third-party escrow company — unlike Stripe/SSLCommerz, it actually holds
+// the Buyer's funds itself pending release, which is why this is the only
+// payment method on this page ever described using the word "escrow."
+// Steps below match Escrow.com's own transaction lifecycle (create ->
+// parties agree and fund -> item transferred -> inspection period ->
+// release), simplified to what a Buyer/Seller actually experience.
+const ESCROW_TRANSACTION_FLOW = [
   {
-    title: "Buyer funds escrow",
-    body: "Buyer will pay the full purchase price to an approved independent escrow provider.",
+    title: "Buyer funds Escrow.com",
+    body: "Buyer pays the full purchase price into a transaction held by Escrow.com, an independent, licensed escrow company.",
   },
   {
     title: "Assets transfer",
-    body: "Once the escrow provider verifies receipt of funds, the Seller will transfer the agreed assets to the Buyer.",
+    body: "Once Escrow.com confirms receipt of funds, the Seller transfers the agreed assets to the Buyer.",
   },
   {
     title: "Buyer inspects",
-    body: "Buyer will complete inspection and confirm satisfaction with the assets received.",
+    body: "Buyer has an inspection period to confirm the assets match what was agreed before accepting the transaction.",
   },
   {
-    title: "Escrow releases funds",
-    body: "The escrow provider will release the remaining proceeds to the Seller, after Durqo's Success Fee is deducted where supported.",
+    title: "Escrow.com releases funds",
+    body: "Once the Buyer accepts (or the inspection period lapses without an objection), Escrow.com releases the proceeds to the Seller.",
   },
 ];
 
-const PLANNED_FEE_ROUTES = [
-  {
-    title: "International Seller → Stripe",
-    body: "International Sellers will be able to pay their Durqo Success Fee through Stripe when a direct deduction through escrow isn't available.",
-  },
-  {
-    title: "Bangladeshi Seller → SSLCommerz",
-    body: "Bangladeshi Sellers will be able to pay their Durqo Success Fee through SSLCommerz when a direct deduction through escrow isn't available.",
-  },
+// Sep 11, 2026: replaces the old "planned direct Stripe/SSLCommerz fee
+// payment" concept, which was never built. What actually shipped is a
+// withdrawal system (supabase/migrations 028-033,
+// src/app/dashboard/seller/earnings) where the Success Fee is deducted
+// automatically from a Seller's own proceeds at payout time — the Seller
+// never pays it separately through Stripe or SSLCommerz. See
+// payment-history-withdrawals-receipts-addendum.md for the fuller build
+// history behind every figure below.
+const PAYOUT_METHODS_LIST = [
+  "Bank Transfer, PayPal, or Wise — no additional cap beyond the Seller's available balance.",
+  "bKash, Rocket, or Nagad — each independently limited to ৳50,000 per day and ৳300,000 per month, converted at that day's market USD/BDT rate (Google's rate, minus a small margin). A payout larger than a method's limit is paid out in the largest amount that fits today, with the remainder available for a later request.",
 ];
 
-// Sep 6, 2026: the site owner asked for this page to also describe local
-// Bangladeshi payment rails for Bangladeshi Buyers and Sellers. Same
-// discipline as everywhere else on this page — a full grep of this
-// codebase (dependencies, env vars, API routes) turns up no bKash, Rocket,
-// Nagad, or direct Bangladeshi bank integration anywhere, so this is
-// written as part of the planned architecture, not something available
-// today, and doesn't assert a specific technical mechanism (e.g. whether
-// it routes through the eventual escrow provider) beyond what's been
-// confirmed.
-const PLANNED_BD_LOCAL_PAYMENTS = [
+// Sep 11, 2026: replaces the old "planned Bangladeshi rails" section
+// (Buyer-side only, written entirely in the future tense). SSLCommerz has
+// been a live Buyer payment option since Sep 9, 2026, and the withdrawal
+// system above has supported bKash/Rocket/Nagad Seller payouts since
+// Sep 10, 2026 — both are described here as what they actually are today.
+const BD_PAYMENT_SUMMARY = [
   {
     title: "Bangladeshi Buyers",
-    body: "Will be able to fund a purchase using a Bangladeshi bank account, bKash, Rocket, Nagad, or other Bangladeshi payment methods.",
+    body: "Can fund a purchase in Bangladeshi Taka through SSLCommerz, using bKash, Rocket, Nagad, or a Bangladeshi bank account. The BDT amount and exchange rate are shown before you confirm.",
   },
   {
     title: "Bangladeshi Sellers",
-    body: "Will be able to receive their sale proceeds directly into a Bangladeshi bank account, bKash, Rocket, or Nagad account.",
+    body: "Can request their sale proceeds be paid out via bKash, Rocket, or Nagad (subject to the daily/monthly limits above), in addition to Bank Transfer, PayPal, or Wise.",
   },
 ];
 
@@ -437,12 +472,13 @@ export default function TermsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <SubHeading>How payment works today</SubHeading>
+                  <SubHeading>How payment works today — Stripe &amp; SSLCommerz</SubHeading>
                   <StatusBadge tone="live">Currently operational</StatusBadge>
                 </div>
                 <p>
-                  Durqo does not currently use a third-party escrow provider. Payments are processed directly
-                  through Durqo&rsquo;s payment provider, Stripe:
+                  For Stripe (card) and SSLCommerz (Bangladeshi Taka, via bKash, Rocket, Nagad, or bank) payments,
+                  Durqo does not use a third-party escrow provider — payments are processed directly through
+                  Durqo&rsquo;s own payment provider:
                 </p>
                 <ol className="list-decimal space-y-2 pl-5 marker:text-rule-strong">
                   {PAYMENT_FLOW.map((step, i) => (
@@ -452,70 +488,59 @@ export default function TermsPage() {
                   ))}
                 </ol>
                 <p className="text-left text-xs leading-relaxed text-ink-faint">
-                  Stripe is an independent payment processor, not an escrow provider — Stripe does not hold
-                  funds on Durqo&rsquo;s behalf pending a separate release condition, and this section will be
-                  updated if that changes.
+                  For a Listing priced above $2,000, Durqo charges $2,000 online and the remaining balance is
+                  settled separately: for Stripe, directly between Buyer and Seller off-platform; for SSLCommerz,
+                  Durqo emails the Buyer payment instructions and the sale isn&rsquo;t treated as complete until
+                  that remainder has been received and verified. Stripe and SSLCommerz are independent payment
+                  processors, not escrow providers — neither holds funds on Durqo&rsquo;s behalf pending a
+                  separate release condition, and this section will be updated if that changes.
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
-                  <SubHeading>Planned transaction flow</SubHeading>
-                  <StatusBadge tone="planned">Not yet available</StatusBadge>
+                  <SubHeading>Escrow.com — independent third-party escrow</SubHeading>
+                  <StatusBadge tone="live">Currently operational</StatusBadge>
                 </div>
                 <p>
-                  This is Durqo&rsquo;s intended final payment architecture. No part of it is built or available
-                  to Buyers or Sellers today — this page will be updated to describe each piece as operational
-                  only once it has actually been integrated and verified:
+                  As an alternative to paying through Durqo directly, a Buyer and Seller may instead choose to
+                  complete a transaction through Escrow.com, a genuine, independent, licensed escrow company that
+                  is not part of Durqo:
                 </p>
-                <StepFlow steps={PLANNED_TRANSACTION_FLOW} />
+                <StepFlow steps={ESCROW_TRANSACTION_FLOW} />
                 <p className="text-left text-xs leading-relaxed text-ink-faint">
-                  Once available, Durqo itself will not hold escrow funds, act as an escrow provider, or act as a
-                  bank, trustee, custodian, or guarantor. Nothing in these Terms limits any right or remedy that
-                  cannot lawfully be limited or excluded under applicable law.
+                  Durqo is not a party to funds held by Escrow.com, does not control their release, and does not
+                  itself act as an escrow provider, bank, trustee, custodian, or guarantor for these transactions.
+                  Escrow.com&rsquo;s own terms and dispute process, not these Terms, govern the handling and
+                  release of funds it holds. Nothing in these Terms limits any right or remedy that cannot
+                  lawfully be limited or excluded under applicable law.
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
-                  <SubHeading>Planned alternative Success Fee payment</SubHeading>
-                  <StatusBadge tone="planned">Not yet available</StatusBadge>
+                  <SubHeading>How Durqo&rsquo;s Success Fee is collected</SubHeading>
+                  <StatusBadge tone="live">Currently operational</StatusBadge>
                 </div>
                 <p>
-                  Where deducting Durqo&rsquo;s Success Fee directly through escrow isn&rsquo;t available, Sellers
-                  will be able to pay it directly instead:
+                  The Success Fee is owed on every completed sale regardless of which payment method the Buyer
+                  and Seller use, including sales completed through Escrow.com. Rather than being paid separately
+                  through Stripe or SSLCommerz, it is deducted automatically from the Seller&rsquo;s own proceeds
+                  when the Seller requests a payout of those proceeds through the Platform. Durqo reviews and
+                  approves every payout request manually before funds are released. A Seller can request payout
+                  through:
                 </p>
+                <List items={PAYOUT_METHODS_LIST} />
+
+                <div className="mt-2 flex items-center gap-2">
+                  <SubHeading>Bangladeshi Buyers and Sellers</SubHeading>
+                  <StatusBadge tone="live">Currently operational</StatusBadge>
+                </div>
+                <p>Durqo supports local Bangladeshi payment rails on both sides of a transaction:</p>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {PLANNED_FEE_ROUTES.map((route) => (
-                    <div key={route.title} className="rounded-lg border border-rule bg-paper-raised p-5">
-                      <p className="text-left text-sm font-semibold text-ink">{route.title}</p>
-                      <p className="mt-1 text-left text-sm leading-relaxed text-ink-soft">{route.body}</p>
+                  {BD_PAYMENT_SUMMARY.map((row) => (
+                    <div key={row.title} className="rounded-lg border border-rule bg-paper-raised p-5">
+                      <p className="text-left text-sm font-semibold text-ink">{row.title}</p>
+                      <p className="mt-1 text-left text-sm leading-relaxed text-ink-soft">{row.body}</p>
                     </div>
                   ))}
                 </div>
-                <p className="text-left text-xs leading-relaxed text-ink-faint">
-                  Stripe and SSLCommerz are independent payment processors, not escrow providers. Neither will
-                  hold or release a Buyer&rsquo;s purchase price, and a Buyer&rsquo;s full purchase price will
-                  never be routed through Stripe or SSLCommerz &mdash; both are used only to collect the
-                  Seller&rsquo;s Success Fee.
-                </p>
-
-                <div className="mt-2 flex items-center gap-2">
-                  <SubHeading>Planned local payment methods for Bangladesh</SubHeading>
-                  <StatusBadge tone="planned">Not yet available</StatusBadge>
-                </div>
-                <p>
-                  Durqo intends to support local payment rails for Bangladeshi Buyers and Sellers, in addition to
-                  the flows described above. No part of this is built or available today:
-                </p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {PLANNED_BD_LOCAL_PAYMENTS.map((route) => (
-                    <div key={route.title} className="rounded-lg border border-rule bg-paper-raised p-5">
-                      <p className="text-left text-sm font-semibold text-ink">{route.title}</p>
-                      <p className="mt-1 text-left text-sm leading-relaxed text-ink-soft">{route.body}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-left text-xs leading-relaxed text-ink-faint">
-                  This section will be updated to describe a specific local payment method as operational only
-                  once it has actually been integrated and verified in production.
-                </p>
               </Section>
 
               <Section id="disputes" num="06" title="Cancellations, Refunds & Disputes">
@@ -532,16 +557,16 @@ export default function TermsPage() {
                   under applicable law, including any non-waivable consumer-protection or payment-network
                   chargeback rights you may have.
                 </p>
-                <SubHeading>Once escrow is available</SubHeading>
+                <SubHeading>Transactions completed through Escrow.com</SubHeading>
                 <p className="text-left text-sm text-ink-soft">
-                  Section 5 describes a planned, not-yet-available escrow-based payment flow. Once it launches,
-                  this section will be updated to separately address cancellation before a transaction is
-                  funded, cancellation while funds are held in escrow, a Buyer&rsquo;s rejection at inspection,
-                  a completed transfer, confirmed fraud or material misrepresentation, and disputes or
-                  chargebacks raised with the escrow provider or a payment processor. Durqo does not control
-                  escrow funds today and cannot itself order or guarantee a refund; that will remain true even
-                  once an escrow provider is in place, since refund authority over escrowed funds will sit with
-                  that provider under its own dispute process.
+                  Section 5 describes Escrow.com, an independent third-party escrow option. Before Escrow.com
+                  releases funds, a Buyer with concerns about the assets should raise them during Escrow.com&rsquo;s
+                  own inspection period, since Escrow.com — not Durqo — controls release of the funds it holds
+                  during that window. Once Escrow.com has released funds to the Seller, the sale is final in the
+                  same way as any other completed sale on the Platform, and the general reporting-window and
+                  mediation process above applies. Durqo does not control funds held by Escrow.com and cannot
+                  itself order or guarantee a refund of them; a refund or non-release decision made before
+                  release is governed by Escrow.com&rsquo;s own terms and dispute process, not by Durqo.
                 </p>
               </Section>
 
