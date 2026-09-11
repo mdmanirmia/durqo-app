@@ -170,15 +170,27 @@ export default function HowToBuyPage() {
         </Container>
       </section>
 
-      {/* PROTECTIONS STRIP */}
-      <section className="border-b border-rule bg-paper-sunk py-6">
+      {/* PROTECTIONS STRIP — Sep 11, 2026: replaced the plain divided text
+          row (icons and labels crammed into thin, unevenly divided columns —
+          looked cramped and dated, especially on desktop, per direct user
+          feedback on a live screenshot) with a card grid matching the visual
+          language already used a section down for PAYMENT_METHODS (bordered
+          bg-paper-raised cards) and the icon-badge treatment used throughout
+          this page (STEPS' numbered circles, FINAL CTA's icon badge) — same
+          system, just applied consistently here too. */}
+      <section className="border-b border-rule bg-paper-sunk py-10 sm:py-12">
         <Container>
           <Inner>
-            <div className="grid grid-cols-2 divide-y divide-rule sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {PROTECTIONS.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center justify-center gap-2.5 px-4 py-3 text-center sm:py-0">
-                  <Icon size={16} className="shrink-0 text-brand" />
-                  <span className="text-sm font-medium text-ink">{label}</span>
+                <div
+                  key={label}
+                  className="flex items-center gap-3.5 rounded-xl border border-rule bg-paper-raised p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-5"
+                >
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-soft text-brand-strong">
+                    <Icon size={19} />
+                  </span>
+                  <span className="text-sm font-medium leading-snug text-ink">{label}</span>
                 </div>
               ))}
             </div>
