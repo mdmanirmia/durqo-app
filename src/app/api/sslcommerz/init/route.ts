@@ -24,9 +24,11 @@ import { onlineChargeAmount } from "@/lib/payment-terms";
 //
 // Payment Terms note: the USD amount fed into that conversion is also
 // capped per listing via onlineChargeAmount() (src/lib/payment-terms.ts)
-// — the same $2,000-per-listing cap Stripe checkout applies — so SSLCommerz
-// never charges more than what each listing's own "Payment Terms" section
-// told the buyer they'd pay online.
+// at ONLINE_DEPOSIT_CAP, so SSLCommerz never charges more than what each
+// listing's own "Payment Terms" section told the buyer they'd pay online.
+// Sep 11, 2026: Stripe used to apply this same cap; per the merchant's
+// request that was removed for Stripe (api/checkout now always charges
+// the full price), so this cap is SSLCommerz-only now.
 export async function POST(request: Request) {
   const supabase = await createClient();
   if (!supabase) {
@@ -81,9 +83,9 @@ export async function POST(request: Request) {
 
   const totalAmount = listings.reduce((sum, l) => sum + Number(l.discounted_price ?? l.price), 0);
   // What SSLCommerz actually charges — capped per listing to match each
-  // listing's own "Payment Terms" copy (src/lib/payment-terms.ts), same
-  // cap Stripe checkout applies. `totalAmount` above (full price) is still
-  // what's recorded on the orders below.
+  // listing's own "Payment Terms" copy (src/lib/payment-terms.ts).
+  // `totalAmount` above (full price) is still what's recorded on the
+  // orders below.
   const onlineTotal = listings.reduce((sum, l) => sum + onlineChargeAmount(Number(l.discounted_price ?? l.price)), 0);
   const productName = listings.map((l) => l.title).join(", ").slice(0, 255);
 
