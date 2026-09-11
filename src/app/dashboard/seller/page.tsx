@@ -13,6 +13,74 @@ import { getGaConnectionStatuses, type GaConnectionStatus } from "@/lib/data/ga-
 import { StatusBadge } from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 
+// Module-level (not defined inside SellerOverview's render body) so its
+// identity never changes across renders — a function component created
+// fresh on every render trips react-hooks/static-components. Shared between
+// the desktop table cell and the mobile card layout below so the GA
+// status/connect/sync logic isn't duplicated between the two.
+function GaStatusCell({
+  hasSeoData,
+  ga,
+  listingId,
+  onSync,
+}: {
+  hasSeoData: boolean | undefined;
+  ga: GaConnectionStatus | undefined;
+  listingId: string;
+  onSync: (listingId: string) => void;
+}) {
+  if (!hasSeoData) {
+    return <span className="text-xs text-ink-faint">—</span>;
+  }
+  if (!ga || ga.status === "disconnected") {
+    return (
+      <a
+        href={`/api/google-analytics/connect?listingId=${listingId}`}
+        className="flex w-fit items-center gap-1.5 rounded-md border border-rule-strong px-2.5 py-1 text-xs font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+      >
+        <BarChart3 size={13} /> Connect
+      </a>
+    );
+  }
+  if (ga.status === "pending_property_selection") {
+    return (
+      <Link
+        href={`/dashboard/seller/listings/ga-connect?listingId=${listingId}`}
+        className="text-xs font-semibold text-brand-strong hover:underline"
+      >
+        Choose property &rarr;
+      </Link>
+    );
+  }
+  if (ga.status === "error") {
+    return (
+      <div className="flex items-center gap-1.5 text-xs text-danger" title={ga.errorMessage}>
+        <AlertCircle size={13} /> Sync error
+        <button type="button" onClick={() => onSync(listingId)} className="ml-1 text-ink-faint hover:text-ink">
+          <RefreshCw size={12} />
+        </button>
+      </div>
+    );
+  }
+  if (ga.status === "syncing") {
+    return (
+      <span className="flex items-center gap-1.5 text-xs text-ink-faint">
+        <RefreshCw size={12} className="animate-spin" /> Syncing…
+      </span>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-xs font-semibold text-brand-hover">
+        <CheckCircle2 size={11} /> Connected
+      </span>
+      <button type="button" onClick={() => onSync(listingId)} aria-label="Sync now" className="text-ink-faint hover:text-ink">
+        <RefreshCw size={12} />
+      </button>
+    </div>
+  );
+}
+
 export default function SellerOverview() {
   const [myListings, setMyListings] = useState<SellerListingRow[] | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
@@ -76,8 +144,8 @@ export default function SellerOverview() {
 
   return (
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex gap-8">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-6 sm:gap-8">
           <div>
             <div className="mono text-2xl font-semibold text-brand-strong">{balance === null ? "…" : fmtUSD(balance)}</div>
             <div className="text-sm text-ink-faint">Available balance</div>
@@ -87,7 +155,7 @@ export default function SellerOverview() {
             <div className="text-sm text-ink-faint">Published listings</div>
           </div>
         </div>
-        <Button href="/dashboard/seller/listings/new">
+        <Button href="/dashboard/seller/listings/new" className="w-full justify-center sm:w-auto">
           <Plus size={15} /> Add New Business
         </Button>
       </div>
@@ -109,88 +177,89 @@ export default function SellerOverview() {
       ) : myListings.length === 0 ? (
         <p className="text-sm text-ink-faint">You haven&rsquo;t listed a business yet.</p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-rule">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
-                <th className="px-4 py-3 font-medium">Name</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Status</th>
-                <th className="px-4 py-3 font-medium">Price</th>
-                <th className="px-4 py-3 font-medium">Views</th>
-                <th className="px-4 py-3 font-medium">Google Analytics</th>
-                <th className="px-4 py-3 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {myListings.map((l) => {
-                const hasSeoData = CATEGORY_MAP[l.categoryId]?.hasSeoData;
-                const ga = gaStatuses[l.id];
-                return (
-                <tr key={l.id} className="border-b border-rule last:border-b-0">
-                  <td className="px-4 py-3 font-medium text-ink">{l.title}</td>
-                  <td className="px-4 py-3 text-ink-soft">{CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}</td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={l.status} />
-                  </td>
-                  <td className="mono px-4 py-3">{fmtUSD(l.price)}</td>
-                  <td className="mono px-4 py-3">{l.views}</td>
-                  <td className="px-4 py-3">
-                    {!hasSeoData ? (
-                      <span className="text-xs text-ink-faint">—</span>
-                    ) : !ga || ga.status === "disconnected" ? (
-                      <a
-                        href={`/api/google-analytics/connect?listingId=${l.id}`}
-                        className="flex w-fit items-center gap-1.5 rounded-md border border-rule-strong px-2.5 py-1 text-xs font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong"
-                      >
-                        <BarChart3 size={13} /> Connect
-                      </a>
-                    ) : ga.status === "pending_property_selection" ? (
-                      <Link
-                        href={`/dashboard/seller/listings/ga-connect?listingId=${l.id}`}
-                        className="text-xs font-semibold text-brand-strong hover:underline"
-                      >
-                        Choose property &rarr;
-                      </Link>
-                    ) : ga.status === "error" ? (
-                      <div className="flex items-center gap-1.5 text-xs text-danger" title={ga.errorMessage}>
-                        <AlertCircle size={13} /> Sync error
-                        <button type="button" onClick={() => handleSync(l.id)} className="ml-1 text-ink-faint hover:text-ink">
-                          <RefreshCw size={12} />
-                        </button>
-                      </div>
-                    ) : ga.status === "syncing" ? (
-                      <span className="flex items-center gap-1.5 text-xs text-ink-faint">
-                        <RefreshCw size={12} className="animate-spin" /> Syncing…
-                      </span>
-                    ) : (
-                      <div className="flex items-center gap-1.5">
-                        <span className="flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-xs font-semibold text-brand-hover">
-                          <CheckCircle2 size={11} /> Connected
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleSync(l.id)}
-                          aria-label="Sync now"
-                          className="text-ink-faint hover:text-ink"
-                        >
-                          <RefreshCw size={12} />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
-                      <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-strong">View</Link>
-                    </div>
-                  </td>
+        <>
+          {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
+          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+            <table className="w-full min-w-[640px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Category</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Price</th>
+                  <th className="px-4 py-3 font-medium">Views</th>
+                  <th className="px-4 py-3 font-medium">Google Analytics</th>
+                  <th className="px-4 py-3 font-medium"></th>
                 </tr>
+              </thead>
+              <tbody>
+                {myListings.map((l) => {
+                  const hasSeoData = CATEGORY_MAP[l.categoryId]?.hasSeoData;
+                  const ga = gaStatuses[l.id];
+                  return (
+                    <tr key={l.id} className="border-b border-rule last:border-b-0">
+                      <td className="px-4 py-3 font-medium text-ink">{l.title}</td>
+                      <td className="px-4 py-3 text-ink-soft">{CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}</td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={l.status} />
+                      </td>
+                      <td className="mono px-4 py-3">{fmtUSD(l.price)}</td>
+                      <td className="mono px-4 py-3">{l.views}</td>
+                      <td className="px-4 py-3">
+                        <GaStatusCell hasSeoData={hasSeoData} ga={ga} listingId={l.id} onSync={handleSync} />
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <div className="flex items-center justify-end gap-3">
+                          <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
+                          <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile: same data as a stacked card list instead of a
+              horizontally-scrolling table (site owner, Sep 11 2026: seller
+              dashboard tables were overflowing off-screen on phones). */}
+          <div className="grid gap-3 md:hidden">
+            {myListings.map((l) => {
+              const hasSeoData = CATEGORY_MAP[l.categoryId]?.hasSeoData;
+              const ga = gaStatuses[l.id];
+              return (
+                <div key={l.id} className="rounded-xl border border-rule bg-paper-raised p-4">
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-ink">{l.title}</div>
+                      <div className="text-xs text-ink-faint">{CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}</div>
+                    </div>
+                    <StatusBadge className="shrink-0" status={l.status} />
+                  </div>
+                  <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                    <div>
+                      <div className="text-xs text-ink-faint">Price</div>
+                      <div className="mono">{fmtUSD(l.price)}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-ink-faint">Views</div>
+                      <div className="mono">{l.views}</div>
+                    </div>
+                    <div className="col-span-2">
+                      <div className="mb-1 text-xs text-ink-faint">Google Analytics</div>
+                      <GaStatusCell hasSeoData={hasSeoData} ga={ga} listingId={l.id} onSync={handleSync} />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 border-t border-rule pt-3">
+                    <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
+                    <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                  </div>
+                </div>
               );
-              })}
-            </tbody>
-          </table>
-        </div>
+            })}
+          </div>
+        </>
       )}
     </DashboardShell>
   );
