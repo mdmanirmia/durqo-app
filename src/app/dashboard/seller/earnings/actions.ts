@@ -91,6 +91,7 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
   const sellerName = profile?.full_name || "A seller";
   const sellerEmail = user.email;
   const netAmount = request ? Number((request as { net_amount: number }).net_amount) : null;
+  
   const hdrs = await headers();
   const host = hdrs.get("host");
   const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
