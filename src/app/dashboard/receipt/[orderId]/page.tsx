@@ -39,8 +39,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ orderI
     // for the seller (see ReceiptView), so an empty/zero result for a
     // buyer viewer here is harmless.
     supabase.from("order_remaining_balances").select("claimed_gross").eq("order_id", order.id).maybeSingle(),
-    ]);
-  
+  ]);
+
   // The Success Fee is only ever actually charged when this order is
   // claimed by a withdrawal request (create_withdrawal_request() RPC,
   // 028_withdrawals.sql) — shown here to the seller as an estimate so the
