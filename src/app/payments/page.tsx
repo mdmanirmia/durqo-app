@@ -36,13 +36,18 @@ import GroupedFaq from "@/components/GroupedFaq";
 //   /terms's own "How payment works today" language ("Durqo holds the
 //   payment until the Seller has transferred the agreed assets and the
 //   Buyer has confirmed receipt"), not a new claim invented for this page.
-// - The $2,000 online-deposit-cap behavior and its two different
-//   remainder policies (Stripe: settled directly between buyer/seller,
-//   off-platform; SSLCommerz: Durqo emails wire/card instructions and
-//   holds completion until it verifies the balance) come from
+// - The $2,000 online-deposit-cap behavior comes from
 //   src/lib/payment-terms.ts and claude/sslcommerz-bdt-confirmation-and-
-//   payment-breakdown-addendum.md. Escrow.com has no such cap — the full
-//   price goes through it.
+//   payment-breakdown-addendum.md. Sep 11, 2026: this cap used to apply to
+//   Stripe too (remainder settled directly between buyer/seller,
+//   off-platform); per the merchant's explicit request that was removed —
+//   Stripe now always charges the full price in one payment, same as
+//   Escrow.com. The cap is SSLCommerz-only now: for a Bangladeshi Buyer
+//   paying above $2,000 in Bangladeshi Taka (via bKash, Rocket, Nagad,
+//   bank transfer, or card — all SSLCommerz's own payment options), Durqo
+//   collects the BDT equivalent of the first $2,000 online, then emails
+//   wire/card instructions for the remainder and holds completion until it
+//   verifies that balance.
 // - Success Fee tiers imported from the single authoritative
 //   src/lib/fees.ts (never hardcoded).
 // - Withdrawal methods, the per-method (not pooled) ৳50,000/day and
@@ -140,9 +145,9 @@ const FAQ_GROUPS = [
           "For Stripe and SSLCommerz purchases, Durqo holds your payment until the seller has transferred the agreed assets and the deal is confirmed complete — Durqo does not use a third-party escrow provider for these two methods. If you'd like your funds held by an independent third party instead, choose Escrow.com at checkout.",
       },
       {
-        question: "What happens on purchases over $2,000?",
+        question: "What happens on large SSLCommerz purchases over $2,000?",
         answer:
-          "If you pay by card or SSLCommerz, Durqo collects the first $2,000 (or its BDT equivalent) online. For card payments, the remaining balance is settled directly between you and the seller, off-platform. For SSLCommerz, Durqo emails you instructions to pay the remainder by wire transfer, credit card or debit card, and the purchase isn't complete until Durqo has received and verified it. Choosing Escrow.com avoids this split — the full price goes through escrow in one payment.",
+          "This only applies to Bangladeshi buyers paying in Bangladeshi Taka through SSLCommerz (bKash, Rocket, Nagad, bank transfer, or card). Durqo collects the BDT equivalent of the first $2,000 online, then emails you instructions to pay the remaining balance by wire transfer, credit card or debit card — the purchase isn't complete until Durqo has received and verified it. Paying by card through Stripe, or through Escrow.com, always charges the full price in one payment, with no split.",
       },
       {
         question: "Do I need to be in Bangladesh to buy on Durqo?",
@@ -242,11 +247,12 @@ export default function PaymentsPage() {
             <div className="mt-8 flex items-start gap-3 rounded-xl border border-rule bg-paper-sunk p-5">
               <Info size={18} className="mt-0.5 shrink-0 text-brand-strong" />
               <p className="text-sm leading-relaxed text-ink-soft">
-                <span className="font-semibold text-ink">Purchases over $2,000:</span> paying by card or
-                SSLCommerz, Durqo collects the first $2,000 (or its BDT equivalent) online. The remaining balance
-                is either settled directly between you and the seller (card) or paid to Durqo separately once
-                we&rsquo;ve verified it (SSLCommerz). Choosing Escrow.com avoids the split entirely — the full price is
-                held by escrow in one payment.
+                <span className="font-semibold text-ink">Purchases over $2,000:</span> this only applies to
+                Bangladeshi buyers paying in Bangladeshi Taka through SSLCommerz (bKash, Rocket, Nagad, bank
+                transfer, or card). Durqo collects the BDT equivalent of the first $2,000 online, then emails you
+                instructions for paying the remaining balance by wire transfer, credit card or debit card &mdash;
+                the purchase isn&rsquo;t complete until Durqo has received and verified it. Paying by card through
+                Stripe, or through Escrow.com, always charges the full price in one payment, with no split.
               </p>
             </div>
           </Inner>
