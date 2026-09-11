@@ -6,7 +6,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import Button from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
-import { fmtUSD } from "@/lib/format";
+import { fmtUSD, fmtUSD2, fmtBDTWhole } from "@/lib/format";
 import { fmtRate } from "@/lib/fees";
 import {
   getAvailableBalance,
@@ -15,7 +15,7 @@ import {
   type WithdrawalRow,
   type WithdrawalStatus,
 } from "@/lib/data/earnings.client";
-import { requestWithdrawal } from "./actions";
+import { requestWithdrawal, getMfsWithdrawalRate } from "./actions";
 
 const PAYOUT_METHODS = [
   { id: "bank_transfer", label: "Bank Transfer" },
@@ -25,6 +25,17 @@ const PAYOUT_METHODS = [
   { id: "paypal", label: "PayPal" },
   { id: "wise", label: "Wise" },
 ] as const;
+
+type PayoutMethodId = (typeof PAYOUT_METHODS)[number]["id"];
+
+// The three MFS methods the ৳50,000/day, ৳300,000/month cap (and the
+// -1.50 BDT withdrawal rate) applies to — Bank Transfer, PayPal and Wise
+// are never subject to any of this UI.
+const MFS_METHOD_IDS = new Set<PayoutMethodId>(["bkash", "rocket", "nagad"]);
+
+// Daily MFS cap in BDT (031_withdrawal_mfs_partial_claim.sql) — the USD
+// equivalent shown below is 50000 / today's withdrawal rate.
+const MFS_DAILY_CAP_BDT = 50000;
 
 const STATUS_LABEL: Record<WithdrawalStatus, string> = {
   pending: "Pending review",
@@ -43,11 +54,17 @@ const STATUS_TONE: Record<WithdrawalStatus, "gold" | "brand" | "danger" | "dark"
 export default function SellerEarningsPage() {
   const [balance, setBalance] = useState<AvailableBalance | null>(null);
   const [withdrawals, setWithdrawals] = useState<WithdrawalRow[] | null>(null);
-  const [methodId, setMethodId] = useState<(typeof PAYOUT_METHODS)[number]["id"]>("bank_transfer");
+  const [methodId, setMethodId] = useState<PayoutMethodId>("bank_transfer");
   const [details, setDetails] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  // Today's bKash/Rocket/Nagad withdrawal rate (market rate minus the
+  // ৳1.50 withdrawal margin — getUsdToBdtWithdrawalRate() in
+  // src/lib/currency.ts, via the getMfsWithdrawalRate() action since that
+  // module is server-only). Fetched once up front — it doesn't depend on
+  // which payout method is selected, only used when one of the three is.
+  const [mfsRate, setMfsRate] = useState<number | null>(null);
 
   function reload() {
     getAvailableBalance().then(setBalance);
@@ -62,10 +79,28 @@ export default function SellerEarningsPage() {
     getMyWithdrawals().then((w) => {
       if (!cancelled) setWithdrawals(w);
     });
+    getMfsWithdrawalRate().then((r) => {
+      if (!cancelled) setMfsRate(r.rate);
+    });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  const isMfs = MFS_METHOD_IDS.has(methodId);
+  // The live USD equivalent of the ৳50,000/day cap at today's rate — a
+  // flat estimate (matches the site owner's requested formula exactly);
+  // the seller's *actual* remaining allowance can be lower if they've
+  // already withdrawn some via MFS today or this month, which
+  // requestWithdrawal()'s returned netAmount reconciles after submission.
+  const mfsDailyCapUsd = isMfs && mfsRate ? MFS_DAILY_CAP_BDT / mfsRate : null;
+  // What this request would actually withdraw: the seller's full balance,
+  // or the day's remaining MFS allowance — whichever is smaller. Below
+  // the cap, this is just their balance (and its real BDT equivalent);
+  // at or above it, this locks to the ৳50,000 cap and the rest of their
+  // balance stays available for a future request.
+  const mfsRequestUsd = isMfs && balance && mfsDailyCapUsd !== null ? Math.min(balance.netAmount, mfsDailyCapUsd) : null;
+  const mfsRequestBdt = isMfs && mfsRate !== null && mfsRequestUsd !== null ? mfsRequestUsd * mfsRate : null;
 
   async function handleSubmit() {
     if (!details.trim()) return setError("Enter where the payout should go.");
@@ -151,10 +186,19 @@ export default function SellerEarningsPage() {
               ))}
             </div>
 
-            {(methodId === "bkash" || methodId === "rocket" || methodId === "nagad") && (
+            {isMfs && (
               <p className="mb-4 text-xs text-ink-faint">
-                bKash, Rocket and Nagad withdrawals are limited to ৳50,000 at a time, and ৳300,000/month combined. If your balance is higher, we&rsquo;ll
-                withdraw as much as your limit allows now and the rest will stay available for your next request.
+                {PAYOUT_METHODS.find((m) => m.id === methodId)?.label} withdrawals are limited to ৳50,000 per day and ৳300,000 per month.{" "}
+                {mfsRate !== null
+                  ? `Today’s withdrawal rate is USD 1 = ৳${mfsRate.toFixed(2)}, based on the current Google exchange rate minus ৳1.50.`
+                  : "Loading today’s withdrawal rate…"}
+              </p>
+            )}
+
+            {isMfs && mfsRequestUsd !== null && mfsRequestBdt !== null && (
+              <p className="mb-4 text-sm font-medium text-ink">
+                You can withdraw {fmtUSD2(mfsRequestUsd)} ({fmtBDTWhole(mfsRequestBdt)}) via {PAYOUT_METHODS.find((m) => m.id === methodId)?.label} right
+                now.
               </p>
             )}
 
@@ -182,8 +226,14 @@ export default function SellerEarningsPage() {
             {error && <p className="mb-3 text-sm text-danger">{error}</p>}
             {notice && <p className="mb-3 text-sm text-brand-strong">{notice}</p>}
 
-            <Button type="button" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Submitting…" : `Request ${fmtUSD(balance!.netAmount)}`}
+            <Button type="button" onClick={handleSubmit} disabled={submitting || (isMfs && mfsRate === null)}>
+              {submitting
+                ? "Submitting…"
+                : isMfs
+                ? mfsRequestUsd !== null && mfsRequestBdt !== null
+                  ? `Request ${fmtUSD2(mfsRequestUsd)} (${fmtBDTWhole(mfsRequestBdt)})`
+                  : "Loading…"
+                : `Request ${fmtUSD(balance!.netAmount)}`}
             </Button>
           </>
         )}
