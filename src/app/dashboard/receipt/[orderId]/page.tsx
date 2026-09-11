@@ -27,12 +27,20 @@ export default async function ReceiptPage({ params }: { params: Promise<{ orderI
 
   const viewerSide: "buyer" | "seller" = order.buyer_id === user.id ? "buyer" : "seller";
 
-  const [{ data: listing }, { data: buyerProfile }, { data: sellerProfile }] = await Promise.all([
+  const [{ data: listing }, { data: buyerProfile }, { data: sellerProfile }, { data: balanceRow }] = await Promise.all([
     supabase.from("listings").select("title").eq("id", order.listing_id).maybeSingle(),
     supabase.from("profiles").select("full_name").eq("id", order.buyer_id).maybeSingle(),
     supabase.from("profiles").select("full_name").eq("id", order.seller_id).maybeSingle(),
-  ]);
-
+    // Whether ANY part of this order has been claimed by a non-rejected
+    // withdrawal request — via order_remaining_balances
+    // (033_withdrawal_order_splitting.sql), which already excludes
+    // rejected claims, rather than the old `!!order.withdrawal_id` (which
+    // couldn't represent a partially-claimed order). Only ever rendered
+    // for the seller (see ReceiptView), so an empty/zero result for a
+    // buyer viewer here is harmless.
+    supabase.from("order_remaining_balances").select("claimed_gross").eq("order_id", order.id).maybeSingle(),
+    ]);
+  
   // The Success Fee is only ever actually charged when this order is
   // claimed by a withdrawal request (create_withdrawal_request() RPC,
   // 028_withdrawals.sql) — shown here to the seller as an estimate so the
@@ -59,7 +67,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ orderI
     estimatedFeeRate: estimatedFee.rate,
     estimatedFeeAmount: estimatedFee.feeCents / 100,
     estimatedNetAmount: estimatedFee.netCents / 100,
-    alreadyClaimedByWithdrawal: !!order.withdrawal_id,
+    alreadyClaimedByWithdrawal: !!balanceRow && Number(balanceRow.claimed_gross) > 0,
   };
 
   return <ReceiptView data={data} />;
