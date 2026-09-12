@@ -153,7 +153,8 @@ export async function POST(request: Request) {
          <ul>${itemsHtml}</ul>
          <p>Amount: ${validation.amount ?? "?"} ${validation.currency ?? "BDT"} (tran_id ${tranId})</p>
          ${riskNote}
-         ${balanceOpsNote}`
+         ${balanceOpsNote}
+         <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
       );
 
       if (buyerEmail) {
@@ -173,12 +174,26 @@ export async function POST(request: Request) {
              balance.</p>`
           : `<p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>`;
 
+        // Only listings paid in full (no remainder) can have a ready room —
+        // see autoRoomOrderIds above, which deliberately excludes any order
+        // still owing a balance until admin manually starts it later
+        // (startAssetTransfer). Mirrors the Stripe webhook's same CTA.
+        const readyOrderIds = (paidListings ?? [])
+          .map((l) => orderIdByListingId.get(l.id as string))
+          .filter((id): id is string => !!id && roomReadyOrderIds.has(id));
+        const transferCtaHtml = readyOrderIds.length
+          ? `<p>Your Transfer Room${readyOrderIds.length > 1 ? "s are" : " is"} open — head there to track the handover and confirm receipt once the seller transfers the assets.</p>${readyOrderIds
+              .map((id) => transferRoomEmailCta(origin, id))
+              .join("")}`
+          : "";
+
         await sendEmail(
           buyerEmail,
           hasRemainder ? "Your Durqo purchase — remaining balance due" : "Your Durqo purchase is confirmed",
           `<p>Thanks for your purchase — here's what you bought:</p>
            <ul>${itemsHtml}</ul>
-           ${balanceNote}`
+           ${balanceNote}
+           ${transferCtaHtml}`
         );
       }
 
