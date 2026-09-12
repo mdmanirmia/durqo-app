@@ -99,7 +99,8 @@ export async function POST(request: Request) {
       await sendEmail(
         ADMIN_EMAIL,
         `New Escrow.com purchase — ${title}`,
-        `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for "${title}".</p>`
+        `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for "${title}".</p>
+         <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
       );
       // Escrow.com's whole payment flow happens on their own hosted pages,
       // not Durqo's — unlike Stripe/SSLCommerz/Pay Later, there's no
