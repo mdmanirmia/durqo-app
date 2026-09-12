@@ -14,7 +14,9 @@ import { payLaterEnabled, maybeCreateTransferRoomsOnPayment } from "@/lib/asset-
 //
 // Calls the same real production code path a genuine payment webhook would:
 // creates the order (`payment_channel: 'durqo_platform'`, `status:
-// 'in_escrow'`), marks the listing sold, clears the buyer's cart entry, and
+// 'in_durqo'` — money sits with Durqo directly, not a neutral escrow agent,
+// same as Stripe/SSLCommerz), marks the listing sold, clears the buyer's
+// cart entry, and
 // calls maybeCreateTransferRoomsOnPayment — the same function Stripe/
 // SSLCommerz/Escrow.com's webhooks call. If ASSET_TRANSFER_ROOMS_ENABLED is
 // also true, this creates a real Transfer Room and the buyer is taken
@@ -106,7 +108,7 @@ export async function POST(request: Request) {
       // instantly recognizable on the admin Orders page as not a real
       // Stripe/SSLCommerz/Escrow.com payment.
       payment_channel: "durqo_platform",
-      status: "in_escrow",
+      status: "in_durqo",
     })
     .select("id")
     .single();
