@@ -18,6 +18,7 @@ import { INDUSTRIES } from "@/lib/industries";
 import { APP_NICHES } from "@/lib/app-niches";
 import { APP_PLATFORMS } from "@/lib/app-platforms";
 import { createClient } from "@/lib/supabase/client";
+import { confirmListingAssets } from "@/lib/actions/listing-assets";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds } from "@/lib/format";
 
@@ -162,9 +163,9 @@ export default function AddNewBusinessPage() {
   const [saleIncludesAssets, setSaleIncludesAssets] = useState("");
   const [saleIncludesSupport, setSaleIncludesSupport] = useState("");
   // Asset Transfer System v2's structured asset list (migration 036) — see
-  // AssetListEditor.tsx. Confirming is deferred to the edit page after
-  // creation (this create flow already defers a few other things the same
-  // way, e.g. the Google Analytics connection), so no confirm UI here.
+  // AssetListEditor.tsx. Confirmed instantly on submit (2026-09-12) if at
+  // least one row is named, via confirmListingAssets() right after the
+  // listing and its asset rows are inserted below — no separate step.
   const [assetRows, setAssetRows] = useState<AssetRow[]>([]);
 
   const [quickStats, setQuickStats] = useState<Record<string, string>>({});
@@ -411,6 +412,12 @@ export default function AddNewBusinessPage() {
       if (assetInsertRows.length) {
         const { error } = await supabase.from("listing_assets").insert(assetInsertRows);
         if (error) throw new Error(`Saving the asset list failed: ${error.message}`);
+        // Instant confirm (2026-09-12): a brand-new listing with at least
+        // one named asset is confirmed the moment it's created — no
+        // separate step. assets_confirmed_at isn't seller-writable under
+        // RLS, so this goes through the same admin-backed Server Action
+        // the edit form's save now calls inline.
+        await confirmListingAssets(listingId);
       }
 
       const monthlyRows = monthlyIncome
@@ -1223,6 +1230,7 @@ export default function AddNewBusinessPage() {
         )}
 
         <Section title="Sale Includes">
+          <div className="flex flex-col gap-6">
           <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Assets included">
               <textarea
@@ -1243,10 +1251,13 @@ export default function AddNewBusinessPage() {
               <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} placeholder="e.g. 30 days of email support" className={`${inputCls} w-full`} />
             </Field>
           </div>
-        </Section>
 
-        <Section title="Structured Asset List" hint="Powers the buyer's Transfer Room after purchase. You can add assets now and confirm the list from this listing's edit page once it's created.">
-          <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={null} showConfirm={false} />
+          <div>
+            <p className="mb-2 text-sm font-semibold text-ink">Structured Asset List</p>
+            <p className="mb-3 text-xs text-ink-faint">Powers the buyer&rsquo;s Transfer Room after purchase — separate from the free-text summary above, which stays as-is. Confirmed instantly once you create the listing, as long as at least one asset is named.</p>
+            <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={null} />
+          </div>
+          </div>
         </Section>
 
         <div className="border-t border-rule pt-8">
