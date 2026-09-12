@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { StatusBadge } from "@/components/ui/Badge";
+import { StatusBadge, statusLabel } from "@/components/ui/Badge";
 import { fmtUSD } from "@/lib/format";
 import { setOrderStatus, setOrderPaymentChannel, startAssetTransfer } from "../actions";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
@@ -33,21 +33,12 @@ export interface AdminOrderRow {
 
 const STATUSES = ["requested", "awaiting_payment", "in_escrow", "in_durqo", "completed", "cancelled"] as const;
 
-// Display labels only — the underlying status values are unchanged in the
-// database; these are just friendlier wording for the same lifecycle:
-// buyer hasn't paid yet -> paid (held by Escrow.com, or sitting with Durqo
-// directly) -> released to the seller. Since 2026-09-12, "in_escrow" is
-// used only for orders actually paid through Escrow.com; every other paid
-// order (Stripe, SSLCommerz, Pay Later) uses "in_durqo" instead, since that
-// money isn't held by any neutral third party.
-const STATUS_LABEL: Record<string, string> = {
-  requested: "Payment Requested",
-  awaiting_payment: "Awaiting Payment",
-  in_escrow: "Held by Escrow.com",
-  in_durqo: "Payment Received (Durqo)",
-  completed: "Payment Released to Seller",
-  cancelled: "Payment Cancelled",
-};
+// Display labels come from statusLabel() (src/components/ui/Badge.tsx) —
+// the same map StatusBadge reads right next to this <select> on every row,
+// so the badge and the dropdown never disagree on wording again (they used
+// to: this file kept its own separate, newer copy of these labels while
+// Badge.tsx's STATUS_MAP still had the older generic ones — fixed
+// 2026-09-12 by reconciling to one source of truth).
 
 // Which rail the order was actually paid through — a manual admin-set
 // label (migration 009 + 010, payment_channel column), same "tracking
@@ -137,96 +128,115 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
 
   return (
     <>
-      {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
-        <table className="w-full min-w-[780px] border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
-              <th className="px-4 py-3 font-medium">Listing</th>
-              <th className="px-4 py-3 font-medium">Buyer</th>
-              <th className="px-4 py-3 font-medium">Seller</th>
-              <th className="px-4 py-3 font-medium">Amount</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Payment Channel</th>
-              <th className="px-4 py-3 font-medium">Asset Transfer</th>
-              <th className="px-4 py-3 font-medium">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((o) => {
-              const busy = isPending && pendingId === o.id;
-              const channelBusy = isChannelPending && pendingChannelId === o.id;
-              const transferBusy = isTransferPending && pendingTransferId === o.id;
-              const hasRoom = o.hasTransferRoom || startedTransferIds.includes(o.id);
-              const paymentLanded = o.status === "in_escrow" || o.status === "in_durqo";
-              return (
-                <tr key={o.id} className="border-b border-rule align-top last:border-b-0">
-                  <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
-                  <td className="px-4 py-3 text-ink-soft">{o.buyerName}</td>
-                  <td className="px-4 py-3 text-ink-soft">{o.sellerName}</td>
-                  <td className="px-4 py-3">
-                    <span className="mono">{fmtUSD(o.amount)}</span>
-                    <OrderAmountBreakdown
-                      paymentChannel={o.paymentChannel}
-                      onlineChargeUsd={o.onlineChargeUsd}
-                      remainderUsd={o.remainderUsd}
-                      sslcommerzBdtAmount={o.sslcommerzBdtAmount}
-                      sslcommerzRate={o.sslcommerzRate}
-                      orderStatus={o.status}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={o.status} className="mb-1" />
-                    <select
-                      value={o.status}
-                      disabled={busy}
-                      onChange={(e) => changeStatus(o.id, e.target.value)}
-                      className="mono block rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>{STATUS_LABEL[s]}</option>
-                      ))}
-                    </select>
-                    {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
-                  </td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={o.paymentChannel}
-                      disabled={channelBusy}
-                      onChange={(e) => changeChannel(o.id, e.target.value)}
-                      className="mono block rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
-                    >
-                      {PAYMENT_CHANNELS.map((c) => (
-                        <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
-                      ))}
-                    </select>
-                    {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
-                  </td>
-                  <td className="px-4 py-3">
-                    {hasRoom ? (
-                      <span className="text-xs text-ink-faint">Room open</span>
-                    ) : paymentLanded ? (
-                      <>
-                        <button
-                          type="button"
-                          disabled={transferBusy}
-                          onClick={() => startTransfer(o.id)}
-                          className="rounded-md border border-rule-strong bg-transparent px-2 py-1 text-xs font-medium text-ink hover:bg-paper-raised disabled:opacity-60"
-                        >
-                          {transferBusy ? "Starting…" : "Start Asset Transfer"}
-                        </button>
-                        {errorTransferId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t start — try again.</div>}
-                      </>
-                    ) : (
-                      <span className="text-xs text-ink-faint">—</span>
-                    )}
-                  </td>
-                  <td className="mono px-4 py-3 text-ink-faint">{o.createdAt}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      {/* Desktop table. 2026-09-12 fix: this used to be 8 columns with two
+          unconstrained <select>s (each sized to its longest option text,
+          e.g. "In Bangladesh Payment Gateway") — together they pushed the
+          table wider than even a 1500px+ viewport with no visual hint that
+          "Asset Transfer"/"Date" were cut off past the fold. Buyer+Seller
+          are now one "Parties" column, both selects have a fixed max width
+          with their own text truncated via a title attribute for the rare
+          long option, and the wrapper below adds a right-edge fade so a
+          screen that still needs the horizontal scrollbar shows one. */}
+      <div className="hidden md:block">
+        <div className="scroll-shadow-x overflow-x-auto rounded-xl border border-rule">
+          <table className="w-full min-w-[720px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+                <th className="px-3 py-3 font-medium">Listing</th>
+                <th className="px-3 py-3 font-medium">Parties</th>
+                <th className="px-3 py-3 font-medium">Amount</th>
+                <th className="px-3 py-3 font-medium">Status</th>
+                <th className="px-3 py-3 font-medium">Payment Channel</th>
+                <th className="px-3 py-3 font-medium">Asset Transfer</th>
+                <th className="px-3 py-3 font-medium">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((o) => {
+                const busy = isPending && pendingId === o.id;
+                const channelBusy = isChannelPending && pendingChannelId === o.id;
+                const transferBusy = isTransferPending && pendingTransferId === o.id;
+                const hasRoom = o.hasTransferRoom || startedTransferIds.includes(o.id);
+                const paymentLanded = o.status === "in_escrow" || o.status === "in_durqo";
+                return (
+                  <tr key={o.id} className="border-b border-rule align-top last:border-b-0">
+                    <td className="max-w-[200px] px-3 py-3 font-medium text-ink">
+                      <span className="line-clamp-2">{o.listingTitle}</span>
+                    </td>
+                    <td className="px-3 py-3 text-xs text-ink-soft">
+                      <div className="truncate" title={`Buyer: ${o.buyerName}`}>
+                        <span className="text-ink-faint">Buyer</span> {o.buyerName}
+                      </div>
+                      <div className="truncate" title={`Seller: ${o.sellerName}`}>
+                        <span className="text-ink-faint">Seller</span> {o.sellerName}
+                      </div>
+                    </td>
+                    <td className="px-3 py-3">
+                      <span className="mono">{fmtUSD(o.amount)}</span>
+                      <OrderAmountBreakdown
+                        paymentChannel={o.paymentChannel}
+                        onlineChargeUsd={o.onlineChargeUsd}
+                        remainderUsd={o.remainderUsd}
+                        sslcommerzBdtAmount={o.sslcommerzBdtAmount}
+                        sslcommerzRate={o.sslcommerzRate}
+                        orderStatus={o.status}
+                      />
+                    </td>
+                    <td className="px-3 py-3">
+                      <StatusBadge status={o.status} className="mb-1" />
+                      <select
+                        value={o.status}
+                        disabled={busy}
+                        onChange={(e) => changeStatus(o.id, e.target.value)}
+                        title={statusLabel(o.status)}
+                        className="mono block w-36 truncate rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
+                      >
+                        {STATUSES.map((s) => (
+                          <option key={s} value={s}>{statusLabel(s)}</option>
+                        ))}
+                      </select>
+                      {errorId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
+                    </td>
+                    <td className="px-3 py-3">
+                      <select
+                        value={o.paymentChannel}
+                        disabled={channelBusy}
+                        onChange={(e) => changeChannel(o.id, e.target.value)}
+                        title={PAYMENT_CHANNEL_LABEL[o.paymentChannel]}
+                        className="mono block w-36 truncate rounded-md border border-rule-strong bg-paper px-2 py-1 text-xs disabled:opacity-60"
+                      >
+                        {PAYMENT_CHANNELS.map((c) => (
+                          <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
+                        ))}
+                      </select>
+                      {errorChannelId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
+                    </td>
+                    <td className="px-3 py-3">
+                      {hasRoom ? (
+                        <span className="text-xs text-ink-faint">Room open</span>
+                      ) : paymentLanded ? (
+                        <>
+                          <button
+                            type="button"
+                            disabled={transferBusy}
+                            onClick={() => startTransfer(o.id)}
+                            className="rounded-md border border-rule-strong bg-transparent px-2 py-1 text-xs font-medium text-ink hover:bg-paper-raised disabled:opacity-60"
+                          >
+                            {transferBusy ? "Starting…" : "Start Asset Transfer"}
+                          </button>
+                          {errorTransferId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t start — try again.</div>}
+                        </>
+                      ) : (
+                        <span className="text-xs text-ink-faint">—</span>
+                      )}
+                    </td>
+                    <td className="mono px-3 py-3 text-xs text-ink-faint">{o.createdAt}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Mobile: same data as a stacked card list. */}
@@ -269,7 +279,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                   className="mono block w-full rounded-md border border-rule-strong bg-paper px-2 py-1.5 text-xs disabled:opacity-60"
                 >
                   {STATUSES.map((s) => (
-                    <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+                    <option key={s} value={s}>{statusLabel(s)}</option>
                   ))}
                 </select>
                 {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
