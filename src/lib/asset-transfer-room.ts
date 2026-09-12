@@ -43,17 +43,37 @@ export function payLaterEnabled(): boolean {
   return process.env.PAY_LATER_ENABLED !== "false";
 }
 
-export async function maybeCreateTransferRoomsOnPayment(admin: AdminClient, orderIds: string[]) {
-  if (!assetTransferRoomsEnabled() || orderIds.length === 0) return;
+// Returns the subset of orderIds a Transfer Room actually exists for once
+// this call returns — either just-created here, or already existing from an
+// earlier (possibly retried) call, since the RPC is idempotent. Callers use
+// this to decide whether it's safe to link straight to
+// /dashboard/transfer/{orderId} in a notification email or a post-purchase
+// redirect: a room that failed to create (the listing-not-confirmed case
+// documented above, or any other RPC error) must not be linked as if it
+// were ready.
+export async function maybeCreateTransferRoomsOnPayment(admin: AdminClient, orderIds: string[]): Promise<string[]> {
+  if (!assetTransferRoomsEnabled() || orderIds.length === 0) return [];
 
+  const roomReadyOrderIds: string[] = [];
   for (const orderId of orderIds) {
     try {
       const { error } = await admin.rpc("create_transfer_room_on_payment", { p_order_id: orderId });
       if (error) {
         console.warn(`[asset-transfer] create_transfer_room_on_payment(${orderId}) failed:`, error.message);
+      } else {
+        roomReadyOrderIds.push(orderId);
       }
     } catch (err) {
       console.warn(`[asset-transfer] create_transfer_room_on_payment(${orderId}) threw:`, err);
     }
   }
+  return roomReadyOrderIds;
+}
+
+// Small shared helper for the "go to your Transfer Room" line every payment
+// webhook's seller (and, for Escrow.com, buyer) email appends once a room
+// is confirmed ready — one wording, reused everywhere, instead of four
+// slightly different copies of the same sentence.
+export function transferRoomEmailCta(origin: string, orderId: string): string {
+  return `<p><a href="${origin}/dashboard/transfer/${orderId}" style="display:inline-block;margin-top:8px;padding:10px 16px;background:#166534;color:#ffffff;border-radius:6px;text-decoration:none;font-weight:600;">Open the Transfer Room</a></p>`;
 }
