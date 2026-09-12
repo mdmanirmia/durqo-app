@@ -2,6 +2,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { listAllAuthUsers } from "@/lib/notifications";
 import AdminUsersTable, { type AdminUserRow } from "./AdminUsersTable";
 
 export default async function AdminUsers() {
@@ -10,12 +11,16 @@ export default async function AdminUsers() {
 
   let rows: AdminUserRow[] = [];
   if (admin) {
-    const [{ data: profiles }, { data: authUsers }] = await Promise.all([
+    // 2026-09-12 fix: this was capped at a single 200-user page — any user
+    // signed up after the marketplace passed 200 accounts would silently
+    // show "—" for email here. listAllAuthUsers() (src/lib/notifications.ts)
+    // pages through the full auth user list instead.
+    const [{ data: profiles }, authUsers] = await Promise.all([
       admin.from("profiles").select("id, full_name, role, is_verified, is_active, total_purchases, total_sales, created_at"),
-      admin.auth.admin.listUsers({ perPage: 200 }),
+      listAllAuthUsers(admin),
     ]);
 
-    const emailById = new Map((authUsers?.users ?? []).map((u) => [u.id, u.email ?? "—"]));
+    const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? "—"]));
 
     rows = (profiles ?? [])
       .map((p) => ({
