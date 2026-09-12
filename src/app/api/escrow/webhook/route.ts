@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getEscrowConfig, fetchEscrowTransaction } from "@/lib/escrow";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
-import { maybeCreateTransferRoomsOnPayment } from "@/lib/asset-transfer-room";
+import { maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
 
 // Escrow.com's webhook listener. Register this route's full URL
 // (<your-domain>/api/escrow/webhook) at escrow.com -> My Integrations ->
@@ -76,7 +76,9 @@ export async function POST(request: Request) {
     // a different concern than which party actually holds the funds (see
     // 035_exclude_escrow_com_from_payout_ledger.sql, which is only about
     // Durqo's own payout ledger, not this).
-    await maybeCreateTransferRoomsOnPayment(admin, [order.id]);
+    const roomReadyOrderIds = await maybeCreateTransferRoomsOnPayment(admin, [order.id]);
+    const roomReady = roomReadyOrderIds.includes(order.id);
+    const origin = new URL(request.url).origin;
 
     await admin.from("listings").update({ status: "sold" }).eq("id", order.listing_id).eq("status", "published");
     revalidatePath(`/listing/${order.listing_id}`);
@@ -99,12 +101,19 @@ export async function POST(request: Request) {
         `New Escrow.com purchase — ${title}`,
         `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for "${title}".</p>`
       );
+      // Escrow.com's whole payment flow happens on their own hosted pages,
+      // not Durqo's — unlike Stripe/SSLCommerz/Pay Later, there's no
+      // browser redirect back into this app to send the buyer straight to
+      // their Transfer Room after paying. This email (with the direct link)
+      // is the only way they land there, so it gets the CTA that the other
+      // three channels' post-purchase redirect otherwise provides.
       if (buyerEmail) {
         await sendEmail(
           buyerEmail,
           "Your Durqo purchase is confirmed",
           `<p>Thanks for your purchase — your payment for "${title}" is now held securely in escrow by Escrow.com.</p>
-           <p>Once the seller transfers the assets and you confirm receipt on Escrow.com, funds will be released to them.</p>`
+           <p>Once the seller transfers the assets and you confirm receipt on Escrow.com, funds will be released to them.</p>
+           ${roomReady ? `<p>Track the handover in your Transfer Room:</p>${transferRoomEmailCta(origin, order.id)}` : ""}`
         );
       }
       if (sellerEmail) {
@@ -112,7 +121,8 @@ export async function POST(request: Request) {
           sellerEmail,
           `Your listing "${title}" has sold`,
           `<p>Good news — "${title}" sold via Escrow.com, and the buyer's payment is now secured in escrow.</p>
-           <p>Log in to Escrow.com to agree to the transaction (if you haven't already) and arrange the asset transfer.</p>`
+           <p>Log in to Escrow.com to agree to the transaction (if you haven't already) and arrange the asset transfer.</p>
+           ${roomReady ? `<p>Use your Transfer Room to coordinate the handover with the buyer:</p>${transferRoomEmailCta(origin, order.id)}` : ""}`
         );
       }
     } catch (err) {
