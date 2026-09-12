@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
         await admin
           .from("orders")
-          .update({ status: "in_escrow", stripe_payment_intent_id: paymentIntentId })
+          .update({ status: "in_durqo", stripe_payment_intent_id: paymentIntentId })
           .in("id", orderIds);
 
         // Asset Transfer System v2 (Phase 4 follow-up, Task #188) —
