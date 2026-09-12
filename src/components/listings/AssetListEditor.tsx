@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 
 export type AssetRow = { id?: string; name: string; buyerReceives: string; transferMethod: string; note: string };
@@ -15,9 +14,17 @@ function emptyRow(): AssetRow {
 // System v2 (feasibility report, Part 1: "100% seller-authored — no
 // category templates, no auto-suggestion, no AI-derived asset list,
 // ever"). Deliberately just four plain text fields per row, no dropdowns
-// or suggestions of any kind. Lives inside the existing "Sale Includes"
-// card, alongside — never replacing — the original free-text Assets
-// paragraph.
+// or suggestions of any kind. Lives inside the "Sale Includes" section
+// itself (merged there 2026-09-12 — this used to be a separate
+// "Structured Asset List" section below it).
+//
+// Confirmation used to be a separate manual step (a "Confirm this list"
+// button, gated on saving first) — removed 2026-09-12 per the site owner's
+// explicit request: saving a non-empty list now confirms it instantly, in
+// the same Server Action call (see updateListingFull in
+// src/lib/actions/listing-edit.ts, and the equivalent insert-time logic in
+// the "new listing" page). This component is now display-only about
+// confirmation status — there is nothing left here to click to confirm.
 //
 // One card per asset rather than a table: at 3-4 fields per row a table
 // forces horizontal scrolling on mobile, while a stacked card reflows
@@ -28,47 +35,26 @@ export default function AssetListEditor({
   rows,
   setRows,
   confirmedAt,
-  onConfirm,
-  confirming,
-  showConfirm,
-  pendingSave,
 }: {
   rows: AssetRow[];
   setRows: (rows: AssetRow[]) => void;
+  // Last-saved server truth (listings.assets_confirmed_at). Only reflects
+  // what's actually in the database — the caller is responsible for
+  // updating this right after a successful save, since a save now also
+  // confirms (or un-confirms, if the list was cleared out) in the same
+  // step.
   confirmedAt: string | null;
-  onConfirm?: () => void;
-  confirming?: boolean;
-  showConfirm: boolean;
-  // true when `rows` has changed since the listing was last saved — the
-  // confirm action reads listing_assets from the database, so confirming
-  // against an unsaved edit would either fail or (worse) confirm the wrong
-  // list. Shown as a nudge to save first instead of a confirm button.
-  pendingSave?: boolean;
 }) {
-  const [confirmError, setConfirmError] = useState<string | null>(null);
   const hasAtLeastOneNamedRow = rows.some((r) => r.name.trim());
 
   function update(i: number, key: keyof AssetRow, v: string) {
     setRows(rows.map((r, idx) => (idx === i ? { ...r, [key]: v } : r)));
   }
 
-  async function handleConfirm() {
-    setConfirmError(null);
-    if (!hasAtLeastOneNamedRow) {
-      setConfirmError("Add at least one asset before confirming.");
-      return;
-    }
-    try {
-      await onConfirm?.();
-    } catch (err) {
-      setConfirmError(err instanceof Error ? err.message : "Couldn't confirm the list.");
-    }
-  }
-
   return (
     <div className="flex flex-col gap-4">
       <p className="text-xs text-ink-faint">
-        This is the exact list buyers will see, and — once confirmed — the exact list frozen into their Transfer Room the moment they pay. Only what you enter here, nothing auto-generated.
+        This is the exact list buyers will see, and — the moment you save — the exact list frozen into their Transfer Room when they pay. Only what you enter here, nothing auto-generated.
       </p>
 
       <div className="flex flex-col gap-3">
@@ -111,34 +97,26 @@ export default function AssetListEditor({
         <Plus size={14} /> Add asset
       </button>
 
-      {showConfirm && (
-        <div className="flex flex-col gap-2 rounded-lg border border-rule-strong bg-paper p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            {confirmedAt ? (
-              <span className="mono inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-soft px-2 py-1 text-[0.7rem] font-semibold uppercase text-brand-strong">
-                Confirmed
-              </span>
-            ) : (
-              <span className="mono inline-flex w-fit items-center gap-1.5 rounded-full bg-gold-soft px-2 py-1 text-[0.7rem] font-semibold uppercase text-gold">
-                Not confirmed — can&rsquo;t be sold yet
-              </span>
-            )}
-            {confirmedAt && <p className="mt-1.5 text-xs text-ink-faint">Editing and saving the list above will require re-confirming.</p>}
-            {!confirmedAt && pendingSave && <p className="mt-1.5 text-xs text-ink-faint">Save your changes above first, then confirm.</p>}
-            {confirmError && <p className="mt-1.5 text-xs text-danger">{confirmError}</p>}
-          </div>
-          {!confirmedAt && !pendingSave && (
-            <button
-              type="button"
-              onClick={handleConfirm}
-              disabled={confirming || !hasAtLeastOneNamedRow}
-              className="w-full shrink-0 rounded-md bg-brand-strong px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 sm:w-auto"
-            >
-              {confirming ? "Confirming…" : "Confirm this list"}
-            </button>
-          )}
-        </div>
-      )}
+      <div className="rounded-lg border border-rule-strong bg-paper p-3">
+        {confirmedAt ? (
+          <span className="mono inline-flex w-fit items-center gap-1.5 rounded-full bg-brand-soft px-2 py-1 text-[0.7rem] font-semibold uppercase text-brand-strong">
+            Confirmed
+          </span>
+        ) : hasAtLeastOneNamedRow ? (
+          <span className="mono inline-flex w-fit items-center gap-1.5 rounded-full bg-gold-soft px-2 py-1 text-[0.7rem] font-semibold uppercase text-gold">
+            Will confirm when you save
+          </span>
+        ) : (
+          <span className="mono inline-flex w-fit items-center gap-1.5 rounded-full bg-gold-soft px-2 py-1 text-[0.7rem] font-semibold uppercase text-gold">
+            No assets listed yet — can&rsquo;t be sold
+          </span>
+        )}
+        <p className="mt-1.5 text-xs text-ink-faint">
+          {confirmedAt
+            ? "Editing and saving this list again will re-confirm it instantly with your new changes."
+            : "Add at least one asset and save — it's confirmed the moment you save, no separate step."}
+        </p>
+      </div>
     </div>
   );
 }

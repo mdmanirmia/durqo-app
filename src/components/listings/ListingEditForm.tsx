@@ -19,7 +19,6 @@ import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds, formatEngagementSeconds } from "@/lib/format";
 import { updateListingFull, addListingImages, deleteListingImage, type ListingFullEditFields } from "@/lib/actions/listing-edit";
 import { setListingStatus } from "@/app/dashboard/admin/actions";
-import { confirmListingAssets } from "@/lib/actions/listing-assets";
 import AssetListEditor, { type AssetRow } from "@/components/listings/AssetListEditor";
 
 // Same 12-month proof-of-income window as the seller "new listing" form
@@ -205,10 +204,11 @@ export default function ListingEditForm({
   const [saleIncludesSupport, setSaleIncludesSupport] = useState(listing.sale_includes_support ?? "");
 
   // Asset Transfer System v2's structured asset list — see
-  // AssetListEditor.tsx. `initialAssetRows` is captured once so a later
-  // save/confirm cycle can tell whether the seller has unsaved edits
-  // pending (see `assetRowsPendingSave` below and its use at the confirm
-  // button).
+  // AssetListEditor.tsx. Confirmation is no longer a separate step
+  // (2026-09-12): saving this form confirms a non-empty list instantly, in
+  // the same updateListingFull() Server Action call below, so all that's
+  // tracked client-side now is the rows themselves and the last-known
+  // confirmed-at timestamp (updated right after a successful save).
   const initialAssetRows: AssetRow[] = (listingAssets ?? []).map((a) => ({
     id: a.id,
     name: a.name ?? "",
@@ -217,10 +217,7 @@ export default function ListingEditForm({
     note: a.note ?? "",
   }));
   const [assetRows, setAssetRows] = useState<AssetRow[]>(initialAssetRows);
-  const [assetRowsInitialJson, setAssetRowsInitialJson] = useState(() => JSON.stringify(initialAssetRows));
   const [assetsConfirmedAt, setAssetsConfirmedAt] = useState<string | null>(listing.assets_confirmed_at ?? null);
-  const [confirmingAssets, setConfirmingAssets] = useState(false);
-  const assetRowsPendingSave = JSON.stringify(assetRows) !== assetRowsInitialJson;
 
   const [niches, setNiches] = useState<string[]>(Array.isArray(listing.niches) ? listing.niches : []);
   const [loomVideoUrl, setLoomVideoUrl] = useState(listing.loom_video_url ?? "");
@@ -563,7 +560,12 @@ export default function ListingEditForm({
         uploadNewImages("copyright_notes", copyrightImages),
       ]);
 
-      setAssetRowsInitialJson(JSON.stringify(assetRows));
+      // Mirrors the instant-confirm logic updateListingFull() just applied
+      // server-side (src/lib/actions/listing-edit.ts): a save with at least
+      // one named asset row confirms the list right now; a save that
+      // cleared every row un-confirms it. Keeps this badge accurate without
+      // a round-trip re-fetch.
+      setAssetsConfirmedAt(assetRows.some((r) => r.name.trim()) ? new Date().toISOString() : null);
       setSaved(true);
       const dest = mode === "admin" ? "/dashboard/admin/listings" : "/dashboard/seller";
       setTimeout(() => router.push(dest), 1200);
@@ -571,16 +573,6 @@ export default function ListingEditForm({
       setError(err instanceof Error ? err.message : "Something went wrong saving the listing.");
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleConfirmAssets() {
-    setConfirmingAssets(true);
-    try {
-      await confirmListingAssets(listing.id);
-      setAssetsConfirmedAt(new Date().toISOString());
-    } finally {
-      setConfirmingAssets(false);
     }
   }
 
@@ -1213,26 +1205,22 @@ export default function ListingEditForm({
       )}
 
       <Section title="Sale Includes">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Assets included">
-            <textarea rows={3} value={saleIncludesAssets} onChange={(e) => setSaleIncludesAssets(e.target.value)} className={`${inputCls} w-full`} />
-          </Field>
-          <Field label="Post-sale support">
-            <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} className={`${inputCls} w-full`} />
-          </Field>
-        </div>
-      </Section>
+        <div className="flex flex-col gap-6">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Assets included">
+              <textarea rows={3} value={saleIncludesAssets} onChange={(e) => setSaleIncludesAssets(e.target.value)} className={`${inputCls} w-full`} />
+            </Field>
+            <Field label="Post-sale support">
+              <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} className={`${inputCls} w-full`} />
+            </Field>
+          </div>
 
-      <Section title="Structured Asset List" hint="Powers the buyer's Transfer Room after purchase — separate from the free-text summary above, which stays as-is.">
-        <AssetListEditor
-          rows={assetRows}
-          setRows={setAssetRows}
-          confirmedAt={assetsConfirmedAt}
-          onConfirm={handleConfirmAssets}
-          confirming={confirmingAssets}
-          pendingSave={assetRowsPendingSave}
-          showConfirm
-        />
+          <div>
+            <p className="mb-2 text-sm font-semibold text-ink">Structured Asset List</p>
+            <p className="mb-3 text-xs text-ink-faint">Powers the buyer&rsquo;s Transfer Room after purchase — separate from the free-text summary above, which stays as-is.</p>
+            <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={assetsConfirmedAt} />
+          </div>
+        </div>
       </Section>
 
       <div className="flex items-center gap-4 border-t border-rule pt-8">
