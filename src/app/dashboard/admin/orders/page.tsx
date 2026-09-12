@@ -27,6 +27,15 @@ export default async function AdminOrders() {
     const listingById = new Map((listings ?? []).map((l) => [l.id, l.title as string]));
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name as string | null]));
 
+    // Asset Transfer System v2 — which of these orders already have a
+    // Transfer Room, so the table can show "Start Asset Transfer" only
+    // where there's actually nothing yet (see AdminOrderRow.hasTransferRoom).
+    const orderIds = (orders ?? []).map((o) => o.id);
+    const { data: rooms } = orderIds.length
+      ? await admin.from("asset_transfer_rooms").select("order_id").in("order_id", orderIds)
+      : { data: [] as { order_id: string }[] };
+    const orderIdsWithRoom = new Set((rooms ?? []).map((r) => r.order_id));
+
     rows = (orders ?? []).map((o) => ({
       id: o.id,
       listingTitle: listingById.get(o.listing_id) ?? "Listing",
@@ -41,6 +50,7 @@ export default async function AdminOrders() {
       sslcommerzBdtAmount:
         o.sslcommerz_bdt_amount === null || o.sslcommerz_bdt_amount === undefined ? undefined : Number(o.sslcommerz_bdt_amount),
       sslcommerzRate: o.sslcommerz_rate === null || o.sslcommerz_rate === undefined ? undefined : Number(o.sslcommerz_rate),
+      hasTransferRoom: orderIdsWithRoom.has(o.id),
     }));
   }
 

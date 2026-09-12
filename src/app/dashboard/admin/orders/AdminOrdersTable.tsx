@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { StatusBadge } from "@/components/ui/Badge";
 import { fmtUSD } from "@/lib/format";
-import { setOrderStatus, setOrderPaymentChannel } from "../actions";
+import { setOrderStatus, setOrderPaymentChannel, startAssetTransfer } from "../actions";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
 
 export interface AdminOrderRow {
@@ -20,19 +20,31 @@ export interface AdminOrderRow {
   remainderUsd: number | undefined;
   sslcommerzBdtAmount: number | undefined;
   sslcommerzRate: number | undefined;
+  // Asset Transfer System v2 — whether a Transfer Room already exists for
+  // this order. Drives the "Start Asset Transfer" button below: shown only
+  // when payment has landed (in_escrow/in_durqo) and no room exists yet —
+  // which, since 2026-09-12, is the normal state for a SSLCommerz order
+  // with money still owed (remainder_usd > 0), held back on purpose until
+  // the site owner has collected the rest by hand. It's also a manual
+  // recovery path for any order whose webhook-triggered auto-create ever
+  // failed silently.
+  hasTransferRoom: boolean;
 }
 
-const STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
+const STATUSES = ["requested", "awaiting_payment", "in_escrow", "in_durqo", "completed", "cancelled"] as const;
 
-// Display labels only — the underlying status values (requested,
-// awaiting_payment, in_escrow, completed, cancelled) are unchanged in the
+// Display labels only — the underlying status values are unchanged in the
 // database; these are just friendlier wording for the same lifecycle:
-// buyer hasn't paid yet -> paid and held in escrow -> released to the
-// seller.
+// buyer hasn't paid yet -> paid (held by Escrow.com, or sitting with Durqo
+// directly) -> released to the seller. Since 2026-09-12, "in_escrow" is
+// used only for orders actually paid through Escrow.com; every other paid
+// order (Stripe, SSLCommerz, Pay Later) uses "in_durqo" instead, since that
+// money isn't held by any neutral third party.
 const STATUS_LABEL: Record<string, string> = {
   requested: "Payment Requested",
   awaiting_payment: "Awaiting Payment",
-  in_escrow: "Payment Received from Buyer",
+  in_escrow: "Held by Escrow.com",
+  in_durqo: "Payment Received (Durqo)",
   completed: "Payment Released to Seller",
   cancelled: "Payment Cancelled",
 };
@@ -70,6 +82,26 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
   const [pendingChannelId, setPendingChannelId] = useState<string | null>(null);
   const [errorChannelId, setErrorChannelId] = useState<string | null>(null);
   const [isChannelPending, startChannelTransition] = useTransition();
+
+  const [pendingTransferId, setPendingTransferId] = useState<string | null>(null);
+  const [errorTransferId, setErrorTransferId] = useState<string | null>(null);
+  const [startedTransferIds, setStartedTransferIds] = useState<string[]>([]);
+  const [isTransferPending, startTransferTransition] = useTransition();
+
+  function startTransfer(id: string) {
+    setPendingTransferId(id);
+    setErrorTransferId(null);
+    startTransferTransition(async () => {
+      try {
+        await startAssetTransfer(id);
+        setStartedTransferIds((prev) => [...prev, id]);
+      } catch {
+        setErrorTransferId(id);
+      } finally {
+        setPendingTransferId(null);
+      }
+    });
+  }
 
   function changeStatus(id: string, status: string) {
     setPendingId(id);
@@ -116,6 +148,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
               <th className="px-4 py-3 font-medium">Amount</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Payment Channel</th>
+              <th className="px-4 py-3 font-medium">Asset Transfer</th>
               <th className="px-4 py-3 font-medium">Date</th>
             </tr>
           </thead>
@@ -123,6 +156,9 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
             {rows.map((o) => {
               const busy = isPending && pendingId === o.id;
               const channelBusy = isChannelPending && pendingChannelId === o.id;
+              const transferBusy = isTransferPending && pendingTransferId === o.id;
+              const hasRoom = o.hasTransferRoom || startedTransferIds.includes(o.id);
+              const paymentLanded = o.status === "in_escrow" || o.status === "in_durqo";
               return (
                 <tr key={o.id} className="border-b border-rule align-top last:border-b-0">
                   <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
@@ -166,6 +202,25 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                     </select>
                     {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
                   </td>
+                  <td className="px-4 py-3">
+                    {hasRoom ? (
+                      <span className="text-xs text-ink-faint">Room open</span>
+                    ) : paymentLanded ? (
+                      <>
+                        <button
+                          type="button"
+                          disabled={transferBusy}
+                          onClick={() => startTransfer(o.id)}
+                          className="rounded-md border border-rule-strong bg-transparent px-2 py-1 text-xs font-medium text-ink hover:bg-paper-raised disabled:opacity-60"
+                        >
+                          {transferBusy ? "Starting…" : "Start Asset Transfer"}
+                        </button>
+                        {errorTransferId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t start — try again.</div>}
+                      </>
+                    ) : (
+                      <span className="text-xs text-ink-faint">—</span>
+                    )}
+                  </td>
                   <td className="mono px-4 py-3 text-ink-faint">{o.createdAt}</td>
                 </tr>
               );
@@ -179,6 +234,9 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
         {rows.map((o) => {
           const busy = isPending && pendingId === o.id;
           const channelBusy = isChannelPending && pendingChannelId === o.id;
+          const transferBusy = isTransferPending && pendingTransferId === o.id;
+          const hasRoom = o.hasTransferRoom || startedTransferIds.includes(o.id);
+          const paymentLanded = o.status === "in_escrow" || o.status === "in_durqo";
           return (
             <div key={o.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-2 flex items-start justify-between gap-2">
@@ -230,6 +288,26 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                 </select>
                 {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
               </div>
+              {(hasRoom || paymentLanded) && (
+                <div className="mt-3">
+                  <label className="mb-1 block text-xs text-ink-faint">Asset Transfer</label>
+                  {hasRoom ? (
+                    <span className="text-xs text-ink-faint">Room open</span>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        disabled={transferBusy}
+                        onClick={() => startTransfer(o.id)}
+                        className="mono block w-full rounded-md border border-rule-strong bg-transparent px-2 py-1.5 text-xs font-medium text-ink disabled:opacity-60"
+                      >
+                        {transferBusy ? "Starting…" : "Start Asset Transfer"}
+                      </button>
+                      {errorTransferId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t start — try again.</div>}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
