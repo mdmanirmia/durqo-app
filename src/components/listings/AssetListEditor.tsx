@@ -14,9 +14,18 @@ function emptyRow(): AssetRow {
 // System v2 (feasibility report, Part 1: "100% seller-authored — no
 // category templates, no auto-suggestion, no AI-derived asset list,
 // ever"). Deliberately just four plain text fields per row, no dropdowns
-// or suggestions of any kind. Lives inside the "Sale Includes" section
-// itself (merged there 2026-09-12 — this used to be a separate
-// "Structured Asset List" section below it).
+// or suggestions of any kind.
+//
+// IS "Assets included" now (2026-09-12, per the site owner's explicit
+// correction) — not a second, separately-named thing living underneath
+// it. There used to be a free-text "Assets included" textarea plus this
+// component under its own "Structured Asset List" heading below; both the
+// separate heading and the free-text box are gone. The caller renders this
+// directly under a plain "Assets included" label (see ListingEditForm.tsx
+// / seller/listings/new/page.tsx), and the old free-text column is now
+// auto-derived from these same rows' names rather than typed separately —
+// exactly what buyers see, what confirms instantly, and what freezes into
+// the Transfer Room are all one and the same list.
 //
 // Confirmation used to be a separate manual step (a "Confirm this list"
 // button, gated on saving first) — removed 2026-09-12 per the site owner's
@@ -54,7 +63,7 @@ export default function AssetListEditor({
   return (
     <div className="flex flex-col gap-4">
       <p className="text-xs text-ink-faint">
-        This is the exact list buyers will see, and — the moment you save — the exact list frozen into their Transfer Room when they pay. Only what you enter here, nothing auto-generated.
+        Add each asset the buyer is getting. This exact list is what buyers see on the listing, confirms the moment you save, and freezes into their Transfer Room when they pay — nothing auto-generated, only what you enter here.
       </p>
 
       <div className="flex flex-col gap-3">

@@ -200,7 +200,15 @@ export default function ListingEditForm({
   const [price, setPrice] = useState(String(listing.price ?? ""));
   const [discountedPrice, setDiscountedPrice] = useState(listing.discounted_price != null ? String(listing.discounted_price) : "");
   const [overview, setOverview] = useState(listing.overview ?? "");
-  const [saleIncludesAssets, setSaleIncludesAssets] = useState(listing.sale_includes_assets ?? "");
+  // "Assets included" no longer has its own free-text box (2026-09-12, per
+  // the site owner: there should be one place to add assets, not a
+  // paragraph AND a structured list saying the same thing twice). The
+  // structured rows below are now the only input; sale_includes_assets is
+  // derived from their names at save time (see the `assetsSummaryText`
+  // computation near handleSave). `initialSaleIncludesAssets` is kept only
+  // as a fallback for a listing that has old free-text content but no
+  // structured rows yet, so saving unrelated fields never blanks it out.
+  const initialSaleIncludesAssets = listing.sale_includes_assets ?? "";
   const [saleIncludesSupport, setSaleIncludesSupport] = useState(listing.sale_includes_support ?? "");
 
   // Asset Transfer System v2's structured asset list — see
@@ -498,6 +506,14 @@ export default function ListingEditForm({
         };
       }
 
+      // The public listing page's "Assets included" text now comes straight
+      // from the named asset rows above — one list, not a paragraph typed
+      // separately from it. A listing that hasn't adopted the structured
+      // list yet (no named rows) keeps whatever free-text it already had,
+      // so saving an unrelated field never blanks out older listings.
+      const namedAssetNames = assetRows.filter((r) => r.name.trim()).map((r) => r.name.trim());
+      const assetsSummaryText = namedAssetNames.length ? namedAssetNames.join(", ") : initialSaleIncludesAssets;
+
       await updateListingFull(listing.id, {
         title,
         categoryId,
@@ -506,7 +522,7 @@ export default function ListingEditForm({
         price: Number(price),
         discountedPrice: discountedPrice ? Number(discountedPrice) : null,
         overview,
-        saleIncludesAssets,
+        saleIncludesAssets: assetsSummaryText,
         saleIncludesSupport,
         listingAssets: assetRows,
         quickStatColumns,
@@ -1206,20 +1222,12 @@ export default function ListingEditForm({
 
       <Section title="Sale Includes">
         <div className="flex flex-col gap-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Assets included">
-              <textarea rows={3} value={saleIncludesAssets} onChange={(e) => setSaleIncludesAssets(e.target.value)} className={`${inputCls} w-full`} />
-            </Field>
-            <Field label="Post-sale support">
-              <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} className={`${inputCls} w-full`} />
-            </Field>
-          </div>
-
-          <div>
-            <p className="mb-2 text-sm font-semibold text-ink">Structured Asset List</p>
-            <p className="mb-3 text-xs text-ink-faint">Powers the buyer&rsquo;s Transfer Room after purchase — separate from the free-text summary above, which stays as-is.</p>
+          <Field label="Assets included">
             <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={assetsConfirmedAt} />
-          </div>
+          </Field>
+          <Field label="Post-sale support">
+            <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} className={`${inputCls} w-full`} />
+          </Field>
         </div>
       </Section>
 
