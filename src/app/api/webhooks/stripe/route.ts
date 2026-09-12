@@ -122,16 +122,34 @@ export async function POST(request: Request) {
               `New purchase completed — ${purchasedListings?.length ?? 0} listing(s)`,
               `<p>${buyerEmail ?? "A buyer"} completed checkout for:</p>
                <ul>${itemsHtml}</ul>
-               <p>Total: $${total.toLocaleString()}</p>`
+               <p>Total: $${total.toLocaleString()}</p>
+               <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
             );
 
             if (buyerEmail) {
+              // Every ready Transfer Room among this buyer's just-purchased
+              // listings — usually one, but a multi-item checkout can create
+              // more than one order/room in the same webhook call. Mirrors
+              // the Escrow.com webhook's buyer CTA, extended here since
+              // Stripe's checkout flow now also redirects the buyer straight
+              // into the room (see Task #190) — the email is a fallback for
+              // whenever that redirect doesn't happen (e.g. tab closed).
+              const readyOrderIds = (purchasedListings ?? [])
+                .map((l) => orderIdByListingId.get(l.id as string))
+                .filter((id): id is string => !!id && roomReadyOrderIds.has(id));
+              const transferCtaHtml = readyOrderIds.length
+                ? `<p>Your Transfer Room${readyOrderIds.length > 1 ? "s are" : " is"} open — head there to track the handover and confirm receipt once the seller transfers the assets.</p>${readyOrderIds
+                    .map((id) => transferRoomEmailCta(origin, id))
+                    .join("")}`
+                : "";
+
               await sendEmail(
                 buyerEmail,
                 "Your Durqo purchase is confirmed",
                 `<p>Thanks for your purchase — here's what you bought:</p>
                  <ul>${itemsHtml}</ul>
-                 <p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>`
+                 <p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>
+                 ${transferCtaHtml}`
               );
             }
 
