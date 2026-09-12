@@ -88,6 +88,27 @@ h1, h2, h3, h4 {
   text-wrap: balance;
 }
 
+/* 2026-09-12 dashboard audit: a CSS-only "there's more to the left/right"
+   hint for any horizontally-scrollable container (first applied to the
+   Admin Orders table, whose 7 columns can still need a scroll on a normal
+   laptop width). Two solid-color layers matching the page background cover
+   the ends and scroll WITH the content (background-attachment: local), so
+   they only reveal the thin shadow layers underneath — which stay fixed to
+   the viewport (background-attachment: scroll) — once there's actually
+   unscrolled content on that side. No JS scroll listener needed. */
+.scroll-shadow-x {
+  background-repeat: no-repeat;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(to right, var(--paper), var(--paper)),
+    linear-gradient(to right, var(--paper), var(--paper)),
+    linear-gradient(to right, rgba(15, 23, 42, 0.14), rgba(15, 23, 42, 0)),
+    linear-gradient(to left, rgba(15, 23, 42, 0.14), rgba(15, 23, 42, 0));
+  background-position: left center, right center, left center, right center;
+  background-size: 24px 100%, 24px 100%, 10px 100%, 10px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
 /* Sitewide body-copy justification (Sep 5, 2026, per an explicit "sob
    likha justify hobe" request — all writing across the site, including
    every listing's text, should be justified). Scoped to paragraphs and
