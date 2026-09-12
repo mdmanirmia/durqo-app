@@ -15,6 +15,7 @@ import {
   X,
   Loader2,
   ShieldAlert,
+  Wallet,
 } from "lucide-react";
 import { fmtUSD } from "@/lib/format";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
@@ -615,7 +616,25 @@ function NextActionCard({
       body = "This transfer is under review by a Durqo admin. Funds are never released automatically — you'll hear back once it's resolved.";
       break;
     case "payout_eligible":
-      body = "Transfer approved. The seller's payout for this order is now eligible for withdrawal.";
+      if (isBuyer) {
+        body = "You approved the transfer. The seller has been notified and can now withdraw the payout for this order.";
+      } else if (data.orderStatus === "completed") {
+        // orderStatus flips to "completed" only for non-escrow_com orders
+        // (migration 039) — exactly the condition that also makes the order
+        // withdrawable, so this doubles as the seller-side payout-ready check
+        // without needing a separate payment-channel field on this data shape.
+        body = "The buyer has approved the transfer. You're now eligible to withdraw your money for this order.";
+        action = (
+          <Link
+            href="/dashboard/seller/earnings"
+            className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-md bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-hover"
+          >
+            <Wallet size={15} /> Withdraw Now
+          </Link>
+        );
+      } else {
+        body = "The buyer has approved the transfer. Funds for this order are released on Escrow.com's platform.";
+      }
       break;
     case "resolved_settlement":
       body = "This transfer was resolved with a settlement recorded by a Durqo admin.";
