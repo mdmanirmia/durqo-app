@@ -23,6 +23,13 @@ function revalidateRoom(orderId: string) {
   revalidatePath(`/dashboard/transfer/${orderId}`);
   revalidatePath("/dashboard/seller/orders");
   revalidatePath("/dashboard/buyer/orders");
+  // approveTransfer() (below) can flip the order to 'completed' as of
+  // migration 039 — the seller's available-balance figure on this page is
+  // keyed off exactly that, so it needs to reflect the change right away
+  // rather than waiting for its own next unrelated revalidation. Harmless
+  // to call for the other actions in this file too, which never touch
+  // orders.status.
+  revalidatePath("/dashboard/seller/earnings");
 }
 
 export async function markItemInProgress(orderId: string, itemId: string) {
