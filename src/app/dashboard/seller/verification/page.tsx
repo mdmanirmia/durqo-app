@@ -125,13 +125,39 @@ export default function VerificationPage() {
               multiple
               accept="image/*,.pdf"
               className="hidden"
-              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+              onChange={(e) => {
+                // 2026-09-12 fix: this used to replace the whole file list on
+                // every picker open (setFiles(Array.from(...))), unlike every
+                // other uploader in the dashboard (listing image galleries),
+                // which append. A seller uploading the ID front, then
+                // reopening the picker to add the back, silently lost the
+                // front photo with no warning. Appends and de-dupes by
+                // name+size so re-selecting the same file twice doesn't list
+                // it twice; also resets the input's value so choosing the
+                // exact same file again still fires onChange.
+                const picked = Array.from(e.target.files ?? []);
+                setFiles((prev) => {
+                  const existingKeys = new Set(prev.map((f) => `${f.name}:${f.size}`));
+                  const additions = picked.filter((f) => !existingKeys.has(`${f.name}:${f.size}`));
+                  return [...prev, ...additions];
+                });
+                e.target.value = "";
+              }}
             />
           </label>
           {files.length > 0 && (
             <ul className="mb-4 mt-2 flex flex-col gap-1 text-sm text-ink-soft">
-              {files.map((f) => (
-                <li key={f.name}>{f.name}</li>
+              {files.map((f, i) => (
+                <li key={`${f.name}:${f.size}`} className="flex items-center justify-between gap-2 rounded-md border border-rule bg-paper-raised px-3 py-1.5">
+                  <span className="truncate">{f.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="shrink-0 text-xs font-medium text-ink-faint hover:text-danger"
+                  >
+                    Remove
+                  </button>
+                </li>
               ))}
             </ul>
           )}
