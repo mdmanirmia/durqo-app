@@ -299,27 +299,54 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
   revalidatePath("/");
   revalidatePath("/buy");
 
-  // Best-effort admin notification — only for a seller editing their own
-  // listing, never for an admin's own edit (that would just be self-noise).
-  // Failures here never surface to the seller: sendEmail already swallows
-  // its own errors, same as every other notification in this codebase.
-  if (!isAdmin) {
-    const [{ data: sellerProfile }, emails] = await Promise.all([
-      admin.from("profiles").select("full_name").eq("id", sellerId).single(),
-      getUserEmails(admin, [sellerId]),
-    ]);
-    const sellerName = sellerProfile?.full_name || "A seller";
-    const sellerEmail = emails[sellerId];
+  // Best-effort notifications — a seller editing their own listing notifies
+  // admin (as before) AND now gets their own confirmation email; an admin
+  // editing someone else's listing (this same function is shared by both
+  // edit forms — see the module comment above) now notifies the seller,
+  // which previously sent no email at all. Failures here never surface to
+  // the caller: sendEmail already swallows its own errors, same as every
+  // other notification in this codebase.
+  try {
     const hdrs = await headers();
     const host = hdrs.get("host");
     const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
+    const listingUrl = `${origin}/listing/${listingId}`;
 
-    await sendEmail(
-      ADMIN_EMAIL,
-      `Listing updated — ${fields.title}`,
-      `<p>${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""} updated their listing "${fields.title}".</p>
-       <p><a href="${origin}/dashboard/admin/listings">Review it in the admin dashboard</a>.</p>`
-    );
+    if (!isAdmin) {
+      const [{ data: sellerProfile }, emails] = await Promise.all([
+        admin.from("profiles").select("full_name").eq("id", sellerId).single(),
+        getUserEmails(admin, [sellerId]),
+      ]);
+      const sellerName = sellerProfile?.full_name || "A seller";
+      const sellerEmail = emails[sellerId];
+
+      await sendEmail(
+        ADMIN_EMAIL,
+        `Listing updated — ${fields.title}`,
+        `<p>${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""} updated their listing "${fields.title}".</p>
+         <p><a href="${origin}/dashboard/admin/listings">Review it in the admin dashboard</a>.</p>`
+      );
+      if (sellerEmail) {
+        await sendEmail(
+          sellerEmail,
+          `Your listing "${fields.title}" was updated`,
+          `<p>Your changes to "${fields.title}" have been saved.</p><p><a href="${listingUrl}">View your listing</a></p>`
+        );
+      }
+    } else {
+      const emails = await getUserEmails(admin, [sellerId]);
+      const sellerEmail = emails[sellerId];
+      if (sellerEmail) {
+        await sendEmail(
+          sellerEmail,
+          `Your listing "${fields.title}" was updated by Durqo`,
+          `<p>An admin made changes to your listing "${fields.title}". Please review it to make sure everything looks right.</p>
+           <p><a href="${listingUrl}">View your listing</a></p>`
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[listing-edit] updateListingFull notification emails failed:", err);
   }
 }
 

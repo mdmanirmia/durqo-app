@@ -1,7 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
+import { getUserEmails } from "@/lib/notifications";
+import { transferRoomEmailCta } from "@/lib/asset-transfer-room";
 
 // Thin Server Action wrappers around the SECURITY DEFINER RPCs from
 // migration 037 (supabase/migrations/037_asset_transfer_system_rpcs.sql).
@@ -58,6 +63,64 @@ export async function approveTransfer(orderId: string, roomId: string) {
   const { error } = await supabase.rpc("transfer_approve", { p_room_id: roomId });
   if (error) throw new Error(error.message);
   revalidateRoom(orderId);
+
+  // Best-effort confirmation emails to buyer, seller, and admin — the
+  // buyer's own action already succeeded via the RPC above, so a failure
+  // here (a lookup throwing, or sendEmail's own internal no-op/failure)
+  // must never surface as an error on what is otherwise a completed
+  // approval. Uses the admin/service-role client purely for the
+  // notification side-channel (resolving emails, reading the room/order for
+  // context) — never to re-run or second-guess the RPC's own authorization.
+  try {
+    const admin = createAdminClient();
+    if (admin) {
+      const { data: room } = await admin
+        .from("asset_transfer_rooms")
+        .select("buyer_id, seller_id, stage")
+        .eq("id", roomId)
+        .single();
+      if (room) {
+        const { data: order } = await admin.from("orders").select("listing_id").eq("id", orderId).maybeSingle();
+        const { data: listing } = order
+          ? await admin.from("listings").select("title").eq("id", order.listing_id).maybeSingle()
+          : { data: null };
+        const title = listing?.title ?? "your listing";
+
+        const emails = await getUserEmails(admin, [room.buyer_id as string, room.seller_id as string]);
+        const buyerEmail = emails[room.buyer_id as string];
+        const sellerEmail = emails[room.seller_id as string];
+
+        const hdrs = await headers();
+        const host = hdrs.get("host");
+        const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
+        const cta = transferRoomEmailCta(origin, orderId);
+
+        if (buyerEmail) {
+          await sendEmail(
+            buyerEmail,
+            `You confirmed receipt — "${title}"`,
+            `<p>You've confirmed receipt of the assets for "${title}". Thanks for using Durqo!</p>${cta}`
+          );
+        }
+        if (sellerEmail) {
+          await sendEmail(
+            sellerEmail,
+            `Transfer approved — "${title}" is ready for payout`,
+            `<p>The buyer has confirmed receipt of the assets for "${title}". Your payout is now eligible — head to your Earnings page to request a withdrawal.</p>
+             <p><a href="${origin}/dashboard/seller/earnings">Go to Earnings</a></p>`
+          );
+        }
+        await sendEmail(
+          ADMIN_EMAIL,
+          `Transfer approved — "${title}"`,
+          `<p>The buyer approved the asset transfer for "${title}" (order ${orderId}).</p>
+           <p><a href="${origin}/dashboard/admin/transfers">Review in admin dashboard</a></p>`
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[transfer] approveTransfer notification emails failed:", err);
+  }
 }
 
 export async function reportIssue(orderId: string, roomId: string, itemId: string | null, category: string, explanation: string) {
