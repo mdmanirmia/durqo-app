@@ -3,7 +3,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listing-assets-gate";
-import { payLaterEnabled, maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
+import {
+  payLaterEnabled,
+  maybeCreateTransferRoomsOnPayment,
+  transferRoomEmailCta,
+  buyerTransferGuidanceHtml,
+  sellerTransferGuidanceHtml,
+  listingLinkHtml,
+} from "@/lib/asset-transfer-room";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
 
@@ -138,7 +145,7 @@ export async function POST(request: Request) {
     await sendEmail(
       ADMIN_EMAIL,
       `New Pay Later "purchase" — ${listing.title}`,
-      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy "${listing.title}" for $${price.toLocaleString()} — no payment was actually collected.</p>
+      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy ${listingLinkHtml(origin, listing.id as string, listing.title as string)} for $${price.toLocaleString()} — no payment was actually collected.</p>
        <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
     );
 
@@ -154,8 +161,8 @@ export async function POST(request: Request) {
          <p>This purchase was made using Pay Later — arrange payment directly with our team as agreed.</p>
          ${
            roomReady
-             ? `<p>Your Transfer Room is open — head there to track the handover and confirm receipt once the seller transfers the assets.</p>${transferRoomEmailCta(origin, insertedOrder.id)}`
-             : ""
+             ? `${buyerTransferGuidanceHtml()}${transferRoomEmailCta(origin, insertedOrder.id)}`
+             : `<p>We'll email you as soon as your Transfer Room is ready, with a link and step-by-step guidance for receiving the assets.</p>`
          }`
       );
     }
@@ -167,7 +174,7 @@ export async function POST(request: Request) {
         `<p>Good news — "${listing.title}" sold via Pay Later for $${price.toLocaleString()}.</p>
          ${
            roomReady
-             ? `<p>The buyer's Transfer Room is open now — head there to start transferring the assets.</p>${transferRoomEmailCta(origin, insertedOrder.id)}`
+             ? `${sellerTransferGuidanceHtml()}${transferRoomEmailCta(origin, insertedOrder.id)}`
              : `<p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
          }`
       );
