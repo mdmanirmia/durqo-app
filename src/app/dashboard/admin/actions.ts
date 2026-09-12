@@ -6,7 +6,7 @@ import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
-import { transferRoomEmailCta } from "@/lib/asset-transfer-room";
+import { transferRoomEmailCta, buyerTransferGuidanceHtml, sellerTransferGuidanceHtml } from "@/lib/asset-transfer-room";
 
 // Shared by every best-effort notification block below — resolves the
 // request's own host so links always point at whatever origin the admin is
@@ -210,14 +210,14 @@ export async function startAssetTransfer(orderId: string) {
         await sendEmail(
           buyerEmail,
           `Your Transfer Room is open — "${title}"`,
-          `<p>Your Transfer Room for "${title}" is now open. Head there to start receiving the assets from the seller.</p>${cta}`
+          `<p>Your Transfer Room for "${title}" is now open.</p>${buyerTransferGuidanceHtml()}${cta}`
         );
       }
       if (sellerEmail) {
         await sendEmail(
           sellerEmail,
           `Your Transfer Room is open — "${title}"`,
-          `<p>Your Transfer Room for "${title}" is now open. Head there to start transferring the assets to the buyer.</p>${cta}`
+          `<p>Your Transfer Room for "${title}" is now open.</p>${sellerTransferGuidanceHtml()}${cta}`
         );
       }
     }
