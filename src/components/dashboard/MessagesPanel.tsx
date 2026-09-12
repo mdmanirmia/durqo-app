@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { Send } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import DashboardShell, { DashboardNavItem } from "./DashboardShell";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -37,6 +37,19 @@ export default function MessagesPanel({
   const [myId, setMyId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<ConversationSummary[] | null>(null);
   const [selected, setSelected] = useState<ThreadTarget | null>(null);
+  // 2026-09-12 dashboard audit fix: below `sm` this panel used to just stack
+  // the conversation list and the open thread in one unbounded column — no
+  // height limit, no back button, so reaching the thread meant scrolling
+  // past the entire list first, and there was no way back to the list short
+  // of scrolling back up. Below `sm` now shows exactly one of the two
+  // panes, toggled by this flag, inside a viewport-relative bounded height
+  // (see the container className below) — a normal single-pane chat view.
+  // Left false on the initial "just open the first conversation" default so
+  // a plain visit to Messages still lands on the list first, same as a
+  // buyer opening WhatsApp; true is only set here for the ?with= deep-link
+  // case below (arriving specifically "to message this seller"), and
+  // whenever a conversation is actually tapped.
+  const [mobileShowThread, setMobileShowThread] = useState(false);
   const [thread, setThread] = useState<MessageRow[] | null>(null);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -74,9 +87,13 @@ export default function MessagesPanel({
         const existing = convos.find((c) => c.otherUserId === withId && c.listingId === listingId);
         if (existing) {
           setSelected(existing);
+          setMobileShowThread(true);
         } else {
           const info = await getNewConversationInfo(withId, listingId);
-          if (!cancelled && info) setSelected(info);
+          if (!cancelled && info) {
+            setSelected(info);
+            setMobileShowThread(true);
+          }
         }
       } else if (convos.length > 0) {
         setSelected(convos[0]);
@@ -213,28 +230,40 @@ export default function MessagesPanel({
       ) : conversations.length === 0 && !selected ? (
         <p className="text-sm text-ink-faint">No conversations yet — message a seller from any listing page to start one.</p>
       ) : (
-        <div className="grid overflow-hidden rounded-xl border border-rule sm:h-[520px] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
-          {/* Conversation list */}
-          <div className="flex min-h-0 flex-col overflow-y-auto border-b border-rule bg-paper-raised sm:border-b-0 sm:border-r">
+        <div className="grid h-[70vh] overflow-hidden rounded-xl border border-rule sm:h-[520px] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
+          {/* Conversation list — below sm, hidden once a thread is open
+              (mobileShowThread); always visible at sm+ regardless. */}
+          <div
+            className={clsx(
+              "min-h-0 flex-col overflow-y-auto border-b border-rule bg-paper-raised sm:flex sm:border-b-0 sm:border-r",
+              mobileShowThread ? "hidden" : "flex"
+            )}
+          >
             {conversations.map((c) => {
               const active = selected?.otherUserId === c.otherUserId && selected?.listingId === c.listingId;
               return (
                 <button
                   key={`${c.listingId}:${c.otherUserId}`}
                   type="button"
-                  onClick={() => setSelected(c)}
+                  onClick={() => {
+                    setSelected(c);
+                    setMobileShowThread(true);
+                  }}
                   className={clsx(
                     "flex flex-col gap-0.5 border-b border-rule px-4 py-3 text-left last:border-b-0",
                     active ? "bg-brand-soft" : "hover:bg-paper-sunk"
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-sm font-semibold">{c.otherUserName}</span>
-                    {c.unreadCount > 0 && (
-                      <span className="mono grid h-4 min-w-4 shrink-0 place-items-center rounded-full bg-brand px-1 text-[0.62rem] font-semibold leading-none text-white">
-                        {c.unreadCount}
-                      </span>
-                    )}
+                    <span className="truncate text-sm font-semibold">{c.otherUserName}</span>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <span className="text-[0.65rem] text-ink-faint">{timeLabel(c.lastMessageAt)}</span>
+                      {c.unreadCount > 0 && (
+                        <span className="mono grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[0.62rem] font-semibold leading-none text-white">
+                          {c.unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <span className="text-xs text-ink-faint">{c.listingTitle}</span>
                   <span className="line-clamp-1 text-xs text-ink-soft">{c.lastMessage}</span>
@@ -243,15 +272,27 @@ export default function MessagesPanel({
             })}
           </div>
 
-          {/* Thread */}
-          <div className="flex min-h-0 flex-col">
+          {/* Thread — below sm, hidden until a conversation is tapped; the
+              back button here (sm:hidden) is the only way to return to the
+              list on a phone. Always visible at sm+ alongside the list. */}
+          <div className={clsx("min-h-0 flex-col sm:flex", mobileShowThread ? "flex" : "hidden")}>
             {!selected ? (
               <div className="flex flex-grow items-center justify-center p-6 text-sm text-ink-faint">Select a conversation</div>
             ) : (
               <>
-                <div className="border-b border-rule bg-paper-raised px-4 py-3">
-                  <p className="text-sm font-semibold">{selected.otherUserName}</p>
-                  <p className="text-xs text-ink-faint">{selected.listingTitle}</p>
+                <div className="flex items-center gap-2 border-b border-rule bg-paper-raised px-3 py-3 sm:px-4">
+                  <button
+                    type="button"
+                    onClick={() => setMobileShowThread(false)}
+                    aria-label="Back to conversations"
+                    className="-ml-1 shrink-0 rounded-md p-1 text-ink-soft hover:bg-paper-sunk sm:hidden"
+                  >
+                    <ArrowLeft size={18} />
+                  </button>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">{selected.otherUserName}</p>
+                    <p className="truncate text-xs text-ink-faint">{selected.listingTitle}</p>
+                  </div>
                 </div>
 
                 <div className="flex min-h-0 flex-grow flex-col gap-2 overflow-y-auto p-4">
