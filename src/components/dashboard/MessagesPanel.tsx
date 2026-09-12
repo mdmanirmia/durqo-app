@@ -213,9 +213,9 @@ export default function MessagesPanel({
       ) : conversations.length === 0 && !selected ? (
         <p className="text-sm text-ink-faint">No conversations yet — message a seller from any listing page to start one.</p>
       ) : (
-        <div className="grid overflow-hidden rounded-xl border border-rule sm:grid-cols-[240px_1fr] sm:h-[520px]">
+        <div className="grid overflow-hidden rounded-xl border border-rule sm:h-[520px] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
           {/* Conversation list */}
-          <div className="flex flex-col overflow-y-auto border-b border-rule bg-paper-raised sm:border-b-0 sm:border-r">
+          <div className="flex min-h-0 flex-col overflow-y-auto border-b border-rule bg-paper-raised sm:border-b-0 sm:border-r">
             {conversations.map((c) => {
               const active = selected?.otherUserId === c.otherUserId && selected?.listingId === c.listingId;
               return (
@@ -244,7 +244,7 @@ export default function MessagesPanel({
           </div>
 
           {/* Thread */}
-          <div className="flex flex-col">
+          <div className="flex min-h-0 flex-col">
             {!selected ? (
               <div className="flex flex-grow items-center justify-center p-6 text-sm text-ink-faint">Select a conversation</div>
             ) : (
@@ -254,7 +254,7 @@ export default function MessagesPanel({
                   <p className="text-xs text-ink-faint">{selected.listingTitle}</p>
                 </div>
 
-                <div className="flex flex-grow flex-col gap-2 overflow-y-auto p-4">
+                <div className="flex min-h-0 flex-grow flex-col gap-2 overflow-y-auto p-4">
                   {thread === null ? (
                     <p className="text-sm text-ink-faint">Loading&hellip;</p>
                   ) : thread.length === 0 ? (
