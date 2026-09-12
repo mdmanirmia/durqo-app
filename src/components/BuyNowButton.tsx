@@ -39,6 +39,16 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
   const isDemo = !isRealListingId(listingId);
   const locked = isDemo || sold;
 
+  // "Pay Later" — a 4th checkout option, live for every signed-in buyer
+  // (site owner's explicit decision, 2026-09-12, made after being told this
+  // means a listing can be marked "sold" and a real Transfer Room opened
+  // with no payment actually collected). Creates a real order + Transfer
+  // Room with no payment gateway involved at all. See
+  // api/pay-later/init/route.ts for the server-side kill switch
+  // (PAY_LATER_ENABLED env var) the site owner can flip off without a
+  // redeploy if this needs to come down.
+  const [payLaterBusy, setPayLaterBusy] = useState(false);
+
   // SSLCommerz confirm-modal state — "closed" means no modal is shown.
   const [sslStatus, setSslStatus] = useState<"closed" | "loading" | "ready" | "error">("closed");
   const [sslQuote, setSslQuote] = useState<SslcommerzQuote | null>(null);
@@ -145,6 +155,33 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
     }
   }
 
+  async function handlePayLater() {
+    if (payLaterBusy || locked || stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed") return;
+    setPayLaterBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/pay-later/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ listingId }),
+      });
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      const data = await res.json();
+      if (!res.ok || !data.orderId) {
+        setError(data.error ?? "Couldn't complete this. Please try again.");
+        setPayLaterBusy(false);
+        return;
+      }
+      router.push(`/dashboard/transfer/${data.orderId}`);
+    } catch {
+      setError("Couldn't complete this. Please try again.");
+      setPayLaterBusy(false);
+    }
+  }
+
   async function openEscrowModal() {
     if (stripeBusy || locked || sslStatus !== "closed") return;
     setError(null);
@@ -246,6 +283,14 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
       >
         Buy Now — Escrow.com
+      </button>
+      <button
+        type="button"
+        onClick={handlePayLater}
+        disabled={payLaterBusy || stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
+        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
+      >
+        {payLaterBusy ? "Starting…" : "Buy Now — Pay Later"}
       </button>
       {error && <span className="text-xs text-red-600">{error}</span>}
 
