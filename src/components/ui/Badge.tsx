@@ -50,6 +50,7 @@ const STATUS_MAP: Record<string, { label: string; tone: Tone }> = {
   requested: { label: "Requested", tone: "neutral" },
   awaiting_payment: { label: "Awaiting Payment", tone: "gold" },
   in_escrow: { label: "In Escrow", tone: "brand" },
+  in_durqo: { label: "Payment Received", tone: "brand" },
   completed: { label: "Completed", tone: "dark" },
   cancelled: { label: "Cancelled", tone: "danger" },
 };
