@@ -518,7 +518,12 @@ export default function ListingEditForm({
         title,
         categoryId,
         businessUrl: businessUrl || null,
-        location: categoryId === "websites" ? null : location || null,
+        // Websites and Domains both hide the Location field (see the
+        // visibility condition below) — null it for both so switching a
+        // listing to either category can't leave a stale value from an
+        // earlier category silently saved (2026-09-12 audit fix; this used
+        // to only check "websites").
+        location: categoryId === "websites" || categoryId === "domains" ? null : location || null,
         price: Number(price),
         discountedPrice: discountedPrice ? Number(discountedPrice) : null,
         overview,
