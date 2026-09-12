@@ -23,6 +23,10 @@ import {
 import Container from "@/components/ui/Container";
 import { COUNTS_CHANGED_EVENT } from "@/lib/count-events";
 import { getSellerUnansweredCommentsCount } from "@/lib/data/comments.client";
+import { createClient } from "@/lib/supabase/client";
+import { getUnreadMessageCount } from "@/lib/data/messages.client";
+import { getUnreadTransferMessagesCount } from "@/lib/data/transfer-messages.client";
+import { playNotificationSound } from "@/lib/notification-sound";
 
 // Nav items are defined in src/lib/dashboard-nav.ts, which several
 // dashboard pages import from Server Components — a lucide-react icon is a
@@ -78,6 +82,15 @@ function NavIcon({ name, size, className }: { name?: DashboardIconName; size: nu
 // reply, not a hardcoded number.
 const SELLER_COMMENTS_HREF = "/dashboard/seller/questions";
 
+// Two more live badges (2026-09-12 request: real-time messages + unread
+// counts + a notification sound, for both the general Messages inbox and a
+// Transfer Room's Deal Messages). Both buyer and seller nav have their own
+// href per feature, so each is checked as a set of two rather than one
+// constant like SELLER_COMMENTS_HREF above (which only ever exists on the
+// seller side).
+const MESSAGES_HREFS = ["/dashboard/buyer/messages", "/dashboard/seller/messages"];
+const TRANSFERS_HREFS = ["/dashboard/buyer/transfers", "/dashboard/seller/transfers"];
+
 // Mobile-width redesign (Sep 11, 2026): the desktop sidebar below is
 // untouched. Below md, it's replaced by two pieces that read the same `nav`
 // array — a section-switcher dropdown under the title (so every nav item
@@ -103,7 +116,11 @@ export default function DashboardShell({
 }) {
   const pathname = usePathname();
   const hasSellerCommentsNav = nav.some((item) => item.href === SELLER_COMMENTS_HREF);
+  const hasMessagesNav = nav.some((item) => MESSAGES_HREFS.includes(item.href));
+  const hasTransfersNav = nav.some((item) => TRANSFERS_HREFS.includes(item.href));
   const [commentsBadge, setCommentsBadge] = useState<number | undefined>(undefined);
+  const [messagesBadge, setMessagesBadge] = useState<number | undefined>(undefined);
+  const [transfersBadge, setTransfersBadge] = useState<number | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
 
@@ -124,6 +141,102 @@ export default function DashboardShell({
     // clicking from "Comments" to another tab right after replying should
     // still see the badge drop.
   }, [hasSellerCommentsNav, pathname]);
+
+  // Who's signed in — needed to scope both realtime subscriptions below to
+  // this user's own rows. Resolved once; both effects wait for it.
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled) setUserId(data.user?.id ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Live "Messages" badge + notification sound (2026-09-12 request). This
+  // is the ONE place the sound plays for the general Messages inbox — even
+  // on the Messages page itself, MessagesPanel only updates its own
+  // conversation list/thread from its realtime subscription and never
+  // plays a sound itself, since DashboardShell is mounted underneath it
+  // there too and would otherwise double it up. Requires `messages` to be
+  // in the `supabase_realtime` publication (migration 040).
+  useEffect(() => {
+    if (!hasMessagesNav || !userId) return;
+    let cancelled = false;
+    async function refetch() {
+      const count = await getUnreadMessageCount();
+      if (!cancelled) setMessagesBadge(count > 0 ? count : undefined);
+    }
+    refetch();
+    const supabase = createClient();
+    if (!supabase) return;
+    const channel = supabase
+      .channel(`dashboard-messages-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${userId}` },
+        () => {
+          playNotificationSound();
+          refetch();
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `recipient_id=eq.${userId}` },
+        refetch
+      )
+      .subscribe();
+    window.addEventListener(COUNTS_CHANGED_EVENT, refetch);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(COUNTS_CHANGED_EVENT, refetch);
+      supabase.removeChannel(channel);
+    };
+  }, [hasMessagesNav, userId, pathname]);
+
+  // Live "Asset Transfers" badge + notification sound for Deal Messages.
+  // Realtime can't filter on a joined column (a message row only carries
+  // room_id, not the room's buyer_id/seller_id), so this subscribes to the
+  // whole table with no `filter` — asset_transfer_messages_select's RLS
+  // policy is what actually restricts delivery to rooms this user is a
+  // party to, the same way Realtime authorizes every other subscription in
+  // this app. TransferRoomView.tsx runs its own separate subscription (for
+  // the open room's own Deal Messages panel) and neither one double-plays
+  // the other's sound: this one only fires on pages other than that room's
+  // own (TransferRoomView isn't wrapped in DashboardShell), and both check
+  // sender_id against `userId` before playing anything.
+  useEffect(() => {
+    if (!hasTransfersNav || !userId) return;
+    let cancelled = false;
+    async function refetch() {
+      const count = await getUnreadTransferMessagesCount();
+      if (!cancelled) setTransfersBadge(count > 0 ? count : undefined);
+    }
+    refetch();
+    const supabase = createClient();
+    if (!supabase) return;
+    const channel = supabase
+      .channel(`dashboard-transfer-messages-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "asset_transfer_messages" },
+        (payload) => {
+          const row = payload.new as { sender_id?: string };
+          if (row.sender_id && row.sender_id !== userId) playNotificationSound();
+          refetch();
+        }
+      )
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "asset_transfer_messages" }, refetch)
+      .subscribe();
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [hasTransfersNav, userId, pathname]);
 
   // No separate "close on route change" effect is needed: every dashboard
   // page renders its own <DashboardShell> directly rather than sharing one
@@ -154,7 +267,10 @@ export default function DashboardShell({
   }, [menuOpen]);
 
   function badgeFor(item: DashboardNavItem) {
-    return item.href === SELLER_COMMENTS_HREF ? commentsBadge : item.badge;
+    if (item.href === SELLER_COMMENTS_HREF) return commentsBadge;
+    if (MESSAGES_HREFS.includes(item.href)) return messagesBadge;
+    if (TRANSFERS_HREFS.includes(item.href)) return transfersBadge;
+    return item.badge;
   }
 
   const activeItem = nav.find((item) => item.href === pathname);

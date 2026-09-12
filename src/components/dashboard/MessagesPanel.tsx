@@ -83,6 +83,66 @@ export default function MessagesPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
+  // Real-time delivery (2026-09-12 request): without this, the OTHER
+  // party in a conversation only ever saw a new message after manually
+  // reloading the page — sendMessage()'s own re-fetch above only updates
+  // the sender's own view. Requires `messages` to be in the
+  // `supabase_realtime` publication (migration 040); RLS's own
+  // messages_select_involved policy is what keeps this scoped to rows this
+  // user is actually allowed to see, same as everywhere else Realtime is
+  // used in this app. Deliberately never plays a notification sound here —
+  // DashboardShell (which wraps this whole panel, see the render below)
+  // already owns that for the general Messages inbox so it can be heard
+  // from any dashboard page, not just this one; doing it here too would
+  // double it up whenever this page happens to be open.
+  useEffect(() => {
+    if (!myId) return;
+    const supabase = createClient();
+    if (!supabase) return;
+    const channel = supabase
+      .channel(`messages-inbox-${myId}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${myId}` },
+        (payload) => {
+          const row = payload.new as {
+            id: string;
+            sender_id: string;
+            recipient_id: string;
+            body: string;
+            created_at: string;
+            read_at: string | null;
+            listing_id: string | null;
+          };
+          const matchesOpenThread =
+            selected && selected.otherUserId === row.sender_id && (selected.listingId || "") === (row.listing_id || "");
+          if (matchesOpenThread) {
+            setThread((prev) => {
+              if (prev && prev.some((m) => m.id === row.id)) return prev;
+              const incoming: MessageRow = {
+                id: row.id,
+                senderId: row.sender_id,
+                recipientId: row.recipient_id,
+                body: row.body,
+                createdAt: row.created_at,
+                readAt: row.read_at,
+              };
+              return [...(prev ?? []), incoming];
+            });
+            // Already visible on screen — mark it read right away rather
+            // than leaving it unread until the thread is reselected.
+            markThreadRead(row.sender_id, row.listing_id ?? "").then(refreshConversations);
+          } else {
+            refreshConversations();
+          }
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [myId, selected, refreshConversations]);
+
   // Load the selected thread's messages and mark it read. When nothing is
   // selected there's nothing to fetch — `thread` just keeps its last value,
   // which is fine since it's never rendered while `selected` is null (the
