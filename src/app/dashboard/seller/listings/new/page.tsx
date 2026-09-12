@@ -160,12 +160,15 @@ export default function AddNewBusinessPage() {
   const [price, setPrice] = useState("");
   const [discountedPrice, setDiscountedPrice] = useState("");
   const [overview, setOverview] = useState("");
-  const [saleIncludesAssets, setSaleIncludesAssets] = useState("");
   const [saleIncludesSupport, setSaleIncludesSupport] = useState("");
   // Asset Transfer System v2's structured asset list (migration 036) — see
-  // AssetListEditor.tsx. Confirmed instantly on submit (2026-09-12) if at
-  // least one row is named, via confirmListingAssets() right after the
-  // listing and its asset rows are inserted below — no separate step.
+  // AssetListEditor.tsx. This IS "Assets included" now (2026-09-12) — there
+  // is no separate free-text box for it anymore; the public listing page's
+  // sale_includes_assets column is derived from these rows' names at
+  // submit time (see assetsSummaryText below). Confirmed instantly on
+  // submit if at least one row is named, via confirmListingAssets() right
+  // after the listing and its asset rows are inserted below — no separate
+  // step.
   const [assetRows, setAssetRows] = useState<AssetRow[]>([]);
 
   const [quickStats, setQuickStats] = useState<Record<string, string>>({});
@@ -366,6 +369,11 @@ export default function AddNewBusinessPage() {
         }
       }
 
+      // The public listing page's "Assets included" text is derived from
+      // the named structured asset rows below — one list, typed once, not
+      // a separate paragraph duplicating the same information.
+      const assetsSummaryText = assetRows.filter((r) => r.name.trim()).map((r) => r.name.trim()).join(", ");
+
       const { data: listingRow, error: insertError } = await supabase
         .from("listings")
         .insert({
@@ -381,7 +389,7 @@ export default function AddNewBusinessPage() {
           overview,
           monthly_expenses: expenses.filter((r) => r.label && r.amount).map((r) => ({ label: r.label, amount: Number(r.amount) })),
           monetization_type_ids: monetization,
-          sale_includes_assets: saleIncludesAssets,
+          sale_includes_assets: assetsSummaryText,
           sale_includes_support: saleIncludesSupport,
           status: "pending_review",
           ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
@@ -1231,32 +1239,12 @@ export default function AddNewBusinessPage() {
 
         <Section title="Sale Includes">
           <div className="flex flex-col gap-6">
-          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Assets included">
-              <textarea
-                rows={3}
-                value={saleIncludesAssets}
-                onChange={(e) => setSaleIncludesAssets(e.target.value)}
-                placeholder={
-                  categoryId === "social-media-accounts"
-                    ? "Social media account, unique content, unique design, email lists…"
-                    : categoryId === "saas"
-                      ? "Domain, website files, brand assets, content, email lists…"
-                      : "Domain, codebase, social accounts, email list…"
-                }
-                className={`${inputCls} w-full`}
-              />
+              <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={null} />
             </Field>
             <Field label="Post-sale support">
               <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} placeholder="e.g. 30 days of email support" className={`${inputCls} w-full`} />
             </Field>
-          </div>
-
-          <div>
-            <p className="mb-2 text-sm font-semibold text-ink">Structured Asset List</p>
-            <p className="mb-3 text-xs text-ink-faint">Powers the buyer&rsquo;s Transfer Room after purchase — separate from the free-text summary above, which stays as-is. Confirmed instantly once you create the listing, as long as at least one asset is named.</p>
-            <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={null} />
-          </div>
           </div>
         </Section>
 
