@@ -92,10 +92,11 @@ export type ListingFullEditFields = {
     engagementRatePercent: number | null;
   } | null;
   // Asset Transfer System v2's structured "Sale Includes" list (migration
-  // 036, listing_assets) — kept fully separate from the free-text
-  // saleIncludesAssets paragraph above, which stays untouched and visible
-  // per the feasibility report. `id` present = an existing row being
-  // edited; absent = a new row the seller just added in this session.
+  // 036, listing_assets) — this IS "Assets included" now (2026-09-12); the
+  // caller derives the fields.saleIncludesAssets string sent above from
+  // these same rows' names rather than a separately-typed paragraph. `id`
+  // present = an existing row being edited; absent = a new row the seller
+  // just added in this session.
   // Always sent (never undefined, unlike seo/topVideos/channelOverview
   // above) — updateListingFull() itself decides whether anything actually
   // changed before touching the table, specifically so that saving
