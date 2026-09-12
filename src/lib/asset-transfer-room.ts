@@ -77,3 +77,40 @@ export async function maybeCreateTransferRoomsOnPayment(admin: AdminClient, orde
 export function transferRoomEmailCta(origin: string, orderId: string): string {
   return `<p><a href="${origin}/dashboard/transfer/${orderId}" style="display:inline-block;margin-top:8px;padding:10px 16px;background:#166534;color:#ffffff;border-radius:6px;text-decoration:none;font-weight:600;">Open the Transfer Room</a></p>`;
 }
+
+// 2026-09-12: the site owner's follow-up request was that purchase/sale
+// emails actually explain HOW to do the asset transfer step by step, not
+// just drop a bare link. These two blocks are appended (immediately before
+// transferRoomEmailCta() above) to every buyer/seller email once a Transfer
+// Room is confirmed ready — one copy of the steps, reused across all four
+// payment rails (Stripe, SSLCommerz, Escrow.com, Pay Later) plus
+// startAssetTransfer() in the admin dashboard, instead of drifting slightly
+// different wording in each.
+export function buyerTransferGuidanceHtml(): string {
+  return `<p><strong>How to receive your assets:</strong></p>
+    <ol style="margin:4px 0 0;padding-left:20px;">
+      <li>Open your Transfer Room using the button below.</li>
+      <li>The seller will hand over each item listed under "Assets included" for this business (domain, hosting, social accounts, source code, etc.).</li>
+      <li>Check off each item as you receive it, then mark it "Received" in the room.</li>
+      <li>Once everything checks out, click "Approve" — this releases your payment to the seller and completes the purchase.</li>
+    </ol>`;
+}
+
+export function sellerTransferGuidanceHtml(): string {
+  return `<p><strong>How to transfer the assets:</strong></p>
+    <ol style="margin:4px 0 0;padding-left:20px;">
+      <li>Open your Transfer Room using the button below.</li>
+      <li>Go through each item in your "Assets included" list and hand it over using the method you specified (transfer the domain, share login access, etc.).</li>
+      <li>Mark each item "Submitted" once you've sent it.</li>
+      <li>Once the buyer confirms receipt of everything, your payout becomes eligible — request a withdrawal from your Earnings page.</li>
+    </ol>`;
+}
+
+// Links a listing's title in a notification email straight to its public
+// page — closes the "link of the sold business" gap that was previously
+// missing from admin's purchase-notification emails (they only got the
+// listing's plain title text), and is a harmless, useful addition wherever
+// else a listing title appears in an item list.
+export function listingLinkHtml(origin: string, listingId: string, title: string): string {
+  return `<a href="${origin}/listing/${listingId}">${title}</a>`;
+}
