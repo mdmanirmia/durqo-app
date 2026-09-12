@@ -2,6 +2,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { listAllAuthUsers } from "@/lib/notifications";
 import AdminVerificationTable, { type AdminVerificationRow } from "./AdminVerificationTable";
 
 const STORAGE_BUCKET = "seller-verification";
@@ -26,8 +27,11 @@ export default async function AdminVerification({
     if (status) query = query.eq("verification_status", status);
     const { data: profiles } = await query;
 
-    const { data: usersList } = await admin.auth.admin.listUsers();
-    const emailById = new Map((usersList?.users ?? []).map((u) => [u.id, u.email ?? null]));
+    // 2026-09-12 fix: unpaginated listUsers() defaults to a single ~50-user
+    // page — past that many signups this silently showed no email for
+    // anyone outside it. listAllAuthUsers() pages through the full list.
+    const usersList = await listAllAuthUsers(admin);
+    const emailById = new Map(usersList.map((u) => [u.id, u.email ?? null]));
 
     rows = await Promise.all(
       (profiles ?? []).map(async (p) => {
