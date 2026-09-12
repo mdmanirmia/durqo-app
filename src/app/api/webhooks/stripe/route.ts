@@ -5,7 +5,13 @@ import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
-import { maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
+import {
+  maybeCreateTransferRoomsOnPayment,
+  transferRoomEmailCta,
+  buyerTransferGuidanceHtml,
+  sellerTransferGuidanceHtml,
+  listingLinkHtml,
+} from "@/lib/asset-transfer-room";
 
 // Stripe calls this directly (not a browser) whenever a Checkout Session's
 // state changes — this is the actual source of truth for "did the buyer
@@ -113,7 +119,7 @@ export async function POST(request: Request) {
             const buyerEmail = buyerId ? emails[buyerId] : undefined;
 
             const itemsHtml = (purchasedListings ?? [])
-              .map((l) => `<li>${l.title} — $${Number(l.price).toLocaleString()}</li>`)
+              .map((l) => `<li>${listingLinkHtml(origin, l.id as string, l.title as string)} — $${Number(l.price).toLocaleString()}</li>`)
               .join("");
             const total = (purchasedListings ?? []).reduce((sum, l) => sum + Number(l.price || 0), 0);
 
@@ -137,11 +143,9 @@ export async function POST(request: Request) {
               const readyOrderIds = (purchasedListings ?? [])
                 .map((l) => orderIdByListingId.get(l.id as string))
                 .filter((id): id is string => !!id && roomReadyOrderIds.has(id));
-              const transferCtaHtml = readyOrderIds.length
-                ? `<p>Your Transfer Room${readyOrderIds.length > 1 ? "s are" : " is"} open — head there to track the handover and confirm receipt once the seller transfers the assets.</p>${readyOrderIds
-                    .map((id) => transferRoomEmailCta(origin, id))
-                    .join("")}`
-                : "";
+              const transferSectionHtml = readyOrderIds.length
+                ? `${buyerTransferGuidanceHtml()}${readyOrderIds.map((id) => transferRoomEmailCta(origin, id)).join("")}`
+                : `<p>We'll email you as soon as your Transfer Room is ready, with a link and step-by-step guidance for receiving the assets.</p>`;
 
               await sendEmail(
                 buyerEmail,
@@ -149,7 +153,7 @@ export async function POST(request: Request) {
                 `<p>Thanks for your purchase — here's what you bought:</p>
                  <ul>${itemsHtml}</ul>
                  <p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>
-                 ${transferCtaHtml}`
+                 ${transferSectionHtml}`
               );
             }
 
@@ -164,7 +168,7 @@ export async function POST(request: Request) {
                 `<p>Good news — "${listing.title}" sold for $${Number(listing.price).toLocaleString()}.</p>
                  ${
                    roomReady && orderId
-                     ? `<p>Your buyer's Transfer Room is open now — head there to start transferring the assets.</p>${transferRoomEmailCta(origin, orderId)}`
+                     ? `${sellerTransferGuidanceHtml()}${transferRoomEmailCta(origin, orderId)}`
                      : `<p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
                  }`
               );
