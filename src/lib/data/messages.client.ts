@@ -161,6 +161,25 @@ export async function markThreadRead(otherUserId: string, listingId: string): Pr
   }
 }
 
+// Powers the live "Messages" nav badge in DashboardShell.tsx (2026-09-12
+// request), the same role getSellerUnansweredCommentsCount() already plays
+// for the "Comments" badge — a plain count, not the full getConversations()
+// grouping, since DashboardShell only needs a number.
+export async function getUnreadMessageCount(): Promise<number> {
+  const supabase = createClient();
+  if (!supabase) return 0;
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return 0;
+
+  const { count, error } = await supabase
+    .from("messages")
+    .select("id", { count: "exact", head: true })
+    .eq("recipient_id", userData.user.id)
+    .is("read_at", null);
+  if (error) return 0;
+  return count ?? 0;
+}
+
 // Looks up display info for a conversation that has no messages yet (e.g.
 // a buyer just clicked "Chat with Seller" for the first time), so the
 // thread view has a name/title to show before the first message is sent.
