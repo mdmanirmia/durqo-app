@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Send,
@@ -444,6 +445,27 @@ function StageChip({ stage }: { stage: string }) {
 }
 
 function NoRoomState({ data }: { data: TransferRoomData }) {
+  const router = useRouter();
+  // A buyer just redirected here straight from checkout (Stripe/SSLCommerz/
+  // Pay Later all send them here immediately on payment) can easily land a
+  // beat before the payment webhook has finished creating the room — the
+  // "please check back shortly" line below used to require a manual
+  // refresh to actually resolve. For an order that's already paid, poll a
+  // few times a few seconds apart instead: harmless once the room shows up
+  // (this component just unmounts), and gives up after ~30s rather than
+  // refreshing forever if something's actually gone wrong.
+  const paymentConfirmed = data.orderStatus === "in_durqo" || data.orderStatus === "in_escrow";
+  useEffect(() => {
+    if (!paymentConfirmed) return;
+    let attempts = 0;
+    const id = setInterval(() => {
+      attempts += 1;
+      router.refresh();
+      if (attempts >= 8) clearInterval(id);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [paymentConfirmed, router]);
+
   let message =
     "Your Transfer Room for this order hasn't been set up yet. This usually only takes a moment after payment — please check back shortly, or contact support if it's been a while.";
   if (data.orderStatus === "requested" || data.orderStatus === "awaiting_payment") {
@@ -453,7 +475,14 @@ function NoRoomState({ data }: { data: TransferRoomData }) {
   }
   return (
     <div className="flex flex-col gap-5">
-      <div className="rounded-xl border border-rule bg-paper-raised p-5 text-sm text-ink-soft">{message}</div>
+      <div className="rounded-xl border border-rule bg-paper-raised p-5 text-sm text-ink-soft">
+        {message}
+        {paymentConfirmed && (
+          <span className="mt-2 flex items-center gap-1.5 text-xs text-ink-faint">
+            <Loader2 size={13} className="animate-spin" /> Checking again automatically&hellip;
+          </span>
+        )}
+      </div>
       <OrderSummaryCard data={data} />
     </div>
   );
