@@ -120,7 +120,7 @@ export async function requestPurchase(listings: Listing[]): Promise<void> {
 }
 
 // Counts for the buyer dashboard's stat tiles. "Open" is anything not yet
-// completed or cancelled (requested / awaiting_payment / in_escrow).
+// completed or cancelled (requested / awaiting_payment / in_escrow / in_durqo).
 export async function getBuyerOrderCounts(): Promise<{ open: number; completed: number; totalSpent: number }> {
   const empty = { open: 0, completed: 0, totalSpent: 0 };
   const supabase = createClient();

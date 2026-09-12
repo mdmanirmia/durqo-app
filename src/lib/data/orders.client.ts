@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 
-export type OrderStatus = "requested" | "awaiting_payment" | "in_escrow" | "completed" | "cancelled";
+export type OrderStatus = "requested" | "awaiting_payment" | "in_escrow" | "in_durqo" | "completed" | "cancelled";
 
 export interface OrderRow {
   id: string;
