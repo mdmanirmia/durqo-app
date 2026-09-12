@@ -1,9 +1,22 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
+import { getUserEmails } from "@/lib/notifications";
+import { transferRoomEmailCta } from "@/lib/asset-transfer-room";
+
+// Shared by every best-effort notification block below — resolves the
+// request's own host so links always point at whatever origin the admin is
+// actually using (production, preview, or localhost), same pattern already
+// used by listing-edit.ts and the payment webhooks.
+async function resolveOrigin(): Promise<string> {
+  const hdrs = await headers();
+  const host = hdrs.get("host");
+  return host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
+}
 
 const LISTING_STATUSES = ["draft", "pending_review", "published", "sold", "archived"] as const;
 type ListingStatus = (typeof LISTING_STATUSES)[number];
@@ -174,6 +187,43 @@ export async function startAssetTransfer(orderId: string) {
   revalidatePath(`/dashboard/transfer/${orderId}`);
   revalidatePath("/dashboard/buyer/orders");
   revalidatePath("/dashboard/seller/orders");
+
+  // Best-effort: let both parties know the Transfer Room is open now that
+  // admin has manually started it (the one case the payment webhooks
+  // deliberately hold back — see the module comment above).
+  try {
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select("listing_id, buyer_id, seller_id")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (order) {
+      const { data: listing } = await supabaseAdmin.from("listings").select("title").eq("id", order.listing_id).maybeSingle();
+      const title = listing?.title ?? "your order";
+      const emails = await getUserEmails(supabaseAdmin, [order.buyer_id as string, order.seller_id as string]);
+      const origin = await resolveOrigin();
+      const cta = transferRoomEmailCta(origin, orderId);
+      const buyerEmail = emails[order.buyer_id as string];
+      const sellerEmail = emails[order.seller_id as string];
+
+      if (buyerEmail) {
+        await sendEmail(
+          buyerEmail,
+          `Your Transfer Room is open — "${title}"`,
+          `<p>Your Transfer Room for "${title}" is now open. Head there to start receiving the assets from the seller.</p>${cta}`
+        );
+      }
+      if (sellerEmail) {
+        await sendEmail(
+          sellerEmail,
+          `Your Transfer Room is open — "${title}"`,
+          `<p>Your Transfer Room for "${title}" is now open. Head there to start transferring the assets to the buyer.</p>${cta}`
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[admin] startAssetTransfer notification emails failed:", err);
+  }
 }
 
 // Core-field edit for a listing — title, category, price and the other
@@ -226,6 +276,26 @@ export async function updateListing(
   revalidatePath("/dashboard/admin/listings");
   revalidatePath(`/listing/${listingId}`);
   revalidatePath("/dashboard/admin");
+
+  // Best-effort: let the seller know an admin changed their listing.
+  try {
+    const { data: listingRow } = await supabaseAdmin.from("listings").select("seller_id").eq("id", listingId).maybeSingle();
+    if (listingRow?.seller_id) {
+      const emails = await getUserEmails(supabaseAdmin, [listingRow.seller_id as string]);
+      const sellerEmail = emails[listingRow.seller_id as string];
+      if (sellerEmail) {
+        const origin = await resolveOrigin();
+        await sendEmail(
+          sellerEmail,
+          `Your listing "${fields.title}" was updated by Durqo`,
+          `<p>An admin made changes to your listing "${fields.title}". Please review it to make sure everything looks right.</p>
+           <p><a href="${origin}/listing/${listingId}">View your listing</a></p>`
+        );
+      }
+    }
+  } catch (err) {
+    console.error("[admin] updateListing seller notification failed:", err);
+  }
 }
 
 // Listing-level Google Analytics verification (Motion Invest / Flippa style
@@ -409,9 +479,6 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
 //     this only records the outcome; whoever resolves the dispute still
 //     has to go process the actual refund/payout on the relevant
 //     platform.
-//   - Buyer/seller email notifications — can follow the
-//     setVerificationStatus()/setWithdrawalStatus() pattern later; left out
-//     of this first pass to keep the change reviewable.
 //   - Admin overriding a pending amendment — transfer_amendment_decide()
 //     stays buyer-only; admin's amendment view here is read-only.
 const TRANSFER_RESOLUTION_TYPES = [
@@ -537,6 +604,36 @@ export async function resolveTransferDispute(
     metadata: issueId ? { issue_id: issueId } : {},
   });
   if (eventError) throw new Error(eventError.message);
+
+  // Best-effort: notify buyer + seller of the dispute resolution — closes
+  // the gap the module comment above used to flag as deliberately left out.
+  try {
+    const { data: order } = await supabaseAdmin.from("orders").select("listing_id").eq("id", room.order_id).maybeSingle();
+    const { data: listing } = order
+      ? await supabaseAdmin.from("listings").select("title").eq("id", order.listing_id).maybeSingle()
+      : { data: null };
+    const title = listing?.title ?? "your transfer";
+    const emails = await getUserEmails(supabaseAdmin, [room.buyer_id as string, room.seller_id as string]);
+    const buyerEmail = emails[room.buyer_id as string];
+    const sellerEmail = emails[room.seller_id as string];
+    const origin = await resolveOrigin();
+    const roomUrl = `${origin}/dashboard/transfer/${room.order_id}`;
+
+    const RESOLUTION_COPY: Record<TransferResolutionType, string> = {
+      returned_to_seller: `The reported issue on "${title}" has been reviewed. The seller has been asked to redo the affected item.`,
+      approved_despite_report: `After review, the transfer for "${title}" has been approved and finalized despite the reported issue.`,
+      refund_authorized: `After review, a refund has been authorized for "${title}".`,
+      settlement_recorded: `After review, a settlement has been recorded for "${title}".`,
+      order_cancelled: `After review, the order for "${title}" has been cancelled.`,
+    };
+    const bodyLine = RESOLUTION_COPY[resolutionType];
+    const html = `<p>${bodyLine}</p><p>${resolutionText.trim()}</p><p><a href="${roomUrl}">View the Transfer Room</a></p>`;
+
+    if (buyerEmail) await sendEmail(buyerEmail, `Update on your Durqo transfer — "${title}"`, html);
+    if (sellerEmail) await sendEmail(sellerEmail, `Update on your Durqo transfer — "${title}"`, html);
+  } catch (err) {
+    console.error("[admin] resolveTransferDispute notification emails failed:", err);
+  }
 
   revalidatePath("/dashboard/admin/transfers");
   revalidatePath(`/dashboard/admin/transfers/${roomId}`);
