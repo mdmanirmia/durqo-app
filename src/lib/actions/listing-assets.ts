@@ -3,13 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { requireEditAccess } from "@/lib/actions/listing-edit";
 
-// Deliberately its own Server Action, separate from updateListingFull()'s
-// big "Save Changes" — confirming the structured asset list is a distinct,
-// meaningful action (Asset Transfer System v2 report, Section 2.7: a
-// listing can't be bought until this has happened), not something that
-// should quietly ride along with an unrelated field edit. The seller/admin
-// edits and saves asset rows through updateListingFull() like any other
-// field; they confirm the result with this, on its own, when they're ready.
+// Confirming a listing's structured asset list requires the service-role
+// client (assets_confirmed_at isn't seller-writable under RLS — same
+// reasoning as everything else routed through requireEditAccess's admin
+// client), which is the only reason this stays its own function rather
+// than being inlined at each call site.
+//
+// No longer a separate user-facing step (2026-09-12, per the site owner's
+// explicit request: seller confirms simply by saving a non-empty list, no
+// extra click). It's called automatically from two places now: right after
+// updateListingFull() replaces a listing's asset rows on an edit/save (see
+// listing-edit.ts, which does this inline against its own already-open
+// admin client rather than calling this function again), and right after a
+// brand-new listing's initial assets are inserted on the "new listing" page
+// (dashboard/seller/listings/new/page.tsx), which is this function's actual
+// remaining caller.
 export async function confirmListingAssets(listingId: string) {
   const { admin } = await requireEditAccess(listingId);
 

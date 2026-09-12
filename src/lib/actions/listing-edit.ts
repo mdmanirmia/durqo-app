@@ -179,6 +179,20 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
         );
         if (insertAssetsError) throw new Error(`Saving the asset list failed: ${insertAssetsError.message}`);
       }
+
+      // Instant confirm (2026-09-12, per the site owner's explicit
+      // request): there's no separate "Confirm this list" step anymore —
+      // saving a non-empty asset list confirms it immediately. Migration
+      // 036's trigger already cleared assets_confirmed_at to null as a
+      // side effect of the delete+insert just above; this either re-sets it
+      // to now() (list has at least one named asset) or leaves it null
+      // (list was cleared out entirely) in one explicit, deliberate write —
+      // never left to whatever the trigger's default happened to do.
+      const { error: confirmError } = await admin
+        .from("listings")
+        .update({ assets_confirmed_at: incoming.length ? new Date().toISOString() : null })
+        .eq("id", listingId);
+      if (confirmError) throw new Error(`Confirming the asset list failed: ${confirmError.message}`);
     }
   }
 
