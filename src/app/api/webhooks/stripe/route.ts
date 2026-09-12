@@ -5,7 +5,7 @@ import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
-import { maybeCreateTransferRoomsOnPayment } from "@/lib/asset-transfer-room";
+import { maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
 
 // Stripe calls this directly (not a browser) whenever a Checkout Session's
 // state changes — this is the actual source of truth for "did the buyer
@@ -64,8 +64,13 @@ export async function POST(request: Request) {
           .in("id", orderIds);
 
         // Asset Transfer System v2 (Phase 4 follow-up, Task #188) —
-        // feature-flagged, best-effort, never blocks this webhook.
-        await maybeCreateTransferRoomsOnPayment(admin, orderIds);
+        // feature-flagged, best-effort, never blocks this webhook. The
+        // returned list is exactly which of these orders actually got a
+        // room (idempotent — already-existing rooms count too), used below
+        // to decide which seller gets the "Open the Transfer Room" link.
+        const roomReadyOrderIds = new Set(await maybeCreateTransferRoomsOnPayment(admin, orderIds));
+        const orderIdByListingId = new Map((paidOrders ?? []).map((o) => [o.listing_id, o.id]));
+        const origin = new URL(request.url).origin;
 
         // The listings the buyer just paid for no longer belong in their
         // cart — clear just those, not the whole cart, in case something
@@ -133,11 +138,17 @@ export async function POST(request: Request) {
             for (const listing of purchasedListings ?? []) {
               const sellerEmail = emails[listing.seller_id as string];
               if (!sellerEmail) continue;
+              const orderId = orderIdByListingId.get(listing.id as string);
+              const roomReady = orderId && roomReadyOrderIds.has(orderId);
               await sendEmail(
                 sellerEmail,
                 `Your listing "${listing.title}" has sold`,
                 `<p>Good news — "${listing.title}" sold for $${Number(listing.price).toLocaleString()}.</p>
-                 <p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
+                 ${
+                   roomReady && orderId
+                     ? `<p>Your buyer's Transfer Room is open now — head there to start transferring the assets.</p>${transferRoomEmailCta(origin, orderId)}`
+                     : `<p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
+                 }`
               );
             }
           } catch (err) {
