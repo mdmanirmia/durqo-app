@@ -41,18 +41,28 @@ export function Badge({
 // Listing/order lifecycle status → tone + label, shared everywhere a status
 // pill is rendered (marketplace cards, dashboards, admin tables) so the
 // same status never reads two different ways in two different places.
+//
+// 2026-09-12 dashboard audit fix: AdminOrdersTable had drifted its own
+// separate STATUS_LABEL map for the order-status <select> (with clearer,
+// newer wording — e.g. "Held by Escrow.com", "Payment Released to Seller")
+// while this StatusBadge right next to it still showed the older generic
+// labels ("In Escrow", "Completed") — the exact "same status reads two
+// different ways in two different places" bug this map's own comment
+// exists to prevent. Reconciled here to the clearer wording everywhere;
+// AdminOrdersTable now imports statusLabel() below instead of keeping its
+// own copy.
 const STATUS_MAP: Record<string, { label: string; tone: Tone }> = {
   draft: { label: "Draft", tone: "neutral" },
   pending_review: { label: "In Review", tone: "gold" },
   published: { label: "Live", tone: "brand" },
   sold: { label: "Sold", tone: "dark" },
   archived: { label: "Archived", tone: "neutral" },
-  requested: { label: "Requested", tone: "neutral" },
+  requested: { label: "Payment Requested", tone: "neutral" },
   awaiting_payment: { label: "Awaiting Payment", tone: "gold" },
-  in_escrow: { label: "In Escrow", tone: "brand" },
+  in_escrow: { label: "Held by Escrow.com", tone: "brand" },
   in_durqo: { label: "Payment Received", tone: "brand" },
-  completed: { label: "Completed", tone: "dark" },
-  cancelled: { label: "Cancelled", tone: "danger" },
+  completed: { label: "Payment Released", tone: "dark" },
+  cancelled: { label: "Payment Cancelled", tone: "danger" },
 };
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {
@@ -62,4 +72,25 @@ export function StatusBadge({ status, className }: { status: string; className?:
       {entry.label}
     </Badge>
   );
+}
+
+export function statusLabel(status: string): string {
+  return STATUS_MAP[status]?.label ?? status;
+}
+
+// Small colored-dot tone for a status, without the full Badge pill —
+// used where a status breakdown is already labelled (e.g. Admin Overview's
+// "Listings by status" / "Orders by status" lists) and just needs a quick
+// visual cue for which rows need attention.
+const TONE_DOT: Record<Tone, string> = {
+  neutral: "bg-ink-faint",
+  brand: "bg-brand",
+  gold: "bg-[#C99A1B]",
+  danger: "bg-danger",
+  dark: "bg-brand-strong",
+};
+
+export function statusDotClass(status: string): string {
+  const tone = STATUS_MAP[status]?.tone ?? "neutral";
+  return TONE_DOT[tone];
 }
