@@ -11,7 +11,7 @@ type ListingStatus = (typeof LISTING_STATUSES)[number];
 const USER_ROLES = ["buyer", "seller", "admin"] as const;
 type UserRole = (typeof USER_ROLES)[number];
 
-const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
+const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "in_durqo", "completed", "cancelled"] as const;
 type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 const ORDER_PAYMENT_CHANNELS = ["stripe", "durqo_platform", "bangladesh_gateway", "escrow", "escrow_com"] as const;
@@ -145,6 +145,35 @@ export async function setOrderPaymentChannel(orderId: string, channel: OrderPaym
 
   revalidatePath("/dashboard/admin/orders");
   revalidatePath("/dashboard/admin");
+}
+
+// Manual "start the Asset Transfer Room now" button — for the one case the
+// three payment webhooks deliberately do NOT auto-create a room: a
+// SSLCommerz order with a remainder still owed (remainder_usd > 0, i.e. the
+// buyer only paid the online-deposit-capped portion). Per the site owner's
+// instruction (2026-09-12), those get held back until the site owner has
+// manually collected and verified the rest of the money directly with the
+// buyer — only then should the Transfer Room open. This action is that
+// trigger: it just calls the same idempotent RPC the webhooks call, so
+// clicking it twice (or clicking it for an order that already has a room)
+// is harmless. Not restricted to remainder orders specifically — any paid
+// order without a room yet (in_escrow or in_durqo) can be started this way,
+// which also gives admin a manual recovery path if a webhook's automatic
+// call ever failed silently.
+export async function startAssetTransfer(orderId: string) {
+  await requireAdmin();
+
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const { error } = await supabaseAdmin.rpc("create_transfer_room_on_payment", { p_order_id: orderId });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/orders");
+  revalidatePath("/dashboard/admin");
+  revalidatePath(`/dashboard/transfer/${orderId}`);
+  revalidatePath("/dashboard/buyer/orders");
+  revalidatePath("/dashboard/seller/orders");
 }
 
 // Core-field edit for a listing — title, category, price and the other

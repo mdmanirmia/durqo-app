@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtUSD } from "@/lib/format";
 
 const LISTING_STATUSES = ["draft", "pending_review", "published", "sold", "archived"] as const;
-const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "completed", "cancelled"] as const;
+const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "in_durqo", "completed", "cancelled"] as const;
 
 export default async function AdminOverview() {
   await requireAdmin();
