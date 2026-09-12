@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle } from "lucide-react";
+import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle, Wallet, Tag } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORY_MAP } from "@/lib/categories";
@@ -145,14 +145,24 @@ export default function SellerOverview() {
   return (
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex gap-6 sm:gap-8">
-          <div>
-            <div className="mono text-2xl font-semibold text-brand-strong">{balance === null ? "…" : fmtUSD(balance)}</div>
-            <div className="text-sm text-ink-faint">Available balance</div>
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
+          <div className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-strong text-white">
+              <Wallet size={17} />
+            </div>
+            <div className="min-w-0">
+              <div className="mono text-xl font-semibold text-brand-strong">{balance === null ? "…" : fmtUSD(balance)}</div>
+              <div className="text-xs text-ink-faint">Available balance</div>
+            </div>
           </div>
-          <div>
-            <div className="mono text-2xl font-semibold">{myListings === null ? "…" : publishedCount}</div>
-            <div className="text-sm text-ink-faint">Published listings</div>
+          <div className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3">
+            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+              <Tag size={17} />
+            </div>
+            <div className="min-w-0">
+              <div className="mono text-xl font-semibold">{myListings === null ? "…" : publishedCount}</div>
+              <div className="text-xs text-ink-faint">Published listings</div>
+            </div>
           </div>
         </div>
         <Button href="/dashboard/seller/listings/new" className="w-full justify-center sm:w-auto">
