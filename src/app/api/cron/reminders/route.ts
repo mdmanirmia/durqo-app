@@ -53,13 +53,14 @@ export async function GET(request: Request) {
 
   const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
 
-  const [comments, messages, transferInspections] = await Promise.all([
+  const [comments, messages, transferMessages, transferInspections] = await Promise.all([
     remindStaleComments(admin, cutoff),
     remindStaleMessages(admin, cutoff),
+    remindStaleTransferMessages(admin, cutoff),
     sweepExpiredTransferInspections(admin),
   ]);
 
-  return NextResponse.json({ comments, messages, transferInspections });
+  return NextResponse.json({ comments, messages, transferMessages, transferInspections });
 }
 
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
@@ -115,10 +116,18 @@ async function remindStaleComments(admin: AdminClient, cutoff: string) {
   return { checked: rows.length, reminded };
 }
 
+// Rewritten 2026-09-12 (site owner report: buyer and seller can both send
+// unlimited messages, but this sweep only ever reminded a seller who hadn't
+// replied — a buyer sitting on an unread reply from the seller, or a seller
+// whose own message the buyer never opened, got no reminder at all). Now
+// driven entirely by `read_at` (migration 040) rather than a "seller hasn't
+// replied" heuristic: whichever party the last message in a thread was sent
+// TO is who might not have seen it, regardless of whether that's the buyer
+// or the seller for this particular listing.
 async function remindStaleMessages(admin: AdminClient, cutoff: string) {
   const { data: rows, error } = await admin
     .from("messages")
-    .select("id, listing_id, sender_id, recipient_id, created_at, reminder_sent_at")
+    .select("id, listing_id, sender_id, recipient_id, created_at, read_at, reminder_sent_at")
     .not("listing_id", "is", null)
     .order("created_at", { ascending: true });
   if (error || !rows) return { checked: 0, reminded: 0, error: error?.message };
@@ -134,28 +143,27 @@ async function remindStaleMessages(admin: AdminClient, cutoff: string) {
   const listingIds = [...new Set(rows.map((r) => r.listing_id as string))];
   const { data: listings } = await admin.from("listings").select("id, title, seller_id").in("id", listingIds);
   const listingById = new Map((listings ?? []).map((l) => [l.id, l]));
-  const sellerEmails = await getUserEmails(admin, [...new Set((listings ?? []).map((l) => l.seller_id as string))]);
+  const recipientEmails = await getUserEmails(admin, [...new Set(rows.map((r) => r.recipient_id as string))]);
 
   let reminded = 0;
   for (const thread of threads.values()) {
     const last = thread[thread.length - 1];
-    if (last.reminder_sent_at || last.created_at >= cutoff) continue;
+    if (last.reminder_sent_at || last.read_at || last.created_at >= cutoff) continue;
 
     const listing = listingById.get(last.listing_id as string);
     if (!listing) continue;
-    const sellerId = listing.seller_id as string;
-    // Skip unless the seller is the one who received (and hasn't yet
-    // answered) the last message in the thread.
-    if (last.sender_id === sellerId || last.recipient_id !== sellerId) continue;
+    const recipientId = last.recipient_id as string;
+    const recipientEmail = recipientEmails[recipientId];
+    const isSeller = recipientId === listing.seller_id;
+    const dashboardPath = isSeller ? "/dashboard/seller/messages" : "/dashboard/buyer/messages";
 
-    const sellerEmail = sellerEmails[sellerId];
-    if (sellerEmail) {
+    if (recipientEmail) {
       try {
         await sendEmail(
-          sellerEmail,
-          `Reminder: a message about "${listing.title}" is still unanswered`,
-          `<p>You have a message about your listing <strong>${listing.title}</strong> that's been waiting more than 3 hours for a reply.</p>
-           <p><a href="https://www.durqo.com/dashboard/seller/messages">Reply on Durqo</a></p>`
+          recipientEmail,
+          `Reminder: you have an unread message about "${listing.title}"`,
+          `<p>You have a message about "${listing.title}" that's been waiting more than 3 hours to be read.</p>
+           <p><a href="https://www.durqo.com${dashboardPath}">Read it on Durqo</a></p>`
         );
         reminded++;
       } catch (err) {
@@ -165,6 +173,74 @@ async function remindStaleMessages(admin: AdminClient, cutoff: string) {
     await admin.from("messages").update({ reminder_sent_at: new Date().toISOString() }).eq("id", last.id);
   }
   return { checked: rows.length, reminded };
+}
+
+// New 2026-09-12, alongside migration 042's reminder_sent_at column on
+// asset_transfer_messages — same bidirectional, read_at-driven shape as
+// remindStaleMessages() above, but for Deal Messages inside a Transfer Room.
+// A room only ever has two participants (buyer_id/seller_id), so the
+// recipient of any message is simply whichever of the two isn't the sender —
+// there's no separate recipient_id column to read here.
+async function remindStaleTransferMessages(admin: AdminClient, cutoff: string) {
+  const { data: rows, error } = await admin
+    .from("asset_transfer_messages")
+    .select("id, room_id, sender_id, created_at, read_at, reminder_sent_at")
+    .order("created_at", { ascending: true });
+  if (error || !rows) return { checked: 0, reminded: 0, error: error?.message };
+
+  const roomIds = [...new Set(rows.map((r) => r.room_id as string))];
+  const { data: rooms } = await admin.from("asset_transfer_rooms").select("id, order_id, buyer_id, seller_id").in("id", roomIds);
+  const roomById = new Map((rooms ?? []).map((r) => [r.id, r]));
+
+  const byRoom = new Map<string, (typeof rows)[number][]>();
+  for (const r of rows) {
+    const list = byRoom.get(r.room_id as string);
+    if (list) list.push(r);
+    else byRoom.set(r.room_id as string, [r]);
+  }
+
+  const recipientIds = new Set<string>();
+  for (const [roomId, msgs] of byRoom) {
+    const room = roomById.get(roomId);
+    const last = msgs[msgs.length - 1];
+    if (!room || last.reminder_sent_at || last.read_at || last.created_at >= cutoff) continue;
+    recipientIds.add((room.buyer_id === last.sender_id ? room.seller_id : room.buyer_id) as string);
+  }
+  const emails = await getUserEmails(admin, [...recipientIds]);
+
+  let reminded = 0;
+  let checked = 0;
+  for (const [roomId, msgs] of byRoom) {
+    const room = roomById.get(roomId);
+    const last = msgs[msgs.length - 1];
+    checked += msgs.length;
+    if (!room || last.reminder_sent_at || last.read_at || last.created_at >= cutoff) continue;
+
+    const recipientId = (room.buyer_id === last.sender_id ? room.seller_id : room.buyer_id) as string;
+    const recipientEmail = emails[recipientId];
+    if (recipientEmail) {
+      try {
+        await sendEmail(
+          recipientEmail,
+          "Reminder: you have an unread Deal Message",
+          `<p>You have an unread message in your Transfer Room that's been waiting more than 3 hours.</p>
+           <p><a href="https://www.durqo.com/dashboard/transfer/${room.order_id}">Open the Transfer Room</a></p>`
+        );
+        reminded++;
+      } catch (err) {
+        console.warn("[cron/reminders] transfer message reminder email failed:", err);
+      }
+    }
+    // Mark every unread message from that same sender in this room as
+    // reminded — not just the last one — so a run of several unread
+    // messages doesn't keep re-qualifying on tomorrow's sweep just because
+    // only the newest of them triggered today's reminder.
+    const unreadIds = msgs.filter((m) => !m.read_at && m.sender_id === last.sender_id).map((m) => m.id);
+    if (unreadIds.length) {
+      await admin.from("asset_transfer_messages").update({ reminder_sent_at: new Date().toISOString() }).in("id", unreadIds);
+    }
+  }
+  return { checked, reminded };
 }
 
 // Moves any Transfer Room whose 7-day inspection window has lapsed with no
