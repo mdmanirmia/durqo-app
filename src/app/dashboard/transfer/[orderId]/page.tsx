@@ -119,6 +119,7 @@ export default async function TransferRoomPage({ params }: { params: Promise<{ o
       senderName: nameForParticipant(m.sender_id),
       body: m.body as string,
       createdAt: m.created_at as string,
+      readAt: m.read_at as string | null,
     })),
     issues: (issueRows ?? []).map((i) => ({
       id: i.id as string,

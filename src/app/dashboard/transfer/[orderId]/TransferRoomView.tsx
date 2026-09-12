@@ -70,6 +70,7 @@ export interface TransferMessage {
   senderName: string;
   body: string;
   createdAt: string;
+  readAt: string | null;
 }
 
 export interface TransferIssue {
@@ -335,6 +336,13 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
   // asset_transfer_messages_select's RLS is what actually restricts this to
   // the room's own two participants.
   const [liveMessages, setLiveMessages] = useState<TransferMessage[]>([]);
+  // Read-receipt overlay (2026-09-12 request): a message id -> read_at map
+  // for read-state changes that arrive live, applied over BOTH
+  // room.messages (the server-fetched prop) and liveMessages below — a
+  // message that was already on screen when the other party reads it needs
+  // its "Seen" label to appear without a page reload, same as it does for
+  // the general Messages inbox.
+  const [readUpdates, setReadUpdates] = useState<Record<string, string>>({});
   useEffect(() => {
     if (!room || !myUserId) return;
     const supabase = createClient();
@@ -345,7 +353,7 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "asset_transfer_messages", filter: `room_id=eq.${room.id}` },
         (payload) => {
-          const row = payload.new as { id: string; sender_id: string; body: string; created_at: string };
+          const row = payload.new as { id: string; sender_id: string; body: string; created_at: string; read_at: string | null };
           const isMine = row.sender_id === myUserId;
           const senderName = isMine
             ? data.viewerSide === "buyer"
@@ -357,12 +365,23 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
           setLiveMessages((prev) =>
             prev.some((m) => m.id === row.id)
               ? prev
-              : [...prev, { id: row.id, senderId: row.sender_id, senderName, body: row.body, createdAt: row.created_at }]
+              : [
+                  ...prev,
+                  { id: row.id, senderId: row.sender_id, senderName, body: row.body, createdAt: row.created_at, readAt: row.read_at },
+                ]
           );
           if (!isMine) {
             playNotificationSound();
             markTransferMessagesRead(room.id);
           }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "asset_transfer_messages", filter: `room_id=eq.${room.id}` },
+        (payload) => {
+          const row = payload.new as { id: string; read_at: string | null };
+          if (row.read_at) setReadUpdates((prev) => ({ ...prev, [row.id]: row.read_at as string }));
         }
       )
       .subscribe();
@@ -378,14 +397,19 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
   // De-duped, chronological union of the messages this page was rendered
   // with and whatever's arrived live since — a message that reaches both
   // (the sender's own tab, once revalidatePath's refresh catches up) only
-  // renders once.
+  // renders once. The read-receipt overlay is applied last so it always
+  // wins over a possibly-stale readAt from either source.
   const allMessages = useMemo(() => {
     if (!room) return [];
     const byId = new Map<string, TransferMessage>();
     for (const m of room.messages) byId.set(m.id, m);
     for (const m of liveMessages) byId.set(m.id, m);
+    for (const [id, readAt] of Object.entries(readUpdates)) {
+      const existing = byId.get(id);
+      if (existing) byId.set(id, { ...existing, readAt });
+    }
     return [...byId.values()].sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
-  }, [room, liveMessages]);
+  }, [room, liveMessages, readUpdates]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 pb-28 md:py-10 md:pb-10">
@@ -451,7 +475,7 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
               room={room}
               onOpen={() => setIssueModalOpen(true)}
             />
-            <MessagesSection messages={allMessages} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
+            <MessagesSection messages={allMessages} myUserId={myUserId} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
             <ActivityHistorySection room={room} />
             <OrderSummaryCard data={data} />
           </div>
@@ -483,7 +507,7 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
                 amendValue={amendValue}
                 setAmendValue={setAmendValue}
               />
-              <MessagesSection messages={allMessages} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
+              <MessagesSection messages={allMessages} myUserId={myUserId} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
               <ActivityHistorySection room={room} />
             </div>
 
@@ -1082,12 +1106,14 @@ function PostSaleSupportSection({
 
 function MessagesSection({
   messages,
+  myUserId,
   messageBody,
   setMessageBody,
   busyKey,
   handlers,
 }: {
   messages: TransferMessage[];
+  myUserId: string | null;
   messageBody: string;
   setMessageBody: (v: string) => void;
   busyKey: string | null;
@@ -1103,6 +1129,11 @@ function MessagesSection({
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
 
+  // Read receipt (2026-09-12 request): only the last message I sent shows
+  // a "Seen" label once its read_at is set, matching the same convention
+  // used in the general Messages inbox (MessagesPanel.tsx).
+  const lastMineId = [...messages].reverse().find((m) => m.senderId === myUserId)?.id;
+
   return (
     <div className="rounded-xl border border-rule bg-paper-raised p-4 md:p-5">
       <h2 className="mb-3 text-lg text-ink">Deal Messages</h2>
@@ -1114,7 +1145,10 @@ function MessagesSection({
             <div key={m.id} className="rounded-lg border border-rule bg-paper p-2.5">
               <div className="mb-1 flex items-baseline justify-between gap-2">
                 <span className="text-xs font-semibold text-ink">{m.senderName}</span>
-                <span className="mono text-[0.65rem] text-ink-faint">{formatDateTime(m.createdAt)}</span>
+                <span className="mono text-[0.65rem] text-ink-faint">
+                  {formatDateTime(m.createdAt)}
+                  {m.id === lastMineId && m.readAt && " · Seen"}
+                </span>
               </div>
               <p className="whitespace-pre-wrap text-sm text-ink-soft">{m.body}</p>
             </div>
