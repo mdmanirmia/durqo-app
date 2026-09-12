@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Wallet, Clock, Heart, CheckCircle2 } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { getWishlistedListings } from "@/lib/data/wishlist.client";
@@ -29,22 +30,42 @@ export default function BuyerOverview() {
 
   return (
     <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-rule bg-paper-raised p-5">
-          <div className="mono text-2xl font-semibold text-brand-strong">{counts ? fmtUSD(counts.totalSpent) : "…"}</div>
-          <div className="text-sm text-ink-faint">Total spent</div>
+      <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-strong text-white">
+            <Wallet size={17} />
+          </div>
+          <div className="min-w-0">
+            <div className="mono text-2xl font-semibold text-brand-strong">{counts ? fmtUSD(counts.totalSpent) : "…"}</div>
+            <div className="text-sm text-ink-faint">Total spent</div>
+          </div>
         </div>
-        <div className="rounded-xl border border-rule bg-paper-raised p-5">
-          <div className="mono text-2xl font-semibold">{counts ? counts.open : "…"}</div>
-          <div className="text-sm text-ink-faint">Open orders</div>
+        <div className="flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
+            <Clock size={17} />
+          </div>
+          <div className="min-w-0">
+            <div className="mono text-2xl font-semibold">{counts ? counts.open : "…"}</div>
+            <div className="text-sm text-ink-faint">Open orders</div>
+          </div>
         </div>
-        <div className="rounded-xl border border-rule bg-paper-raised p-5">
-          <div className="mono text-2xl font-semibold">{wishlisted ? wishlisted.length : "…"}</div>
-          <div className="text-sm text-ink-faint">Wishlisted listings</div>
+        <div className="flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+            <Heart size={17} />
+          </div>
+          <div className="min-w-0">
+            <div className="mono text-2xl font-semibold">{wishlisted ? wishlisted.length : "…"}</div>
+            <div className="text-sm text-ink-faint">Wishlisted listings</div>
+          </div>
         </div>
-        <div className="rounded-xl border border-rule bg-paper-raised p-5">
-          <div className="mono text-2xl font-semibold">{counts ? counts.completed : "…"}</div>
-          <div className="text-sm text-ink-faint">Completed purchases</div>
+        <div className="flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-paper-sunk text-ink-soft">
+            <CheckCircle2 size={17} />
+          </div>
+          <div className="min-w-0">
+            <div className="mono text-2xl font-semibold">{counts ? counts.completed : "…"}</div>
+            <div className="text-sm text-ink-faint">Completed purchases</div>
+          </div>
         </div>
       </div>
 
