@@ -2,6 +2,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { listAllAuthUsers } from "@/lib/notifications";
 import AdminWithdrawalsTable, { type AdminWithdrawalRow } from "./AdminWithdrawalsTable";
 
 export default async function AdminWithdrawals({
@@ -22,9 +23,13 @@ export default async function AdminWithdrawals({
     const sellerIds = [...new Set((requests ?? []).map((r) => r.seller_id as string))];
     const requestIds = (requests ?? []).map((r) => r.id as string);
 
-    const [{ data: profiles }, { data: usersList }, { data: ledgerRows }] = await Promise.all([
+    const [{ data: profiles }, usersList, { data: ledgerRows }] = await Promise.all([
       sellerIds.length ? admin.from("profiles").select("id, full_name").in("id", sellerIds) : Promise.resolve({ data: [] }),
-      admin.auth.admin.listUsers(),
+      // 2026-09-12 fix: unpaginated listUsers() defaults to a single
+      // ~50-user page, silently dropping the email for any seller outside
+      // it. listAllAuthUsers() (src/lib/notifications.ts) pages through
+      // the full auth user list instead.
+      listAllAuthUsers(admin),
       // Which orders (whole or partially) each request actually claimed —
       // withdrawal_request_orders (033_withdrawal_order_splitting.sql), not
       // orders.withdrawal_id, since a large order split across several
@@ -32,7 +37,7 @@ export default async function AdminWithdrawals({
       requestIds.length ? admin.from("withdrawal_request_orders").select("withdrawal_id, order_id").in("withdrawal_id", requestIds) : Promise.resolve({ data: [] }),
     ]);
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name as string | null]));
-    const emailById = new Map((usersList?.users ?? []).map((u) => [u.id, u.email ?? null]));
+    const emailById = new Map(usersList.map((u) => [u.id, u.email ?? null]));
 
     const claimedOrderIds = [...new Set((ledgerRows ?? []).map((l) => l.order_id as string))];
     const { data: claimedOrders } = claimedOrderIds.length
