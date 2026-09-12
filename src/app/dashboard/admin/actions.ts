@@ -43,6 +43,11 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
   const admin = createAdminClient();
   if (!admin) throw new Error("Admin client unavailable");
 
+  // Fetched before the update purely to know what the seller's pending
+  // listing just turned into (see the notification block below) — not used
+  // to gate the update itself.
+  const { data: beforeRow } = await admin.from("listings").select("status, title, seller_id").eq("id", listingId).maybeSingle();
+
   const { error } = await admin.from("listings").update({ status }).eq("id", listingId);
   if (error) throw new Error(error.message);
 
@@ -57,6 +62,45 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
   revalidatePath(`/listing/${listingId}`);
   revalidatePath("/");
   revalidatePath("/buy");
+
+  // 2026-09-12 audit fix: this is the primary admin moderation workflow
+  // (Approve/Reject on AdminListingsTable, driven by this same function)
+  // and, unlike every other admin decision in this file (verification,
+  // withdrawals, listing edits, transfer disputes), it never told the
+  // seller anything — they had no way to know their pending listing was
+  // approved or rejected short of checking the dashboard by hand. Scoped
+  // tightly to the actual pending_review resolution (its two outcomes are
+  // "published" for Approve and "archived" for Reject) rather than every
+  // possible status change this function can make (Unpublish/Mark Sold/
+  // Restore/Delete are admin housekeeping, not a decision the seller is
+  // sitting there waiting to hear about).
+  if (beforeRow?.status === "pending_review" && (status === "published" || status === "archived") && beforeRow.seller_id) {
+    try {
+      const emails = await getUserEmails(admin, [beforeRow.seller_id as string]);
+      const sellerEmail = emails[beforeRow.seller_id as string];
+      if (sellerEmail) {
+        const title = (beforeRow.title as string) || "your listing";
+        const origin = await resolveOrigin();
+        if (status === "published") {
+          await sendEmail(
+            sellerEmail,
+            `Your listing "${title}" is now live on Durqo`,
+            `<p>Good news — your listing "${title}" was approved and is now live on the marketplace.</p>
+             <p><a href="${origin}/listing/${listingId}">View your listing</a></p>`
+          );
+        } else {
+          await sendEmail(
+            sellerEmail,
+            `Your listing "${title}" wasn't approved`,
+            `<p>Your listing "${title}" wasn't approved for the marketplace this time.</p>
+             <p>Please review it in your seller dashboard, make any needed changes, and submit a new listing when it's ready.</p>`
+          );
+        }
+      }
+    } catch (err) {
+      console.error("[admin] setListingStatus seller notification failed:", err);
+    }
+  }
 }
 
 export async function setUserRole(userId: string, role: UserRole) {
@@ -351,9 +395,13 @@ export async function setVerificationStatus(userId: string, decision: Verificati
   revalidatePath("/dashboard/admin/verification");
   revalidatePath("/dashboard/admin");
 
-  // Best-effort: let the seller know the outcome.
-  const { data: usersList } = await admin.auth.admin.listUsers();
-  const sellerEmail = usersList?.users.find((u) => u.id === userId)?.email;
+  // Best-effort: let the seller know the outcome. Looks up this one user
+  // directly by id (getUserById) rather than scanning a listUsers() page —
+  // 2026-09-12 fix: the previous plain listUsers() call only returns its
+  // default first ~50 users, so this silently found no email (and sent no
+  // notification at all) for any seller outside that page.
+  const { data: userLookup } = await admin.auth.admin.getUserById(userId);
+  const sellerEmail = userLookup?.user?.email;
   const sellerName = profile?.full_name || "there";
   if (sellerEmail) {
     const subject = decision === "verified" ? "You're verified on Durqo" : "Your verification wasn't approved";
@@ -416,10 +464,12 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/seller/earnings");
 
-  // Best-effort: let the seller know the outcome.
+  // Best-effort: let the seller know the outcome. Same getUserById fix as
+  // setVerificationStatus() above — a plain listUsers() call only sees its
+  // first ~50-user page.
   const { data: sellerProfile } = await admin.from("profiles").select("full_name").eq("id", request.seller_id).single();
-  const { data: usersList } = await admin.auth.admin.listUsers();
-  const sellerEmail = usersList?.users.find((u) => u.id === request.seller_id)?.email;
+  const { data: userLookup } = await admin.auth.admin.getUserById(request.seller_id);
+  const sellerEmail = userLookup?.user?.email;
   const sellerName = sellerProfile?.full_name || "there";
   const netAmountLabel = `$${Math.round(Number(request.net_amount)).toLocaleString("en-US")}`;
 
