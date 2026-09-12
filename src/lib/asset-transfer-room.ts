@@ -31,6 +31,18 @@ export function assetTransferRoomsEnabled(): boolean {
 // expected and harmless to just log for any order that predates the
 // Phase 2 checkout gate (which blocks new purchases of an unconfirmed
 // listing, so this case should only ever show up for older orders).
+// Pay Later — a 4th checkout option (api/pay-later/init) that creates a
+// real order + Transfer Room with no payment gateway at all. Live for every
+// signed-in buyer as of 2026-09-12 per the site owner's explicit decision,
+// made after being told what it means: any listing can be marked "sold"
+// with nothing actually paid. Defaults to ON (unlike
+// ASSET_TRANSFER_ROOMS_ENABLED above) so it needs no Vercel change to work
+// right after this deploy — set PAY_LATER_ENABLED=false in Vercel's
+// Environment Variables to turn it off again without a new deploy.
+export function payLaterEnabled(): boolean {
+  return process.env.PAY_LATER_ENABLED !== "false";
+}
+
 export async function maybeCreateTransferRoomsOnPayment(admin: AdminClient, orderIds: string[]) {
   if (!assetTransferRoomsEnabled() || orderIds.length === 0) return;
 
