@@ -27,6 +27,9 @@ import { getSellerUnansweredCommentsCount } from "@/lib/data/comments.client";
 import { createClient } from "@/lib/supabase/client";
 import { getUnreadMessageCount } from "@/lib/data/messages.client";
 import { getUnreadTransferMessagesCount } from "@/lib/data/transfer-messages.client";
+import { getMyListingsCount } from "@/lib/data/seller-listings.client";
+import { getBuyerOpenOrdersCount, getSellerOpenOrdersCount } from "@/lib/data/orders.client";
+import { getWishlistCount } from "@/lib/data/wishlist.client";
 import { playNotificationSound } from "@/lib/notification-sound";
 
 // Nav items are defined in src/lib/dashboard-nav.ts, which several
@@ -76,11 +79,9 @@ function NavIcon({ name, size, className }: { name?: DashboardIconName; size: nu
   return <Icon size={size} className={className} />;
 }
 
-// The one nav item whose badge is a live count rather than the still-static
-// placeholders on the other items (My Listings, Orders — see the seller nav
-// definition in src/lib/dashboard-nav.ts) — per the Sep 10, 2026 request,
-// this should always reflect how many questions are actually waiting for a
-// reply, not a hardcoded number.
+// The one nav item whose badge is a live count — per the Sep 10, 2026
+// request, this should always reflect how many questions are actually
+// waiting for a reply, not a hardcoded number.
 const SELLER_COMMENTS_HREF = "/dashboard/seller/questions";
 
 // Two more live badges (2026-09-12 request: real-time messages + unread
@@ -91,6 +92,16 @@ const SELLER_COMMENTS_HREF = "/dashboard/seller/questions";
 // seller side).
 const MESSAGES_HREFS = ["/dashboard/buyer/messages", "/dashboard/seller/messages"];
 const TRANSFERS_HREFS = ["/dashboard/buyer/transfers", "/dashboard/seller/transfers"];
+
+// My Listings / Orders / Wishlist used to carry hardcoded placeholder
+// numbers directly in src/lib/dashboard-nav.ts (3, 1/2, 3 respectively) —
+// the same number for every single signed-in seller/buyer forever,
+// regardless of their actual data. Fixed alongside the Asset Transfers
+// stuck-badge bug below (site owner report, 2026-09-12: dashboard badges
+// not reflecting reality / never clearing) by making these live too.
+const MY_LISTINGS_HREF = "/dashboard/seller";
+const ORDERS_HREFS = ["/dashboard/buyer/orders", "/dashboard/seller/orders"];
+const WISHLIST_HREF = "/dashboard/buyer/wishlist";
 
 // Mobile-width redesign (Sep 11, 2026): the desktop sidebar below is
 // untouched. Below md, it's replaced by two pieces that read the same `nav`
@@ -119,9 +130,15 @@ export default function DashboardShell({
   const hasSellerCommentsNav = nav.some((item) => item.href === SELLER_COMMENTS_HREF);
   const hasMessagesNav = nav.some((item) => MESSAGES_HREFS.includes(item.href));
   const hasTransfersNav = nav.some((item) => TRANSFERS_HREFS.includes(item.href));
+  const hasListingsNav = nav.some((item) => item.href === MY_LISTINGS_HREF);
+  const hasOrdersNav = nav.some((item) => ORDERS_HREFS.includes(item.href));
+  const hasWishlistNav = nav.some((item) => item.href === WISHLIST_HREF);
   const [commentsBadge, setCommentsBadge] = useState<number | undefined>(undefined);
   const [messagesBadge, setMessagesBadge] = useState<number | undefined>(undefined);
   const [transfersBadge, setTransfersBadge] = useState<number | undefined>(undefined);
+  const [listingsBadge, setListingsBadge] = useState<number | undefined>(undefined);
+  const [ordersBadge, setOrdersBadge] = useState<number | undefined>(undefined);
+  const [wishlistBadge, setWishlistBadge] = useState<number | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
 
@@ -155,6 +172,65 @@ export default function DashboardShell({
     // clicking from "Comments" to another tab right after replying should
     // still see the badge drop.
   }, [hasSellerCommentsNav, pathname]);
+
+  // Live "My Listings" badge (2026-09-12 fix — see MY_LISTINGS_HREF above).
+  // A plain total count, not an "unread" indicator, so there's no realtime
+  // subscription here — refetching on mount and on every dashboard
+  // navigation (same as Comments above) is enough to catch a listing just
+  // added or removed.
+  useEffect(() => {
+    if (!hasListingsNav) return;
+    let cancelled = false;
+    async function refetch() {
+      const count = await getMyListingsCount();
+      if (!cancelled) setListingsBadge(count > 0 ? count : undefined);
+    }
+    refetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasListingsNav, pathname]);
+
+  // Live "Orders" badge (2026-09-12 fix — see ORDERS_HREFS above). Counts
+  // only OPEN orders (see getBuyerOpenOrdersCount/getSellerOpenOrdersCount)
+  // so a completed or cancelled order doesn't keep this lit forever — same
+  // reasoning as the Asset Transfers badge fix below. Buyer and seller nav
+  // each carry only their own one of the two hrefs, so checking which is
+  // present in `nav` is enough to pick the right side.
+  useEffect(() => {
+    if (!hasOrdersNav) return;
+    let cancelled = false;
+    const side: "buyer" | "seller" = nav.some((item) => item.href === "/dashboard/seller/orders") ? "seller" : "buyer";
+    async function refetch() {
+      const count = side === "seller" ? await getSellerOpenOrdersCount() : await getBuyerOpenOrdersCount();
+      if (!cancelled) setOrdersBadge(count > 0 ? count : undefined);
+    }
+    refetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasOrdersNav, pathname, nav]);
+
+  // Live "Wishlist" badge (2026-09-12 fix — see WISHLIST_HREF above),
+  // reusing the same getWishlistCount() the Header's own wishlist icon
+  // already uses. Listens for COUNTS_CHANGED_EVENT so toggling a heart on
+  // any listing page updates this badge immediately, not just on the next
+  // dashboard navigation — the same event Header.tsx and the seller
+  // Comments badge above already rely on.
+  useEffect(() => {
+    if (!hasWishlistNav) return;
+    let cancelled = false;
+    async function refetch() {
+      const count = await getWishlistCount();
+      if (!cancelled) setWishlistBadge(count > 0 ? count : undefined);
+    }
+    refetch();
+    window.addEventListener(COUNTS_CHANGED_EVENT, refetch);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(COUNTS_CHANGED_EVENT, refetch);
+    };
+  }, [hasWishlistNav, pathname]);
 
   // Who's signed in — needed to scope both realtime subscriptions below to
   // this user's own rows. Resolved once; both effects wait for it.
@@ -326,6 +402,9 @@ export default function DashboardShell({
     if (item.href === SELLER_COMMENTS_HREF) return commentsBadge;
     if (MESSAGES_HREFS.includes(item.href)) return messagesBadge;
     if (TRANSFERS_HREFS.includes(item.href)) return transfersBadge;
+    if (item.href === MY_LISTINGS_HREF) return listingsBadge;
+    if (ORDERS_HREFS.includes(item.href)) return ordersBadge;
+    if (item.href === WISHLIST_HREF) return wishlistBadge;
     return item.badge;
   }
 
