@@ -394,10 +394,16 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
 // requireAdmin() alone, exactly the same shape as setWithdrawalStatus()
 // and setVerificationStatus() above.
 //
+// 2026-09-12 update: "approved_despite_report" now DOES touch
+// `orders.status` — see the block below it in the function body. This is
+// the admin-side half of the same payout-release wiring added to the
+// buyer's own transfer_approve() RPC (migration 039): reaching
+// payout_eligible, by either path, is what makes a non-Escrow.com order's
+// funds withdrawable. Every other resolution type here still leaves
+// orders.status alone (they don't reach payout_eligible, so there's
+// nothing to release).
+//
 // Deliberately NOT done here (kept out of scope for this pass):
-//   - Touching `orders.status` — an admin still uses the existing Orders
-//     admin page for that, so the two admin surfaces don't race each other
-//     writing the same order.
 //   - Actually moving money (refunds, Stripe/SSLCommerz/Escrow.com
 //     reversals) — same as every other status field in this codebase,
 //     this only records the outcome; whoever resolves the dispute still
@@ -481,6 +487,31 @@ export async function resolveTransferDispute(
       .eq("room_id", roomId)
       .eq("status", "received");
     if (error) throw new Error(error.message);
+
+    // Same payout-release rule as transfer_approve() (migration 039): an
+    // admin overriding a buyer's report and finishing the transfer anyway
+    // is the same real-world event as the buyer approving it themselves,
+    // so it releases funds the same way — for every payment channel except
+    // Escrow.com, where the licensed provider's own release on their own
+    // platform is the only payout event (035_exclude_escrow_com_from_
+    // payout_ledger.sql already keeps escrow_com orders out of the
+    // withdrawal ledger; this is the write-side half of that same rule).
+    // The `.in("status", ...)` guard means this never overwrites an order
+    // some other event already moved past "paid" (e.g. one an admin
+    // already cancelled or completed by hand on the Orders page).
+    const { data: order } = await supabaseAdmin
+      .from("orders")
+      .select("id, payment_channel")
+      .eq("id", room.order_id)
+      .maybeSingle();
+    if (order && order.payment_channel !== "escrow_com") {
+      const { error: orderError } = await supabaseAdmin
+        .from("orders")
+        .update({ status: "completed" })
+        .eq("id", order.id)
+        .in("status", ["in_durqo", "in_escrow"]);
+      if (orderError) throw new Error(orderError.message);
+    }
   } else if (resolutionType === "returned_to_seller" && issue?.item_id) {
     // Only the specific flagged item gets sent back for a redo — every
     // other item's progress is untouched. A general (no specific item)
@@ -512,4 +543,9 @@ export async function resolveTransferDispute(
   revalidatePath(`/dashboard/transfer/${room.order_id}`);
   revalidatePath("/dashboard/seller/orders");
   revalidatePath("/dashboard/buyer/orders");
+  // Only actually changes anything for approved_despite_report (the one
+  // resolution that can flip an order to completed above), but revalidating
+  // unconditionally is harmless and keeps this from silently going stale if
+  // another resolution type ever gains its own orders.status effect.
+  revalidatePath("/dashboard/seller/earnings");
 }
