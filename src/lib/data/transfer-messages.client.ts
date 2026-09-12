@@ -10,6 +10,16 @@ import { createClient } from "@/lib/supabase/client";
 // has: a Transfer Room already is the thread, one per order, so this only
 // ever needs a total across every room the current user is a party to.
 
+// A room in any of these stages is done — nothing left for either party to
+// do in it (site owner report, 2026-09-12: a room showing "Approved" on
+// the Asset Transfers list still kept the sidebar badge lit forever, since
+// nobody reopens an already-finished deal just to trigger
+// markTransferMessagesRead() below on some old unread message). Matches
+// the terminal end of the stage machine in migration 036 — everything
+// before these still represents an active back-and-forth where unread
+// Deal Messages genuinely need attention.
+const TERMINAL_TRANSFER_STAGES = ["payout_eligible", "resolved_refund", "resolved_settlement", "cancelled"];
+
 // Powers the live "Asset Transfers" nav badge in DashboardShell.tsx.
 export async function getUnreadTransferMessagesCount(): Promise<number> {
   const supabase = createClient();
@@ -20,9 +30,11 @@ export async function getUnreadTransferMessagesCount(): Promise<number> {
 
   const { data: rooms } = await supabase
     .from("asset_transfer_rooms")
-    .select("id")
+    .select("id, stage")
     .or(`buyer_id.eq.${myId},seller_id.eq.${myId}`);
-  const roomIds = (rooms ?? []).map((r) => r.id as string);
+  const roomIds = (rooms ?? [])
+    .filter((r) => !TERMINAL_TRANSFER_STAGES.includes(r.stage as string))
+    .map((r) => r.id as string);
   if (roomIds.length === 0) return 0;
 
   const { count, error } = await supabase

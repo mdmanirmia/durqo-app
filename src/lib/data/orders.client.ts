@@ -86,3 +86,37 @@ export function getBuyerOrders(): Promise<OrderRow[]> {
 export function getSellerOrders(): Promise<OrderRow[]> {
   return fetchOrders("seller");
 }
+
+// Powers the live "Orders" nav badge in DashboardShell.tsx (2026-09-12 fix
+// — that badge used to be a hardcoded "2"/"1" for every buyer/seller
+// regardless of their actual orders). Counts only OPEN orders — same
+// "not completed, not cancelled" definition getBuyerOrderCounts() already
+// uses for the buyer overview page's own "Open orders" stat — rather than
+// every order ever placed, so a finished order doesn't keep the sidebar
+// badge lit forever the same way a stale unread Transfer Room message
+// used to (see transfer-messages.client.ts's getUnreadTransferMessagesCount
+// fix from the same report).
+const OPEN_ORDER_STATUSES: OrderStatus[] = ["requested", "awaiting_payment", "in_escrow", "in_durqo"];
+
+async function fetchOpenOrdersCount(side: "buyer" | "seller"): Promise<number> {
+  const supabase = createClient();
+  if (!supabase) return 0;
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return 0;
+  const myIdColumn = side === "buyer" ? "buyer_id" : "seller_id";
+  const { count, error } = await supabase
+    .from("orders")
+    .select("id", { count: "exact", head: true })
+    .eq(myIdColumn, userData.user.id)
+    .in("status", OPEN_ORDER_STATUSES);
+  if (error || count === null) return 0;
+  return count;
+}
+
+export function getBuyerOpenOrdersCount(): Promise<number> {
+  return fetchOpenOrdersCount("buyer");
+}
+
+export function getSellerOpenOrdersCount(): Promise<number> {
+  return fetchOpenOrdersCount("seller");
+}
