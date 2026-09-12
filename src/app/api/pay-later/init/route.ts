@@ -3,7 +3,9 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listing-assets-gate";
-import { payLaterEnabled, maybeCreateTransferRoomsOnPayment } from "@/lib/asset-transfer-room";
+import { payLaterEnabled, maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
+import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
+import { getUserEmails } from "@/lib/notifications";
 
 // "Buy Now — Pay Later" — a 4th checkout option on every listing page,
 // alongside Stripe/SSLCommerz/Escrow.com. Live for every signed-in buyer as
@@ -118,7 +120,42 @@ export async function POST(request: Request) {
 
   await admin.from("listings").update({ status: "sold" }).eq("id", listing.id).eq("status", "published");
   await admin.from("cart_items").delete().eq("user_id", buyerId).eq("listing_id", listing.id);
-  await maybeCreateTransferRoomsOnPayment(admin, [insertedOrder.id]);
+  const roomReadyOrderIds = await maybeCreateTransferRoomsOnPayment(admin, [insertedOrder.id]);
+  const roomReady = roomReadyOrderIds.includes(insertedOrder.id);
+
+  // 2026-09-12: this route never sent any notification at all — the other
+  // three payment rails (Stripe/SSLCommerz/Escrow.com) all email admin +
+  // buyer + seller from their webhooks, and the seller in particular needs
+  // to know a Pay Later "sale" happened at all, since nothing charged them
+  // and there's no payment-gateway email trail to notice it from otherwise.
+  // Best-effort, same as the other three — never blocks the response.
+  try {
+    const origin = new URL(request.url).origin;
+    const emails = await getUserEmails(admin, [buyerId, listing.seller_id]);
+    const buyerEmail = emails[buyerId];
+    const sellerEmail = emails[listing.seller_id];
+
+    await sendEmail(
+      ADMIN_EMAIL,
+      `New Pay Later "purchase" — ${listing.title}`,
+      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy "${listing.title}" for $${price.toLocaleString()} — no payment was actually collected.</p>`
+    );
+
+    if (sellerEmail) {
+      await sendEmail(
+        sellerEmail,
+        `Your listing "${listing.title}" has sold`,
+        `<p>Good news — "${listing.title}" sold via Pay Later for $${price.toLocaleString()}.</p>
+         ${
+           roomReady
+             ? `<p>The buyer's Transfer Room is open now — head there to start transferring the assets.</p>${transferRoomEmailCta(origin, insertedOrder.id)}`
+             : `<p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
+         }`
+      );
+    }
+  } catch (err) {
+    console.error("[pay-later-init] notification emails failed:", err);
+  }
 
   revalidatePath(`/listing/${listing.id}`);
   revalidatePath("/");
