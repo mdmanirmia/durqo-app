@@ -4,7 +4,13 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getEscrowConfig, fetchEscrowTransaction } from "@/lib/escrow";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
-import { maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
+import {
+  maybeCreateTransferRoomsOnPayment,
+  transferRoomEmailCta,
+  buyerTransferGuidanceHtml,
+  sellerTransferGuidanceHtml,
+  listingLinkHtml,
+} from "@/lib/asset-transfer-room";
 
 // Escrow.com's webhook listener. Register this route's full URL
 // (<your-domain>/api/escrow/webhook) at escrow.com -> My Integrations ->
@@ -99,7 +105,7 @@ export async function POST(request: Request) {
       await sendEmail(
         ADMIN_EMAIL,
         `New Escrow.com purchase — ${title}`,
-        `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for "${title}".</p>
+        `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for ${listingLinkHtml(origin, order.listing_id as string, title)}.</p>
          <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
       );
       // Escrow.com's whole payment flow happens on their own hosted pages,
@@ -114,7 +120,11 @@ export async function POST(request: Request) {
           "Your Durqo purchase is confirmed",
           `<p>Thanks for your purchase — your payment for "${title}" is now held securely in escrow by Escrow.com.</p>
            <p>Once the seller transfers the assets and you confirm receipt on Escrow.com, funds will be released to them.</p>
-           ${roomReady ? `<p>Track the handover in your Transfer Room:</p>${transferRoomEmailCta(origin, order.id)}` : ""}`
+           ${
+             roomReady
+               ? `${buyerTransferGuidanceHtml()}${transferRoomEmailCta(origin, order.id)}`
+               : `<p>We'll email you as soon as your Transfer Room is ready, with a link and step-by-step guidance for receiving the assets.</p>`
+           }`
         );
       }
       if (sellerEmail) {
@@ -123,7 +133,11 @@ export async function POST(request: Request) {
           `Your listing "${title}" has sold`,
           `<p>Good news — "${title}" sold via Escrow.com, and the buyer's payment is now secured in escrow.</p>
            <p>Log in to Escrow.com to agree to the transaction (if you haven't already) and arrange the asset transfer.</p>
-           ${roomReady ? `<p>Use your Transfer Room to coordinate the handover with the buyer:</p>${transferRoomEmailCta(origin, order.id)}` : ""}`
+           ${
+             roomReady
+               ? `${sellerTransferGuidanceHtml()}${transferRoomEmailCta(origin, order.id)}`
+               : `<p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
+           }`
         );
       }
     } catch (err) {
