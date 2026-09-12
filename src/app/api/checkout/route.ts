@@ -146,7 +146,11 @@ export async function POST(request: Request) {
           product_data: { name: l.title },
         },
       })),
-      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      // order_ids is known right now (created above) — no need to wait on
+      // Stripe's own session metadata round-trip. checkout/success/page.tsx
+      // uses it to send a single-item purchase straight to its Transfer
+      // Room instead of the generic confirmation screen.
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}&order_ids=${insertedOrders.map((o) => o.id).join(",")}`,
       cancel_url: `${origin}/cart`,
       customer_email: userData.user.email ?? undefined,
       metadata: {
