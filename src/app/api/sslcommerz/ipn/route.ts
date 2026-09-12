@@ -4,7 +4,7 @@ import { getSslcommerzConfig, validateSslcommerzPayment } from "@/lib/sslcommerz
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
-import { maybeCreateTransferRoomsOnPayment } from "@/lib/asset-transfer-room";
+import { maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
 
 // SSLCommerz's IPN (Instant Payment Notification) listener — STEP 2 of
 // their own 3-step integration guide, and the real source of truth for
@@ -96,7 +96,9 @@ export async function POST(request: Request) {
     const autoRoomOrderIds = matchingOrders
       .filter((o) => Number(o.remainder_usd ?? 0) <= 0)
       .map((o) => o.id);
-    await maybeCreateTransferRoomsOnPayment(admin, autoRoomOrderIds);
+    const roomReadyOrderIds = new Set(await maybeCreateTransferRoomsOnPayment(admin, autoRoomOrderIds));
+    const orderIdByListingId = new Map(matchingOrders.map((o) => [o.listing_id, o.id]));
+    const origin = new URL(request.url).origin;
 
     const listingIds = matchingOrders.map((o) => o.listing_id);
     await admin.from("listings").update({ status: "sold" }).in("id", listingIds).eq("status", "published");
@@ -183,11 +185,17 @@ export async function POST(request: Request) {
       for (const listing of paidListings ?? []) {
         const sellerEmail = emails[listing.seller_id as string];
         if (!sellerEmail) continue;
+        const orderId = orderIdByListingId.get(listing.id as string);
+        const roomReady = orderId && roomReadyOrderIds.has(orderId);
         await sendEmail(
           sellerEmail,
           `Your listing "${listing.title}" has sold`,
           `<p>Good news — "${listing.title}" sold via our Bangladesh payment gateway.</p>
-           <p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
+           ${
+             roomReady && orderId
+               ? `<p>Your buyer's Transfer Room is open now — head there to start transferring the assets.</p>${transferRoomEmailCta(origin, orderId)}`
+               : `<p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
+           }`
         );
       }
     } catch (err) {
