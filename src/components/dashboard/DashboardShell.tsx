@@ -19,6 +19,7 @@ import {
   Wallet,
   Tag,
   Users,
+  X,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import { COUNTS_CHANGED_EVENT } from "@/lib/count-events";
@@ -124,6 +125,19 @@ export default function DashboardShell({
   const [menuOpen, setMenuOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
 
+  // In-app notification popup (2026-09-12 request, on top of the badge +
+  // sound above): a brief toast naming who just messaged and a preview of
+  // what they said, tappable straight to that conversation/room. One slot
+  // only — a second notification arriving while one is showing just
+  // replaces it rather than stacking, which keeps this simple and is rare
+  // in practice (messages don't usually arrive back-to-back).
+  const [toast, setToast] = useState<{ title: string; body: string; href: string } | null>(null);
+  useEffect(() => {
+    if (!toast) return;
+    const id = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(id);
+  }, [toast]);
+
   useEffect(() => {
     if (!hasSellerCommentsNav) return;
     let cancelled = false;
@@ -174,13 +188,24 @@ export default function DashboardShell({
     refetch();
     const supabase = createClient();
     if (!supabase) return;
+    const messagesHref = nav.find((item) => MESSAGES_HREFS.includes(item.href))?.href;
     const channel = supabase
       .channel(`dashboard-messages-${userId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `recipient_id=eq.${userId}` },
-        () => {
+        async (payload) => {
+          const row = payload.new as { sender_id?: string; body?: string; listing_id?: string | null };
           playNotificationSound();
+          if (row.sender_id && messagesHref) {
+            const { data: profile } = await supabase
+              .from("profiles")
+              .select("full_name")
+              .eq("id", row.sender_id)
+              .maybeSingle();
+            const qs = new URLSearchParams({ with: row.sender_id, listing: row.listing_id ?? "" }).toString();
+            setToast({ title: profile?.full_name || "Someone", body: row.body ?? "", href: `${messagesHref}?${qs}` });
+          }
           refetch();
         }
       )
@@ -196,7 +221,7 @@ export default function DashboardShell({
       window.removeEventListener(COUNTS_CHANGED_EVENT, refetch);
       supabase.removeChannel(channel);
     };
-  }, [hasMessagesNav, userId, pathname]);
+  }, [hasMessagesNav, userId, pathname, nav]);
 
   // Live "Asset Transfers" badge + notification sound for Deal Messages.
   // Realtime can't filter on a joined column (a message row only carries
@@ -212,21 +237,52 @@ export default function DashboardShell({
   useEffect(() => {
     if (!hasTransfersNav || !userId) return;
     let cancelled = false;
+    const supabase = createClient();
+    if (!supabase) return;
+
+    // room_id -> order_id, so a toast for a Deal Message can link straight
+    // to that specific room (/dashboard/transfer/{orderId}) rather than the
+    // generic Asset Transfers list. Refreshed alongside the badge count
+    // rather than kept perfectly live — a message in a room created after
+    // the most recent refresh falls back to the list link below, which is
+    // a harmless miss, not a broken one.
+    let roomOrderMap = new Map<string, string>();
+    async function refreshRoomMap() {
+      const { data: rooms } = await supabase!
+        .from("asset_transfer_rooms")
+        .select("id, order_id")
+        .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`);
+      roomOrderMap = new Map((rooms ?? []).map((r) => [r.id as string, r.order_id as string]));
+    }
     async function refetch() {
       const count = await getUnreadTransferMessagesCount();
       if (!cancelled) setTransfersBadge(count > 0 ? count : undefined);
     }
+    refreshRoomMap();
     refetch();
-    const supabase = createClient();
-    if (!supabase) return;
+
+    const transfersHref = nav.find((item) => TRANSFERS_HREFS.includes(item.href))?.href ?? "/dashboard";
     const channel = supabase
       .channel(`dashboard-transfer-messages-${userId}`)
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "asset_transfer_messages" },
-        (payload) => {
-          const row = payload.new as { sender_id?: string };
-          if (row.sender_id && row.sender_id !== userId) playNotificationSound();
+        async (payload) => {
+          const row = payload.new as { sender_id?: string; body?: string; room_id?: string };
+          if (row.sender_id && row.sender_id !== userId) {
+            playNotificationSound();
+            const { data: profile } = await supabase!
+              .from("profiles")
+              .select("full_name")
+              .eq("id", row.sender_id)
+              .maybeSingle();
+            const orderId = row.room_id ? roomOrderMap.get(row.room_id) : undefined;
+            setToast({
+              title: profile?.full_name || "Someone",
+              body: row.body ?? "",
+              href: orderId ? `/dashboard/transfer/${orderId}` : transfersHref,
+            });
+          }
           refetch();
         }
       )
@@ -236,7 +292,7 @@ export default function DashboardShell({
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [hasTransfersNav, userId, pathname]);
+  }, [hasTransfersNav, userId, pathname, nav]);
 
   // No separate "close on route change" effect is needed: every dashboard
   // page renders its own <DashboardShell> directly rather than sharing one
@@ -427,6 +483,29 @@ export default function DashboardShell({
               className="flex items-center gap-2 border-t border-rule px-4 py-3 text-sm font-medium text-ink-soft"
             >
               <ArrowLeftRight size={16} /> {switchLabel}
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* In-app notification popup — see the `toast` state above. Sits
+          above the mobile bottom tab bar (z-30) on small screens and just
+          floats in the corner on desktop, where there's no tab bar to
+          clear. */}
+      {toast && (
+        <div className="fixed inset-x-4 bottom-20 z-50 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:max-w-sm md:bottom-6">
+          <div className="relative rounded-xl border border-rule bg-paper-raised p-4 pr-8 shadow-lg">
+            <button
+              type="button"
+              onClick={() => setToast(null)}
+              aria-label="Dismiss notification"
+              className="absolute right-2 top-2 rounded p-1 text-ink-faint hover:bg-paper-sunk hover:text-ink"
+            >
+              <X size={14} />
+            </button>
+            <Link href={toast.href} onClick={() => setToast(null)} className="block">
+              <p className="text-sm font-semibold text-ink">{toast.title}</p>
+              <p className="mt-0.5 line-clamp-2 text-xs text-ink-soft">{toast.body}</p>
             </Link>
           </div>
         </div>

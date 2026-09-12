@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import { Send } from "lucide-react";
@@ -41,6 +41,11 @@ export default function MessagesPanel({
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+
+  // Auto-scroll to the newest message — without this, a message delivered
+  // live (see the realtime subscription below) could land below the fold
+  // of this scroll area instead of where the reader is looking.
+  const threadEndRef = useRef<HTMLDivElement>(null);
 
   const refreshConversations = useCallback(async () => {
     const convos = await getConversations();
@@ -137,6 +142,22 @@ export default function MessagesPanel({
           }
         }
       )
+      .on(
+        // Read receipts (2026-09-12 request): when the OTHER person opens
+        // this thread, their markThreadRead() call fires an UPDATE on the
+        // messages I sent them (setting read_at) — this is what lets the
+        // "Seen" label under my own last message appear live, without me
+        // needing to reload. Requires the messages_update_recipient policy
+        // to actually exist (migration 041 — see that file for the bug
+        // this fixes: it was written back in migration 004 but never
+        // actually applied, so read_at was never getting set at all).
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `sender_id=eq.${myId}` },
+        (payload) => {
+          const row = payload.new as { id: string; read_at: string | null };
+          setThread((prev) => (prev ? prev.map((m) => (m.id === row.id ? { ...m, readAt: row.read_at } : m)) : prev));
+        }
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
@@ -161,6 +182,10 @@ export default function MessagesPanel({
       cancelled = true;
     };
   }, [selected, refreshConversations]);
+
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ block: "end" });
+  }, [thread]);
 
   async function handleSend() {
     const body = draft.trim();
@@ -235,8 +260,14 @@ export default function MessagesPanel({
                   ) : thread.length === 0 ? (
                     <p className="text-sm text-ink-faint">No messages yet — say hello.</p>
                   ) : (
-                    thread.map((m) => {
+                    thread.map((m, i) => {
                       const mine = m.senderId === myId;
+                      // Read receipt (2026-09-12 request): only the very
+                      // last message I sent shows a "Seen" label, once its
+                      // read_at is set — matching the common chat-app
+                      // convention of marking just the latest bubble in a
+                      // run rather than every single message.
+                      const isLastMineMessage = mine && i === thread.length - 1;
                       return (
                         <div key={m.id} className={clsx("flex flex-col", mine ? "items-end" : "items-start")}>
                           <div
@@ -247,11 +278,15 @@ export default function MessagesPanel({
                           >
                             {m.body}
                           </div>
-                          <span className="mt-0.5 text-[0.65rem] text-ink-faint">{timeLabel(m.createdAt)}</span>
+                          <span className="mt-0.5 text-[0.65rem] text-ink-faint">
+                            {timeLabel(m.createdAt)}
+                            {isLastMineMessage && m.readAt && " · Seen"}
+                          </span>
                         </div>
                       );
                     })
                   )}
+                  <div ref={threadEndRef} />
                 </div>
 
                 <div className="border-t border-rule p-3">
