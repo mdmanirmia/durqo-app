@@ -285,17 +285,29 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
   // minute so the countdown actually counts down while the page is left
   // open, without needing a live subscription.
   const [inspectionLabel, setInspectionLabel] = useState<string | null>(null);
+  // 2026-09-12: whether the inspection window has visibly lapsed on THIS
+  // client, independent of whether the room's `stage` has actually flipped
+  // to admin_review server-side yet (that only happens once a day, via the
+  // sweep_expired_inspections() cron — see migration 043's comment for the
+  // full story). transfer_approve() now also enforces this deadline itself,
+  // so approving here would fail either way — but the "no release action
+  // available" requirement means the button must actually disappear the
+  // moment the countdown hits zero, not just get rejected after the click.
+  const [inspectionExpired, setInspectionExpired] = useState(false);
   useEffect(() => {
     function recompute() {
       if (!room || room.stage !== "inspection_active" || !room.inspectionDeadlineAt) {
         setInspectionLabel(null);
+        setInspectionExpired(false);
         return;
       }
       const msLeft = new Date(room.inspectionDeadlineAt).getTime() - Date.now();
       if (msLeft <= 0) {
-        setInspectionLabel("Inspection window has ended — awaiting the sweep to admin review.");
+        setInspectionLabel("Inspection window has ended — this transfer now needs admin review.");
+        setInspectionExpired(true);
         return;
       }
+      setInspectionExpired(false);
       const days = Math.floor(msLeft / 86_400_000);
       const hours = Math.floor((msLeft % 86_400_000) / 3_600_000);
       if (days > 0) {
@@ -440,7 +452,7 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
           <div className="flex flex-col gap-5 md:hidden">
             <PaymentStrip data={data} />
             <MobileTimeline stage={room.stage} />
-            <NextActionCard data={data} room={room} inspectionLabel={inspectionLabel} busyKey={busyKey} handlers={handlers!} />
+            <NextActionCard data={data} room={room} inspectionLabel={inspectionLabel} inspectionExpired={inspectionExpired} busyKey={busyKey} handlers={handlers!} />
             <AssetsSection
               data={data}
               room={room}
@@ -512,14 +524,14 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
             </div>
 
             <div className="sticky top-6 flex flex-col gap-4">
-              <NextActionCard data={data} room={room} inspectionLabel={inspectionLabel} busyKey={busyKey} handlers={handlers!} />
+              <NextActionCard data={data} room={room} inspectionLabel={inspectionLabel} inspectionExpired={inspectionExpired} busyKey={busyKey} handlers={handlers!} />
               <ReportIssueButton data={data} room={room} onOpen={() => setIssueModalOpen(true)} />
               <OrderSummaryCard data={data} />
             </div>
           </div>
 
           {/* ---------- Mobile sticky primary action ---------- */}
-          <MobileStickyAction data={data} room={room} busyKey={busyKey} handlers={handlers!} />
+          <MobileStickyAction data={data} room={room} inspectionExpired={inspectionExpired} busyKey={busyKey} handlers={handlers!} />
 
           {issueModalOpen && (
             <ReportIssueModal
@@ -663,12 +675,14 @@ function NextActionCard({
   data,
   room,
   inspectionLabel,
+  inspectionExpired,
   busyKey,
   handlers,
 }: {
   data: TransferRoomData;
   room: TransferRoomState;
   inspectionLabel: string | null;
+  inspectionExpired: boolean;
   busyKey: string | null;
   handlers: Handlers;
 }) {
@@ -690,6 +704,17 @@ function NextActionCard({
         : "Waiting for the buyer to confirm receipt of each asset.";
       break;
     case "inspection_active":
+      // 2026-09-12: once the window has visibly lapsed on this client, treat
+      // it exactly like admin_review — no Approve action, no "click to
+      // release" path — even though the room's own `stage` here still says
+      // inspection_active until the next sweep_expired_inspections() run
+      // flips it server-side. transfer_approve() (migration 043) now
+      // rejects an approval past the deadline regardless, so this is about
+      // never showing a release control that would just fail anyway.
+      if (inspectionExpired) {
+        body = "Your inspection window has ended. This transfer now needs admin review before it can proceed — funds are never released automatically.";
+        break;
+      }
       body = isBuyer
         ? "You've received everything. Review it, then approve the transfer or report an issue before the window closes."
         : "The buyer is inspecting what you transferred.";
@@ -722,7 +747,17 @@ function NextActionCard({
       break;
     case "payout_eligible":
       if (isBuyer) {
-        body = "You approved the transfer. The seller has been notified and can now withdraw the payout for this order.";
+        // 2026-09-12 fix: this used to say the same thing regardless of
+        // payment channel, but for an Escrow.com order orderStatus never
+        // actually flips to "completed" (migration 039 excludes it on
+        // purpose — release happens on Escrow.com's own platform, not
+        // through Durqo) so telling that buyer "the seller can now withdraw
+        // the payout" was simply untrue. Mirrors the same orderStatus
+        // check the seller branch below already uses.
+        body =
+          data.orderStatus === "completed"
+            ? "You approved the transfer. The seller has been notified and can now withdraw the payout for this order."
+            : "You approved the transfer. Funds for this order are released to the seller on Escrow.com's platform.";
       } else if (data.orderStatus === "completed") {
         // orderStatus flips to "completed" only for non-escrow_com orders
         // (migration 039) — exactly the condition that also makes the order
@@ -763,8 +798,20 @@ function NextActionCard({
   );
 }
 
-function MobileStickyAction({ data, room, busyKey, handlers }: { data: TransferRoomData; room: TransferRoomState; busyKey: string | null; handlers: Handlers }) {
-  if (data.viewerSide !== "buyer" || room.stage !== "inspection_active") return null;
+function MobileStickyAction({
+  data,
+  room,
+  inspectionExpired,
+  busyKey,
+  handlers,
+}: {
+  data: TransferRoomData;
+  room: TransferRoomState;
+  inspectionExpired: boolean;
+  busyKey: string | null;
+  handlers: Handlers;
+}) {
+  if (data.viewerSide !== "buyer" || room.stage !== "inspection_active" || inspectionExpired) return null;
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 border-t border-rule bg-paper p-3 md:hidden" style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}>
       <button
