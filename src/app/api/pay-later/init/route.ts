@@ -138,8 +138,27 @@ export async function POST(request: Request) {
     await sendEmail(
       ADMIN_EMAIL,
       `New Pay Later "purchase" — ${listing.title}`,
-      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy "${listing.title}" for $${price.toLocaleString()} — no payment was actually collected.</p>`
+      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy "${listing.title}" for $${price.toLocaleString()} — no payment was actually collected.</p>
+       <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
     );
+
+    // 2026-09-12: this route previously sent no buyer email at all — the
+    // other three payment rails all confirm the purchase to the buyer from
+    // their webhooks, so Pay Later shouldn't be the one silent path.
+    if (buyerEmail) {
+      await sendEmail(
+        buyerEmail,
+        "Your Durqo purchase is confirmed",
+        `<p>Thanks for your purchase — here's what you bought:</p>
+         <ul><li>${listing.title} — $${price.toLocaleString()}</li></ul>
+         <p>This purchase was made using Pay Later — arrange payment directly with our team as agreed.</p>
+         ${
+           roomReady
+             ? `<p>Your Transfer Room is open — head there to track the handover and confirm receipt once the seller transfers the assets.</p>${transferRoomEmailCta(origin, insertedOrder.id)}`
+             : ""
+         }`
+      );
+    }
 
     if (sellerEmail) {
       await sendEmail(
