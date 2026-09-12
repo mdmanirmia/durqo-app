@@ -381,9 +381,13 @@ export default function AddNewBusinessPage() {
           category_id: categoryId,
           title,
           business_url: businessUrl || null,
-          // Websites doesn't collect location (field is hidden above), so
-          // never submit a stale value left over from switching categories.
-          location: categoryId === "websites" ? null : location || null,
+          // Websites and Domains don't collect location (field is hidden
+          // above for both — see the visibility condition below), so never
+          // submit a stale value left over from switching categories. Was
+          // only excluding "websites" until a 2026-09-12 audit caught that
+          // "domains" hides the same field but wasn't in this list, letting
+          // a leftover location value from an earlier category silently save.
+          location: categoryId === "websites" || categoryId === "domains" ? null : location || null,
           price: Number(price),
           discounted_price: discountedPrice ? Number(discountedPrice) : null,
           overview,
