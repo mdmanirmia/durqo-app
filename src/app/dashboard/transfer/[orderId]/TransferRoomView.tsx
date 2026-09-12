@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -29,6 +29,9 @@ import {
   decideAmendment,
   sendTransferMessage,
 } from "@/lib/actions/transfer";
+import { createClient } from "@/lib/supabase/client";
+import { playNotificationSound } from "@/lib/notification-sound";
+import { markTransferMessagesRead } from "@/lib/data/transfer-messages.client";
 
 // Phase 3 — Transfer Room UI. Renders two arrangements of the same
 // sub-pieces from one dataset: a `md:hidden` mobile flow in the order the
@@ -306,6 +309,84 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
     return () => clearInterval(id);
   }, [room]);
 
+  // Who's signed in — needed below to tell "my own message" apart from an
+  // incoming one (no sound/senderName for my own), and to mark the other
+  // party's messages read.
+  const [myUserId, setMyUserId] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (!cancelled) setMyUserId(data.user?.id ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Real-time Deal Messages (2026-09-12 request): without this, the other
+  // participant never saw a new message until they reloaded the whole page
+  // — sendTransferMessage()'s revalidatePath only refreshes the sender's
+  // own view. New rows land here as a local overlay (`liveMessages`) merged
+  // with the server-fetched `room.messages` prop below, rather than waiting
+  // for that prop to eventually catch up. Requires `asset_transfer_messages`
+  // to be in the `supabase_realtime` publication (migration 040) —
+  // asset_transfer_messages_select's RLS is what actually restricts this to
+  // the room's own two participants.
+  const [liveMessages, setLiveMessages] = useState<TransferMessage[]>([]);
+  useEffect(() => {
+    if (!room || !myUserId) return;
+    const supabase = createClient();
+    if (!supabase) return;
+    const channel = supabase
+      .channel(`transfer-room-messages-${room.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "asset_transfer_messages", filter: `room_id=eq.${room.id}` },
+        (payload) => {
+          const row = payload.new as { id: string; sender_id: string; body: string; created_at: string };
+          const isMine = row.sender_id === myUserId;
+          const senderName = isMine
+            ? data.viewerSide === "buyer"
+              ? data.buyerName
+              : data.sellerName
+            : data.viewerSide === "buyer"
+              ? data.sellerName
+              : data.buyerName;
+          setLiveMessages((prev) =>
+            prev.some((m) => m.id === row.id)
+              ? prev
+              : [...prev, { id: row.id, senderId: row.sender_id, senderName, body: row.body, createdAt: row.created_at }]
+          );
+          if (!isMine) {
+            playNotificationSound();
+            markTransferMessagesRead(room.id);
+          }
+        }
+      )
+      .subscribe();
+    // Mark anything already sitting unread as soon as the room is open —
+    // matches markThreadRead()'s "viewing it = read" behavior in the
+    // general Messages inbox.
+    markTransferMessagesRead(room.id);
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [room, myUserId, data.viewerSide, data.buyerName, data.sellerName]);
+
+  // De-duped, chronological union of the messages this page was rendered
+  // with and whatever's arrived live since — a message that reaches both
+  // (the sender's own tab, once revalidatePath's refresh catches up) only
+  // renders once.
+  const allMessages = useMemo(() => {
+    if (!room) return [];
+    const byId = new Map<string, TransferMessage>();
+    for (const m of room.messages) byId.set(m.id, m);
+    for (const m of liveMessages) byId.set(m.id, m);
+    return [...byId.values()].sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+  }, [room, liveMessages]);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-6 pb-28 md:py-10 md:pb-10">
       <Link href={backHref} className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-brand-strong">
@@ -370,7 +451,7 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
               room={room}
               onOpen={() => setIssueModalOpen(true)}
             />
-            <MessagesSection room={room} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
+            <MessagesSection messages={allMessages} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
             <ActivityHistorySection room={room} />
             <OrderSummaryCard data={data} />
           </div>
@@ -402,7 +483,7 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
                 amendValue={amendValue}
                 setAmendValue={setAmendValue}
               />
-              <MessagesSection room={room} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
+              <MessagesSection messages={allMessages} messageBody={messageBody} setMessageBody={setMessageBody} busyKey={busyKey} handlers={handlers!} />
               <ActivityHistorySection room={room} />
             </div>
 
@@ -1000,26 +1081,36 @@ function PostSaleSupportSection({
 }
 
 function MessagesSection({
-  room,
+  messages,
   messageBody,
   setMessageBody,
   busyKey,
   handlers,
 }: {
-  room: TransferRoomState;
+  messages: TransferMessage[];
   messageBody: string;
   setMessageBody: (v: string) => void;
   busyKey: string | null;
   handlers: Handlers;
 }) {
+  // Auto-scroll to the newest message — without this, a message that
+  // arrives live (see the realtime subscription in TransferRoomView above)
+  // would render below the fold of this section's own scroll area rather
+  // than where the reader is actually looking.
+  const listRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = listRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages.length]);
+
   return (
     <div className="rounded-xl border border-rule bg-paper-raised p-4 md:p-5">
       <h2 className="mb-3 text-lg text-ink">Deal Messages</h2>
-      {room.messages.length === 0 ? (
+      {messages.length === 0 ? (
         <p className="text-sm text-ink-faint">No messages yet.</p>
       ) : (
-        <div className="mb-3 flex max-h-80 flex-col gap-2.5 overflow-y-auto">
-          {room.messages.map((m) => (
+        <div ref={listRef} className="mb-3 flex max-h-80 flex-col gap-2.5 overflow-y-auto">
+          {messages.map((m) => (
             <div key={m.id} className="rounded-lg border border-rule bg-paper p-2.5">
               <div className="mb-1 flex items-baseline justify-between gap-2">
                 <span className="text-xs font-semibold text-ink">{m.senderName}</span>
