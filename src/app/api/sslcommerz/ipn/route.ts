@@ -4,7 +4,13 @@ import { getSslcommerzConfig, validateSslcommerzPayment } from "@/lib/sslcommerz
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
-import { maybeCreateTransferRoomsOnPayment, transferRoomEmailCta } from "@/lib/asset-transfer-room";
+import {
+  maybeCreateTransferRoomsOnPayment,
+  transferRoomEmailCta,
+  buyerTransferGuidanceHtml,
+  sellerTransferGuidanceHtml,
+  listingLinkHtml,
+} from "@/lib/asset-transfer-room";
 
 // SSLCommerz's IPN (Instant Payment Notification) listener — STEP 2 of
 // their own 3-step integration guide, and the real source of truth for
@@ -136,7 +142,7 @@ export async function POST(request: Request) {
       const itemsHtml = (paidListings ?? [])
         .map((l) => {
           const remainder = remainderByListingId.get(l.id) ?? 0;
-          return `<li>${l.title}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
+          return `<li>${listingLinkHtml(origin, l.id as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
         })
         .join("");
       const riskNote = isRisky
@@ -166,25 +172,33 @@ export async function POST(request: Request) {
         // payment is confirmed here, the purchase itself isn't complete
         // until the remaining balance is received and verified, and no
         // "conversion margin" language is used in buyer-facing copy.
+        // Rewritten 2026-09-12 as an explicit numbered "what happens next"
+        // for a partial (deposit-capped) payment, per the site owner's
+        // request — previously two paragraphs of prose, now the same steps
+        // laid out the way buyerTransferGuidanceHtml() below lays out the
+        // full-payment case, so both paths read consistently.
         const balanceNote = hasRemainder
-          ? `<p>This was the initial payment on your purchase. To complete it, you&rsquo;ll need to pay the remaining
-             balance of $${totalRemainderUsd.toLocaleString()} USD by bank wire transfer, credit card, or debit card
-             — our team will contact you shortly with instructions for paying it.</p>
-             <p>Your purchase will be completed only after we&rsquo;ve received and verified the full remaining
-             balance.</p>`
+          ? `<p><strong>What happens next:</strong></p>
+             <ol style="margin:4px 0 0;padding-left:20px;">
+               <li>This was your initial payment — a remaining balance of $${totalRemainderUsd.toLocaleString()} USD is still due.</li>
+               <li>Our team will contact you shortly with instructions to pay it by bank wire transfer, credit card, or debit card.</li>
+               <li>Once we&rsquo;ve received and verified the full remaining balance, your purchase will be completed.</li>
+               <li>We&rsquo;ll then open your Transfer Room and email you the link along with step-by-step guidance on how to receive the assets.</li>
+             </ol>`
           : `<p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>`;
 
         // Only listings paid in full (no remainder) can have a ready room —
         // see autoRoomOrderIds above, which deliberately excludes any order
         // still owing a balance until admin manually starts it later
-        // (startAssetTransfer). Mirrors the Stripe webhook's same CTA.
+        // (startAssetTransfer). Mirrors the Stripe webhook's same CTA. When
+        // hasRemainder is true this is always empty (balanceNote above
+        // already covers what's next for that case), so the two sections
+        // never both render for the same order.
         const readyOrderIds = (paidListings ?? [])
           .map((l) => orderIdByListingId.get(l.id as string))
           .filter((id): id is string => !!id && roomReadyOrderIds.has(id));
-        const transferCtaHtml = readyOrderIds.length
-          ? `<p>Your Transfer Room${readyOrderIds.length > 1 ? "s are" : " is"} open — head there to track the handover and confirm receipt once the seller transfers the assets.</p>${readyOrderIds
-              .map((id) => transferRoomEmailCta(origin, id))
-              .join("")}`
+        const transferSectionHtml = readyOrderIds.length
+          ? `${buyerTransferGuidanceHtml()}${readyOrderIds.map((id) => transferRoomEmailCta(origin, id)).join("")}`
           : "";
 
         await sendEmail(
@@ -193,7 +207,7 @@ export async function POST(request: Request) {
           `<p>Thanks for your purchase — here's what you bought:</p>
            <ul>${itemsHtml}</ul>
            ${balanceNote}
-           ${transferCtaHtml}`
+           ${transferSectionHtml}`
         );
       }
 
@@ -208,7 +222,7 @@ export async function POST(request: Request) {
           `<p>Good news — "${listing.title}" sold via our Bangladesh payment gateway.</p>
            ${
              roomReady && orderId
-               ? `<p>Your buyer's Transfer Room is open now — head there to start transferring the assets.</p>${transferRoomEmailCta(origin, orderId)}`
+               ? `${sellerTransferGuidanceHtml()}${transferRoomEmailCta(origin, orderId)}`
                : `<p>Our team will be in touch with next steps to transfer the assets and release your payment.</p>`
            }`
         );
