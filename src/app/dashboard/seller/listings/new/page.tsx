@@ -13,6 +13,7 @@ import { STARTUP_BUSINESS_MODELS } from "@/lib/startup-business-models";
 import { FUNDING_STAGES } from "@/lib/funding-stages";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
+import AssetListEditor, { type AssetRow } from "@/components/listings/AssetListEditor";
 import { INDUSTRIES } from "@/lib/industries";
 import { APP_NICHES } from "@/lib/app-niches";
 import { APP_PLATFORMS } from "@/lib/app-platforms";
@@ -160,6 +161,11 @@ export default function AddNewBusinessPage() {
   const [overview, setOverview] = useState("");
   const [saleIncludesAssets, setSaleIncludesAssets] = useState("");
   const [saleIncludesSupport, setSaleIncludesSupport] = useState("");
+  // Asset Transfer System v2's structured asset list (migration 036) — see
+  // AssetListEditor.tsx. Confirming is deferred to the edit page after
+  // creation (this create flow already defers a few other things the same
+  // way, e.g. the Google Analytics connection), so no confirm UI here.
+  const [assetRows, setAssetRows] = useState<AssetRow[]>([]);
 
   const [quickStats, setQuickStats] = useState<Record<string, string>>({});
   const [niches, setNiches] = useState<string[]>([]);
@@ -391,6 +397,21 @@ export default function AddNewBusinessPage() {
       if (insertError || !listingRow) throw new Error(insertError?.message ?? "Could not create the listing.");
 
       const listingId = listingRow.id as string;
+
+      const assetInsertRows = assetRows
+        .filter((r) => r.name.trim())
+        .map((r, i) => ({
+          listing_id: listingId,
+          position: i,
+          name: r.name.trim(),
+          buyer_receives: r.buyerReceives.trim() || null,
+          transfer_method: r.transferMethod.trim() || null,
+          note: r.note.trim() || null,
+        }));
+      if (assetInsertRows.length) {
+        const { error } = await supabase.from("listing_assets").insert(assetInsertRows);
+        if (error) throw new Error(`Saving the asset list failed: ${error.message}`);
+      }
 
       const monthlyRows = monthlyIncome
         .map((val, i) => ({ month: MONTH_KEYS[i], val }))
@@ -1222,6 +1243,10 @@ export default function AddNewBusinessPage() {
               <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} placeholder="e.g. 30 days of email support" className={`${inputCls} w-full`} />
             </Field>
           </div>
+        </Section>
+
+        <Section title="Structured Asset List" hint="Powers the buyer's Transfer Room after purchase. You can add assets now and confirm the list from this listing's edit page once it's created.">
+          <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={null} showConfirm={false} />
         </Section>
 
         <div className="border-t border-rule pt-8">

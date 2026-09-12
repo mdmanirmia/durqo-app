@@ -31,7 +31,7 @@ function months(from: string, n: number) {
 // of them have real GA access granted or reviewed, so every one defaults to
 // unconfirmed/unverified rather than repeating those two fields on each
 // literal below.
-const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "niches">[] = [
+const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "niches" | "listingAssets">[] = [
   {
     id: "DQ-0412",
     categoryId: "saas",
@@ -309,6 +309,7 @@ export const MOCK_LISTINGS: Listing[] = RAW_MOCK_LISTINGS.map((l) => ({
   gaAccessConfirmed: false,
   gaVerified: false,
   niches: [],
+  listingAssets: [],
 }));
 
 export function getListingById(id: string) {

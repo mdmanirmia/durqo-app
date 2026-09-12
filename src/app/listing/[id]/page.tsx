@@ -830,6 +830,27 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                   <p className="text-sm text-ink-soft">{listing.saleIncludesSupport}</p>
                 </div>
               </div>
+
+              {/* Asset Transfer System v2's structured asset list (migration
+                  036) — only shown once the seller has confirmed it
+                  (assetsConfirmedAt set); an unconfirmed draft list is never
+                  buyer-facing. Purely additive to the free-text summary
+                  above, never a replacement for it. */}
+              {listing.assetsConfirmedAt && listing.listingAssets.length > 0 && (
+                <div className="mt-4 rounded-xl border border-rule bg-paper p-4">
+                  <h5 className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">What&apos;s included, item by item</h5>
+                  <ul className="flex flex-col gap-3">
+                    {listing.listingAssets.map((a) => (
+                      <li key={a.id} className="border-b border-rule pb-3 last:border-0 last:pb-0">
+                        <p className="text-sm font-semibold text-ink">{a.name}</p>
+                        {a.buyerReceives && <p className="mt-0.5 text-sm text-ink-soft">{a.buyerReceives}</p>}
+                        {a.transferMethod && <p className="mt-0.5 text-xs text-ink-faint">Transfer method: {a.transferMethod}</p>}
+                        {a.note && <p className="mt-0.5 text-xs text-ink-faint">{a.note}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </SectionCard>
 
             {/* Payment Terms — BDT-specific terms only, for Bangladesh-based

@@ -343,6 +343,7 @@ export const getListingById = cache(async function getListingById(id: string): P
       { data: copyrightNotes },
       { data: topVideos },
       { data: channelOverview },
+      { data: listingAssets },
     ] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", row.seller_id).maybeSingle(),
       supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
@@ -361,6 +362,10 @@ export const getListingById = cache(async function getListingById(id: string): P
       supabase.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
       supabase.from("listing_top_videos").select("*").eq("listing_id", id),
       supabase.from("listing_youtube_channel_overview").select("*").eq("listing_id", id).maybeSingle(),
+      // Asset Transfer System v2's structured asset list (migration 036) —
+      // `listing_assets_select` is public (`using (true)`), same as
+      // listing_images/listing_faqs, so this is safe for any visitor.
+      supabase.from("listing_assets").select("*").eq("listing_id", id).order("position", { ascending: true }),
     ]);
 
     let authorNames: Record<string, string> = {};
@@ -429,6 +434,7 @@ export const getListingById = cache(async function getListingById(id: string): P
       copyrightNotes,
       topVideos: topVideos ?? [],
       channelOverview,
+      listingAssets: listingAssets ?? [],
     });
   } catch (err) {
     console.warn("[listings] getListingById falling back to mock data (unexpected error):", err);

@@ -29,6 +29,16 @@ export const maxDuration = 60;
 // null) — a "General" conversation (see getConversations() in
 // messages.client.ts) has no listing and therefore no fixed "seller" party,
 // so there's no one to hold to a reply-time SLA there.
+//
+// Asset Transfer System v2 (Phase 4, Sep 12 2026): this route also sweeps
+// expired Transfer Room inspection windows (sweep_expired_inspections(),
+// 037_asset_transfer_system_rpcs.sql) — bundled into this existing daily
+// cron rather than registered as its own Vercel Cron entry, since Hobby
+// plan already has this route running once a day and adding a third
+// scheduled function risks the plan's cron-count ceiling for no real
+// benefit (a 7-day inspection window doesn't need finer-than-daily
+// checking). Same pattern this route already uses for bundling two
+// unrelated sweeps (comments + messages) into one scheduled function.
 export async function GET(request: Request) {
   const cronSecret = process.env.CRON_SECRET;
   const authHeader = request.headers.get("authorization");
@@ -43,9 +53,13 @@ export async function GET(request: Request) {
 
   const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
 
-  const [comments, messages] = await Promise.all([remindStaleComments(admin, cutoff), remindStaleMessages(admin, cutoff)]);
+  const [comments, messages, transferInspections] = await Promise.all([
+    remindStaleComments(admin, cutoff),
+    remindStaleMessages(admin, cutoff),
+    sweepExpiredTransferInspections(admin),
+  ]);
 
-  return NextResponse.json({ comments, messages });
+  return NextResponse.json({ comments, messages, transferInspections });
 }
 
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
@@ -151,4 +165,17 @@ async function remindStaleMessages(admin: AdminClient, cutoff: string) {
     await admin.from("messages").update({ reminder_sent_at: new Date().toISOString() }).eq("id", last.id);
   }
   return { checked: rows.length, reminded };
+}
+
+// Moves any Transfer Room whose 7-day inspection window has lapsed with no
+// buyer decision straight to admin_review — sweep_expired_inspections()
+// itself is idempotent (only matches rooms still in inspection_active) and
+// never sets payout_eligible, so a swept room always needs an admin's
+// eyes (see /dashboard/admin/transfers) before anything is released.
+// service_role is the only grantee on this function (037), which is what
+// `admin` (createAdminClient()) authenticates as.
+async function sweepExpiredTransferInspections(admin: AdminClient) {
+  const { data, error } = await admin.rpc("sweep_expired_inspections");
+  if (error) return { swept: 0, error: error.message };
+  return { swept: typeof data === "number" ? data : 0 };
 }

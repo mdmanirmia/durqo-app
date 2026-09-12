@@ -164,6 +164,13 @@ export interface Listing {
   monetizationTypeIds: string[];
   saleIncludesAssets: string;
   saleIncludesSupport: string;
+  // Asset Transfer System v2's structured asset list (migration 036) —
+  // shown alongside, never replacing, saleIncludesAssets above. Only
+  // rendered on the public listing page once assetsConfirmedAt is set —
+  // an unconfirmed draft list is only visible to the seller/admin editing
+  // it, never to buyers.
+  listingAssets: { id: string; name: string; buyerReceives: string; transferMethod: string; note: string }[];
+  assetsConfirmedAt?: string;
   isVerified: boolean;
   status: "published" | "sold";
   views: number;

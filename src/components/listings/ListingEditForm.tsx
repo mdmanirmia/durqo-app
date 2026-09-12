@@ -19,6 +19,8 @@ import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds, formatEngagementSeconds } from "@/lib/format";
 import { updateListingFull, addListingImages, deleteListingImage, type ListingFullEditFields } from "@/lib/actions/listing-edit";
 import { setListingStatus } from "@/app/dashboard/admin/actions";
+import { confirmListingAssets } from "@/lib/actions/listing-assets";
+import AssetListEditor, { type AssetRow } from "@/components/listings/AssetListEditor";
 
 // Same 12-month proof-of-income window as the seller "new listing" form
 // (dashboard/seller/listings/new/page.tsx) — deliberately duplicated rather
@@ -176,6 +178,7 @@ export default function ListingEditForm({
   copyrightNotes,
   topVideos,
   channelOverview,
+  listingAssets,
 }: {
   mode: "admin" | "seller";
   listing: Row;
@@ -186,6 +189,7 @@ export default function ListingEditForm({
   copyrightNotes?: Row | null;
   topVideos?: Row[];
   channelOverview?: Row | null;
+  listingAssets?: Row[];
 }) {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState<string>(listing.category_id);
@@ -199,6 +203,24 @@ export default function ListingEditForm({
   const [overview, setOverview] = useState(listing.overview ?? "");
   const [saleIncludesAssets, setSaleIncludesAssets] = useState(listing.sale_includes_assets ?? "");
   const [saleIncludesSupport, setSaleIncludesSupport] = useState(listing.sale_includes_support ?? "");
+
+  // Asset Transfer System v2's structured asset list — see
+  // AssetListEditor.tsx. `initialAssetRows` is captured once so a later
+  // save/confirm cycle can tell whether the seller has unsaved edits
+  // pending (see `assetRowsPendingSave` below and its use at the confirm
+  // button).
+  const initialAssetRows: AssetRow[] = (listingAssets ?? []).map((a) => ({
+    id: a.id,
+    name: a.name ?? "",
+    buyerReceives: a.buyer_receives ?? "",
+    transferMethod: a.transfer_method ?? "",
+    note: a.note ?? "",
+  }));
+  const [assetRows, setAssetRows] = useState<AssetRow[]>(initialAssetRows);
+  const [assetRowsInitialJson, setAssetRowsInitialJson] = useState(() => JSON.stringify(initialAssetRows));
+  const [assetsConfirmedAt, setAssetsConfirmedAt] = useState<string | null>(listing.assets_confirmed_at ?? null);
+  const [confirmingAssets, setConfirmingAssets] = useState(false);
+  const assetRowsPendingSave = JSON.stringify(assetRows) !== assetRowsInitialJson;
 
   const [niches, setNiches] = useState<string[]>(Array.isArray(listing.niches) ? listing.niches : []);
   const [loomVideoUrl, setLoomVideoUrl] = useState(listing.loom_video_url ?? "");
@@ -489,6 +511,7 @@ export default function ListingEditForm({
         overview,
         saleIncludesAssets,
         saleIncludesSupport,
+        listingAssets: assetRows,
         quickStatColumns,
         // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
         // to Design & Development New.pdf) — the Niche/Industry section is
@@ -540,6 +563,7 @@ export default function ListingEditForm({
         uploadNewImages("copyright_notes", copyrightImages),
       ]);
 
+      setAssetRowsInitialJson(JSON.stringify(assetRows));
       setSaved(true);
       const dest = mode === "admin" ? "/dashboard/admin/listings" : "/dashboard/seller";
       setTimeout(() => router.push(dest), 1200);
@@ -547,6 +571,16 @@ export default function ListingEditForm({
       setError(err instanceof Error ? err.message : "Something went wrong saving the listing.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleConfirmAssets() {
+    setConfirmingAssets(true);
+    try {
+      await confirmListingAssets(listing.id);
+      setAssetsConfirmedAt(new Date().toISOString());
+    } finally {
+      setConfirmingAssets(false);
     }
   }
 
@@ -1187,6 +1221,18 @@ export default function ListingEditForm({
             <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} className={`${inputCls} w-full`} />
           </Field>
         </div>
+      </Section>
+
+      <Section title="Structured Asset List" hint="Powers the buyer's Transfer Room after purchase — separate from the free-text summary above, which stays as-is.">
+        <AssetListEditor
+          rows={assetRows}
+          setRows={setAssetRows}
+          confirmedAt={assetsConfirmedAt}
+          onConfirm={handleConfirmAssets}
+          confirming={confirmingAssets}
+          pendingSave={assetRowsPendingSave}
+          showConfirm
+        />
       </Section>
 
       <div className="flex items-center gap-4 border-t border-rule pt-8">

@@ -20,7 +20,7 @@ import { getUserEmails } from "@/lib/notifications";
 // uploader's own id in the path — see listing_proofs_owner_insert).
 const STORAGE_BUCKET = "listing-proofs";
 
-async function requireEditAccess(listingId: string) {
+export async function requireEditAccess(listingId: string) {
   const supabase = await createClient();
   if (!supabase) throw new Error("Backend isn't connected yet.");
 
@@ -91,6 +91,17 @@ export type ListingFullEditFields = {
     recentAvgLikes: number | null;
     engagementRatePercent: number | null;
   } | null;
+  // Asset Transfer System v2's structured "Sale Includes" list (migration
+  // 036, listing_assets) — kept fully separate from the free-text
+  // saleIncludesAssets paragraph above, which stays untouched and visible
+  // per the feasibility report. `id` present = an existing row being
+  // edited; absent = a new row the seller just added in this session.
+  // Always sent (never undefined, unlike seo/topVideos/channelOverview
+  // above) — updateListingFull() itself decides whether anything actually
+  // changed before touching the table, specifically so that saving
+  // unrelated fields on this form never silently un-confirms an
+  // already-confirmed asset list (see the comment at its call site below).
+  listingAssets: { id?: string; name: string; buyerReceives: string; transferMethod: string; note: string }[];
 };
 
 // Core listing row + every related "profile" table (quick stats live as
@@ -122,6 +133,54 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
     })
     .eq("id", listingId);
   if (listingError) throw new Error(listingError.message);
+
+  // Structured asset list (listing_assets): full replace, but ONLY when the
+  // content actually changed. Unlike monthly income / social stats below,
+  // this table has a side effect on write — migration 036's trigger clears
+  // listings.assets_confirmed_at on any insert/update/delete to a listing's
+  // listing_assets rows, so a seller who's already confirmed their list
+  // must re-confirm after a real edit. A naive always-replace here would
+  // also clear that confirmation on every unrelated "Save Changes" click
+  // (price, title, anything), which would be a real UX regression — so this
+  // compares against what's currently stored and skips the write entirely
+  // when nothing about the asset rows changed.
+  {
+    const { data: currentRows } = await admin
+      .from("listing_assets")
+      .select("id, name, buyer_receives, transfer_method, note")
+      .eq("listing_id", listingId)
+      .order("position", { ascending: true });
+
+    const incoming = fields.listingAssets.filter((r) => r.name.trim());
+    const normalize = (r: { name: string; buyerReceives?: string | null; transferMethod?: string | null; note?: string | null }) =>
+      JSON.stringify([r.name.trim(), r.buyerReceives?.trim() || null, r.transferMethod?.trim() || null, r.note?.trim() || null]);
+
+    const currentNormalized = (currentRows ?? []).map((r) =>
+      normalize({ name: r.name, buyerReceives: r.buyer_receives, transferMethod: r.transfer_method, note: r.note })
+    );
+    const incomingNormalized = incoming.map((r) => normalize(r));
+    const unchanged =
+      currentNormalized.length === incomingNormalized.length &&
+      currentNormalized.every((v, i) => v === incomingNormalized[i]);
+
+    if (!unchanged) {
+      const { error: deleteAssetsError } = await admin.from("listing_assets").delete().eq("listing_id", listingId);
+      if (deleteAssetsError) throw new Error(`Saving the asset list failed: ${deleteAssetsError.message}`);
+      if (incoming.length) {
+        const { error: insertAssetsError } = await admin.from("listing_assets").insert(
+          incoming.map((r, i) => ({
+            listing_id: listingId,
+            position: i,
+            name: r.name.trim(),
+            buyer_receives: r.buyerReceives?.trim() || null,
+            transfer_method: r.transferMethod?.trim() || null,
+            note: r.note?.trim() || null,
+          }))
+        );
+        if (insertAssetsError) throw new Error(`Saving the asset list failed: ${insertAssetsError.message}`);
+      }
+    }
+  }
 
   // Monthly income: full replace, since the form always sends all 12 slots
   // (blank ones included) rather than only the ones that changed.

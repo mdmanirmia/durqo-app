@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getEscrowConfig, createEscrowTransaction, getEscrowAgreeLink } from "@/lib/escrow";
 import { getUserEmails } from "@/lib/notifications";
+import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listing-assets-gate";
 
 // Escrow.com counterpart to /api/sslcommerz/init (and /api/checkout for
 // Stripe) — turns a single listing into a real `orders` row (status
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
 
   const { data: listing, error: listingError } = await supabase
     .from("listings")
-    .select("id, title, price, discounted_price, seller_id")
+    .select("id, title, price, discounted_price, seller_id, assets_confirmed_at")
     .eq("id", listingId)
     .eq("status", "published")
     .maybeSingle();
@@ -56,6 +57,13 @@ export async function POST(request: Request) {
   }
   if (listing.seller_id === buyerId) {
     return NextResponse.json({ error: "You can't buy your own listing." }, { status: 400 });
+  }
+
+  // Asset Transfer System v2 checkout gate (report Section 2.7, confirmed) —
+  // see src/lib/listing-assets-gate.ts.
+  const unconfirmedTitles = unconfirmedListingTitles([listing]);
+  if (unconfirmedTitles.length > 0) {
+    return NextResponse.json({ error: assetsNotConfirmedMessage(unconfirmedTitles) }, { status: 400 });
   }
 
   const config = getEscrowConfig();

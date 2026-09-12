@@ -23,6 +23,12 @@ export interface OrderRow {
   remainderUsd: number | undefined;
   sslcommerzBdtAmount: number | undefined;
   sslcommerzRate: number | undefined;
+  // Asset Transfer System v2 (Phase 3) — whether a Transfer Room row
+  // already exists for this order, so the orders list can show a
+  // "Transfer Room" link only where there's actually something to open.
+  // Most real orders won't have one yet: the payment webhooks aren't wired
+  // to create_transfer_room_on_payment as of this pass.
+  hasTransferRoom: boolean;
 }
 
 // Shared by both dashboards — `side` picks which foreign key identifies "me"
@@ -46,12 +52,15 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
 
   const listingIds = [...new Set(rows.map((r) => r.listing_id))];
   const counterpartyIds = [...new Set(rows.map((r) => r[counterpartyColumn]))];
-  const [{ data: listings }, { data: profiles }] = await Promise.all([
+  const orderIds = rows.map((r) => r.id);
+  const [{ data: listings }, { data: profiles }, { data: rooms }] = await Promise.all([
     supabase.from("listings").select("id, title").in("id", listingIds),
     supabase.from("profiles").select("id, full_name").in("id", counterpartyIds),
+    supabase.from("asset_transfer_rooms").select("order_id").in("order_id", orderIds),
   ]);
   const listingById = new Map((listings ?? []).map((l) => [l.id, l]));
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
+  const orderIdsWithRoom = new Set((rooms ?? []).map((r) => r.order_id as string));
 
   return rows.map((r) => ({
     id: r.id,
@@ -66,6 +75,7 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
     remainderUsd: r.remainder_usd === null || r.remainder_usd === undefined ? undefined : Number(r.remainder_usd),
     sslcommerzBdtAmount: r.sslcommerz_bdt_amount === null || r.sslcommerz_bdt_amount === undefined ? undefined : Number(r.sslcommerz_bdt_amount),
     sslcommerzRate: r.sslcommerz_rate === null || r.sslcommerz_rate === undefined ? undefined : Number(r.sslcommerz_rate),
+    hasTransferRoom: orderIdsWithRoom.has(r.id),
   }));
 }
 

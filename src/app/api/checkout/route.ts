@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createStripeClient } from "@/lib/stripe";
+import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listing-assets-gate";
 
 // Turns either the signed-in buyer's cart, or (when the request body
 // includes a `listingId`) a single listing bought directly via "Buy Now",
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
   // the buyer while they were browsing.
   const { data: listings, error: listingsError } = await supabase
     .from("listings")
-    .select("id, title, price, discounted_price, seller_id")
+    .select("id, title, price, discounted_price, seller_id, assets_confirmed_at")
     .in("id", listingIds)
     .eq("status", "published");
   if (listingsError) {
@@ -76,6 +77,15 @@ export async function POST(request: Request) {
       { error: directListingId ? "This listing has already been sold." : "The items in your cart aren't available anymore." },
       { status: 400 }
     );
+  }
+
+  // Asset Transfer System v2 checkout gate (report Section 2.7, confirmed):
+  // a listing whose seller hasn't confirmed a structured asset list yet
+  // cannot be bought — there'd be nothing correct to snapshot at purchase
+  // time. See src/lib/listing-assets-gate.ts.
+  const unconfirmedTitles = unconfirmedListingTitles(listings);
+  if (unconfirmedTitles.length > 0) {
+    return NextResponse.json({ error: assetsNotConfirmedMessage(unconfirmedTitles) }, { status: 400 });
   }
 
   // Sep 11, 2026: Stripe used to cap the online charge at

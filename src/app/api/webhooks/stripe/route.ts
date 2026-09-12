@@ -5,6 +5,7 @@ import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { maybeCreateTransferRoomsOnPayment } from "@/lib/asset-transfer-room";
 
 // Stripe calls this directly (not a browser) whenever a Checkout Session's
 // state changes — this is the actual source of truth for "did the buyer
@@ -61,6 +62,10 @@ export async function POST(request: Request) {
           .from("orders")
           .update({ status: "in_escrow", stripe_payment_intent_id: paymentIntentId })
           .in("id", orderIds);
+
+        // Asset Transfer System v2 (Phase 4 follow-up, Task #188) —
+        // feature-flagged, best-effort, never blocks this webhook.
+        await maybeCreateTransferRoomsOnPayment(admin, orderIds);
 
         // The listings the buyer just paid for no longer belong in their
         // cart — clear just those, not the whole cart, in case something

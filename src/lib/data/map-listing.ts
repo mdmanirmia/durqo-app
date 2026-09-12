@@ -479,6 +479,7 @@ export function mapListing(
     copyrightNotes?: Row | null;
     topVideos?: Row[];
     channelOverview?: Row | null;
+    listingAssets?: Row[];
   } = {}
 ): Listing {
   const monthlyStats = mapMonthlyStats(related.monthlyStats ?? []);
@@ -531,6 +532,17 @@ export function mapListing(
     monetizationTypeIds: row.monetization_type_ids ?? [],
     saleIncludesAssets: row.sale_includes_assets ?? "",
     saleIncludesSupport: row.sale_includes_support ?? "",
+    listingAssets: (related.listingAssets ?? [])
+      .slice()
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
+      .map((a) => ({
+        id: a.id,
+        name: a.name ?? "",
+        buyerReceives: a.buyer_receives ?? "",
+        transferMethod: a.transfer_method ?? "",
+        note: a.note ?? "",
+      })),
+    assetsConfirmedAt: row.assets_confirmed_at ?? undefined,
     // `listings.is_verified` is a dead column — no code path ever sets it
     // true for a real listing, so reading it directly would blank the
     // emerald "Verified" badge on every real card (Durqo /buy redesign,

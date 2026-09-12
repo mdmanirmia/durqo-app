@@ -4,6 +4,7 @@ import { getSslcommerzConfig, validateSslcommerzPayment } from "@/lib/sslcommerz
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { maybeCreateTransferRoomsOnPayment } from "@/lib/asset-transfer-room";
 
 // SSLCommerz's IPN (Instant Payment Notification) listener — STEP 2 of
 // their own 3-step integration guide, and the real source of truth for
@@ -81,6 +82,10 @@ export async function POST(request: Request) {
       .update({ status: "in_escrow", sslcommerz_val_id: validation.valId ?? valId })
       .in("id", orderIds)
       .eq("status", "awaiting_payment");
+
+    // Asset Transfer System v2 (Phase 4 follow-up, Task #188) —
+    // feature-flagged, best-effort, never blocks this webhook.
+    await maybeCreateTransferRoomsOnPayment(admin, orderIds);
 
     const listingIds = matchingOrders.map((o) => o.listing_id);
     await admin.from("listings").update({ status: "sold" }).in("id", listingIds).eq("status", "published");

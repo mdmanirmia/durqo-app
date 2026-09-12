@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getSslcommerzConfig, createSslcommerzSession } from "@/lib/sslcommerz";
 import { convertUsdToBdt } from "@/lib/currency";
 import { onlineChargeAmount } from "@/lib/payment-terms";
+import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listing-assets-gate";
 
 // SSLCommerz counterpart to /api/checkout/route.ts (Stripe). Same shape —
 // either the signed-in buyer's cart, or a single `{ listingId }` for Buy
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
 
   const { data: listings, error: listingsError } = await supabase
     .from("listings")
-    .select("id, title, price, discounted_price, seller_id")
+    .select("id, title, price, discounted_price, seller_id, assets_confirmed_at")
     .in("id", listingIds)
     .eq("status", "published");
   if (listingsError) {
@@ -79,6 +80,13 @@ export async function POST(request: Request) {
       { error: directListingId ? "This listing has already been sold." : "The items in your cart aren't available anymore." },
       { status: 400 }
     );
+  }
+
+  // Asset Transfer System v2 checkout gate (report Section 2.7, confirmed) —
+  // see src/lib/listing-assets-gate.ts.
+  const unconfirmedTitles = unconfirmedListingTitles(listings);
+  if (unconfirmedTitles.length > 0) {
+    return NextResponse.json({ error: assetsNotConfirmedMessage(unconfirmedTitles) }, { status: 400 });
   }
 
   const totalAmount = listings.reduce((sum, l) => sum + Number(l.discounted_price ?? l.price), 0);

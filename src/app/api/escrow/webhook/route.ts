@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getEscrowConfig, fetchEscrowTransaction } from "@/lib/escrow";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { maybeCreateTransferRoomsOnPayment } from "@/lib/asset-transfer-room";
 
 // Escrow.com's webhook listener. Register this route's full URL
 // (<your-domain>/api/escrow/webhook) at escrow.com -> My Integrations ->
@@ -67,6 +68,16 @@ export async function POST(request: Request) {
 
   if (isSecured && order.status === "awaiting_payment") {
     await admin.from("orders").update({ status: "in_escrow" }).eq("id", order.id).eq("status", "awaiting_payment");
+
+    // Asset Transfer System v2 (Phase 4 follow-up, Task #188) —
+    // feature-flagged, best-effort, never blocks this webhook. Escrow.com
+    // orders get a Durqo Transfer Room the same as Stripe/SSLCommerz ones —
+    // it tracks the structured per-asset checklist and dispute workflow,
+    // a different concern than which party actually holds the funds (see
+    // 035_exclude_escrow_com_from_payout_ledger.sql, which is only about
+    // Durqo's own payout ledger, not this).
+    await maybeCreateTransferRoomsOnPayment(admin, [order.id]);
+
     await admin.from("listings").update({ status: "sold" }).eq("id", order.listing_id).eq("status", "published");
     revalidatePath(`/listing/${order.listing_id}`);
     revalidatePath("/");

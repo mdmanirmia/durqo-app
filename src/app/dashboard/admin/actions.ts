@@ -342,3 +342,145 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
     await sendEmail(sellerEmail, subject, html);
   }
 }
+
+// ============================================================
+// Asset Transfer System v2 — Phase 4: admin dispute resolution.
+//
+// A room reaches `admin_review` exactly two ways: a buyer's
+// transfer_report_issue() call (037_asset_transfer_system_rpcs.sql), which
+// creates a row in asset_transfer_issues, or sweep_expired_inspections()
+// simply timing out an inspection window with no buyer decision at all —
+// the latter has no issue row to point at. resolveTransferDispute() below
+// covers both: `issueId` is passed when resolving an actual reported issue
+// (it gets its own resolution/resolution_type/resolved_by/resolved_at
+// written), and omitted for a bare "move this room forward" call on an
+// expired-with-no-issue room. Either way the room's stage transition is
+// identical for a given resolutionType — this mirrors the same set of
+// outcomes asset_transfer_issues.resolution_type already enumerates
+// (036_asset_transfer_system_tables.sql).
+//
+// Like every other admin action in this file, this writes directly via the
+// service-role client rather than through a SECURITY DEFINER RPC — there's
+// no buyer/seller auth.uid() to check here, admin authorization is
+// requireAdmin() alone, exactly the same shape as setWithdrawalStatus()
+// and setVerificationStatus() above.
+//
+// Deliberately NOT done here (kept out of scope for this pass):
+//   - Touching `orders.status` — an admin still uses the existing Orders
+//     admin page for that, so the two admin surfaces don't race each other
+//     writing the same order.
+//   - Actually moving money (refunds, Stripe/SSLCommerz/Escrow.com
+//     reversals) — same as every other status field in this codebase,
+//     this only records the outcome; whoever resolves the dispute still
+//     has to go process the actual refund/payout on the relevant
+//     platform.
+//   - Buyer/seller email notifications — can follow the
+//     setVerificationStatus()/setWithdrawalStatus() pattern later; left out
+//     of this first pass to keep the change reviewable.
+//   - Admin overriding a pending amendment — transfer_amendment_decide()
+//     stays buyer-only; admin's amendment view here is read-only.
+const TRANSFER_RESOLUTION_TYPES = [
+  "returned_to_seller",
+  "approved_despite_report",
+  "refund_authorized",
+  "settlement_recorded",
+  "order_cancelled",
+] as const;
+type TransferResolutionType = (typeof TRANSFER_RESOLUTION_TYPES)[number];
+
+const RESOLUTION_STAGE: Record<TransferResolutionType, string> = {
+  // The seller redoes the flagged asset (or, for a general/no-issue
+  // dispute, the room just goes back to normal transferring) — this is the
+  // only outcome that keeps the deal alive rather than closing it out.
+  returned_to_seller: "seller_transferring",
+  // Admin sides with the seller on the buyer's report: finishes the
+  // transfer as if the buyer had approved it themselves.
+  approved_despite_report: "payout_eligible",
+  refund_authorized: "resolved_refund",
+  settlement_recorded: "resolved_settlement",
+  order_cancelled: "cancelled",
+};
+
+export async function resolveTransferDispute(
+  roomId: string,
+  resolutionType: TransferResolutionType,
+  resolutionText: string,
+  issueId?: string | null
+) {
+  const admin = await requireAdmin();
+  if (!TRANSFER_RESOLUTION_TYPES.includes(resolutionType)) throw new Error("Invalid resolution type.");
+  if (!resolutionText.trim()) throw new Error("A resolution note is required.");
+
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const { data: room } = await supabaseAdmin.from("asset_transfer_rooms").select("*").eq("id", roomId).single();
+  if (!room) throw new Error("Transfer room not found.");
+  if (room.stage !== "admin_review") {
+    throw new Error(`This transfer isn't under admin review (stage=${room.stage}).`);
+  }
+
+  let issue: { id: string; item_id: string | null } | null = null;
+  if (issueId) {
+    const { data: issueRow } = await supabaseAdmin.from("asset_transfer_issues").select("*").eq("id", issueId).single();
+    if (!issueRow) throw new Error("Issue not found.");
+    if (issueRow.room_id !== roomId) throw new Error("That issue does not belong to this transfer.");
+    if (issueRow.status === "resolved") throw new Error("This issue was already resolved.");
+    issue = issueRow;
+
+    const { error: issueError } = await supabaseAdmin
+      .from("asset_transfer_issues")
+      .update({
+        status: "resolved",
+        resolution: resolutionText.trim(),
+        resolution_type: resolutionType,
+        resolved_by: admin.id,
+        resolved_at: new Date().toISOString(),
+      })
+      .eq("id", issueId);
+    if (issueError) throw new Error(issueError.message);
+  }
+
+  const now = new Date().toISOString();
+
+  if (resolutionType === "approved_despite_report") {
+    // Same bulk effect as the buyer's own transfer_approve() RPC — every
+    // item currently Received becomes Accepted, in one write.
+    const { error } = await supabaseAdmin
+      .from("asset_transfer_items")
+      .update({ status: "accepted", accepted_at: now, updated_at: now })
+      .eq("room_id", roomId)
+      .eq("status", "received");
+    if (error) throw new Error(error.message);
+  } else if (resolutionType === "returned_to_seller" && issue?.item_id) {
+    // Only the specific flagged item gets sent back for a redo — every
+    // other item's progress is untouched. A general (no specific item)
+    // issue, or a no-issue expired-inspection resolution, leaves all items
+    // as they are and just reopens the room for the seller to act in.
+    const { error } = await supabaseAdmin
+      .from("asset_transfer_items")
+      .update({ status: "not_started", submitted_at: null, received_at: null, accepted_at: null, seller_reference: null, updated_at: now })
+      .eq("id", issue.item_id);
+    if (error) throw new Error(error.message);
+  }
+
+  const roomUpdate: Record<string, unknown> = { stage: RESOLUTION_STAGE[resolutionType], updated_at: now };
+  if (resolutionType === "approved_despite_report") roomUpdate.payout_eligible_at = now;
+  const { error: roomError } = await supabaseAdmin.from("asset_transfer_rooms").update(roomUpdate).eq("id", roomId);
+  if (roomError) throw new Error(roomError.message);
+
+  const { error: eventError } = await supabaseAdmin.from("asset_transfer_events").insert({
+    room_id: roomId,
+    actor_id: admin.id,
+    event_type: `admin_resolved_${resolutionType}`,
+    reason: resolutionText.trim(),
+    metadata: issueId ? { issue_id: issueId } : {},
+  });
+  if (eventError) throw new Error(eventError.message);
+
+  revalidatePath("/dashboard/admin/transfers");
+  revalidatePath(`/dashboard/admin/transfers/${roomId}`);
+  revalidatePath(`/dashboard/transfer/${room.order_id}`);
+  revalidatePath("/dashboard/seller/orders");
+  revalidatePath("/dashboard/buyer/orders");
+}

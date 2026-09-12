@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText } from "lucide-react";
+import { FileText, ArrowLeftRight } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/ui/Badge";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
@@ -68,9 +68,16 @@ export default function BuyerOrdersPage() {
                     </td>
                     <td className="px-4 py-3 text-ink-faint">{o.date}</td>
                     <td className="px-4 py-3 text-right font-sans">
-                      <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
-                        <FileText size={13} /> Receipt
-                      </Link>
+                      <div className="flex flex-col items-end gap-1.5">
+                        {o.hasTransferRoom && (
+                          <Link href={`/dashboard/transfer/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                            <ArrowLeftRight size={13} /> Transfer Room
+                          </Link>
+                        )}
+                        <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                          <FileText size={13} /> Receipt
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -105,7 +112,12 @@ export default function BuyerOrdersPage() {
                   </div>
                   <span className="mono shrink-0 text-xs text-ink-faint">{o.date}</span>
                 </div>
-                <div className="border-t border-rule pt-3">
+                <div className="flex items-center gap-4 border-t border-rule pt-3">
+                  {o.hasTransferRoom && (
+                    <Link href={`/dashboard/transfer/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                      <ArrowLeftRight size={13} /> Transfer Room
+                    </Link>
+                  )}
                   <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
                     <FileText size={13} /> Receipt
                   </Link>

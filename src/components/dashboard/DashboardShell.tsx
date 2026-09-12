@@ -44,6 +44,7 @@ const ICONS = {
   wallet: Wallet,
   tag: Tag,
   users: Users,
+  arrowLeftRight: ArrowLeftRight,
 } as const;
 
 export type DashboardIconName = keyof typeof ICONS;

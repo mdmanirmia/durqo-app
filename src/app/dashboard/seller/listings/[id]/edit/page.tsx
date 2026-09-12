@@ -34,7 +34,7 @@ export default async function SellerEditListingPage({ params }: { params: Promis
   if (!listing) notFound();
   if (listing.seller_id !== user.id) notFound();
 
-  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }, { data: copyrightNotes }, { data: topVideos }, { data: channelOverview }] = await Promise.all([
+  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }, { data: copyrightNotes }, { data: topVideos }, { data: channelOverview }, { data: listingAssets }] = await Promise.all([
     supabase.from("listing_seo_data").select("*").eq("listing_id", id).maybeSingle(),
     supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
     supabase.from("listing_images").select("*").eq("listing_id", id),
@@ -44,6 +44,8 @@ export default async function SellerEditListingPage({ params }: { params: Promis
     supabase.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
     supabase.from("listing_top_videos").select("*").eq("listing_id", id),
     supabase.from("listing_youtube_channel_overview").select("*").eq("listing_id", id).maybeSingle(),
+    // Asset Transfer System v2's structured asset list (migration 036).
+    supabase.from("listing_assets").select("*").eq("listing_id", id).order("position", { ascending: true }),
   ]);
 
   return (
@@ -58,6 +60,7 @@ export default async function SellerEditListingPage({ params }: { params: Promis
         copyrightNotes={copyrightNotes ?? null}
         topVideos={topVideos ?? []}
         channelOverview={channelOverview ?? null}
+        listingAssets={listingAssets ?? []}
       />
     </DashboardShell>
   );
