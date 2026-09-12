@@ -70,22 +70,33 @@ export async function POST(request: Request) {
   if (validation.status === "VALID" || validation.status === "VALIDATED") {
     // "if risk_level = 1 and transaction status = VALID, then please hold
     // the transaction and verify the customer" — orders already land in
-    // `in_escrow` (funds held, nothing released to the seller yet) rather
-    // than `completed`, so the hold SSLCommerz asks for is already the
-    // default behavior here. A risky transaction additionally gets an
-    // extra flagged email so admin knows to manually verify this buyer
-    // before ever moving it to `completed`.
+    // `in_durqo` (funds held by Durqo directly, nothing released to the
+    // seller yet — SSLCommerz is not a neutral escrow agent, unlike
+    // Escrow.com's `in_escrow`) rather than `completed`, so the hold
+    // SSLCommerz asks for is already the default behavior here. A risky
+    // transaction additionally gets an extra flagged email so admin knows
+    // to manually verify this buyer before ever moving it to `completed`.
     const isRisky = validation.riskLevel === "1";
 
     await admin
       .from("orders")
-      .update({ status: "in_escrow", sslcommerz_val_id: validation.valId ?? valId })
+      .update({ status: "in_durqo", sslcommerz_val_id: validation.valId ?? valId })
       .in("id", orderIds)
       .eq("status", "awaiting_payment");
 
-    // Asset Transfer System v2 (Phase 4 follow-up, Task #188) —
-    // feature-flagged, best-effort, never blocks this webhook.
-    await maybeCreateTransferRoomsOnPayment(admin, orderIds);
+    // Asset Transfer System v2 (Phase 4 follow-up, Task #188), refined
+    // 2026-09-12 per the site owner's instruction: a SSLCommerz order that
+    // still has money owed beyond the online-deposit cap (remainder_usd >
+    // 0) does NOT get its Transfer Room auto-created here — the site owner
+    // wants to collect and verify that remaining balance manually first,
+    // then start the room by hand from the admin Orders page
+    // (startAssetTransfer in dashboard/admin/actions.ts). Orders paid in
+    // full online (remainder_usd 0/null) are unaffected and still get an
+    // automatic room exactly as before.
+    const autoRoomOrderIds = matchingOrders
+      .filter((o) => Number(o.remainder_usd ?? 0) <= 0)
+      .map((o) => o.id);
+    await maybeCreateTransferRoomsOnPayment(admin, autoRoomOrderIds);
 
     const listingIds = matchingOrders.map((o) => o.listing_id);
     await admin.from("listings").update({ status: "sold" }).in("id", listingIds).eq("status", "published");
