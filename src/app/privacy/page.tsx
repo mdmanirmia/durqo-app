@@ -2,6 +2,14 @@ import type { Metadata } from "next";
 import Container from "@/components/ui/Container";
 import PrivacyToc from "./PrivacyToc";
 
+// Update — Sep 13, 2026: added an "Asset transfer records" data category
+// (and matching retention row) for the Transfer Room system, live for every
+// payment channel since Sep 12, 2026 — Deal Messages inside a Transfer Room
+// and any evidence a Buyer uploads when reporting an issue during the
+// inspection window (a dedicated `order-transfer-evidence` Storage bucket)
+// weren't covered by any existing category. See
+// claude/asset-transfer-room-feasibility-addendum.md.
+//
 // Sep 6, 2026 Privacy-page rebuild — see claude/build-plan-and-decisions.md
 // and this session's Terms-page audit (src/app/terms/page.tsx) for the
 // fuller trail. This page had three real inaccuracies, found by checking
@@ -58,7 +66,7 @@ import PrivacyToc from "./PrivacyToc";
 //    "Payment & transaction" row is updated to mention this too.
 // Same discipline as the Sep 6 rebuild: a row is only marked "In use
 // today" once the integration is actually confirmed live in the codebase.
-const EFFECTIVE_DATE = "September 11, 2026";
+const EFFECTIVE_DATE = "September 13, 2026";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Durqo",
@@ -207,6 +215,7 @@ const INFO_CATEGORIES: InfoCategory[] = [
   { category: "Account & identity", examples: "Name, email address, account credentials, and, where required, seller identity-verification information." },
   { category: "Business & listing", examples: "Information about the businesses you list, inquire about, or transact on, including business details and supporting documents." },
   { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment providers; and, if you request a withdrawal as a Seller, the payout account details you provide (such as a bank account number, mobile financial service number, or PayPal/Wise email — see Section 07)." },
+  { category: "Asset transfer records", examples: "Once a sale is paid for, records from the Transfer Room used to complete it — messages between the Buyer and Seller in that room, each asset's transfer status, and any evidence a Buyer submits if they report an issue during the inspection window." },
   { category: "Messages & support", examples: "Messages with other users and with our support team, and related records." },
   { category: "Public listing Q&A and comments", examples: "Questions & Answers a Seller writes for their own Listing, and questions and replies posted publicly in a Listing's Comments section, including the poster's name/profile." },
   { category: "Device & usage", examples: "Information about your device, browser, IP address, and how you use the Platform (pages viewed, features used)." },
@@ -334,6 +343,7 @@ const RETENTION_ROWS: { category: string; criteria: string }[] = [
   { category: "Listings & supporting evidence", criteria: "For as long as the listing is active, and for a reasonable period after removal to support dispute resolution or legal requirements." },
   { category: "Messages", criteria: "For as long as needed to support the transaction or support request they relate to, and afterward where needed for dispute resolution." },
   { category: "Transaction & payment records", criteria: "Retained longer than most other categories where needed to meet accounting, tax, or legal recordkeeping obligations, or to support a dispute." },
+  { category: "Asset transfer records", criteria: "For as long as needed to support the sale they relate to, and afterward where needed for dispute resolution or legal requirements." },
   { category: "Connected GA4 metrics & OAuth tokens", criteria: "Retained only while a Listing's Google Analytics connection is active; deleted when the Seller disconnects it (see Section 08)." },
   { category: "Support records", criteria: "For as long as reasonably necessary to resolve your request and maintain a record of our support history." },
 ];
