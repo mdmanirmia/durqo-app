@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { ClipboardList } from "lucide-react";
 import { StatusBadge, statusLabel } from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
 import { fmtUSD } from "@/lib/format";
 import { setOrderStatus, setOrderPaymentChannel, startAssetTransfer } from "../actions";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
@@ -123,7 +125,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
   }
 
   if (rows.length === 0) {
-    return <p className="text-sm text-ink-faint">No orders yet.</p>;
+    return <EmptyState icon={ClipboardList} title="No orders yet" body="Orders will show up here as soon as a buyer checks out on the marketplace." />;
   }
 
   return (
