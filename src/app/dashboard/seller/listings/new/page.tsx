@@ -346,6 +346,17 @@ export default function AddNewBusinessPage() {
     }
 
     setSaving(true);
+    // Tracked outside the try block so the catch below can clean up: this
+    // form does one `listings` insert followed by ~10 dependent inserts
+    // (assets, monthly stats, SEO data, social stats, gallery uploads,
+    // YouTube-only tables) and a failure partway through used to leave the
+    // listings row sitting there anyway — a broken, incomplete
+    // "pending_review" listing visible to admin and on the seller's own
+    // dashboard, with no way for the seller to know it happened short of
+    // noticing a duplicate after retrying. Every dependent table's
+    // listing_id has `on delete cascade` (schema.sql), so deleting this one
+    // row cleans up every row this attempt managed to insert before failing.
+    let listingIdToRollback: string | null = null;
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
@@ -410,6 +421,7 @@ export default function AddNewBusinessPage() {
       if (insertError || !listingRow) throw new Error(insertError?.message ?? "Could not create the listing.");
 
       const listingId = listingRow.id as string;
+      listingIdToRollback = listingId;
 
       const assetInsertRows = assetRows
         .filter((r) => r.name.trim())
@@ -538,6 +550,18 @@ export default function AddNewBusinessPage() {
         setTimeout(() => router.push("/dashboard/seller"), 1500);
       }
     } catch (err) {
+      // Roll back the partially-created listing rather than leaving a
+      // broken, incomplete "pending_review" row behind — see the comment
+      // where listingIdToRollback is declared above. Best-effort: if the
+      // delete itself fails (e.g. the connection just dropped), the
+      // original error is still what the seller sees, not this one.
+      if (listingIdToRollback) {
+        try {
+          await supabase.from("listings").delete().eq("id", listingIdToRollback);
+        } catch (cleanupErr) {
+          console.error("[new listing] rollback delete failed:", cleanupErr);
+        }
+      }
       setError(err instanceof Error ? err.message : "Something went wrong creating the listing.");
     } finally {
       setSaving(false);
