@@ -95,7 +95,7 @@ const STEPS = [
     n: "03",
     icon: FileText,
     title: "Build your listing",
-    body: "Add your business details, financials and story. Quick Statistics are generated from the information you provide, and you can connect Google Analytics for a GA Verified badge that adds extra credibility.",
+    body: "Add your business details, financials and story, then write a Questions & Answers section to answer common buyer questions upfront. Quick Statistics are generated from the information you provide, and you can connect Google Analytics for a GA Verified badge that adds extra credibility.",
   },
   {
     n: "04",
@@ -107,7 +107,7 @@ const STEPS = [
     n: "05",
     icon: MessageSquare,
     title: "Talk with interested buyers",
-    body: "Once published, your listing is visible to every buyer on Durqo. Respond to questions and offers directly from your dashboard inbox.",
+    body: "Once published, your listing is visible to every buyer on Durqo. Reply to public questions from your dashboard's Comments page, and handle private conversations and offers from your dashboard inbox.",
   },
   {
     n: "06",
