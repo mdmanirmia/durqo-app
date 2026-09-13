@@ -63,7 +63,7 @@ export default function PrivacyToc({ items }: { items: TocItem[] }) {
       {/* Desktop: sticky sidebar with scroll-spy active indicator */}
       <nav aria-label="Table of contents" className="hidden lg:block">
         <div className="sticky top-24 flex max-h-[calc(100vh-7rem)] flex-col gap-0.5 overflow-y-auto border-l border-rule pl-4">
-          <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">On this page — {items.length} sections</p>
+          <p className="mono mb-2 text-xs uppercase tracking-wide text-ink-faint">On this page: {items.length} sections</p>
           {items.map((item) => {
             const active = item.id === activeId;
             return (
@@ -94,7 +94,7 @@ export default function PrivacyToc({ items }: { items: TocItem[] }) {
           onClick={() => setMobileOpen((v) => !v)}
           className="flex min-h-11 w-full items-center justify-between rounded-lg border border-rule bg-paper-raised px-4 py-3 text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
         >
-          On this page — {items.length} sections
+          On this page: {items.length} sections
           <span aria-hidden className={`text-ink-faint transition-transform ${mobileOpen ? "rotate-180" : ""}`}>
             ▾
           </span>
