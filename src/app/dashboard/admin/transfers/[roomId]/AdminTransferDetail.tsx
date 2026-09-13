@@ -316,10 +316,22 @@ export default function AdminTransferDetail({ data }: { data: AdminTransferDetai
                 <dt className="text-ink-faint">Amount</dt>
                 <dd className="mono text-right font-semibold text-ink">{fmtUSD(data.amount)}</dd>
               </div>
+              {data.unlockedAt && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-faint">Room Unlocked</dt>
+                  <dd className="text-right text-ink">{formatDateTime(data.unlockedAt)}</dd>
+                </div>
+              )}
               {data.inspectionDeadlineAt && (
                 <div className="flex justify-between gap-3">
                   <dt className="text-ink-faint">Inspection Deadline</dt>
                   <dd className="text-right text-ink">{formatDateTime(data.inspectionDeadlineAt)}</dd>
+                </div>
+              )}
+              {data.payoutEligibleAt && (
+                <div className="flex justify-between gap-3">
+                  <dt className="text-ink-faint">Payout Eligible</dt>
+                  <dd className="text-right text-ink">{formatDateTime(data.payoutEligibleAt)}</dd>
                 </div>
               )}
             </dl>
