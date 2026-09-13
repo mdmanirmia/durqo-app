@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { getWishlistedListings } from "@/lib/data/wishlist.client";
 import ListingCard from "@/components/ListingCard";
+import EmptyState from "@/components/ui/EmptyState";
 import type { Listing } from "@/lib/types";
 
 export default function WishlistPage() {
@@ -30,7 +32,7 @@ export default function WishlistPage() {
           {wishlisted.map((l) => <ListingCard key={l.id} listing={l} />)}
         </div>
       ) : (
-        <p className="text-sm text-ink-faint">Nothing saved yet — tap the heart on any listing to save it here.</p>
+        <EmptyState icon={Heart} title="Nothing saved yet" body="Tap the heart on any listing to save it here." />
       )}
     </DashboardShell>
   );
