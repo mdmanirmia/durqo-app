@@ -184,7 +184,7 @@ export default function CommentsPanel({
                 disabled={newBusy || !newText.trim()}
                 className="rounded-md bg-brand-strong px-4 py-2 text-sm font-semibold text-paper-raised disabled:opacity-60"
               >
-                {newBusy ? "Posting…" : "Post question"}
+                {newBusy ? "Posting…" : "Post comment"}
               </button>
             </div>
           </div>
