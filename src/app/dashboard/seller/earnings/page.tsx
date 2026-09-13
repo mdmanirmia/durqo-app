@@ -10,9 +10,12 @@ import EmptyState from "@/components/ui/EmptyState";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD, fmtUSD2, fmtBDTWhole } from "@/lib/format";
 import { fmtRate } from "@/lib/fees";
+import { estimatePayoutProcessingDate, fmtPayoutEta } from "@/lib/payout-eta";
 import {
   getAvailableBalance,
   getMyWithdrawals,
+  getMyPayoutVerified,
+  cancelWithdrawal,
   type AvailableBalance,
   type WithdrawalRow,
   type WithdrawalStatus,
@@ -74,19 +77,36 @@ const METHOD_FIELDS: Record<PayoutMethodId, PayoutField[]> = {
 // equivalent shown below is 50000 / today's withdrawal rate.
 const MFS_DAILY_CAP_BDT = 50000;
 
+// 2026-09-13 payout-policy v2: expanded from the original 4-value model
+// (pending/approved/rejected/paid) to the 9-value model the owner
+// specified — see 045_payout_policy_v2.sql and payout-eta.ts.
 const STATUS_LABEL: Record<WithdrawalStatus, string> = {
-  pending: "Pending review",
-  approved: "Approved — payout in progress",
-  rejected: "Rejected",
+  requested: "Requested",
+  under_review: "Under review",
+  action_required: "Action required",
+  approved: "Approved",
+  processing: "Processing",
   paid: "Paid",
+  on_hold: "On hold",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
 };
 
 const STATUS_TONE: Record<WithdrawalStatus, "gold" | "brand" | "danger" | "dark"> = {
-  pending: "gold",
+  requested: "gold",
+  under_review: "gold",
+  action_required: "danger",
   approved: "brand",
-  rejected: "danger",
+  processing: "brand",
   paid: "dark",
+  on_hold: "danger",
+  rejected: "danger",
+  cancelled: "dark",
 };
+
+// A seller can only cancel it themselves this early — matches
+// cancel_withdrawal_request()'s own check (045_payout_policy_v2.sql).
+const SELF_CANCELLABLE_STATUSES: ReadonlySet<WithdrawalStatus> = new Set(["requested", "under_review"]);
 
 export default function SellerEarningsPage() {
   const [balance, setBalance] = useState<AvailableBalance | null>(null);
@@ -99,6 +119,8 @@ export default function SellerEarningsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [payoutVerified, setPayoutVerified] = useState<boolean | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   // Today's bKash/Rocket/Nagad withdrawal rate (market rate minus the
   // ৳1.50 withdrawal margin — getUsdToBdtWithdrawalRate() in
   // src/lib/currency.ts, via the getMfsWithdrawalRate() action since that
@@ -109,6 +131,7 @@ export default function SellerEarningsPage() {
   function reload() {
     getAvailableBalance().then(setBalance);
     getMyWithdrawals().then(setWithdrawals);
+    getMyPayoutVerified().then(setPayoutVerified);
   }
 
   useEffect(() => {
@@ -122,10 +145,28 @@ export default function SellerEarningsPage() {
     getMfsWithdrawalRate().then((r) => {
       if (!cancelled) setMfsRate(r.rate);
     });
+    getMyPayoutVerified().then((v) => {
+      if (!cancelled) setPayoutVerified(v);
+    });
     return () => {
       cancelled = true;
     };
   }, []);
+
+  async function handleCancel(id: string) {
+    setCancellingId(id);
+    try {
+      const result = await cancelWithdrawal(id);
+      if (!result.ok) {
+        setError(result.message);
+      } else {
+        setNotice("Withdrawal request cancelled — the related orders are available in your balance again.");
+        reload();
+      }
+    } finally {
+      setCancellingId(null);
+    }
+  }
 
   const isMfs = MFS_METHOD_IDS.has(methodId);
   // The live USD equivalent of the ৳50,000/day cap at today's rate — a
@@ -188,8 +229,8 @@ export default function SellerEarningsPage() {
       // buttons) — state the real amount so it's never a surprise.
       setNotice(
         result.netAmount !== null
-          ? `Withdrawal request submitted for ${fmtUSD(result.netAmount)} — we'll email you once it's reviewed.`
-          : "Withdrawal request submitted — we'll email you once it's reviewed."
+          ? `Your payout request for ${fmtUSD(result.netAmount)} has been submitted. We normally review and process eligible payout requests within 3–5 business days.`
+          : "Your payout request has been submitted. We normally review and process eligible payout requests within 3–5 business days."
       );
       reload();
     } catch {
@@ -227,9 +268,23 @@ export default function SellerEarningsPage() {
         <div className="mb-6 flex items-start gap-3 rounded-xl border border-gold/30 bg-gold-soft px-5 py-4">
           <Info size={18} className="mt-0.5 shrink-0 text-gold" />
           <p className="text-sm text-ink-soft">
-            {balance.escrowComOrderCount} of your {balance.orderCount} available order{balance.orderCount === 1 ? "" : "s"} went through Escrow.com,
-            which pays you directly once it releases funds. Including it here is your available balance as tracked by Durqo — double-check what
-            Escrow.com has already paid you before requesting a withdrawal that covers it.
+            {balance.escrowComOrderCount} of your {balance.orderCount} available order{balance.orderCount === 1 ? "" : "s"} went through Escrow.com.
+            Seller payment is being handled by the escrow provider and is subject to the provider&rsquo;s processing timeline — Escrow.com pays you
+            directly once it releases funds, so double-check what it has already paid you before requesting a Durqo withdrawal that covers it.
+          </p>
+        </div>
+      )}
+
+      {payoutVerified === false && (
+        <div className="mb-6 flex items-start gap-3 rounded-xl border border-gold/30 bg-gold-soft px-5 py-4">
+          <Info size={18} className="mt-0.5 shrink-0 text-gold" />
+          <p className="text-sm text-ink-soft">
+            Payout verification is required before your first withdrawal — this is separate from the optional public Verified badge. Submit your
+            identity documents from the{" "}
+            <a href="/dashboard/seller/verification" className="font-semibold text-brand-strong hover:underline">
+              Verification page
+            </a>{" "}
+            and our team will review them.
           </p>
         </div>
       )}
@@ -315,10 +370,19 @@ export default function SellerEarningsPage() {
               ))}
             </div>
 
+            <div className="mb-4 rounded-lg border border-rule bg-paper-sunk px-4 py-3">
+              <p className="text-xs font-semibold text-ink">Processing time: Normally 3–5 business days</p>
+              <p className="mt-1 text-xs text-ink-faint">Your bank or payout provider may require additional time to credit the funds.</p>
+            </div>
+
             {error && <p className="mb-3 text-sm text-danger">{error}</p>}
             {notice && <p className="mb-3 text-sm text-brand-strong">{notice}</p>}
 
-            <Button type="button" onClick={handleSubmit} disabled={submitting || (isMfs && mfsRate === null)}>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting || (isMfs && mfsRate === null) || payoutVerified === false}
+            >
               {submitting
                 ? "Submitting…"
                 : isMfs
@@ -352,10 +416,14 @@ export default function SellerEarningsPage() {
                   <th className="px-4 py-3 font-medium">Net</th>
                   <th className="px-4 py-3 font-medium">Method</th>
                   <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Processing</th>
+                  <th className="px-4 py-3 font-medium"></th>
                 </tr>
               </thead>
               <tbody>
-                {withdrawals.map((w) => (
+                {withdrawals.map((w) => {
+                  const eta = estimatePayoutProcessingDate(new Date(w.requestedAtRaw), w.status);
+                  return (
                   <tr key={w.id} className="border-b border-rule align-top last:border-b-0">
                     <td className="mono px-4 py-3 text-ink-soft">{w.requestedAt}</td>
                     <td className="mono px-4 py-3">{w.orderCount}</td>
@@ -370,10 +438,28 @@ export default function SellerEarningsPage() {
                     </td>
                     <td className="px-4 py-3">
                       <Badge tone={STATUS_TONE[w.status]}>{STATUS_LABEL[w.status]}</Badge>
-                      {w.status === "rejected" && w.adminNote && <div className="mt-1 text-xs text-ink-faint">{w.adminNote}</div>}
+                      {(w.status === "rejected" || w.status === "action_required" || w.status === "on_hold") && w.adminNote && (
+                        <div className="mt-1 max-w-[200px] text-xs text-ink-faint">{w.adminNote}</div>
+                      )}
+                      {w.status === "paid" && w.payoutReference && (
+                        <div className="mt-1 text-xs text-ink-faint">Ref: {w.payoutReference}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-ink-faint">{fmtPayoutEta(eta)}</td>
+                    <td className="px-4 py-3">
+                      {SELF_CANCELLABLE_STATUSES.has(w.status) && (
+                        <button
+                          onClick={() => handleCancel(w.id)}
+                          disabled={cancellingId === w.id}
+                          className="rounded-md border border-rule-strong px-2.5 py-1 text-xs font-medium text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
+                        >
+                          {cancellingId === w.id ? "Cancelling…" : "Cancel"}
+                        </button>
+                      )}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -382,7 +468,9 @@ export default function SellerEarningsPage() {
               top, then a 2-column key:value grid beneath (site owner, Sep 11
               2026 screenshots: this table was cut off on phones). */}
           <div className="grid gap-3 md:hidden">
-            {withdrawals.map((w) => (
+            {withdrawals.map((w) => {
+              const eta = estimatePayoutProcessingDate(new Date(w.requestedAtRaw), w.status);
+              return (
               <div key={w.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="mono text-sm text-ink-soft">{w.requestedAt}</span>
@@ -412,10 +500,29 @@ export default function SellerEarningsPage() {
                     <div className="text-xs text-ink-faint">Net</div>
                     <div className="mono font-semibold">{fmtUSD(w.netAmount)}</div>
                   </div>
+                  <div>
+                    <div className="text-xs text-ink-faint">Processing</div>
+                    <div className="text-ink-soft">{fmtPayoutEta(eta)}</div>
+                  </div>
                 </div>
-                {w.status === "rejected" && w.adminNote && <div className="mt-3 border-t border-rule pt-2 text-xs text-ink-faint">{w.adminNote}</div>}
+                {(w.status === "rejected" || w.status === "action_required" || w.status === "on_hold") && w.adminNote && (
+                  <div className="mt-3 border-t border-rule pt-2 text-xs text-ink-faint">{w.adminNote}</div>
+                )}
+                {w.status === "paid" && w.payoutReference && (
+                  <div className="mt-3 border-t border-rule pt-2 text-xs text-ink-faint">Ref: {w.payoutReference}</div>
+                )}
+                {SELF_CANCELLABLE_STATUSES.has(w.status) && (
+                  <button
+                    onClick={() => handleCancel(w.id)}
+                    disabled={cancellingId === w.id}
+                    className="mt-3 w-full rounded-md border border-rule-strong px-2.5 py-1.5 text-xs font-medium text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
+                  >
+                    {cancellingId === w.id ? "Cancelling…" : "Cancel request"}
+                  </button>
+                )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}
