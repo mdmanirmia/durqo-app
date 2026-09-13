@@ -214,8 +214,8 @@ function InfoCategoryTable({ rows }: { rows: InfoCategory[] }) {
 const INFO_CATEGORIES: InfoCategory[] = [
   { category: "Account & identity", examples: "Name, email address, account credentials, and, where required, seller identity-verification information." },
   { category: "Business & listing", examples: "Information about the businesses you list, inquire about, or transact on, including business details and supporting documents." },
-  { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment providers; and, if you request a withdrawal as a Seller, the payout account details you provide (such as a bank account number, mobile financial service number, or PayPal/Wise email — see Section 07)." },
-  { category: "Asset transfer records", examples: "Once a sale is paid for, records from the Transfer Room used to complete it — messages between the Buyer and Seller in that room, each asset's transfer status, and any evidence a Buyer submits if they report an issue during the inspection window." },
+  { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment providers; and, if you request a withdrawal as a Seller, the payout account details you provide (such as a bank account number, mobile financial service number, or PayPal/Wise email; see Section 07)." },
+  { category: "Asset transfer records", examples: "Once a sale is paid for, records from the Transfer Room used to complete it: messages between the Buyer and Seller in that room, each asset's transfer status, and any evidence a Buyer submits if they report an issue during the inspection window." },
   { category: "Messages & support", examples: "Messages with other users and with our support team, and related records." },
   { category: "Public listing Q&A and comments", examples: "Questions & Answers a Seller writes for their own Listing, and questions and replies posted publicly in a Listing's Comments section, including the poster's name/profile." },
   { category: "Device & usage", examples: "Information about your device, browser, IP address, and how you use the Platform (pages viewed, features used)." },
@@ -466,8 +466,8 @@ export default function PrivacyPage() {
                   Durqo itself is not an escrow provider and does not directly hold or control Escrow.com&rsquo;s
                   funds. Stripe is a payment processor, not an escrow provider. SSLCommerz is a payment
                   gateway/processor, not an escrow provider. We will only describe an integration above as
-                  &ldquo;In use today&rdquo; once it has actually been implemented and verified in production —
-                  see our{" "}
+                  &ldquo;In use today&rdquo; once it has actually been implemented and verified in production.
+                  See our{" "}
                   <a href="/terms#payment-fees" className="font-semibold text-brand-hover">
                     Terms, Section 05
                   </a>{" "}
@@ -486,7 +486,7 @@ export default function PrivacyPage() {
                   browser&rsquo;s own cookie controls for you to opt out of. If that changes, we will add an
                   in-page cookie-preference control here before any non-essential cookie is set.
                 </p>
-                <SubHeading>Google Analytics — two distinct things</SubHeading>
+                <SubHeading>Google Analytics: two distinct things</SubHeading>
                 <p>
                   Durqo does not currently run its own site-wide analytics tracking of durqo.com visitors beyond the
                   session cookie above. Separately, a Seller can optionally connect their own Listing to their own
@@ -494,8 +494,8 @@ export default function PrivacyPage() {
                 </p>
                 <List
                   items={[
-                    "The connection uses Google's OAuth flow with a single, read-only scope (analytics.readonly) — we never request permission to edit your GA4 property.",
-                    "We store the resulting access and refresh tokens in our database, accessible only through server-side, administrative code paths — never returned to any browser.",
+                    "The connection uses Google's OAuth flow with a single, read-only scope (analytics.readonly), so we never request permission to edit your GA4 property.",
+                    "We store the resulting access and refresh tokens in our database, accessible only through server-side, administrative code paths, and never returned to any browser.",
                     "We only ever display aggregated, read-only traffic metrics (page views, sessions, bounce rate, and similar) for the connected property, shown publicly on that Listing's page.",
                     "A Seller can disconnect at any time from their listing dashboard; disconnecting revokes the Google token and deletes both the stored connection and the displayed metrics.",
                     "A Seller can also revoke Durqo's access directly from their Google Account's third-party access settings at any time, independently of our own disconnect option.",
@@ -568,13 +568,13 @@ export default function PrivacyPage() {
                   <p className="mb-3 text-sm font-semibold text-ink">Your privacy choices</p>
                   <List
                     items={[
-                      "Access — request a copy of your information.",
-                      "Correction — ask us to correct inaccurate or incomplete information.",
-                      "Deletion — request deletion of your information, subject to our legal and contractual retention needs.",
-                      "Objection / restriction — object to certain processing, or ask us to limit how we use your information.",
-                      "Portability — request your information in a portable format, where applicable.",
-                      "Marketing opt-out — unsubscribe from marketing communications at any time, using the link in any email or by contacting us.",
-                      "Complaints — where applicable, lodge a complaint with your local data protection authority.",
+                      "Access: request a copy of your information.",
+                      "Correction: ask us to correct inaccurate or incomplete information.",
+                      "Deletion: request deletion of your information, subject to our legal and contractual retention needs.",
+                      "Objection / restriction: object to certain processing, or ask us to limit how we use your information.",
+                      "Portability: request your information in a portable format, where applicable.",
+                      "Marketing opt-out: unsubscribe from marketing communications at any time, using the link in any email or by contacting us.",
+                      "Complaints: where applicable, lodge a complaint with your local data protection authority.",
                     ]}
                   />
                   <a
