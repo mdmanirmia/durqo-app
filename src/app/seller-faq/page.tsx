@@ -5,6 +5,16 @@ import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import GroupedFaq from "@/components/GroupedFaq";
 
+// Sep 13, 2026: "When can I withdraw my earnings?" now ties payout
+// eligibility to the buyer approving the transfer in the Transfer Room
+// (live for every payment channel since Sep 12, 2026), matching migration
+// 039's real payout-on-approval logic — see
+// claude/asset-transfer-post-purchase-redirect-and-payout-release-
+// addendum.md. Same-day follow-up: added two more FAQs walking through the
+// actual per-item handover (mark In Progress, then Submitted) and what
+// happens if the buyer reports an issue instead of approving (payout stays
+// on hold, Durqo reviews — nothing releases automatically).
+//
 // Sep 11, 2026: new Seller FAQ page, built alongside /buyer-faq, /payments,
 // /how-to-buy and /how-to-sell. Fee and payout answers are grounded in the
 // same authoritative sources as /how-to-sell and /payments: src/lib/fees.ts
@@ -107,7 +117,7 @@ const FAQ_GROUPS = [
       },
       {
         question: "When can I withdraw my earnings?",
-        answer: "Once a sale is marked complete, request a withdrawal from your Earnings dashboard. Our team reviews and processes each request — it isn't instant.",
+        answer: "Once the buyer approves the transfer in your shared Transfer Room, your payout becomes eligible — request a withdrawal from your Earnings dashboard. Our team reviews and processes each request — it isn't instant.",
       },
       {
         question: "What withdrawal methods can I use?",
@@ -121,6 +131,14 @@ const FAQ_GROUPS = [
       {
         question: "How do buyers ask me questions?",
         answer: "Three ways. When you build a listing, you can write your own Questions & Answers pairs that show up publicly with the listing. Buyers can also post a question in the listing's Comments section — you'll see it (and an unanswered-questions count) on your dashboard's Comments page, and your reply is public. For a private conversation, buyers can message you directly, and it stays in your dashboard inbox.",
+      },
+      {
+        question: "How does handing over the assets actually work?",
+        answer: "After a buyer pays, you're both taken to a shared Transfer Room. Hand over each asset one at a time — a domain, code, accounts, socials, whatever's included in the sale — marking it In Progress, then Submitted as you go. The buyer then inspects each item during their inspection window and marks it Received, then approves the transfer once everything's confirmed.",
+      },
+      {
+        question: "What happens if a buyer reports an issue instead of approving?",
+        answer: "Nothing is released automatically. Your payout stays on hold while Durqo's team reviews the evidence and decides what happens next — the same way any other dispute is handled.",
       },
       {
         question: "What if a buyer disputes a completed sale?",
