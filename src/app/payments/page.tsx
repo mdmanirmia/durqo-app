@@ -56,6 +56,13 @@ import GroupedFaq from "@/components/GroupedFaq";
 //   src/app/dashboard/seller/earnings/page.tsx and
 //   claude/payment-history-withdrawals-receipts-addendum.md exactly —
 //   never described as instant/automatic.
+// Sep 13, 2026: "held until the deal is done" now names the real Transfer
+// Room mechanism (mark received, approve transfer, report an issue) instead
+// of the vague "until the transfer is confirmed complete" — matches
+// /how-to-buy, /how-to-sell and /terms. See
+// claude/asset-transfer-room-feasibility-addendum.md. The "Buy Now — Pay
+// Later" button (a zero-payment internal test tool, not a real payment
+// method) is deliberately not listed among the buyer payment options above.
 export const metadata: Metadata = {
   title: "Payment & Withdrawal | Durqo",
   description: "How payments are collected and held on Durqo, how the success fee works, and how sellers withdraw their earnings.",
@@ -142,7 +149,12 @@ const FAQ_GROUPS = [
       {
         question: "How is my payment protected?",
         answer:
-          "For Stripe and SSLCommerz purchases, Durqo holds your payment until the seller has transferred the agreed assets and the deal is confirmed complete — Durqo does not use a third-party escrow provider for these two methods. If you'd like your funds held by an independent third party instead, choose Escrow.com at checkout.",
+          "For Stripe and SSLCommerz purchases, Durqo holds your payment while you and the seller complete the handover in your order's Transfer Room — you mark each item received, then approve the transfer to release payment, or report an issue instead if something's wrong. Durqo does not use a third-party escrow provider for these two methods. If you'd like your funds held by an independent third party instead, choose Escrow.com at checkout.",
+      },
+      {
+        question: "What is the Transfer Room?",
+        answer:
+          "The shared space you and the seller use right after payment to complete the sale — also listed under Asset Transfers in your dashboard. The seller hands over each asset there; you mark it received as it arrives, message the seller directly if needed, and approve the transfer once everything matches what was agreed.",
       },
       {
         question: "What happens on large SSLCommerz purchases over $2,000?",
@@ -270,9 +282,9 @@ export default function PaymentsPage() {
                 <ShieldCheck size={20} className="mb-2 text-brand-strong" />
                 <h4 className="text-base font-semibold text-ink">Stripe &amp; SSLCommerz</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                  Durqo holds your payment directly until the seller has transferred the agreed assets and the
-                  deal is confirmed complete. Durqo does not use a third-party escrow provider for these two
-                  methods.
+                  Durqo holds your payment directly while you and the seller complete the handover in your
+                  order&rsquo;s Transfer Room. Approving the transfer there releases payment to the seller. Durqo
+                  does not use a third-party escrow provider for these two methods.
                 </p>
               </div>
               <div className="rounded-xl border border-rule bg-paper-raised p-6">
