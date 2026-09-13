@@ -12,8 +12,8 @@ import { createClient } from "@/lib/supabase/client";
 import Container from "@/components/ui/Container";
 
 const CALLBACK_ERRORS: Record<string, string> = {
-  backend_not_connected: "Backend isn't connected yet — this is a preview build.",
-  confirmation_failed: "That verification link is invalid or has expired — try registering again, or resend the email.",
+  backend_not_connected: "Backend isn't connected yet. This is a preview build.",
+  confirmation_failed: "That verification link is invalid or has expired. Try registering again, or resend the email.",
   account_deactivated: "Your account has been deactivated. Contact support if you think this is a mistake.",
 };
 
@@ -34,7 +34,7 @@ function LoginForm() {
   // from here on, same as any other form-validation state.
   const [error, setError] = useState<string | null>(() => {
     const code = params.get("error");
-    return code ? (CALLBACK_ERRORS[code] ?? "Something went wrong — please try again.") : null;
+    return code ? (CALLBACK_ERRORS[code] ?? "Something went wrong. Please try again.") : null;
   });
   // Tracks whether the *current* error is the unverified-email case, so the
   // "Resend the link" action only shows up for that specific error — not for
@@ -51,7 +51,7 @@ function LoginForm() {
     setShowResend(false);
     const supabase = createClient();
     if (!supabase) {
-      setError("Backend isn't connected yet — this is a preview build. Once Supabase is set up, this form will log you in for real.");
+      setError("Backend isn't connected yet. This is a preview build; once Supabase is set up, this form will log you in for real.");
       return;
     }
     setLoading(true);
@@ -112,7 +112,7 @@ function LoginForm() {
       setError(error.message);
       return;
     }
-    setNotice("Sent again — check your inbox.");
+    setNotice("Sent again, check your inbox.");
   }
 
   const fieldCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
