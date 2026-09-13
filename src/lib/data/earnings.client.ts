@@ -2,7 +2,20 @@
 
 import { createClient } from "@/lib/supabase/client";
 
-export type WithdrawalStatus = "pending" | "approved" | "rejected" | "paid";
+// 2026-09-13 payout-policy v2 (045_payout_policy_v2.sql): expanded from the
+// original 4-value model (pending/approved/rejected/paid) to this 9-value
+// one. "pending" rows were migrated to "requested" in the same migration,
+// so this type only ever needs to describe the new set.
+export type WithdrawalStatus =
+  | "requested"
+  | "under_review"
+  | "action_required"
+  | "approved"
+  | "processing"
+  | "paid"
+  | "on_hold"
+  | "rejected"
+  | "cancelled";
 
 export interface WithdrawalRow {
   id: string;
@@ -14,6 +27,8 @@ export interface WithdrawalRow {
   payoutDetails: string;
   status: WithdrawalStatus;
   adminNote: string | null;
+  payoutReference: string | null;
+  requestedAtRaw: string;
   requestedAt: string;
   reviewedAt: string | null;
   paidAt: string | null;
@@ -97,8 +112,38 @@ export async function getMyWithdrawals(): Promise<WithdrawalRow[]> {
     payoutDetails: w.payout_details,
     status: w.status as WithdrawalStatus,
     adminNote: w.admin_note,
+    payoutReference: w.payout_reference ?? null,
+    requestedAtRaw: w.requested_at as string,
     requestedAt: (w.requested_at as string).slice(0, 10),
     reviewedAt: w.reviewed_at ? (w.reviewed_at as string).slice(0, 10) : null,
     paidAt: w.paid_at ? (w.paid_at as string).slice(0, 10) : null,
   }));
+}
+
+// Whether this seller has completed the payout-verification gate
+// (profiles.payout_verified — 045_payout_policy_v2.sql), deliberately
+// separate from the public "Verified" badge (is_verified). A seller
+// without this can still browse/list/sell, but create_withdrawal_request()
+// will refuse a withdrawal until it's granted, so the Earnings page uses
+// this to show a clear explanation before they hit that RPC error.
+export async function getMyPayoutVerified(): Promise<boolean> {
+  const supabase = createClient();
+  if (!supabase) return false;
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return false;
+
+  const { data } = await supabase.from("profiles").select("payout_verified").eq("id", userData.user.id).single();
+  return Boolean(data?.payout_verified);
+}
+
+// Lets a seller withdraw their own request while it's still early enough
+// to be self-service (cancel_withdrawal_request enforces "requested" or
+// "under_review" only — anything further along needs support@durqo.com,
+// same as the RPC's own error message states).
+export async function cancelWithdrawal(requestId: string): Promise<{ ok: true } | { ok: false; message: string }> {
+  const supabase = createClient();
+  if (!supabase) return { ok: false, message: "Backend not connected" };
+  const { error } = await supabase.rpc("cancel_withdrawal_request", { p_request_id: requestId });
+  if (error) return { ok: false, message: error.message };
+  return { ok: true };
 }
