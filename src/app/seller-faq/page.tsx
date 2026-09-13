@@ -102,7 +102,7 @@ const FAQ_GROUPS = [
       },
       {
         question: "What is seller identity verification?",
-        answer: "An optional step where you upload an ID document from your dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge.",
+        answer: "An optional step where you upload an ID document from your dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge. Getting the public badge is optional, but completing this same identity check is required before your very first withdrawal — see the Fees & getting paid section below.",
       },
     ],
   },
@@ -135,13 +135,8 @@ const FAQ_GROUPS = [
       },
       {
         question: "When can I withdraw my earnings?",
-        answer: (
-          <>
-            Once the buyer clicks <strong>Approve Transfer</strong> in your shared <strong>Transfer Room</strong>,
-            your payout becomes eligible. Request a withdrawal from your Earnings dashboard, and our team reviews and
-            processes each request. It isn&rsquo;t instant.
-          </>
-        ),
+        answer:
+          "Once the buyer approves the transfer, any required review is complete and your payout becomes eligible, you can request a withdrawal from your Earnings dashboard. Durqo normally reviews and processes eligible payout requests within 3–5 business days. Your bank or payout provider may require additional time to credit the funds.",
       },
       {
         question: "What withdrawal methods can I use?",
