@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
 import {
   ArrowRight,
   UserPlus,
@@ -13,6 +14,9 @@ import {
   Ban,
   Tag,
   PackageCheck,
+  Send,
+  Eye,
+  AlertTriangle,
 } from "lucide-react";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import Container from "@/components/ui/Container";
@@ -40,6 +44,17 @@ import Button from "@/components/ui/Button";
 // mirrors the same callout added to /how-to-buy — since this is the
 // mechanism that actually determines whether and when a seller gets paid,
 // not just one step among eight.
+//
+// Sep 13, 2026, third follow-up: per direct owner feedback on a live
+// screenshot ("design ta valo lagchene... graphics add koro"), rebuilt the
+// spotlight card's plain bold-bulleted list as an actual step-flow diagram
+// — icon-badge nodes connected by arrows, colored to match the real in-app
+// status colors (gold for the in-progress In Progress/Submitted/Received
+// states, brand green for the payout-triggering Approve Transfer step,
+// danger red for the Report an Issue branch — see STAGE_LABEL /
+// ITEM_STATUS_LABEL in
+// src/app/dashboard/transfer/[orderId]/TransferRoomView.tsx) — mirrors the
+// same diagram added to /how-to-buy, from the seller's side of the room.
 //
 // Sep 11, 2026: a step-by-step operational guide, distinct from /sell's own
 // marketing/valuation-focused landing page (which stays untouched by this
@@ -170,6 +185,31 @@ const STEPS = [
   },
 ] as const;
 
+// Colors mirror the real Transfer Room's own status tones exactly (see
+// STAGE_LABEL / ITEM_STATUS_LABEL in TransferRoomView.tsx): gold for the
+// in-progress In Progress/Submitted/Received states, brand green for the
+// payout-triggering Approve Transfer action.
+const TRANSFER_FLOW = [
+  {
+    title: "You mark it In Progress, Submitted",
+    body: "As you hand over each asset, one at a time.",
+    icon: Send,
+    badge: "bg-gold-soft text-[#92730F]",
+  },
+  {
+    title: "Buyer inspects, marks it Received",
+    body: "During their inspection window.",
+    icon: Eye,
+    badge: "bg-gold-soft text-[#92730F]",
+  },
+  {
+    title: "Buyer clicks Approve Transfer",
+    body: "The sale is final — your payout becomes eligible.",
+    icon: CheckCircle2,
+    badge: "bg-brand text-white",
+  },
+] as const;
+
 const PRICING_TIERS = SUCCESS_FEE_TIERS.map((t) => ({ label: t.label, percent: fmtRate(t.rate) }));
 
 const PRICING_FOOTNOTES = [
@@ -262,37 +302,58 @@ export default function HowToSellPage() {
       <section className="border-b border-rule bg-brand-soft py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mx-auto max-w-[860px] rounded-2xl border border-rule bg-paper-raised p-8 sm:p-10">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
-                  <Handshake size={22} />
+            <div className="mx-auto max-w-[920px] rounded-2xl border border-rule bg-paper-raised p-8 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-10 lg:p-12">
+              <div className="mx-auto max-w-[620px] text-center">
+                <span className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-brand-soft text-brand-strong">
+                  <Handshake size={26} />
                 </span>
-                <div>
-                  <DashEyebrow>Where your payout actually gets earned</DashEyebrow>
-                  <h2 className="text-xl font-semibold text-ink sm:text-2xl">The Transfer Room</h2>
-                  <p className="mt-3 max-w-[64ch] text-sm leading-relaxed text-ink-soft">
-                    Once a buyer pays, you don&rsquo;t just wait for a payout to appear — you and the buyer share a{" "}
-                    <strong className="text-ink">Transfer Room</strong> where you hand over every asset in the open,
-                    and what happens there is what decides your payout.
-                  </p>
-                  <ul className="mt-5 flex flex-col gap-2.5 text-sm leading-relaxed text-ink-soft">
-                    <li>
-                      <strong className="text-ink">Mark each asset In Progress, then Submitted</strong> as you
-                      transfer it.
-                    </li>
-                    <li>
-                      The buyer inspects each one and marks it <strong className="text-ink">Received</strong>.
-                    </li>
-                    <li>
-                      When they click <strong className="text-ink">Approve Transfer</strong>, the sale is final and
-                      your payout becomes eligible.
-                    </li>
-                    <li>
-                      If they click <strong className="text-ink">Report an Issue</strong> instead, your payout stays
-                      on hold until Durqo reviews the evidence — nothing releases automatically.
-                    </li>
-                  </ul>
-                </div>
+                <DashEyebrow center>Where your payout actually gets earned</DashEyebrow>
+                <h2 className="text-2xl font-semibold text-ink sm:text-3xl">The Transfer Room</h2>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+                  Once a buyer pays, you don&rsquo;t just wait for a payout to appear — you and the buyer share a{" "}
+                  <strong className="text-ink">Transfer Room</strong> where you hand over every asset in the open,
+                  and what happens there is what decides your payout.
+                </p>
+              </div>
+
+              {/* step-flow diagram — icon nodes connected by arrows, one
+                  column per node on desktop, stacked on mobile */}
+              <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-start sm:gap-2">
+                {TRANSFER_FLOW.map((step, i) => (
+                  <Fragment key={step.title}>
+                    {i > 0 && (
+                      <div className="hidden shrink-0 sm:flex sm:h-11 sm:items-center sm:justify-center">
+                        <ArrowRight size={18} className="text-ink-faint" aria-hidden />
+                      </div>
+                    )}
+                    <div className="flex items-start gap-4 sm:flex-col sm:items-center sm:gap-3 sm:text-center">
+                      <span
+                        className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${step.badge}`}
+                        aria-hidden
+                      >
+                        <step.icon size={18} />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-ink">{step.title}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-ink-soft sm:mx-auto sm:max-w-[16ch]">
+                          {step.body}
+                        </p>
+                      </div>
+                    </div>
+                  </Fragment>
+                ))}
+              </div>
+
+              {/* alternate path — visually distinct (dashed border, danger
+                  tone) from the happy path above */}
+              <div className="mt-8 flex items-start gap-3 rounded-xl border border-dashed border-danger/40 bg-danger-soft p-4 sm:p-5">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-paper-raised text-danger">
+                  <AlertTriangle size={16} />
+                </span>
+                <p className="text-sm leading-relaxed text-danger">
+                  If the buyer clicks <strong>Report an Issue</strong> instead of approving, your payout stays on
+                  hold — nothing releases automatically until Durqo&rsquo;s team reviews the evidence.
+                </p>
               </div>
             </div>
           </Inner>
