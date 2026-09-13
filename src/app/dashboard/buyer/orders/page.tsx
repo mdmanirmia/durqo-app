@@ -1,17 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { FileText, ArrowLeftRight } from "lucide-react";
+import { FileText, ArrowLeftRight, X, ClipboardList } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/ui/Badge";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import EmptyState from "@/components/ui/EmptyState";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD } from "@/lib/format";
 import { getBuyerOrders, type OrderRow } from "@/lib/data/orders.client";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
+import { cancelOrder } from "../actions";
+
+// Cancel is only ever offered for these two statuses (2026-09-13 dashboard
+// audit follow-up) — matches CANCELLABLE_STATUSES in ../actions.ts, which
+// re-checks the same rule server-side against the DB's live status rather
+// than trusting this list alone.
+const CANCELLABLE_STATUSES = new Set(["requested", "awaiting_payment"]);
 
 export default function BuyerOrdersPage() {
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<OrderRow | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [isCancelling, startCancel] = useTransition();
 
   useEffect(() => {
     let cancelled = false;
@@ -23,13 +35,28 @@ export default function BuyerOrdersPage() {
     };
   }, []);
 
+  function confirmCancel() {
+    if (!cancelTarget) return;
+    const target = cancelTarget;
+    setCancelError(null);
+    startCancel(async () => {
+      try {
+        await cancelOrder(target.id);
+        setOrders((prev) => prev?.map((o) => (o.id === target.id ? { ...o, status: "cancelled" } : o)) ?? prev);
+        setCancelTarget(null);
+      } catch (err) {
+        setCancelError(err instanceof Error ? err.message : "Couldn't cancel this order — try again.");
+      }
+    });
+  }
+
   return (
     <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
       <h2 className="mb-4 text-xl text-ink">Orders</h2>
       {orders === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : orders.length === 0 ? (
-        <p className="text-sm text-ink-faint">No orders yet — items you request to purchase from your cart will show up here.</p>
+        <EmptyState icon={ClipboardList} title="No orders yet" body="Items you request to purchase from your cart will show up here." />
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
@@ -77,6 +104,18 @@ export default function BuyerOrdersPage() {
                         <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
                           <FileText size={13} /> Receipt
                         </Link>
+                        {CANCELLABLE_STATUSES.has(o.status) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCancelError(null);
+                              setCancelTarget(o);
+                            }}
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-ink-faint hover:text-danger"
+                          >
+                            <X size={13} /> Cancel order
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -121,12 +160,41 @@ export default function BuyerOrdersPage() {
                   <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
                     <FileText size={13} /> Receipt
                   </Link>
+                  {CANCELLABLE_STATUSES.has(o.status) && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCancelError(null);
+                        setCancelTarget(o);
+                      }}
+                      className="inline-flex items-center gap-1 text-xs font-semibold text-ink-faint hover:text-danger"
+                    >
+                      <X size={13} /> Cancel order
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={cancelTarget !== null}
+        title={`Cancel order for "${cancelTarget?.listingTitle}"?`}
+        body={
+          <>
+            <p>You haven&rsquo;t paid for this yet, so nothing to refund — this just closes out the request.</p>
+            {cancelError && <p className="mt-2 text-danger">{cancelError}</p>}
+          </>
+        }
+        confirmLabel="Cancel order"
+        cancelLabel="Keep order"
+        danger
+        busy={isCancelling}
+        onConfirm={confirmCancel}
+        onCancel={() => setCancelTarget(null)}
+      />
     </DashboardShell>
   );
 }
