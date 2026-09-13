@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText, ArrowLeftRight } from "lucide-react";
+import { FileText, ArrowLeftRight, ClipboardList } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD } from "@/lib/format";
 import { getSellerOrders, type OrderRow } from "@/lib/data/orders.client";
@@ -29,7 +30,7 @@ export default function SellerOrdersPage() {
       {orders === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : orders.length === 0 ? (
-        <p className="text-sm text-ink-faint">No orders yet — purchase requests from buyers will show up here.</p>
+        <EmptyState icon={ClipboardList} title="No orders yet" body="Purchase requests from buyers will show up here." />
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
