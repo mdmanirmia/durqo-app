@@ -1238,10 +1238,6 @@ export default function ListingEditForm({
         </Section>
       )}
 
-      <Section title="Questions & Answers" hint="Shown on the published listing, above the live comment feed, in the FAQ with Seller section.">
-        <QaListEditor rows={faqRows} setRows={setFaqRows} />
-      </Section>
-
       <Section title="Sale Includes">
         <div className="flex flex-col gap-6">
           <Field label="Assets included">
@@ -1251,6 +1247,12 @@ export default function ListingEditForm({
             <textarea rows={3} value={saleIncludesSupport} onChange={(e) => setSaleIncludesSupport(e.target.value)} className={`${inputCls} w-full`} />
           </Field>
         </div>
+      </Section>
+
+      {/* Last section before Save, per the site owner's explicit request
+          (2026-09-13): listed last, not before Sale Includes. */}
+      <Section title="Questions & Answers" hint="Shown on the published listing, above the live comment feed, in the FAQ with Seller section.">
+        <QaListEditor rows={faqRows} setRows={setFaqRows} />
       </Section>
 
       <div className="flex items-center gap-4 border-t border-rule pt-8">
