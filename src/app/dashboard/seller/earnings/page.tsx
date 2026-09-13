@@ -5,6 +5,8 @@ import { Landmark, Wallet, Info } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import Button from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import PayoutMethodIcon from "@/components/ui/PayoutMethodIcon";
+import EmptyState from "@/components/ui/EmptyState";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD, fmtUSD2, fmtBDTWhole } from "@/lib/format";
 import { fmtRate } from "@/lib/fees";
@@ -261,10 +263,11 @@ export default function SellerEarningsPage() {
                     setError(null);
                     setNotice(null);
                   }}
-                  className={`rounded-md border px-3 py-1.5 text-sm font-medium ${
+                  className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium ${
                     methodId === m.id ? "border-brand-strong bg-brand-soft text-brand-strong" : "border-rule-strong text-ink-soft hover:border-brand-strong"
                   }`}
                 >
+                  <PayoutMethodIcon method={m.id} size={13} />
                   {m.label}
                 </button>
               ))}
@@ -334,7 +337,7 @@ export default function SellerEarningsPage() {
       {withdrawals === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : withdrawals.length === 0 ? (
-        <p className="text-sm text-ink-faint">No withdrawal requests yet.</p>
+        <EmptyState icon={Landmark} title="No withdrawal requests yet" body="Once you request a payout above, it'll show up here." />
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
@@ -359,7 +362,12 @@ export default function SellerEarningsPage() {
                     <td className="mono px-4 py-3">{fmtUSD(w.grossAmount)}</td>
                     <td className="mono px-4 py-3 text-ink-faint">-{fmtUSD(w.successFeeAmount)}</td>
                     <td className="mono px-4 py-3 font-semibold">{fmtUSD(w.netAmount)}</td>
-                    <td className="px-4 py-3 text-ink-soft">{PAYOUT_METHODS.find((m) => m.id === w.payoutMethod)?.label ?? w.payoutMethod}</td>
+                    <td className="px-4 py-3 text-ink-soft">
+                      <div className="flex items-center gap-1.5">
+                        <PayoutMethodIcon method={w.payoutMethod} size={12} />
+                        {PAYOUT_METHODS.find((m) => m.id === w.payoutMethod)?.label ?? w.payoutMethod}
+                      </div>
+                    </td>
                     <td className="px-4 py-3">
                       <Badge tone={STATUS_TONE[w.status]}>{STATUS_LABEL[w.status]}</Badge>
                       {w.status === "rejected" && w.adminNote && <div className="mt-1 text-xs text-ink-faint">{w.adminNote}</div>}
@@ -387,7 +395,10 @@ export default function SellerEarningsPage() {
                   </div>
                   <div>
                     <div className="text-xs text-ink-faint">Method</div>
-                    <div className="text-ink-soft">{PAYOUT_METHODS.find((m) => m.id === w.payoutMethod)?.label ?? w.payoutMethod}</div>
+                    <div className="flex items-center gap-1.5 text-ink-soft">
+                      <PayoutMethodIcon method={w.payoutMethod} size={12} />
+                      {PAYOUT_METHODS.find((m) => m.id === w.payoutMethod)?.label ?? w.payoutMethod}
+                    </div>
                   </div>
                   <div>
                     <div className="text-xs text-ink-faint">Gross</div>
