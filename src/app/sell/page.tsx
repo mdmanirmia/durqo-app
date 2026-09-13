@@ -104,11 +104,15 @@ const VALUE_PROPS = [
   },
 ];
 
+// Sep 13, 2026: Step 4 now names the real Transfer Room + payout-approval
+// flow (live for every payment channel) instead of the vague "agree on the
+// terms and complete the transfer" placeholder, matching /how-to-sell,
+// /payments and /terms.
 const PROCESS_STEPS = [
   { n: "01", title: "Value your business", body: "Get a free valuation range based on the information you provide." },
   { n: "02", title: "Build your listing", body: "Share the key details and submit your business for review." },
   { n: "03", title: "Review buyer interest", body: "Receive messages and consider offers from interested buyers." },
-  { n: "04", title: "Complete the transfer", body: "Agree on the terms and complete the business transfer." },
+  { n: "04", title: "Complete the transfer", body: "Once a buyer pays, hand over each asset in your shared Transfer Room and get approved for payout." },
 ];
 
 // Sep 6, 2026: sourced from the single shared src/lib/fees.ts module rather
