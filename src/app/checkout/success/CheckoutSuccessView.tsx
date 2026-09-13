@@ -37,7 +37,7 @@ function CheckoutSuccessContent() {
           </div>
           <h1 className="text-2xl font-semibold text-ink">Payment received</h1>
           <p className="text-sm text-ink-soft">
-            Thanks — your payment went through and your order is moving into escrow. We&rsquo;ll connect you with the seller
+            Thanks, your payment went through and your order is moving into escrow. We&rsquo;ll connect you with the seller
             to coordinate the handover, and you can track progress from your orders page.
           </p>
           {reference && <p className="mono text-xs text-ink-faint">Reference: {reference.slice(0, 24)}&hellip;</p>}
