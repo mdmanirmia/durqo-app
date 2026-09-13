@@ -27,6 +27,7 @@ import {
   Package,
   CreditCard,
   HelpCircle,
+  MessageCircle,
   type LucideIcon,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -1082,47 +1083,43 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
             </div>
           </aside>
 
-          {/* MAIN CONTENT — BOTTOM (FAQ with Seller, now including the live
-              question/answer feed). min-w-0 for the same grid-overflow-guard
-              reason as MAIN CONTENT TOP above.
+          {/* MAIN CONTENT — BOTTOM (Questions & Answers, then Comments).
+              min-w-0 for the same grid-overflow-guard reason as MAIN CONTENT
+              TOP above.
 
-              Sep 9, 2026: this used to be two separate cards — a static,
-              read-only "FAQ with Seller" accordion and, right below it, a
-              "Comments" card that displayed real `comments` rows behind a
-              dead "Log in to leave a comment" link with no actual submit
-              path anywhere in the app. Per the user's request ("FAQ with
-              Seller er majhei comment and seller answer korar sujog thakbe.
-              Comments ta delete kore dao" — the ability to comment, and for
-              the seller to answer, should live inside FAQ with Seller
-              itself; delete the separate Comments card), they're now one
-              card: any seller-authored FAQ pairs (`listing.faqs`, still a
-              plain accordion) render first, followed by the live comment
-              feed and a real working composer/reply flow
-              (CommentsPanel — see src/lib/actions/comments.ts for the new
-              postComment() Server Action this calls). Posting a question
-              requires login (a dead-end "Log in to leave a comment" link
-              otherwise); replying is restricted to the listing's own
-              seller, enforced server-side, not just hidden in the UI. A new
-              top-level question also emails the seller and shows up on
-              their new /dashboard/seller/questions page — see
-              dashboard-nav.ts and that page for the "dashboard
-              notification" half of the request. */}
+              Sep 9, 2026: these used to be two separate cards, then got
+              merged into one "FAQ with Seller" card (seller-authored FAQ
+              pairs on top of the live comment feed) per that day's request.
+              Split back into two separate cards on 2026-09-13, per the site
+              owner: seller-authored Q&A (`listing.faqs`, still a plain
+              accordion — see QaListEditor.tsx for how sellers write these)
+              gets its own "Questions & Answers" card, and the live
+              question/reply feed (CommentsPanel — see
+              src/lib/actions/comments.ts for the postComment() Server
+              Action it calls) is its own "Comments" card, renamed from
+              "FAQ with Seller". Posting a question still requires login (a
+              dead-end "Log in to leave a comment" link otherwise); replying
+              is restricted to the listing's own seller, enforced
+              server-side, not just hidden in the UI. A new top-level
+              question still emails the seller and shows up on their
+              /dashboard/seller/questions page — see dashboard-nav.ts and
+              that page. */}
           <div className="min-w-0 flex flex-col gap-6">
-            <SectionCard title="FAQ with Seller" icon={HelpCircle} bodyClassName="p-0">
-              <div className="flex flex-col">
-                {listing.faqs.length > 0 && (
-                  <div className="border-b border-rule px-5 sm:px-6">
-                    <FaqAccordion items={listing.faqs} />
-                  </div>
-                )}
-                <CommentsPanel
-                  listingId={listing.id}
-                  comments={listing.comments}
-                  isSeller={isListingSeller}
-                  loggedIn={!!viewer}
-                  viewerId={viewer?.id}
-                />
-              </div>
+            {listing.faqs.length > 0 && (
+              <SectionCard title="Questions & Answers" icon={HelpCircle} bodyClassName="p-0">
+                <div className="px-5 sm:px-6">
+                  <FaqAccordion items={listing.faqs} />
+                </div>
+              </SectionCard>
+            )}
+            <SectionCard title="Comments" icon={MessageCircle} bodyClassName="p-0">
+              <CommentsPanel
+                listingId={listing.id}
+                comments={listing.comments}
+                isSeller={isListingSeller}
+                loggedIn={!!viewer}
+                viewerId={viewer?.id}
+              />
             </SectionCard>
           </div>
         </div>
