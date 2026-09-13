@@ -63,6 +63,23 @@ import { fmtUSD } from "@/lib/format";
 // and this remains a substantive correction warranting the owner's/a
 // lawyer's review before being treated as fully final.
 //
+// Update — Sep 13, 2026: the Asset Transfer Room system (live for every
+// payment channel since Sep 12, 2026) replaces the old one-line "until the
+// Seller has transferred the agreed assets and the Buyer has confirmed
+// receipt" placeholder with a real described mechanism — see
+// claude/asset-transfer-room-feasibility-addendum.md and
+// claude/asset-transfer-post-purchase-redirect-and-payout-release-
+// addendum.md. Section 4.2 (Buyers) now describes the Buyer's real actions
+// (mark received, approve, or report an issue), Section 5 has a new "The
+// Transfer Room" subsection naming the real flow, and Section 6's
+// finality/dispute language now ties "final" to the Buyer approving the
+// transfer rather than a generic "confirmed receipt." Same discipline as
+// every other update on this page: describes only what's genuinely live,
+// and still warrants the owner's/a lawyer's review before being treated as
+// final. (The site's "Buy Now — Pay Later" button, a zero-payment internal
+// test tool, is deliberately not mentioned anywhere in these Terms — see
+// its own code comments in BuyNowButton.tsx.)
+//
 // Same-day follow-up (Sep 11, 2026): the merchant asked to remove the
 // $2,000 online-deposit cap for Stripe card payments specifically — Stripe
 // now always charges the Buyer's full purchase price in one payment
@@ -72,7 +89,7 @@ import { fmtUSD } from "@/lib/format";
 // src/lib/payment-terms.ts's own updated comment. The "How payment works
 // today" footnote below was corrected to describe this split by rail
 // instead of lumping Stripe and SSLCommerz together.
-const EFFECTIVE_DATE = "September 11, 2026";
+const EFFECTIVE_DATE = "September 13, 2026";
 
 export const metadata: Metadata = {
   title: "Terms of Service | Durqo",
@@ -248,9 +265,25 @@ function FeeExample() {
 const PAYMENT_FLOW = [
   "Buyer and Seller agree on the transaction through the Platform.",
   "Buyer pays the agreed purchase price securely through Durqo's payment provider, Stripe.",
-  "Durqo holds the payment until the Seller has transferred the agreed assets and the Buyer has confirmed receipt.",
-  "Once confirmed, Durqo's Success Fee is deducted from the sale proceeds.",
+  "Durqo holds the payment while the Buyer and Seller complete the transfer in a shared Transfer Room, described below.",
+  "Once the Buyer approves the transfer, Durqo's Success Fee is deducted from the sale proceeds.",
   "The remaining balance is paid out to the Seller.",
+];
+
+// Sep 13, 2026: names the real Asset Transfer Room system (live for every
+// payment channel — Stripe, SSLCommerz, Escrow.com — since Sep 12, 2026;
+// see claude/asset-transfer-room-feasibility-addendum.md and
+// claude/asset-transfer-post-purchase-redirect-and-payout-release-
+// addendum.md) instead of the old one-line "until the Seller has
+// transferred the agreed assets and the Buyer has confirmed receipt"
+// placeholder, which described the outcome but not the actual mechanism
+// buyers and sellers use, or what makes a sale final. Matches
+// TransferRoomView.tsx's real buyer/seller actions.
+const TRANSFER_ROOM_FLOW = [
+  "Right after payment, the Buyer and Seller are both taken to a Transfer Room for that order (also listed under Asset Transfers in each dashboard).",
+  "The Seller hands over each asset included in the sale, marking it submitted as they go.",
+  "The Buyer reviews and marks each asset as received during an inspection window, then approves the transfer once everything matches what was agreed.",
+  "Approving the transfer completes the sale and makes the Seller's payout eligible. If the Buyer reports an issue instead, Durqo reviews it before anything further happens with the funds.",
 ];
 
 // Sep 10, 2026: Escrow.com (src/lib/escrow.ts) went live as a third
@@ -433,7 +466,7 @@ export default function TermsPage() {
                   items={[
                     "Sellers must provide accurate, complete, and non-misleading details about the business being listed, including financial data, website traffic, and revenue.",
                     "Listings must not contain false, exaggerated, or misleading claims, and any supporting screenshots or documents submitted for review must genuinely belong to the listed business.",
-                    "Once a sale is agreed and payment has been made through Durqo's payment provider, the Seller must transfer all assets, accounts, and access included in the sale within the timeframe agreed with the Buyer.",
+                    "Once a sale is agreed and payment has been made through Durqo's payment provider, the Buyer and Seller are taken to a shared Transfer Room, where the Seller must transfer all assets, accounts, and access included in the sale.",
                     "A Success Fee is charged only when a sale is completed; there is no charge simply for creating or maintaining a listing.",
                   ]}
                 />
@@ -442,6 +475,7 @@ export default function TermsPage() {
                   items={[
                     "Buyers are responsible for conducting their own due diligence on a business before committing to purchase it, including independently verifying any figures or claims that matter to their decision.",
                     "Payments must be made only through the payment methods approved on the Platform, never by paying a Seller directly outside the Platform.",
+                    "Once the Seller has submitted the agreed assets in the Transfer Room, the Buyer should review and mark each item as received within a reasonable inspection window, then approve the transfer to release payment to the Seller — or report an issue instead if something doesn't match what was agreed (see Section 6).",
                     "Buyers acknowledge that acquiring an online business carries inherent risk, and that Durqo does not guarantee the future performance of any business purchased through the Platform.",
                   ]}
                 />
@@ -509,6 +543,26 @@ export default function TermsPage() {
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
+                  <SubHeading>The Transfer Room</SubHeading>
+                  <StatusBadge tone="live">Currently operational</StatusBadge>
+                </div>
+                <p>
+                  Regardless of which payment method the Buyer chooses, once payment is made the Buyer and Seller
+                  complete the handover of the business in a shared Transfer Room:
+                </p>
+                <ol className="list-decimal space-y-2 pl-5 marker:text-rule-strong">
+                  {TRANSFER_ROOM_FLOW.map((step, i) => (
+                    <li key={i} className="text-left">
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+                <p className="text-left text-xs leading-relaxed text-ink-faint">
+                  This Transfer Room process is what Section 6 refers to when it describes a sale as
+                  &ldquo;final&rdquo; and how a dispute raised during the inspection window is handled.
+                </p>
+
+                <div className="mt-2 flex items-center gap-2">
                   <SubHeading>Escrow.com — independent third-party escrow</SubHeading>
                   <StatusBadge tone="live">Currently operational</StatusBadge>
                 </div>
@@ -558,7 +612,8 @@ export default function TermsPage() {
               <Section id="disputes" num="06" title="Cancellations, Refunds & Disputes">
                 <List
                   items={[
-                    "Once a business has been transferred and the Buyer has confirmed receipt, the sale is final.",
+                    "Once the Buyer has marked the Seller's assets received in the Transfer Room and approved the transfer, the sale is final.",
+                    "During the Transfer Room's inspection window, a Buyer who finds a problem with what was actually transferred should report an issue in the Transfer Room instead of approving it; Durqo reviews reported issues before the sale is treated as final.",
                     "Refunds are granted only in cases of confirmed fraud, material misrepresentation, or a Seller's breach of the agreed transfer terms.",
                     "Any dispute relating to a transaction must be reported to Durqo within 7 days of the transaction's completion; disputes reported after this window may not be eligible for resolution through the Platform.",
                     "Where a dispute cannot be resolved directly between the Buyer and Seller, Durqo may, at its discretion and without obligation to do so, review the available evidence and help mediate a resolution, including through Stripe's own payment-dispute process where applicable.",
