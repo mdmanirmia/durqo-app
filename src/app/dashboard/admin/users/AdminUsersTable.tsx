@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import EmptyState from "@/components/ui/EmptyState";
 import { setUserRole, setUserActive, inviteUser } from "../actions";
 
 export interface AdminUserRow {
@@ -126,12 +128,12 @@ function roleSelect(
   );
 }
 
-function statusControl(u: AdminUserRow, busy: boolean, isSelf: boolean, toggleActive: (id: string, active: boolean) => void) {
+function statusControl(u: AdminUserRow, busy: boolean, isSelf: boolean, requestBlock: (id: string, name: string) => void, toggleActive: (id: string, active: boolean) => void) {
   return u.isActive ? (
     <button
       type="button"
       disabled={busy || isSelf}
-      onClick={() => toggleActive(u.id, false)}
+      onClick={() => requestBlock(u.id, u.fullName)}
       title={isSelf ? "You can't deactivate your own account" : "Block this user's login"}
       className="rounded-md border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger-soft disabled:opacity-60"
     >
@@ -156,6 +158,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [blockTarget, setBlockTarget] = useState<{ id: string; name: string } | null>(null);
 
   function changeRole(id: string, role: string) {
     setPendingId(id);
@@ -185,12 +188,16 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
     });
   }
 
+  function requestBlock(id: string, name: string) {
+    setBlockTarget({ id, name });
+  }
+
   return (
     <div>
       <AddUserForm />
 
       {rows.length === 0 ? (
-        <p className="text-sm text-ink-faint">No users found.</p>
+        <EmptyState icon={Users} title="No users found" body="Everyone who signs up on Durqo will show up here." />
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
@@ -219,7 +226,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                       <td className="px-4 py-3 text-ink-soft">{u.isVerified ? "Yes" : "No"}</td>
                       <td className="mono px-4 py-3 text-ink-soft">{u.totalPurchases} / {u.totalSales}</td>
                       <td className="mono px-4 py-3 text-ink-faint">{u.createdAt}</td>
-                      <td className="px-4 py-3">{statusControl(u, busy, isSelf, toggleActive)}</td>
+                      <td className="px-4 py-3">{statusControl(u, busy, isSelf, requestBlock, toggleActive)}</td>
                     </tr>
                   );
                 })}
@@ -256,13 +263,27 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                       <div className="mono text-ink-faint">{u.createdAt}</div>
                     </div>
                   </div>
-                  <div className="border-t border-rule pt-3">{statusControl(u, busy, isSelf, toggleActive)}</div>
+                  <div className="border-t border-rule pt-3">{statusControl(u, busy, isSelf, requestBlock, toggleActive)}</div>
                 </div>
               );
             })}
           </div>
         </>
       )}
+
+      <ConfirmDialog
+        open={blockTarget !== null}
+        title={`Block ${blockTarget?.name}?`}
+        body="They'll be signed out and won't be able to log back in until you unblock them. Their listings, orders, and history are untouched and this can be reversed at any time."
+        confirmLabel="Block user"
+        danger
+        busy={isPending && pendingId === blockTarget?.id}
+        onConfirm={() => {
+          if (blockTarget) toggleActive(blockTarget.id, false);
+          setBlockTarget(null);
+        }}
+        onCancel={() => setBlockTarget(null)}
+      />
     </div>
   );
 }
