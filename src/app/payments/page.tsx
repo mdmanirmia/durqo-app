@@ -110,18 +110,18 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 const BUYER_METHODS = [
   {
     icon: CreditCard,
-    title: "Card — Stripe",
+    title: "Card (Stripe)",
     body: "Pay by credit or debit card in USD. Durqo holds the payment until the transfer is confirmed complete, then pays the seller.",
   },
   {
     icon: BadgeCheck,
-    title: "bKash / Rocket / Nagad / Bank — SSLCommerz",
+    title: "bKash / Rocket / Nagad / Bank (SSLCommerz)",
     body: "For buyers in Bangladesh. You see the exact BDT amount and exchange rate before you confirm. Durqo holds the payment the same way as with Stripe.",
   },
   {
     icon: ShieldCheck,
     title: "Escrow.com",
-    body: "An independent, licensed escrow provider — your full payment is held by Escrow.com itself, not Durqo, and released once you confirm you've received the business.",
+    body: "An independent, licensed escrow provider. Your full payment is held by Escrow.com itself, not Durqo, and released once you confirm you've received the business.",
   },
 ];
 
@@ -149,17 +149,17 @@ const FAQ_GROUPS = [
       {
         question: "How is my payment protected?",
         answer:
-          "For Stripe and SSLCommerz purchases, Durqo holds your payment while you and the seller complete the handover in your order's Transfer Room — you mark each item received, then approve the transfer to release payment, or report an issue instead if something's wrong. Durqo does not use a third-party escrow provider for these two methods. If you'd like your funds held by an independent third party instead, choose Escrow.com at checkout.",
+          "For Stripe and SSLCommerz purchases, Durqo holds your payment while you and the seller complete the handover in your order's Transfer Room. You mark each item received, then approve the transfer to release payment, or report an issue instead if something's wrong. Durqo does not use a third-party escrow provider for these two methods. If you'd like your funds held by an independent third party instead, choose Escrow.com at checkout.",
       },
       {
         question: "What is the Transfer Room?",
         answer:
-          "The shared space you and the seller use right after payment to complete the sale — also listed under Asset Transfers in your dashboard. The seller hands over each asset there; you mark it received as it arrives, message the seller directly if needed, and approve the transfer once everything matches what was agreed.",
+          "The shared space you and the seller use right after payment to complete the sale, also listed under Asset Transfers in your dashboard. The seller hands over each asset there; you mark it received as it arrives, message the seller directly if needed, and approve the transfer once everything matches what was agreed.",
       },
       {
         question: "What happens on large SSLCommerz purchases over $2,000?",
         answer:
-          "This only applies to Bangladeshi buyers paying in Bangladeshi Taka through SSLCommerz (bKash, Rocket, Nagad, bank transfer, or card). Durqo collects the BDT equivalent of the first $2,000 online, then emails you instructions to pay the remaining balance by wire transfer, credit card or debit card — the purchase isn't complete until Durqo has received and verified it. Paying by card through Stripe, or through Escrow.com, always charges the full price in one payment, with no split.",
+          "This only applies to Bangladeshi buyers paying in Bangladeshi Taka through SSLCommerz (bKash, Rocket, Nagad, bank transfer, or card). Durqo collects the BDT equivalent of the first $2,000 online, then emails you instructions to pay the remaining balance by wire transfer, credit card or debit card. The purchase isn't complete until Durqo has received and verified it. Paying by card through Stripe, or through Escrow.com, always charges the full price in one payment, with no split.",
       },
       {
         question: "Do I need to be in Bangladesh to buy on Durqo?",
@@ -174,7 +174,7 @@ const FAQ_GROUPS = [
       {
         question: "How much does Durqo charge sellers?",
         answer:
-          "A tiered success fee based on your final sale price — 10% under $50,000, 7% from $50,000 to $250,000, and 5% above $250,000. There's no charge to create or maintain a listing, and the fee only applies once a sale completes.",
+          "A tiered success fee based on your final sale price: 10% under $50,000, 7% from $50,000 to $250,000, and 5% above $250,000. There's no charge to create or maintain a listing, and the fee only applies once a sale completes.",
       },
       {
         question: "When is the success fee deducted?",
@@ -189,17 +189,17 @@ const FAQ_GROUPS = [
       {
         question: "How do I withdraw my earnings?",
         answer:
-          "From your seller Earnings dashboard, once a sale is marked complete. Choose a payout method, enter your details, and submit a request — the Durqo team reviews and processes it.",
+          "From your seller Earnings dashboard, once a sale is marked complete. Choose a payout method, enter your details, and submit a request, and the Durqo team reviews and processes it.",
       },
       {
         question: "Are bKash, Rocket and Nagad withdrawals limited?",
         answer:
-          "Yes — each of the three has its own independent limit of ৳50,000 per day and ৳300,000 per month, calculated at that day's exchange rate. You can withdraw up to all three limits on the same day, since they don't share one combined cap. Bank Transfer, PayPal and Wise have no such limit.",
+          "Yes. Each of the three has its own independent limit of ৳50,000 per day and ৳300,000 per month, calculated at that day's exchange rate. You can withdraw up to all three limits on the same day, since they don't share one combined cap. Bank Transfer, PayPal and Wise have no such limit.",
       },
       {
         question: "How long does a withdrawal take?",
         answer:
-          "Withdrawals are reviewed manually, not paid out instantly. A request starts as Pending, and our team either approves and pays it or rejects it (in which case the funds return to your available balance) — you'll see the status update on your Earnings page.",
+          "Withdrawals are reviewed manually, not paid out instantly. A request starts as Pending, and our team either approves and pays it or rejects it (in which case the funds return to your available balance). You'll see the status update on your Earnings page.",
       },
     ],
   },
@@ -291,7 +291,7 @@ export default function PaymentsPage() {
                 <BadgeCheck size={20} className="mb-2 text-brand-strong" />
                 <h4 className="text-base font-semibold text-ink">Escrow.com</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                  Your full payment is held by Escrow.com, an independent licensed escrow company — not Durqo —
+                  Your full payment is held by Escrow.com, an independent licensed escrow company, not Durqo,
                   and released once you confirm you&rsquo;ve received the business.
                 </p>
               </div>
@@ -309,7 +309,7 @@ export default function PaymentsPage() {
             </DashEyebrow>
             <h2 className="text-2xl text-white sm:text-3xl">One success fee, only when you sell.</h2>
             <p className="mx-auto mt-3 max-w-[52ch] text-[0.95rem] leading-relaxed text-white/65">
-              The applicable rate applies to your entire final sale price — never a marginal, bracket-by-bracket
+              The applicable rate applies to your entire final sale price, never a marginal, bracket-by-bracket
               calculation.
             </p>
 
@@ -361,8 +361,8 @@ export default function PaymentsPage() {
               ))}
             </div>
             <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-ink-faint">
-              bKash, Rocket and Nagad each have their own independent daily/monthly limit — they don&rsquo;t share one
-              combined cap, so you can withdraw up to each method&rsquo;s limit on the same day. Limits are calculated
+              bKash, Rocket and Nagad each have their own independent daily/monthly limit, so they don&rsquo;t share one
+              combined cap and you can withdraw up to each method&rsquo;s limit on the same day. Limits are calculated
               using that day&rsquo;s exchange rate.
             </p>
           </Inner>
