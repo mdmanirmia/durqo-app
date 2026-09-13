@@ -31,7 +31,7 @@ export default function ContactForm() {
       setSent(true);
       form.reset();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong — please try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function ContactForm() {
       <button disabled={loading} className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
         {loading ? "Sending…" : "Send message"}
       </button>
-      {sent && <p className="text-sm text-brand-strong">Message sent — we&rsquo;ll reply within 3 hours.</p>}
+      {sent && <p className="text-sm text-brand-strong">Message sent. We&rsquo;ll reply within 3 hours.</p>}
     </form>
   );
 }
