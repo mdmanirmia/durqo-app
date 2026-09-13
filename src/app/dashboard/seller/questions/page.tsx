@@ -42,7 +42,7 @@ export default async function SellerQuestionsPage() {
 
       {questions.length === 0 ? (
         <p className="text-sm text-ink-faint">
-          No questions yet — buyers can ask questions on your listings under &ldquo;FAQ with Seller.&rdquo;
+          No questions yet — buyers can ask questions on your listings under &ldquo;Comments.&rdquo;
         </p>
       ) : (
         <div className="flex flex-col gap-4">
