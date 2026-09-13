@@ -208,6 +208,7 @@ const INFO_CATEGORIES: InfoCategory[] = [
   { category: "Business & listing", examples: "Information about the businesses you list, inquire about, or transact on, including business details and supporting documents." },
   { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment providers; and, if you request a withdrawal as a Seller, the payout account details you provide (such as a bank account number, mobile financial service number, or PayPal/Wise email — see Section 07)." },
   { category: "Messages & support", examples: "Messages with other users and with our support team, and related records." },
+  { category: "Public listing Q&A and comments", examples: "Questions & Answers a Seller writes for their own Listing, and questions and replies posted publicly in a Listing's Comments section, including the poster's name/profile." },
   { category: "Device & usage", examples: "Information about your device, browser, IP address, and how you use the Platform (pages viewed, features used)." },
   { category: "Connected analytics", examples: "If a Seller connects a Google Analytics 4 property to their own Listing, we access aggregated, read-only performance metrics for that property only (see Section 08)." },
 ];
