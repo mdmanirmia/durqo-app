@@ -14,6 +14,7 @@ import { FUNDING_STAGES } from "@/lib/funding-stages";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import AssetListEditor, { type AssetRow } from "@/components/listings/AssetListEditor";
+import QaListEditor, { type QaRow } from "@/components/listings/QaListEditor";
 import { INDUSTRIES } from "@/lib/industries";
 import { APP_NICHES } from "@/lib/app-niches";
 import { APP_PLATFORMS } from "@/lib/app-platforms";
@@ -170,6 +171,10 @@ export default function AddNewBusinessPage() {
   // after the listing and its asset rows are inserted below — no separate
   // step.
   const [assetRows, setAssetRows] = useState<AssetRow[]>([]);
+  // Seller-authored Questions & Answers (2026-09-13) — see QaListEditor.tsx
+  // for the full history; applies to every category, unlike the
+  // YouTube-only Copyright Notes / Top Performing Videos below.
+  const [faqRows, setFaqRows] = useState<QaRow[]>([]);
 
   const [quickStats, setQuickStats] = useState<Record<string, string>>({});
   const [niches, setNiches] = useState<string[]>([]);
@@ -442,6 +447,17 @@ export default function AddNewBusinessPage() {
         // RLS, so this goes through the same admin-backed Server Action
         // the edit form's save now calls inline.
         await confirmListingAssets(listingId);
+      }
+
+      // Questions & Answers (listing_faqs) — every category, not just
+      // YouTube Channels (see the Copyright Notes / Top Performing Videos
+      // block below, which IS category-gated).
+      const faqInsertRows = faqRows
+        .filter((r) => r.question.trim() && r.answer.trim())
+        .map((r, i) => ({ listing_id: listingId, question: r.question.trim(), answer: r.answer.trim(), sort_order: i }));
+      if (faqInsertRows.length) {
+        const { error } = await supabase.from("listing_faqs").insert(faqInsertRows);
+        if (error) throw new Error(`Saving Questions & Answers failed: ${error.message}`);
       }
 
       const monthlyRows = monthlyIncome
@@ -1264,6 +1280,10 @@ export default function AddNewBusinessPage() {
             <NamedValueRows rows={socialStats} setRows={setSocialStats} nameLabel="Platform (e.g. Instagram)" valueLabel="Followers" />
           </Section>
         )}
+
+        <Section title="Questions & Answers" hint="Shown on the published listing, above the live comment feed, in the FAQ with Seller section.">
+          <QaListEditor rows={faqRows} setRows={setFaqRows} />
+        </Section>
 
         <Section title="Sale Includes">
           <div className="flex flex-col gap-6">
