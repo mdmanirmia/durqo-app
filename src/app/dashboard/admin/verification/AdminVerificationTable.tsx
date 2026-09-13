@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { FileText } from "lucide-react";
+import { FileText, ShieldCheck } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import EmptyState from "@/components/ui/EmptyState";
 import { setVerificationStatus } from "../actions";
 
 export interface AdminVerificationRow {
@@ -12,6 +14,11 @@ export interface AdminVerificationRow {
   status: string;
   documentUrls: string[];
   submittedAt: string | null;
+  // 2026-09-13 audit follow-up: what the admin told the seller was wrong,
+  // captured at the moment of rejection (setVerificationStatus). Shown here
+  // so a second admin reviewing a resubmission can see what was already
+  // flagged, without having to dig through email.
+  rejectionReason: string | null;
 }
 
 const METHOD_LABEL: Record<string, string> = {
@@ -36,13 +43,15 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [rejectTarget, setRejectTarget] = useState<{ id: string; sellerName: string } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
-  function decide(id: string, decision: "verified" | "rejected") {
+  function decide(id: string, decision: "verified" | "rejected", reason?: string) {
     setPendingId(id);
     setErrorId(null);
     startTransition(async () => {
       try {
-        await setVerificationStatus(id, decision);
+        await setVerificationStatus(id, decision, reason);
       } catch {
         setErrorId(id);
       } finally {
@@ -51,8 +60,13 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
     });
   }
 
+  function openReject(id: string, sellerName: string) {
+    setRejectReason("");
+    setRejectTarget({ id, sellerName });
+  }
+
   if (rows.length === 0) {
-    return <p className="text-sm text-ink-faint">No verification requests yet.</p>;
+    return <EmptyState icon={ShieldCheck} title="No verification requests yet" body="Submissions from sellers wanting the verified badge will show up here." />;
   }
 
   return (
@@ -107,6 +121,9 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                     >
                       {STATUS_LABEL[r.status] ?? r.status}
                     </span>
+                    {r.status === "rejected" && r.rejectionReason && (
+                      <div className="mt-1 max-w-[200px] text-xs text-ink-faint">{r.rejectionReason}</div>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-ink-soft">{r.submittedAt ?? "—"}</td>
                   <td className="px-4 py-3">
@@ -122,7 +139,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                       )}
                       {r.status !== "rejected" && (
                         <button
-                          onClick={() => decide(r.id, "rejected")}
+                          onClick={() => openReject(r.id, r.sellerName)}
                           disabled={busy}
                           className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
                         >
@@ -158,6 +175,9 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                   {STATUS_LABEL[r.status] ?? r.status}
                 </span>
               </div>
+              {r.status === "rejected" && r.rejectionReason && (
+                <div className="mb-3 text-xs text-ink-faint">{r.rejectionReason}</div>
+              )}
               <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <div className="text-xs text-ink-faint">Document type</div>
@@ -200,7 +220,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                 )}
                 {r.status !== "rejected" && (
                   <button
-                    onClick={() => decide(r.id, "rejected")}
+                    onClick={() => openReject(r.id, r.sellerName)}
                     disabled={busy}
                     className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
                   >
@@ -213,6 +233,32 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={rejectTarget !== null}
+        title={`Reject ${rejectTarget?.sellerName}'s verification?`}
+        body={
+          <>
+            <p className="mb-2">They&rsquo;ll get an email with this reason so they know what to fix before resubmitting.</p>
+            <textarea
+              rows={3}
+              autoFocus
+              placeholder="e.g. Photo is too blurry to read the ID number"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              className="w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm text-ink focus:border-brand-strong focus:outline-none"
+            />
+          </>
+        }
+        confirmLabel="Reject verification"
+        danger
+        busy={isPending && pendingId === rejectTarget?.id}
+        onConfirm={() => {
+          if (rejectTarget) decide(rejectTarget.id, "rejected", rejectReason);
+          setRejectTarget(null);
+        }}
+        onCancel={() => setRejectTarget(null)}
+      />
     </>
   );
 }

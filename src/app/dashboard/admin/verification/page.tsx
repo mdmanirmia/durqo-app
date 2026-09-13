@@ -1,9 +1,19 @@
+import Link from "next/link";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { listAllAuthUsers } from "@/lib/notifications";
 import AdminVerificationTable, { type AdminVerificationRow } from "./AdminVerificationTable";
+
+// 2026-09-13 dashboard audit follow-up — same "filter UI was missing, only
+// the query param existed" fix as the Listings page.
+const STATUS_FILTERS: { value: string | null; label: string }[] = [
+  { value: null, label: "All" },
+  { value: "pending", label: "Pending" },
+  { value: "verified", label: "Verified" },
+  { value: "rejected", label: "Rejected" },
+];
 
 const STORAGE_BUCKET = "seller-verification";
 const SIGNED_URL_TTL_SECONDS = 60 * 60; // 1 hour — plenty for one review pass
@@ -21,7 +31,9 @@ export default async function AdminVerification({
   if (admin) {
     let query = admin
       .from("profiles")
-      .select("id, full_name, verification_status, verification_method, verification_document_paths, verification_submitted_at")
+      .select(
+        "id, full_name, verification_status, verification_method, verification_document_paths, verification_submitted_at, verification_rejection_reason"
+      )
       .not("verification_status", "eq", "unverified")
       .order("verification_submitted_at", { ascending: false, nullsFirst: false });
     if (status) query = query.eq("verification_status", status);
@@ -49,6 +61,7 @@ export default async function AdminVerification({
           status: p.verification_status,
           documentUrls,
           submittedAt: p.verification_submitted_at ? (p.verification_submitted_at as string).slice(0, 10) : null,
+          rejectionReason: (p.verification_rejection_reason as string | null) ?? null,
         };
       })
     );
@@ -58,9 +71,25 @@ export default async function AdminVerification({
 
   return (
     <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl">Seller Verification{status ? ` — ${status}` : ""}</h2>
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl">Seller Verification</h2>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
+      </div>
+      <div className="mb-4 flex flex-wrap gap-2">
+        {STATUS_FILTERS.map((f) => {
+          const active = (status ?? null) === f.value;
+          return (
+            <Link
+              key={f.label}
+              href={f.value ? `/dashboard/admin/verification?status=${f.value}` : "/dashboard/admin/verification"}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                active ? "bg-brand-strong text-white" : "border border-rule-strong text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+              }`}
+            >
+              {f.label}
+            </Link>
+          );
+        })}
       </div>
       {!status && pendingCount > 0 && (
         <p className="mb-4 text-sm text-ink-soft">{pendingCount} submission{pendingCount === 1 ? "" : "s"} waiting for review.</p>
