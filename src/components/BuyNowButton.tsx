@@ -284,14 +284,15 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
       >
         Buy Now — Escrow.com
       </button>
-      <button
-        type="button"
-        onClick={handlePayLater}
-        disabled={payLaterBusy || stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
-      >
-        {payLaterBusy ? "Starting…" : "Buy Now — Pay Later"}
-      </button>
+      {/* Sep 13, 2026: hidden from every buyer per the site owner's explicit
+          decision, made right after a content audit surfaced that this
+          button was live for any signed-in user with zero payment enforced
+          (marks the listing sold + opens a real Transfer Room for $0). The
+          server-side kill switch (PAY_LATER_ENABLED=false in Vercel) is the
+          actual security fix — hiding the button here just stops a
+          legitimate buyer from hitting a dead/erroring option. Restore both
+          together (this block + PAY_LATER_ENABLED=true) if this is ever
+          wanted again; handlePayLater() and the route are left intact. */}
       {error && <span className="text-xs text-red-600">{error}</span>}
 
       {sslStatus !== "closed" && (
