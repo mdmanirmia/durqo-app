@@ -96,7 +96,7 @@ const FAQ_GROUPS = [
       },
       {
         question: "Can I ask the seller questions before buying?",
-        answer: "Yes — every listing page has a way to message the seller directly, and your conversation stays in your dashboard inbox.",
+        answer: "Yes, three ways. Many listings already answer common questions in their own Questions & Answers section, written by the seller. You can also post a question in the Comments section on the listing page — the seller is notified and replies there publicly. Or message the seller directly for a private conversation, which stays in your dashboard inbox.",
       },
     ],
   },
