@@ -25,7 +25,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
   const { data: listing } = await admin.from("listings").select("*").eq("id", id).single();
   if (!listing) notFound();
 
-  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }, { data: copyrightNotes }, { data: topVideos }, { data: channelOverview }, { data: listingAssets }] = await Promise.all([
+  const [{ data: seo }, { data: monthlyStats }, { data: images }, { data: socialStats }, { data: copyrightNotes }, { data: topVideos }, { data: channelOverview }, { data: listingAssets }, { data: faqs }] = await Promise.all([
     admin.from("listing_seo_data").select("*").eq("listing_id", id).maybeSingle(),
     admin.from("listing_monthly_stats").select("*").eq("listing_id", id),
     admin.from("listing_images").select("*").eq("listing_id", id),
@@ -37,6 +37,9 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
     admin.from("listing_youtube_channel_overview").select("*").eq("listing_id", id).maybeSingle(),
     // Asset Transfer System v2's structured asset list (migration 036).
     admin.from("listing_assets").select("*").eq("listing_id", id).order("position", { ascending: true }),
+    // Seller-authored Questions & Answers (2026-09-13) — shown on the
+    // published listing above the live comment feed.
+    admin.from("listing_faqs").select("*").eq("listing_id", id).order("sort_order", { ascending: true }),
   ]);
 
   return (
@@ -52,6 +55,7 @@ export default async function EditListingPage({ params }: { params: Promise<{ id
         topVideos={topVideos ?? []}
         channelOverview={channelOverview ?? null}
         listingAssets={listingAssets ?? []}
+        faqs={faqs ?? []}
       />
     </DashboardShell>
   );
