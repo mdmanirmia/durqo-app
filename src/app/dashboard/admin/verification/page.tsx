@@ -32,7 +32,7 @@ export default async function AdminVerification({
     let query = admin
       .from("profiles")
       .select(
-        "id, full_name, verification_status, verification_method, verification_document_paths, verification_submitted_at, verification_rejection_reason"
+        "id, full_name, verification_status, verification_method, verification_document_paths, verification_submitted_at, verification_rejection_reason, payout_verified"
       )
       .not("verification_status", "eq", "unverified")
       .order("verification_submitted_at", { ascending: false, nullsFirst: false });
@@ -62,6 +62,7 @@ export default async function AdminVerification({
           documentUrls,
           submittedAt: p.verification_submitted_at ? (p.verification_submitted_at as string).slice(0, 10) : null,
           rejectionReason: (p.verification_rejection_reason as string | null) ?? null,
+          payoutVerified: Boolean(p.payout_verified),
         };
       })
     );

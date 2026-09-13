@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { FileText, ShieldCheck } from "lucide-react";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
-import { setVerificationStatus } from "../actions";
+import { setVerificationStatus, setPayoutVerified } from "../actions";
 
 export interface AdminVerificationRow {
   id: string;
@@ -19,6 +19,11 @@ export interface AdminVerificationRow {
   // so a second admin reviewing a resubmission can see what was already
   // flagged, without having to dig through email.
   rejectionReason: string | null;
+  // 2026-09-13 payout-policy v2: DELIBERATELY separate from `status` above —
+  // the public Verified badge and payout eligibility are two independent
+  // flags reviewed from this same screen (045_payout_policy_v2.sql). See
+  // setPayoutVerified()'s comment in dashboard/admin/actions.ts.
+  payoutVerified: boolean;
 }
 
 const METHOD_LABEL: Record<string, string> = {
@@ -65,6 +70,20 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
     setRejectTarget({ id, sellerName });
   }
 
+  function togglePayout(id: string, next: boolean) {
+    setPendingId(id);
+    setErrorId(null);
+    startTransition(async () => {
+      try {
+        await setPayoutVerified(id, next);
+      } catch {
+        setErrorId(id);
+      } finally {
+        setPendingId(null);
+      }
+    });
+  }
+
   if (rows.length === 0) {
     return <EmptyState icon={ShieldCheck} title="No verification requests yet" body="Submissions from sellers wanting the verified badge will show up here." />;
   }
@@ -80,6 +99,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
               <th className="px-4 py-3 font-medium">Document type</th>
               <th className="px-4 py-3 font-medium">Documents</th>
               <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Payout access</th>
               <th className="px-4 py-3 font-medium">Submitted</th>
               <th className="px-4 py-3 font-medium"></th>
             </tr>
@@ -124,6 +144,19 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                     {r.status === "rejected" && r.rejectionReason && (
                       <div className="mt-1 max-w-[200px] text-xs text-ink-faint">{r.rejectionReason}</div>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => togglePayout(r.id, !r.payoutVerified)}
+                      disabled={busy}
+                      className={`rounded-md px-2.5 py-1 text-xs font-semibold disabled:opacity-60 ${
+                        r.payoutVerified
+                          ? "border border-brand/30 bg-brand-soft text-brand-strong"
+                          : "border border-rule-strong text-ink-soft hover:border-brand-strong"
+                      }`}
+                    >
+                      {r.payoutVerified ? "Granted — revoke" : "Grant payout access"}
+                    </button>
                   </td>
                   <td className="px-4 py-3 text-ink-soft">{r.submittedAt ?? "—"}</td>
                   <td className="px-4 py-3">
@@ -207,6 +240,20 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                     ))}
                   </div>
                 )}
+              </div>
+              <div className="mb-3 flex items-center justify-between gap-2 border-t border-rule pt-3">
+                <span className="text-xs text-ink-faint">Payout access</span>
+                <button
+                  onClick={() => togglePayout(r.id, !r.payoutVerified)}
+                  disabled={busy}
+                  className={`rounded-md px-2.5 py-1 text-xs font-semibold disabled:opacity-60 ${
+                    r.payoutVerified
+                      ? "border border-brand/30 bg-brand-soft text-brand-strong"
+                      : "border border-rule-strong text-ink-soft hover:border-brand-strong"
+                  }`}
+                >
+                  {r.payoutVerified ? "Granted — revoke" : "Grant"}
+                </button>
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
                 {r.status !== "verified" && (
