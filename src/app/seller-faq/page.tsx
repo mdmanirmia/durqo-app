@@ -15,6 +15,13 @@ import GroupedFaq from "@/components/GroupedFaq";
 // happens if the buyer reports an issue instead of approving (payout stays
 // on hold, Durqo reviews — nothing releases automatically).
 //
+// Sep 13, 2026, third follow-up: per direct owner request, bolded the
+// concrete Transfer Room actions (In Progress, Submitted, Received, Approve
+// Transfer, Report an Issue) across every answer that mentions them, and
+// added a new standalone "What exactly is the Transfer Room?" FAQ at the
+// top of Fees & getting paid — sellers need the mechanism explained on its
+// own, not only inferred from the payout-timing answer.
+//
 // Sep 11, 2026: new Seller FAQ page, built alongside /buyer-faq, /payments,
 // /how-to-buy and /how-to-sell. Fee and payout answers are grounded in the
 // same authoritative sources as /how-to-sell and /payments: src/lib/fees.ts
@@ -116,8 +123,25 @@ const FAQ_GROUPS = [
         ),
       },
       {
+        question: "What exactly is the Transfer Room?",
+        answer: (
+          <>
+            It&rsquo;s the shared space — separate from checkout — where you actually hand a sold business over to
+            its buyer. Every order gets one, also listed under <strong>Asset Transfers</strong> in your dashboard.
+            You submit each asset there one at a time; once the buyer inspects everything and clicks{" "}
+            <strong>Approve Transfer</strong>, the sale is final and your payout becomes eligible.
+          </>
+        ),
+      },
+      {
         question: "When can I withdraw my earnings?",
-        answer: "Once the buyer approves the transfer in your shared Transfer Room, your payout becomes eligible — request a withdrawal from your Earnings dashboard. Our team reviews and processes each request — it isn't instant.",
+        answer: (
+          <>
+            Once the buyer clicks <strong>Approve Transfer</strong> in your shared <strong>Transfer Room</strong>,
+            your payout becomes eligible — request a withdrawal from your Earnings dashboard. Our team reviews and
+            processes each request — it isn&rsquo;t instant.
+          </>
+        ),
       },
       {
         question: "What withdrawal methods can I use?",
@@ -134,15 +158,34 @@ const FAQ_GROUPS = [
       },
       {
         question: "How does handing over the assets actually work?",
-        answer: "After a buyer pays, you're both taken to a shared Transfer Room. Hand over each asset one at a time — a domain, code, accounts, socials, whatever's included in the sale — marking it In Progress, then Submitted as you go. The buyer then inspects each item during their inspection window and marks it Received, then approves the transfer once everything's confirmed.",
+        answer: (
+          <>
+            After a buyer pays, you&rsquo;re both taken to a shared <strong>Transfer Room</strong>. Hand over each
+            asset one at a time — a domain, code, accounts, socials, whatever&rsquo;s included in the sale —
+            marking it <strong>In Progress</strong>, then <strong>Submitted</strong> as you go. The buyer then
+            inspects each item during their inspection window and marks it <strong>Received</strong>, then clicks{" "}
+            <strong>Approve Transfer</strong> once everything&rsquo;s confirmed.
+          </>
+        ),
       },
       {
         question: "What happens if a buyer reports an issue instead of approving?",
-        answer: "Nothing is released automatically. Your payout stays on hold while Durqo's team reviews the evidence and decides what happens next — the same way any other dispute is handled.",
+        answer: (
+          <>
+            <strong>Nothing is released automatically.</strong> Your payout stays on hold while Durqo&rsquo;s team
+            reviews the evidence and decides what happens next — the same way any other dispute is handled.
+          </>
+        ),
       },
       {
         question: "What if a buyer disputes a completed sale?",
-        answer: "Disputes must be reported to Durqo within 7 days of the transaction completing. Where a dispute can't be resolved directly between buyer and seller, Durqo will review the available evidence and help mediate a resolution.",
+        answer: (
+          <>
+            Disputes must be reported to Durqo within <strong>7 days</strong> of the transaction completing. Where a
+            dispute can&rsquo;t be resolved directly between buyer and seller, Durqo will review the available
+            evidence and help mediate a resolution.
+          </>
+        ),
       },
     ],
   },
