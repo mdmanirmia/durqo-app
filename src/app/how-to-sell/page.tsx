@@ -33,6 +33,14 @@ import Button from "@/components/ui/Button";
 // buyer's "report an issue" doesn't auto-release or auto-refund anything —
 // the payout stays on hold until Durqo reviews it.
 //
+// Sep 13, 2026, second follow-up: per direct owner request, bolded the
+// actual clickable/status actions inside Steps 06-07 (In Progress,
+// Submitted, Received, Approve Transfer, Report an Issue) and added a
+// dedicated "The Transfer Room" spotlight card right after the step list —
+// mirrors the same callout added to /how-to-buy — since this is the
+// mechanism that actually determines whether and when a seller gets paid,
+// not just one step among eight.
+//
 // Sep 11, 2026: a step-by-step operational guide, distinct from /sell's own
 // marketing/valuation-focused landing page (which stays untouched by this
 // file). Where /sell pitches "why sell on Durqo" with a valuation CTA, this
@@ -129,13 +137,30 @@ const STEPS = [
     n: "06",
     icon: Handshake,
     title: "Hand over the assets in your Transfer Room",
-    body: "When a buyer purchases your listing, their payment is collected and held, and you're both taken to a shared Transfer Room — also listed under Asset Transfers in your dashboard. Mark each asset In Progress, then Submitted as you hand it over one by one. The buyer then has an inspection window to check everything before approving — message them directly from the room if you need to.",
+    body: (
+      <>
+        When a buyer purchases your listing, their payment is collected and held, and you&rsquo;re both taken to a
+        shared <strong className="text-ink">Transfer Room</strong> — also listed under{" "}
+        <strong className="text-ink">Asset Transfers</strong> in your dashboard. Mark each asset{" "}
+        <strong className="text-ink">In Progress</strong>, then <strong className="text-ink">Submitted</strong> as
+        you hand it over one by one. The buyer then has an inspection window to check everything before approving —
+        message them directly from the room if you need to.
+      </>
+    ),
   },
   {
     n: "07",
     icon: PackageCheck,
     title: "Get approved for payout",
-    body: "Once the buyer marks every item Received and clicks Approve Transfer, the sale is confirmed complete and your payout becomes eligible. If they click Report an Issue instead, nothing is released automatically — your payout stays on hold while Durqo's team reviews the evidence and decides what happens next.",
+    body: (
+      <>
+        Once the buyer marks every item <strong className="text-ink">Received</strong> and clicks{" "}
+        <strong className="text-ink">Approve Transfer</strong>, the sale is confirmed complete and your payout
+        becomes eligible. If they click <strong className="text-ink">Report an Issue</strong> instead, nothing is
+        released automatically — your payout stays on hold while Durqo&rsquo;s team reviews the evidence and
+        decides what happens next.
+      </>
+    ),
   },
   {
     n: "08",
@@ -225,6 +250,50 @@ export default function HowToSellPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* TRANSFER ROOM SPOTLIGHT — Sep 13, 2026: called out on its own,
+          separate from the numbered steps, because it's the single most
+          important mechanism on this page: it's what actually determines
+          whether and when a seller gets paid, not the sale itself. */}
+      <section className="border-b border-rule bg-brand-soft py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="mx-auto max-w-[860px] rounded-2xl border border-rule bg-paper-raised p-8 sm:p-10">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
+                  <Handshake size={22} />
+                </span>
+                <div>
+                  <DashEyebrow>Where your payout actually gets earned</DashEyebrow>
+                  <h2 className="text-xl font-semibold text-ink sm:text-2xl">The Transfer Room</h2>
+                  <p className="mt-3 max-w-[64ch] text-sm leading-relaxed text-ink-soft">
+                    Once a buyer pays, you don&rsquo;t just wait for a payout to appear — you and the buyer share a{" "}
+                    <strong className="text-ink">Transfer Room</strong> where you hand over every asset in the open,
+                    and what happens there is what decides your payout.
+                  </p>
+                  <ul className="mt-5 flex flex-col gap-2.5 text-sm leading-relaxed text-ink-soft">
+                    <li>
+                      <strong className="text-ink">Mark each asset In Progress, then Submitted</strong> as you
+                      transfer it.
+                    </li>
+                    <li>
+                      The buyer inspects each one and marks it <strong className="text-ink">Received</strong>.
+                    </li>
+                    <li>
+                      When they click <strong className="text-ink">Approve Transfer</strong>, the sale is final and
+                      your payout becomes eligible.
+                    </li>
+                    <li>
+                      If they click <strong className="text-ink">Report an Issue</strong> instead, your payout stays
+                      on hold until Durqo reviews the evidence — nothing releases automatically.
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </Inner>
         </Container>
