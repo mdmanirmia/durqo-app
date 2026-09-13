@@ -93,7 +93,7 @@ const STEPS = [
     n: "02",
     icon: FileSearch,
     title: "Review the details",
-    body: "Check the financial summary, traffic and audience data, and any Google Analytics numbers Durqo has reviewed. Message the seller directly from the listing page with any questions.",
+    body: "Check the financial summary, traffic and audience data, and any Google Analytics numbers Durqo has reviewed. Many listings already answer common questions in their own Questions & Answers section — for anything else, post a question in Comments or message the seller directly.",
   },
   {
     n: "03",
