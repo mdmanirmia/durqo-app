@@ -199,7 +199,7 @@ const FAQ_GROUPS = [
       {
         question: "How long does a withdrawal take?",
         answer:
-          "Withdrawals are reviewed manually, not paid out instantly. A request starts as Pending, and our team either approves and pays it or rejects it (in which case the funds return to your available balance). You'll see the status update on your Earnings page.",
+          "Payout requests are normally reviewed and processed within 3–5 business days. Additional time may be required for first-time payouts, identity verification, high-value transactions, incorrect payout details, compliance reviews, banking delays or active disputes. The time required for funds to reach your account may also vary depending on the selected payout method and destination bank.",
       },
     ],
   },
@@ -349,6 +349,10 @@ export default function PaymentsPage() {
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Request a withdrawal from your Earnings dashboard once a sale is complete. Every request is
                 reviewed by the Durqo team before it&rsquo;s paid out.
+              </p>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Payout requests are normally reviewed and processed within 3–5 business days. Your bank or payout
+                provider may require additional time to credit the funds.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
