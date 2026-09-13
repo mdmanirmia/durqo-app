@@ -10,6 +10,10 @@ export interface MyVerification {
   status: VerificationStatus;
   method: string | null;
   submittedAt: string | null;
+  // 2026-09-13: set by an admin's Reject decision (setVerificationStatus in
+  // dashboard/admin/actions.ts) so a seller can see why without having to
+  // dig up the notification email.
+  rejectionReason: string | null;
 }
 
 export async function getMyVerification(): Promise<MyVerification | null> {
@@ -23,7 +27,7 @@ export async function getMyVerification(): Promise<MyVerification | null> {
 
   const { data } = await supabase
     .from("profiles")
-    .select("verification_status, verification_method, verification_submitted_at")
+    .select("verification_status, verification_method, verification_submitted_at, verification_rejection_reason")
     .eq("id", user.id)
     .single();
 
@@ -32,6 +36,7 @@ export async function getMyVerification(): Promise<MyVerification | null> {
     status: (data.verification_status as VerificationStatus) ?? "unverified",
     method: data.verification_method,
     submittedAt: data.verification_submitted_at,
+    rejectionReason: (data.verification_rejection_reason as string | null) ?? null,
   };
 }
 
