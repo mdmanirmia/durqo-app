@@ -323,8 +323,8 @@ const ESCROW_TRANSACTION_FLOW = [
 // payment-history-withdrawals-receipts-addendum.md for the fuller build
 // history behind every figure below.
 const PAYOUT_METHODS_LIST = [
-  "Bank Transfer, PayPal, or Wise — no additional cap beyond the Seller's available balance.",
-  "bKash, Rocket, or Nagad — each independently limited to ৳50,000 per day and ৳300,000 per month, converted at that day's market USD/BDT rate (Google's rate, minus a small margin). A payout larger than a method's limit is paid out in the largest amount that fits today, with the remainder available for a later request.",
+  "Bank Transfer, PayPal, or Wise: no additional cap beyond the Seller's available balance.",
+  "bKash, Rocket, or Nagad: each independently limited to ৳50,000 per day and ৳300,000 per month, converted at that day's market USD/BDT rate (Google's rate, minus a small margin). A payout larger than a method's limit is paid out in the largest amount that fits today, with the remainder available for a later request.",
 ];
 
 // Sep 11, 2026: replaces the old "planned Bangladeshi rails" section
@@ -475,7 +475,7 @@ export default function TermsPage() {
                   items={[
                     "Buyers are responsible for conducting their own due diligence on a business before committing to purchase it, including independently verifying any figures or claims that matter to their decision.",
                     "Payments must be made only through the payment methods approved on the Platform, never by paying a Seller directly outside the Platform.",
-                    "Once the Seller has submitted the agreed assets in the Transfer Room, the Buyer should review and mark each item as received within a reasonable inspection window, then approve the transfer to release payment to the Seller — or report an issue instead if something doesn't match what was agreed (see Section 6).",
+                    "Once the Seller has submitted the agreed assets in the Transfer Room, the Buyer should review and mark each item as received within a reasonable inspection window, then approve the transfer to release payment to the Seller, or report an issue instead if something doesn't match what was agreed (see Section 6).",
                     "Buyers acknowledge that acquiring an online business carries inherent risk, and that Durqo does not guarantee the future performance of any business purchased through the Platform.",
                   ]}
                 />
@@ -516,12 +516,12 @@ export default function TermsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <SubHeading>How payment works today — Stripe &amp; SSLCommerz</SubHeading>
+                  <SubHeading>How payment works today: Stripe &amp; SSLCommerz</SubHeading>
                   <StatusBadge tone="live">Currently operational</StatusBadge>
                 </div>
                 <p>
                   For Stripe (card) and SSLCommerz (Bangladeshi Taka, via bKash, Rocket, Nagad, or bank) payments,
-                  Durqo does not use a third-party escrow provider — payments are processed directly through
+                  Durqo does not use a third-party escrow provider. Payments are processed directly through
                   Durqo&rsquo;s own payment provider:
                 </p>
                 <ol className="list-decimal space-y-2 pl-5 marker:text-rule-strong">
@@ -537,8 +537,8 @@ export default function TermsPage() {
                   $2,000, Durqo instead collects only the BDT equivalent of the first $2,000 through SSLCommerz at
                   checkout; Durqo then emails the Buyer payment instructions for the remaining balance, and the
                   sale isn&rsquo;t treated as complete until that remainder has been received and verified. Stripe
-                  and SSLCommerz are independent payment processors, not escrow providers — neither holds funds
-                  on Durqo&rsquo;s behalf pending a separate release condition, and this section will be updated
+                  and SSLCommerz are independent payment processors, not escrow providers, and neither holds funds
+                  on Durqo&rsquo;s behalf pending a separate release condition; this section will be updated
                   if that changes.
                 </p>
 
@@ -563,7 +563,7 @@ export default function TermsPage() {
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
-                  <SubHeading>Escrow.com — independent third-party escrow</SubHeading>
+                  <SubHeading>Escrow.com: independent third-party escrow</SubHeading>
                   <StatusBadge tone="live">Currently operational</StatusBadge>
                 </div>
                 <p>
@@ -628,7 +628,7 @@ export default function TermsPage() {
                 <p className="text-left text-sm text-ink-soft">
                   Section 5 describes Escrow.com, an independent third-party escrow option. Before Escrow.com
                   releases funds, a Buyer with concerns about the assets should raise them during Escrow.com&rsquo;s
-                  own inspection period, since Escrow.com — not Durqo — controls release of the funds it holds
+                  own inspection period, since it is Escrow.com, not Durqo, that controls release of the funds it holds
                   during that window. Once Escrow.com has released funds to the Seller, the sale is final in the
                   same way as any other completed sale on the Platform, and the general reporting-window and
                   mediation process above applies. Durqo does not control funds held by Escrow.com and cannot
