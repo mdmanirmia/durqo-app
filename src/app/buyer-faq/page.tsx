@@ -5,6 +5,17 @@ import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import GroupedFaq from "@/components/GroupedFaq";
 
+// Sep 13, 2026: "What happens right after I pay?" and "Is my payment held
+// securely?" now name the real Transfer Room / Approve Transfer mechanism
+// (live for every payment channel since Sep 12, 2026) instead of the vague
+// "seller begins transferring... confirmed complete" placeholder — see
+// claude/asset-transfer-room-feasibility-addendum.md. Same-day follow-up:
+// added two more FAQs walking through the actual per-item handover
+// (seller marks Submitted, buyer marks Received) and what happens if the
+// buyer reports an issue instead of approving (payment stays held, Durqo
+// reviews — nothing releases automatically), matching TransferRoomView.tsx's
+// real buyer/seller actions.
+//
 // Sep 11, 2026: new Buyer FAQ page, built alongside /seller-faq, /payments,
 // /how-to-buy and /how-to-sell. Every answer below is grounded in real,
 // live functionality rather than aspirational copy — see /payments's own
@@ -118,11 +129,11 @@ const FAQ_GROUPS = [
       },
       {
         question: "Is my payment held securely?",
-        answer: "Yes. For card and SSLCommerz purchases, Durqo holds your payment until the seller has transferred the agreed assets and the deal is confirmed complete. Choosing Escrow.com holds your full payment with that independent, licensed escrow company instead.",
+        answer: "Yes. For card and SSLCommerz purchases, Durqo holds your payment until you approve the transfer in your Transfer Room. Choosing Escrow.com holds your full payment with that independent, licensed escrow company instead.",
       },
       {
         question: "What happens right after I pay?",
-        answer: "The seller is notified that your purchase is confirmed and begins transferring the agreed assets to you. You can track the order's status from your buyer dashboard.",
+        answer: "You're taken straight to your order's Transfer Room — also listed under Asset Transfers in your dashboard. As the seller hands over each asset, mark it Received, then click Approve Transfer once everything matches what was agreed to complete the sale.",
       },
     ],
   },
@@ -132,6 +143,14 @@ const FAQ_GROUPS = [
       {
         question: "Where can I see my order history and receipts?",
         answer: "Your buyer dashboard's Orders page lists every purchase, with a printable receipt for each.",
+      },
+      {
+        question: "How does the seller actually hand things over?",
+        answer: "One asset at a time, inside your Transfer Room. The seller marks each item Submitted as they transfer it — a domain, code, accounts, socials, whatever's included in the sale. You inspect each one as it arrives and mark it Received, then click Approve Transfer once everything matches what was agreed.",
+      },
+      {
+        question: "What if an item doesn't match what was agreed?",
+        answer: "During your inspection window, click Report an Issue in the Transfer Room instead of approving. Your payment stays held — nothing is released to the seller automatically — and Durqo's team reviews the evidence before deciding what happens next.",
       },
       {
         question: "What if something goes wrong with my purchase?",
