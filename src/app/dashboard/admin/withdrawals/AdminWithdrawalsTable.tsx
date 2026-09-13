@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Wallet } from "lucide-react";
 import { fmtUSD } from "@/lib/format";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import PayoutMethodIcon from "@/components/ui/PayoutMethodIcon";
+import EmptyState from "@/components/ui/EmptyState";
 import { setWithdrawalStatus } from "../actions";
 
 export interface AdminWithdrawalRow {
@@ -51,6 +54,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
   const [errorId, setErrorId] = useState<string | null>(null);
   const [noteByRow, setNoteByRow] = useState<Record<string, string>>({});
   const [isPending, startTransition] = useTransition();
+  const [rejectTarget, setRejectTarget] = useState<{ id: string; sellerName: string } | null>(null);
 
   function decide(id: string, decision: "approved" | "rejected" | "paid") {
     setPendingId(id);
@@ -67,7 +71,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
   }
 
   if (rows.length === 0) {
-    return <p className="text-sm text-ink-faint">No withdrawal requests yet.</p>;
+    return <EmptyState icon={Wallet} title="No withdrawal requests yet" body="Sellers' payout requests will show up here once they have a balance to withdraw." />;
   }
 
   return (
@@ -109,8 +113,11 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                     <div className="font-semibold">{fmtUSD(r.netAmount)}</div>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="font-medium text-ink-soft">{METHOD_LABEL[r.payoutMethod] ?? r.payoutMethod}</div>
-                    <div className="max-w-[220px] whitespace-pre-wrap text-xs text-ink-faint">{r.payoutDetails}</div>
+                    <div className="flex items-center gap-2">
+                      <PayoutMethodIcon method={r.payoutMethod} />
+                      <div className="font-medium text-ink-soft">{METHOD_LABEL[r.payoutMethod] ?? r.payoutMethod}</div>
+                    </div>
+                    <div className="mt-1 max-w-[220px] whitespace-pre-wrap text-xs text-ink-faint">{r.payoutDetails}</div>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[r.status] ?? "border border-rule bg-paper-sunk text-ink-soft"}`}>
@@ -138,7 +145,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                             Approve
                           </button>
                           <button
-                            onClick={() => decide(r.id, "rejected")}
+                            onClick={() => setRejectTarget({ id: r.id, sellerName: r.sellerName })}
                             disabled={busy}
                             className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
                           >
@@ -208,8 +215,11 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                 </div>
                 <div>
                   <div className="text-xs text-ink-faint">Payout to</div>
-                  <div className="font-medium text-ink-soft">{METHOD_LABEL[r.payoutMethod] ?? r.payoutMethod}</div>
-                  <div className="whitespace-pre-wrap text-xs text-ink-faint">{r.payoutDetails}</div>
+                  <div className="flex items-center gap-2">
+                    <PayoutMethodIcon method={r.payoutMethod} />
+                    <div className="font-medium text-ink-soft">{METHOD_LABEL[r.payoutMethod] ?? r.payoutMethod}</div>
+                  </div>
+                  <div className="mt-1 whitespace-pre-wrap text-xs text-ink-faint">{r.payoutDetails}</div>
                 </div>
               </div>
               {r.adminNote && <div className="mb-3 text-xs text-ink-faint">{r.adminNote}</div>}
@@ -232,7 +242,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                         Approve
                       </button>
                       <button
-                        onClick={() => decide(r.id, "rejected")}
+                        onClick={() => setRejectTarget({ id: r.id, sellerName: r.sellerName })}
                         disabled={busy}
                         className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
                       >
@@ -256,6 +266,20 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={rejectTarget !== null}
+        title={`Reject ${rejectTarget?.sellerName}'s withdrawal request?`}
+        body="They'll get an email with your note (if you added one). The orders this request claimed go back into their available balance, so this doesn't lose them any money — they can submit a new request any time."
+        confirmLabel="Reject request"
+        danger
+        busy={isPending && pendingId === rejectTarget?.id}
+        onConfirm={() => {
+          if (rejectTarget) decide(rejectTarget.id, "rejected");
+          setRejectTarget(null);
+        }}
+        onCancel={() => setRejectTarget(null)}
+      />
     </>
   );
 }
