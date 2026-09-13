@@ -12,11 +12,25 @@ import {
   CheckCircle2,
   Ban,
   Tag,
+  PackageCheck,
 } from "lucide-react";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 
+// Sep 13, 2026: split Step 6 into an explicit Transfer Room step + a
+// payout-eligibility step, now that the Asset Transfer Room system is live
+// for every payment channel (see
+// claude/asset-transfer-room-feasibility-addendum.md and
+// claude/asset-transfer-post-purchase-redirect-and-payout-release-addendum.md).
+// The old copy just said "until you've transferred the agreed assets and
+// the deal is confirmed complete" with no mechanism named; sellers now get
+// the actual dashboard destination (Transfer Room / "Asset Transfers" nav
+// item, TransferRoomView.tsx's real seller-side actions: mark each item In
+// Progress then Submitted) and the real payout-release trigger — the buyer
+// approving the transfer, not just "the deal closing" — per migration 039's
+// payout-on-approval logic.
+//
 // Sep 11, 2026: a step-by-step operational guide, distinct from /sell's own
 // marketing/valuation-focused landing page (which stays untouched by this
 // file). Where /sell pitches "why sell on Durqo" with a valuation CTA, this
@@ -112,14 +126,20 @@ const STEPS = [
   {
     n: "06",
     icon: Handshake,
-    title: "Close the sale",
-    body: "When a buyer commits to purchase, their payment is collected and held until you've transferred the agreed assets and the deal is confirmed complete.",
+    title: "Hand over the assets in your Transfer Room",
+    body: "When a buyer purchases your listing, their payment is collected and held, and you're both taken to a shared Transfer Room — also listed under Asset Transfers in your dashboard. Mark each item In Progress, then Submitted as you hand it over, and message the buyer directly if you need to.",
   },
   {
     n: "07",
+    icon: PackageCheck,
+    title: "Get approved for payout",
+    body: "Once the buyer marks every item Received and clicks Approve Transfer, the sale is confirmed complete and your payout becomes eligible. If they report an issue instead, Durqo's team reviews it before anything is released.",
+  },
+  {
+    n: "08",
     icon: Wallet,
     title: "Request your payout",
-    body: "Once a sale completes, request a withdrawal from your Earnings page. Durqo's success fee is deducted, and our team reviews and processes the payout.",
+    body: "Once your payout is eligible, request a withdrawal from your Earnings page. Durqo's success fee is deducted, and our team reviews and processes the payout.",
   },
 ] as const;
 
@@ -175,7 +195,7 @@ export default function HowToSellPage() {
           <Inner>
             <div className="mb-10 max-w-[60ch]">
               <DashEyebrow>The selling process</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Seven steps, start to finish.</h2>
+              <h2 className="text-2xl sm:text-3xl">Eight steps, start to finish.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Nothing is charged until your business actually sells — and every listing goes through a real,
                 manual review before it publishes. Curious what your business might be worth first? Get a{" "}
