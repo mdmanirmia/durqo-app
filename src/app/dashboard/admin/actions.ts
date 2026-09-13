@@ -373,7 +373,13 @@ type VerificationDecision = (typeof VERIFICATION_DECISIONS)[number];
 // Sets is_verified alongside it so the badge that already renders
 // everywhere off that column (ListingCard, listing detail, /buy's
 // "verified only" filter) picks it up immediately.
-export async function setVerificationStatus(userId: string, decision: VerificationDecision) {
+// 2026-09-13 dashboard audit follow-up: `reason` is new — a rejection used
+// to give the seller nothing but a generic form-letter email with no way to
+// know what to fix before resubmitting. Only meaningful (and only ever
+// stored) for a "rejected" decision; a "verified" decision clears any old
+// reason from a previous rejection so it doesn't linger and reappear if the
+// seller is ever rejected again later without one.
+export async function setVerificationStatus(userId: string, decision: VerificationDecision, reason?: string) {
   await requireAdmin();
   if (!VERIFICATION_DECISIONS.includes(decision)) throw new Error("Invalid decision");
 
@@ -382,18 +388,21 @@ export async function setVerificationStatus(userId: string, decision: Verificati
 
   const { data: profile } = await admin.from("profiles").select("full_name").eq("id", userId).single();
 
+  const trimmedReason = reason?.trim() || null;
   const { error } = await admin
     .from("profiles")
     .update({
       verification_status: decision,
       is_verified: decision === "verified",
       verification_reviewed_at: new Date().toISOString(),
+      verification_rejection_reason: decision === "rejected" ? trimmedReason : null,
     })
     .eq("id", userId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/admin/verification");
   revalidatePath("/dashboard/admin");
+  revalidatePath("/dashboard/seller/verification");
 
   // Best-effort: let the seller know the outcome. Looks up this one user
   // directly by id (getUserById) rather than scanning a listUsers() page —
@@ -408,7 +417,9 @@ export async function setVerificationStatus(userId: string, decision: Verificati
     const html =
       decision === "verified"
         ? `<p>Hi ${sellerName},</p><p>Your identity has been verified. The verified badge is now live on your listings.</p><p>— Durqo</p>`
-        : `<p>Hi ${sellerName},</p><p>We weren't able to verify your documents this time. Please make sure the photo is clear and legible, then resubmit from your seller dashboard.</p><p>— Durqo</p>`;
+        : `<p>Hi ${sellerName},</p><p>We weren't able to verify your documents this time.${
+            trimmedReason ? ` Reason: ${trimmedReason}` : " Please make sure the photo is clear and legible."
+          }</p><p>Please review and resubmit from your seller dashboard.</p><p>— Durqo</p>`;
     await sendEmail(sellerEmail, subject, html);
   }
 }
