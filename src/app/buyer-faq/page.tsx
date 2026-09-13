@@ -76,7 +76,7 @@ const FAQ_GROUPS = [
     items: [
       {
         question: "Do I need an account to browse listings?",
-        answer: "No — anyone can browse and view listing details. You'll need a free buyer account to message a seller or make a purchase.",
+        answer: "No. Anyone can browse and view listing details, but you'll need a free buyer account to message a seller or make a purchase.",
       },
       {
         question: "Is it free to use Durqo as a buyer?",
@@ -114,7 +114,7 @@ const FAQ_GROUPS = [
       },
       {
         question: "Can I ask the seller questions before buying?",
-        answer: "Yes, three ways. Many listings already answer common questions in their own Questions & Answers section, written by the seller. You can also post a question in the Comments section on the listing page — the seller is notified and replies there publicly. Or message the seller directly for a private conversation, which stays in your dashboard inbox.",
+        answer: "Yes, three ways. Many listings already answer common questions in their own Questions & Answers section, written by the seller. You can also post a question in the Comments section on the listing page, and the seller is notified and replies there publicly. Or message the seller directly for a private conversation, which stays in your dashboard inbox.",
       },
     ],
   },
@@ -138,7 +138,7 @@ const FAQ_GROUPS = [
         question: "What exactly is the Transfer Room?",
         answer: (
           <>
-            It&rsquo;s the shared space — separate from the payment screen — where your purchase actually gets
+            It&rsquo;s the shared space, separate from the payment screen, where your purchase actually gets
             handed over. Every order gets one, also listed under <strong>Asset Transfers</strong> in your dashboard.
             The seller submits each asset there one at a time, you inspect and mark it{" "}
             <strong>Received</strong>, and clicking <strong>Approve Transfer</strong> is what actually completes the
@@ -160,7 +160,7 @@ const FAQ_GROUPS = [
         question: "What happens right after I pay?",
         answer: (
           <>
-            You&rsquo;re taken straight to your order&rsquo;s <strong>Transfer Room</strong> — also listed under{" "}
+            You&rsquo;re taken straight to your order&rsquo;s <strong>Transfer Room</strong>, also listed under{" "}
             <strong>Asset Transfers</strong> in your dashboard. As the seller hands over each asset, mark it{" "}
             <strong>Received</strong>, then click <strong>Approve Transfer</strong> once everything matches what was
             agreed to complete the sale.
@@ -181,8 +181,8 @@ const FAQ_GROUPS = [
         answer: (
           <>
             One asset at a time, inside your <strong>Transfer Room</strong>. The seller marks each item{" "}
-            <strong>Submitted</strong> as they transfer it — a domain, code, accounts, socials, whatever&rsquo;s
-            included in the sale. You inspect each one as it arrives and mark it <strong>Received</strong>, then
+            <strong>Submitted</strong> as they transfer it (a domain, code, accounts, socials, whatever&rsquo;s
+            included in the sale). You inspect each one as it arrives and mark it <strong>Received</strong>, then
             click <strong>Approve Transfer</strong> once everything matches what was agreed.
           </>
         ),
@@ -192,8 +192,8 @@ const FAQ_GROUPS = [
         answer: (
           <>
             During your inspection window, click <strong>Report an Issue</strong> in the Transfer Room instead of
-            approving. <strong>Your payment stays held</strong> — nothing is released to the seller automatically —
-            and Durqo&rsquo;s team reviews the evidence before deciding what happens next.
+            approving. <strong>Your payment stays held</strong>, and nothing is released to the seller automatically.
+            Durqo&rsquo;s team reviews the evidence before deciding what happens next.
           </>
         ),
       },
@@ -201,7 +201,7 @@ const FAQ_GROUPS = [
         question: "What if something goes wrong with my purchase?",
         answer: (
           <>
-            Contact support@durqo.com as soon as possible — disputes must be reported within{" "}
+            Contact support@durqo.com as soon as possible. Disputes must be reported within{" "}
             <strong>7 days</strong> of the transaction completing. Refunds are granted for confirmed fraud, material
             misrepresentation, or a seller&rsquo;s breach of the agreed terms; where a dispute can&rsquo;t be
             resolved directly with the seller, Durqo will review the evidence and help mediate.
@@ -210,7 +210,7 @@ const FAQ_GROUPS = [
       },
       {
         question: "Can I cancel an order before I pay?",
-        answer: "Yes — nothing is charged until you complete checkout, so you can simply leave the payment page without confirming.",
+        answer: "Yes. Nothing is charged until you complete checkout, so you can simply leave the payment page without confirming.",
       },
     ],
   },
