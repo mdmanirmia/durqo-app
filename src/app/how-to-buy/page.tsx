@@ -10,10 +10,22 @@ import {
   FileSearch,
   BadgeCheck,
   Receipt,
+  PackageCheck,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 
+// Sep 13, 2026: expanded Steps 4-5 into an explicit Transfer Room step,
+// now that the Asset Transfer Room system is live for every payment channel
+// (see claude/asset-transfer-room-feasibility-addendum.md and
+// claude/asset-transfer-post-purchase-redirect-and-payout-release-addendum.md).
+// Buyers used to read a vague "until the seller has transferred the agreed
+// assets" with no mechanism explained; now the page names the actual
+// dashboard destination (Transfer Room / "Asset Transfers" nav item),
+// the buyer's real action (mark each item Received, then Approve Transfer
+// to release payment), and the inspection window / Report an Issue escape
+// hatch, matching TransferRoomView.tsx's real buyer-side actions exactly.
+//
 // Sep 11, 2026: new step-by-step buyer guide, built alongside /how-to-sell,
 // /payments, /buyer-faq and /seller-faq (all linked from the Footer's new
 // Resources column). Matches the visual system established by the Sep 6
@@ -105,13 +117,19 @@ const STEPS = [
     n: "04",
     icon: ShieldCheck,
     title: "Your payment is held",
-    body: "Durqo holds your payment until the seller has transferred the agreed assets — or, if you chose Escrow.com, the funds sit with that independent, licensed escrow service until you confirm receipt.",
+    body: "Durqo holds your payment until you approve the transfer in the next step — or, if you chose Escrow.com, the funds sit with that independent, licensed escrow service until you confirm receipt.",
   },
   {
     n: "05",
+    icon: PackageCheck,
+    title: "Track the transfer in your Transfer Room",
+    body: "Right after paying, you're taken straight to your order's Transfer Room — also listed under Asset Transfers in your dashboard. As the seller hands over each item (domain, code, accounts, socials and more), mark it Received, and message them directly from the room if anything's unclear.",
+  },
+  {
+    n: "06",
     icon: CheckCircle2,
-    title: "Confirm and take ownership",
-    body: "Once the transfer is complete, the deal closes and the seller is paid. Your receipt and full order history stay available from your buyer dashboard.",
+    title: "Approve and take ownership",
+    body: "Once every item is marked Received, click Approve Transfer to release your payment to the seller and close the deal. If something's wrong, report an issue instead during your inspection window and Durqo's team will step in. Your receipt and full order history stay available from your buyer dashboard.",
   },
 ] as const;
 
@@ -136,7 +154,7 @@ const PAYMENT_METHODS = [
 const PROTECTIONS = [
   { icon: FileSearch, label: "Every listing reviewed before it goes live" },
   { icon: MessageSquare, label: "Message sellers directly, before you pay" },
-  { icon: ShieldCheck, label: "Payment held until the transfer is confirmed" },
+  { icon: ShieldCheck, label: "Payment held until you approve the transfer" },
   { icon: Receipt, label: "Full order history and printable receipts" },
 ];
 
@@ -212,8 +230,8 @@ export default function HowToBuyPage() {
               <DashEyebrow>The buying process</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">From first look to closed deal.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Five steps, start to finish. Every listing is reviewed before it publishes, and your payment stays
-                protected until the transfer is done.
+                Six steps, start to finish. Every listing is reviewed before it publishes, and your payment stays
+                protected until you approve the transfer.
               </p>
             </div>
             <div className="flex flex-col gap-8">
