@@ -128,7 +128,7 @@ const STEPS = [
     n: "02",
     icon: BadgeCheck,
     title: "Verify your identity (optional)",
-    body: "Upload an ID document from your seller dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge that buyers trust.",
+    body: "Upload an ID document from your seller dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge that buyers trust. The public badge is optional, but this same identity check is required before your very first payout — see Step 08.",
   },
   {
     n: "03",
@@ -181,7 +181,7 @@ const STEPS = [
     n: "08",
     icon: Wallet,
     title: "Request your payout",
-    body: "Once your payout is eligible, request a withdrawal from your Earnings page. Durqo's success fee is deducted, and our team reviews and processes the payout.",
+    body: "Once your payout becomes eligible, request a withdrawal from your Earnings page. Durqo's applicable success fee is deducted according to the existing fee logic, and eligible payout requests are normally reviewed and processed within 3–5 business days.",
   },
 ] as const;
 
@@ -411,6 +411,7 @@ export default function HowToSellPage() {
                   processes every request. bKash, Rocket and Nagad withdrawals are each capped at ৳50,000 per day
                   and ৳300,000 per month, based on that day&rsquo;s exchange rate.
                 </p>
+                <p className="mt-2 max-w-[54ch] text-sm font-medium text-ink">Processing time: Normally 3–5 business days.</p>
                 <div className="mt-5 flex flex-wrap gap-2">
                   {PAYOUT_METHODS.map((m) => (
                     <span
