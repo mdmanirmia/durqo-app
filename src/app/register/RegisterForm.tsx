@@ -30,7 +30,7 @@ function RegisterForm() {
     setError(null);
     const supabase = createClient();
     if (!supabase) {
-      setError("Backend isn't connected yet — this is a preview build. Once Supabase is set up, this form will create a real account.");
+      setError("Backend isn't connected yet. This is a preview build; once Supabase is set up, this form will create a real account.");
       return;
     }
     setLoading(true);
@@ -70,7 +70,7 @@ function RegisterForm() {
     if (!supabase) return;
     const { error } = await supabase.auth.resend({ type: "signup", email });
     if (error) { setError(error.message); return; }
-    setNotice("Sent again — check your inbox.");
+    setNotice("Sent again, check your inbox.");
   }
 
   const fieldCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
@@ -80,7 +80,7 @@ function RegisterForm() {
       <div className="w-full max-w-md rounded-xl border border-rule bg-paper-raised p-7 sm:p-8">
         <h1 className="mb-1 text-2xl">Check your email</h1>
         <p className="mb-8 text-sm text-ink-soft">
-          We sent a verification link to <span className="font-semibold text-ink">{email}</span>. Click it to activate your account — you&rsquo;ll be
+          We sent a verification link to <span className="font-semibold text-ink">{email}</span>. Click it to activate your account and you&rsquo;ll be
           signed in automatically.
         </p>
         {notice && <p className="mb-4 text-sm text-brand-hover">{notice}</p>}
@@ -119,7 +119,7 @@ function RegisterForm() {
             Sell a business
           </button>
         </div>
-        <p className="mt-2 text-xs text-ink-faint">You can browse and buy listings either way — this just sets your default dashboard.</p>
+        <p className="mt-2 text-xs text-ink-faint">You can browse and buy listings either way. This just sets your default dashboard.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
