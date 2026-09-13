@@ -20,6 +20,7 @@ import { parseDurationToSeconds, formatEngagementSeconds } from "@/lib/format";
 import { updateListingFull, addListingImages, deleteListingImage, type ListingFullEditFields } from "@/lib/actions/listing-edit";
 import { setListingStatus } from "@/app/dashboard/admin/actions";
 import AssetListEditor, { type AssetRow } from "@/components/listings/AssetListEditor";
+import QaListEditor, { type QaRow } from "@/components/listings/QaListEditor";
 
 // Same 12-month proof-of-income window as the seller "new listing" form
 // (dashboard/seller/listings/new/page.tsx) — deliberately duplicated rather
@@ -178,6 +179,7 @@ export default function ListingEditForm({
   topVideos,
   channelOverview,
   listingAssets,
+  faqs,
 }: {
   mode: "admin" | "seller";
   listing: Row;
@@ -189,6 +191,7 @@ export default function ListingEditForm({
   topVideos?: Row[];
   channelOverview?: Row | null;
   listingAssets?: Row[];
+  faqs?: Row[];
 }) {
   const router = useRouter();
   const [categoryId, setCategoryId] = useState<string>(listing.category_id);
@@ -226,6 +229,15 @@ export default function ListingEditForm({
   }));
   const [assetRows, setAssetRows] = useState<AssetRow[]>(initialAssetRows);
   const [assetsConfirmedAt, setAssetsConfirmedAt] = useState<string | null>(listing.assets_confirmed_at ?? null);
+
+  // Seller-authored Questions & Answers (listing_faqs — see QaListEditor.tsx
+  // for the full history). Sorted by sort_order so edits keep the same
+  // order the seller last saved them in.
+  const initialFaqRows: QaRow[] = (faqs ?? [])
+    .slice()
+    .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    .map((f) => ({ question: f.question ?? "", answer: f.answer ?? "" }));
+  const [faqRows, setFaqRows] = useState<QaRow[]>(initialFaqRows);
 
   const [niches, setNiches] = useState<string[]>(Array.isArray(listing.niches) ? listing.niches : []);
   const [loomVideoUrl, setLoomVideoUrl] = useState(listing.loom_video_url ?? "");
@@ -530,6 +542,7 @@ export default function ListingEditForm({
         saleIncludesAssets: assetsSummaryText,
         saleIncludesSupport,
         listingAssets: assetRows,
+        faqs: faqRows.filter((r) => r.question.trim() && r.answer.trim()).map((r) => ({ question: r.question.trim(), answer: r.answer.trim() })),
         quickStatColumns,
         // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
         // to Design & Development New.pdf) — the Niche/Industry section is
@@ -1224,6 +1237,10 @@ export default function ListingEditForm({
           <NamedValueRows rows={socialStatRows} setRows={setSocialStatRows} nameLabel="Platform (e.g. Instagram)" valueLabel="Followers" />
         </Section>
       )}
+
+      <Section title="Questions & Answers" hint="Shown on the published listing, above the live comment feed, in the FAQ with Seller section.">
+        <QaListEditor rows={faqRows} setRows={setFaqRows} />
+      </Section>
 
       <Section title="Sale Includes">
         <div className="flex flex-col gap-6">
