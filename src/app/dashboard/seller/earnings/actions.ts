@@ -107,7 +107,8 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
       sellerEmail,
       "We've received your withdrawal request",
       `<p>Hi ${sellerName},</p>
-       <p>We've received your withdrawal request${netAmount !== null ? ` for ${fmtUSD(netAmount)} (after the Success Fee)` : ""}. Our team will review it and email you the outcome — this usually takes 1–2 business days.</p>
+       <p>Your payout request has been submitted${netAmount !== null ? ` for ${fmtUSD(netAmount)} (after the Success Fee)` : ""}. We normally review and process eligible payout requests within 3–5 business days.</p>
+       <p>Your bank or payout provider may require additional time to credit the funds.</p>
        <p>— Durqo</p>`
     );
   }
