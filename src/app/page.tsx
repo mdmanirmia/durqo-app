@@ -165,14 +165,14 @@ const REVIEW_ITEMS = ["Listing reviewed", "Performance checked", "Seller verific
 const STEPS = [
   { icon: Search, title: "Explore or list", body: "Browse reviewed listings by category, or submit your own business for review." },
   { icon: LineChart, title: "Review and connect", body: "Evaluate performance data, ask questions and connect directly with the seller." },
-  { icon: CheckCircle2, title: "Complete the transfer", body: "Once payment is made, buyer and seller move through a shared Transfer Room — each asset handed over, confirmed, and approved — before ownership changes hands." },
+  { icon: CheckCircle2, title: "Complete the transfer", body: "Once payment is made, buyer and seller move through a shared Transfer Room, where each asset is handed over, confirmed, and approved before ownership changes hands." },
 ];
 
 const CONFIDENCE = [
   { icon: ShieldCheck, title: "Listing review", body: "Every listing is manually reviewed for accuracy, completeness and legitimacy before it goes live." },
   { icon: UserCheck, title: "Seller verification", body: "Sellers can complete identity verification and earn a Verified badge on their profile." },
   { icon: LineChart, title: "Performance data", body: "Revenue, traffic and SEO figures can be independently checked against Google Analytics, Search Console, SEMrush and Ahrefs." },
-  { icon: MessageSquare, title: "Secure communication", body: "Negotiate and share information directly through Durqo's private messaging — nothing moves to unrecorded channels." },
+  { icon: MessageSquare, title: "Secure communication", body: "Negotiate and share information directly through Durqo's private messaging, so nothing moves to unrecorded channels." },
 ];
 
 // The assurance panel's bottom row deliberately says "Identity verification"
@@ -507,7 +507,7 @@ export default async function Home() {
                 </div>
               ) : (
                 <div className="relative rounded-2xl border border-dashed border-rule-strong bg-paper-raised p-10 text-center text-sm text-ink-faint">
-                  New listings are on their way — check back soon.
+                  New listings are on their way. Check back soon.
                 </div>
               )}
             </div>
@@ -684,7 +684,7 @@ export default async function Home() {
                     // the highest Success Fee rate) rather than a hardcoded
                     // "10%" literal, so this line can't drift from /sell,
                     // /terms, and /contact if the schedule ever changes.
-                    `Success fee starting at ${fmtRate(SUCCESS_FEE_TIERS[0].rate)} — only when sold`,
+                    `Success fee starting at ${fmtRate(SUCCESS_FEE_TIERS[0].rate)}, only when sold`,
                     "Professional support from listing to close",
                   ].map((t) => (
                     <span key={t} className="flex items-center gap-2 text-sm text-ink-soft">

@@ -109,27 +109,24 @@ h1, h2, h3, h4 {
   background-attachment: local, local, scroll, scroll;
 }
 
-/* Sitewide body-copy justification (Sep 5, 2026, per an explicit "sob
-   likha justify hobe" request — all writing across the site, including
-   every listing's text, should be justified). Scoped to paragraphs and
-   list items rather than every element: those are where real body copy
-   lives (listing overview/description text, About/Terms/Privacy content,
-   FAQ answers, Copyright Notes bullets, etc.), while headings, buttons,
-   badges, labels, and nav links are short single-line UI chrome that
-   justify has no visible effect on anyway. Placed in Tailwind's `base`
-   layer (not left unlayered like the body/h1 rules above) specifically so
-   any paragraph that already carries an explicit Tailwind alignment
-   utility — text-center/text-left/text-right, e.g. empty-state messages,
-   the login/register "Don't have an account?" line, the cart's fine-print
-   line — keeps overriding this default: Tailwind's `utilities` layer
-   always wins over `base` regardless of selector order or specificity, so
-   nothing already deliberately centered/right-aligned changes. This
-   superseded the one-off `text-justify` class previously added by hand
-   just to the Payment Terms card, which is now redundant but left as-is
-   (harmless — the same alignment either way). */
+/* Sitewide body-copy alignment. Was `text-align: justify` (Sep 5, 2026,
+   per an explicit "sob likha justify hobe" request). Reverted to normal
+   left-aligned text on Sep 13, 2026 per a direct follow-up owner
+   complaint ("word to word er majhe onek distance hoye geche" — visible
+   on many pages): CSS justify on narrow columns stretches word-spacing to
+   fill each line since browsers don't auto-hyphenate, and it gets worse
+   wherever a line contains a long unbreakable run (a bolded phrase, a
+   link) that can't wrap internally. Left-aligned copy doesn't have this
+   problem. Still scoped to paragraphs and list items rather than every
+   element — that's where real body copy lives (listing overview text,
+   About/Terms/Privacy content, FAQ answers, etc.) — and still placed in
+   Tailwind's `base` layer so any paragraph that already carries an
+   explicit alignment utility (text-center/text-right, e.g. empty-state
+   messages, the cart's fine-print line) keeps overriding this default via
+   Tailwind's `utilities` layer. */
 @layer base {
   p, li {
-    text-align: justify;
+    text-align: left;
   }
 }
 
