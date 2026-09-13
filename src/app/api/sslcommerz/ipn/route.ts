@@ -146,7 +146,7 @@ export async function POST(request: Request) {
         })
         .join("");
       const riskNote = isRisky
-        ? `<p style="color:#b91c1c"><strong>Risk flag:</strong> SSLCommerz marked this transaction risk_level=1 (${validation.riskTitle ?? "unspecified"}). Please verify the customer before releasing escrow.</p>`
+        ? `<p style="color:#b91c1c"><strong>Risk flag:</strong> SSLCommerz marked this transaction risk_level=1 (${validation.riskTitle ?? "unspecified"}). Please verify the customer before releasing the held funds.</p>`
         : "";
       const balanceOpsNote = hasRemainder
         ? `<p><strong>Remaining balance owed:</strong> $${totalRemainderUsd.toLocaleString()} USD. Follow up with the buyer with wire transfer/credit card/debit card instructions — do not mark this order completed until the full balance is received and verified.</p>`
@@ -185,7 +185,7 @@ export async function POST(request: Request) {
                <li>Once we&rsquo;ve received and verified the full remaining balance, your purchase will be completed.</li>
                <li>We&rsquo;ll then open your Transfer Room and email you the link along with step-by-step guidance on how to receive the assets.</li>
              </ol>`
-          : `<p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>`;
+          : `<p>Durqo is holding your payment until the seller transfers the assets and you confirm receipt.</p>`;
 
         // Only listings paid in full (no remainder) can have a ready room —
         // see autoRoomOrderIds above, which deliberately excludes any order
