@@ -29,6 +29,14 @@ import Button from "@/components/ui/Button";
 // (payment stays held, Durqo reviews before anything releases — never
 // automatic) rather than leaving that implied.
 //
+// Sep 13, 2026, second follow-up: per direct owner request, bolded the
+// actual clickable actions inside Steps 05-06 (Submitted, Received, Approve
+// Transfer, Report an Issue) so they read as concrete UI steps rather than
+// prose, and added a dedicated "The Transfer Room" spotlight card right
+// after the step list — the mechanism is the single most important thing
+// on this page, so it gets its own visually distinct callout instead of
+// living only inside one step among six.
+//
 // Sep 11, 2026: new step-by-step buyer guide, built alongside /how-to-sell,
 // /payments, /buyer-faq and /seller-faq (all linked from the Footer's new
 // Resources column). Matches the visual system established by the Sep 6
@@ -126,13 +134,31 @@ const STEPS = [
     n: "05",
     icon: PackageCheck,
     title: "Inspect the transfer in your Transfer Room",
-    body: "Right after paying, you're taken straight to your order's Transfer Room — also listed under Asset Transfers in your dashboard. The seller hands over each item (domain, code, accounts, socials and more) one by one; inspect each one and mark it Received. You have an inspection window to check everything before deciding, and can message the seller directly from the room at any time.",
+    body: (
+      <>
+        Right after paying, you&rsquo;re taken straight to your order&rsquo;s <strong className="text-ink">Transfer Room</strong> —
+        also listed under <strong className="text-ink">Asset Transfers</strong> in your dashboard. The seller hands
+        over each item (domain, code, accounts, socials and more) one by one, marking it{" "}
+        <strong className="text-ink">Submitted</strong>; you inspect each one and mark it{" "}
+        <strong className="text-ink">Received</strong>. You have an inspection window to check everything before
+        deciding, and can message the seller directly from the room at any time.
+      </>
+    ),
   },
   {
     n: "06",
     icon: CheckCircle2,
     title: "Approve and take ownership",
-    body: "Once every item is marked Received and matches what was agreed, click Approve Transfer — that releases your payment to the seller and makes the sale final. If something doesn't match instead, click Report an Issue before approving: your payment stays held, nothing is released automatically, and Durqo's team reviews the evidence before deciding what happens next. Your receipt and full order history stay available from your buyer dashboard.",
+    body: (
+      <>
+        Once every item is marked Received and matches what was agreed, click{" "}
+        <strong className="text-ink">Approve Transfer</strong> — that releases your payment to the seller and makes
+        the sale final. If something doesn&rsquo;t match instead, click{" "}
+        <strong className="text-ink">Report an Issue</strong> before approving: your payment stays held, nothing is
+        released automatically, and Durqo&rsquo;s team reviews the evidence before deciding what happens next. Your
+        receipt and full order history stay available from your buyer dashboard.
+      </>
+    ),
   },
 ] as const;
 
@@ -255,6 +281,52 @@ export default function HowToBuyPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* TRANSFER ROOM SPOTLIGHT — Sep 13, 2026: called out on its own,
+          separate from the numbered steps, because it's the single most
+          important mechanism on this page: it's what actually completes
+          the sale and releases payment, not the payment screen itself. */}
+      <section className="border-b border-rule bg-brand-soft py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="mx-auto max-w-[860px] rounded-2xl border border-rule bg-paper-raised p-8 sm:p-10">
+              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
+                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
+                  <PackageCheck size={22} />
+                </span>
+                <div>
+                  <DashEyebrow>Where every sale actually completes</DashEyebrow>
+                  <h2 className="text-xl font-semibold text-ink sm:text-2xl">The Transfer Room</h2>
+                  <p className="mt-3 max-w-[64ch] text-sm leading-relaxed text-ink-soft">
+                    Every purchase on Durqo goes through a shared <strong className="text-ink">Transfer Room</strong>{" "}
+                    — not just a payment screen. It&rsquo;s where the seller physically hands over the domain, code,
+                    accounts and everything else that&rsquo;s part of the sale, one item at a time, and where
+                    <strong className="text-ink"> you</strong> decide whether the sale is actually done.
+                  </p>
+                  <ul className="mt-5 flex flex-col gap-2.5 text-sm leading-relaxed text-ink-soft">
+                    <li>
+                      <strong className="text-ink">The seller marks each item Submitted</strong> as they hand it
+                      over.
+                    </li>
+                    <li>
+                      <strong className="text-ink">You inspect it and mark it Received</strong> during your
+                      inspection window.
+                    </li>
+                    <li>
+                      <strong className="text-ink">You click Approve Transfer</strong> — this is what actually
+                      releases your payment and makes the sale final.
+                    </li>
+                    <li>
+                      Something not right? <strong className="text-ink">Click Report an Issue instead</strong> —
+                      your payment stays held and nothing releases automatically until Durqo reviews it.
+                    </li>
+                  </ul>
+                </div>
+              </div>
             </div>
           </Inner>
         </Container>
