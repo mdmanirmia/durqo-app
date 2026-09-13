@@ -45,7 +45,6 @@ import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import FaqAccordion from "@/components/FaqAccordion";
 import CommentsPanel from "@/components/CommentsPanel";
 import ProofGalleryButton from "@/components/ProofGalleryButton";
-import CartButton from "@/components/CartButton";
 import BuyNowButton from "@/components/BuyNowButton";
 import WishlistButton from "@/components/WishlistButton";
 import ChatWithSellerButton from "@/components/ChatWithSellerButton";
@@ -1034,7 +1033,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
               </div>
               <div className="flex flex-col gap-1.5 px-5 py-3 sm:px-6">
                 <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
-                <CartButton listingId={listing.id} sold={listing.status === "sold"} />
                 <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
                 <WishlistButton listingId={listing.id} variant="full" />
               </div>
