@@ -73,7 +73,7 @@ const FAQ_GROUPS = [
     items: [
       {
         question: "Is it free to list my business?",
-        answer: "Yes — there's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells.",
+        answer: "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells.",
       },
       {
         question: "How do I create a listing?",
@@ -113,8 +113,8 @@ const FAQ_GROUPS = [
         question: "How much does Durqo charge?",
         answer: (
           <>
-            A tiered success fee based on your final sale price — 10% under $50,000, 7% from $50,000 to $250,000,
-            and 5% above $250,000 — deducted only when your business sells. See the full breakdown on the{" "}
+            A tiered success fee based on your final sale price: 10% under $50,000, 7% from $50,000 to $250,000,
+            and 5% above $250,000. It&rsquo;s deducted only when your business sells. See the full breakdown on the{" "}
             <Link href="/payments" className="font-semibold text-brand-strong hover:underline">
               Payment &amp; Withdrawal
             </Link>{" "}
@@ -126,7 +126,7 @@ const FAQ_GROUPS = [
         question: "What exactly is the Transfer Room?",
         answer: (
           <>
-            It&rsquo;s the shared space — separate from checkout — where you actually hand a sold business over to
+            It&rsquo;s the shared space, separate from checkout, where you actually hand a sold business over to
             its buyer. Every order gets one, also listed under <strong>Asset Transfers</strong> in your dashboard.
             You submit each asset there one at a time; once the buyer inspects everything and clicks{" "}
             <strong>Approve Transfer</strong>, the sale is final and your payout becomes eligible.
@@ -138,8 +138,8 @@ const FAQ_GROUPS = [
         answer: (
           <>
             Once the buyer clicks <strong>Approve Transfer</strong> in your shared <strong>Transfer Room</strong>,
-            your payout becomes eligible — request a withdrawal from your Earnings dashboard. Our team reviews and
-            processes each request — it isn&rsquo;t instant.
+            your payout becomes eligible. Request a withdrawal from your Earnings dashboard, and our team reviews and
+            processes each request. It isn&rsquo;t instant.
           </>
         ),
       },
@@ -154,14 +154,14 @@ const FAQ_GROUPS = [
     items: [
       {
         question: "How do buyers ask me questions?",
-        answer: "Three ways. When you build a listing, you can write your own Questions & Answers pairs that show up publicly with the listing. Buyers can also post a question in the listing's Comments section — you'll see it (and an unanswered-questions count) on your dashboard's Comments page, and your reply is public. For a private conversation, buyers can message you directly, and it stays in your dashboard inbox.",
+        answer: "Three ways. When you build a listing, you can write your own Questions & Answers pairs that show up publicly with the listing. Buyers can also post a question in the listing's Comments section. You'll see it (and an unanswered-questions count) on your dashboard's Comments page, and your reply is public. For a private conversation, buyers can message you directly, and it stays in your dashboard inbox.",
       },
       {
         question: "How does handing over the assets actually work?",
         answer: (
           <>
             After a buyer pays, you&rsquo;re both taken to a shared <strong>Transfer Room</strong>. Hand over each
-            asset one at a time — a domain, code, accounts, socials, whatever&rsquo;s included in the sale —
+            asset one at a time (a domain, code, accounts, socials, whatever&rsquo;s included in the sale),
             marking it <strong>In Progress</strong>, then <strong>Submitted</strong> as you go. The buyer then
             inspects each item during their inspection window and marks it <strong>Received</strong>, then clicks{" "}
             <strong>Approve Transfer</strong> once everything&rsquo;s confirmed.
@@ -173,7 +173,7 @@ const FAQ_GROUPS = [
         answer: (
           <>
             <strong>Nothing is released automatically.</strong> Your payout stays on hold while Durqo&rsquo;s team
-            reviews the evidence and decides what happens next — the same way any other dispute is handled.
+            reviews the evidence and decides what happens next, the same way any other dispute is handled.
           </>
         ),
       },
