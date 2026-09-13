@@ -156,10 +156,16 @@ function excerpt(text: string, maxChars = 108): string {
 // a lone wrapped item) below that, per the Sep 6 2026 refinement pass.
 const REVIEW_ITEMS = ["Listing reviewed", "Performance checked", "Seller verification available"];
 
+// Sep 13, 2026: "Complete the transfer" now names the real Asset Transfer
+// Room system (live for every payment channel — see
+// claude/asset-transfer-room-feasibility-addendum.md) instead of the vague
+// "move assets through our secure process" placeholder, so this homepage
+// summary stays consistent with /how-to-buy, /how-to-sell, /payments and
+// /terms.
 const STEPS = [
   { icon: Search, title: "Explore or list", body: "Browse reviewed listings by category, or submit your own business for review." },
   { icon: LineChart, title: "Review and connect", body: "Evaluate performance data, ask questions and connect directly with the seller." },
-  { icon: CheckCircle2, title: "Complete the transfer", body: "Agree on terms, move assets through our secure process, and take ownership with confidence." },
+  { icon: CheckCircle2, title: "Complete the transfer", body: "Once payment is made, buyer and seller move through a shared Transfer Room — each asset handed over, confirmed, and approved — before ownership changes hands." },
 ];
 
 const CONFIDENCE = [
