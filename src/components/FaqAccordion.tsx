@@ -7,7 +7,7 @@ import { FaqItem } from "@/lib/types";
 export default function FaqAccordion({ items }: { items: FaqItem[] }) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  if (!items.length) return <p className="text-sm text-ink-faint">The seller hasn&rsquo;t answered any questions yet — ask one below.</p>;
+  if (!items.length) return <p className="text-sm text-ink-faint">The seller hasn&rsquo;t answered any questions yet. Ask one below.</p>;
 
   return (
     <div>
