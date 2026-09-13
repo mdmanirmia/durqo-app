@@ -95,7 +95,7 @@ export default function TermsToc({ items }: { items: TocItem[] }) {
           onClick={() => setMobileOpen((v) => !v)}
           className="flex min-h-11 w-full items-center justify-between rounded-lg border border-rule bg-paper-raised px-4 py-3 text-sm font-semibold text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
         >
-          On this page — {items.length} sections
+          On this page: {items.length} sections
           <span aria-hidden className={`text-ink-faint transition-transform ${mobileOpen ? "rotate-180" : ""}`}>
             ▾
           </span>
