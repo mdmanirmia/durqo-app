@@ -109,3 +109,6 @@ export function fmtPayoutEta(result: PayoutEtaResult): string {
   if (!result.earliest || !result.latest) return "—";
   return `Estimated ${fmtDate(result.earliest)} – ${fmtDate(result.latest)}`;
 }
+
+// (no-op touch: Sep 13 2026 — forces a fresh Vercel deployment after the
+// free-tier daily deployment cap blocked PR #51/#52 from ever going live.)
