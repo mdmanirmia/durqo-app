@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Fragment } from "react";
 import {
   ArrowRight,
   Search,
@@ -11,6 +12,9 @@ import {
   BadgeCheck,
   Receipt,
   PackageCheck,
+  Send,
+  Eye,
+  AlertTriangle,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -36,6 +40,18 @@ import Button from "@/components/ui/Button";
 // after the step list — the mechanism is the single most important thing
 // on this page, so it gets its own visually distinct callout instead of
 // living only inside one step among six.
+//
+// Sep 13, 2026, third follow-up: per direct owner feedback on a live
+// screenshot ("design ta valo lagchene... graphics add koro") that the
+// spotlight card's plain bold-bulleted paragraph list looked flat, rebuilt
+// it as an actual step-flow diagram — icon-badge nodes connected by
+// arrows, colored to match the real in-app status colors (gold for the
+// in-progress Submitted/Received states, brand green for the completing
+// Approve Transfer step, danger red for the Report an Issue branch — see
+// STAGE_LABEL / ITEM_STATUS_LABEL in
+// src/app/dashboard/transfer/[orderId]/TransferRoomView.tsx) instead of
+// inventing new colors, so the mechanism reads as a visual sequence rather
+// than a wall of bold text.
 //
 // Sep 11, 2026: new step-by-step buyer guide, built alongside /how-to-sell,
 // /payments, /buyer-faq and /seller-faq (all linked from the Footer's new
@@ -159,6 +175,31 @@ const STEPS = [
         receipt and full order history stay available from your buyer dashboard.
       </>
     ),
+  },
+] as const;
+
+// Colors mirror the real Transfer Room's own status tones exactly (see
+// STAGE_LABEL / ITEM_STATUS_LABEL in TransferRoomView.tsx): gold for the
+// in-progress Submitted/Received states, brand green for the completing
+// Approve Transfer action.
+const TRANSFER_FLOW = [
+  {
+    title: "Seller marks it Submitted",
+    body: "As each asset is handed over, one at a time.",
+    icon: Send,
+    badge: "bg-gold-soft text-[#92730F]",
+  },
+  {
+    title: "You mark it Received",
+    body: "After inspecting it in your inspection window.",
+    icon: Eye,
+    badge: "bg-gold-soft text-[#92730F]",
+  },
+  {
+    title: "You click Approve Transfer",
+    body: "Releases your payment — the sale is final.",
+    icon: CheckCircle2,
+    badge: "bg-brand text-white",
   },
 ] as const;
 
@@ -293,39 +334,59 @@ export default function HowToBuyPage() {
       <section className="border-b border-rule bg-brand-soft py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mx-auto max-w-[860px] rounded-2xl border border-rule bg-paper-raised p-8 sm:p-10">
-              <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:gap-6">
-                <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-strong">
-                  <PackageCheck size={22} />
+            <div className="mx-auto max-w-[920px] rounded-2xl border border-rule bg-paper-raised p-8 shadow-[0_1px_2px_rgba(15,23,42,0.04)] sm:p-10 lg:p-12">
+              <div className="mx-auto max-w-[620px] text-center">
+                <span className="mx-auto mb-5 grid h-14 w-14 place-items-center rounded-2xl bg-brand-soft text-brand-strong">
+                  <PackageCheck size={26} />
                 </span>
-                <div>
-                  <DashEyebrow>Where every sale actually completes</DashEyebrow>
-                  <h2 className="text-xl font-semibold text-ink sm:text-2xl">The Transfer Room</h2>
-                  <p className="mt-3 max-w-[64ch] text-sm leading-relaxed text-ink-soft">
-                    Every purchase on Durqo goes through a shared <strong className="text-ink">Transfer Room</strong>{" "}
-                    — not just a payment screen. It&rsquo;s where the seller physically hands over the domain, code,
-                    accounts and everything else that&rsquo;s part of the sale, one item at a time, and where
-                    <strong className="text-ink"> you</strong> decide whether the sale is actually done.
-                  </p>
-                  <ul className="mt-5 flex flex-col gap-2.5 text-sm leading-relaxed text-ink-soft">
-                    <li>
-                      <strong className="text-ink">The seller marks each item Submitted</strong> as they hand it
-                      over.
-                    </li>
-                    <li>
-                      <strong className="text-ink">You inspect it and mark it Received</strong> during your
-                      inspection window.
-                    </li>
-                    <li>
-                      <strong className="text-ink">You click Approve Transfer</strong> — this is what actually
-                      releases your payment and makes the sale final.
-                    </li>
-                    <li>
-                      Something not right? <strong className="text-ink">Click Report an Issue instead</strong> —
-                      your payment stays held and nothing releases automatically until Durqo reviews it.
-                    </li>
-                  </ul>
-                </div>
+                <DashEyebrow center>Where every sale actually completes</DashEyebrow>
+                <h2 className="text-2xl font-semibold text-ink sm:text-3xl">The Transfer Room</h2>
+                <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+                  Every purchase on Durqo goes through a shared <strong className="text-ink">Transfer Room</strong> —
+                  not just a payment screen. It&rsquo;s where the seller hands over the domain, code, accounts and
+                  everything else, one item at a time, and where <strong className="text-ink">you</strong> decide
+                  whether the sale is actually done.
+                </p>
+              </div>
+
+              {/* step-flow diagram — icon nodes connected by arrows, one
+                  column per node on desktop, stacked on mobile */}
+              <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-[1fr_auto_1fr_auto_1fr] sm:items-start sm:gap-2">
+                {TRANSFER_FLOW.map((step, i) => (
+                  <Fragment key={step.title}>
+                    {i > 0 && (
+                      <div className="hidden shrink-0 sm:flex sm:h-11 sm:items-center sm:justify-center">
+                        <ArrowRight size={18} className="text-ink-faint" aria-hidden />
+                      </div>
+                    )}
+                    <div className="flex items-start gap-4 sm:flex-col sm:items-center sm:gap-3 sm:text-center">
+                      <span
+                        className={`grid h-11 w-11 shrink-0 place-items-center rounded-full ${step.badge}`}
+                        aria-hidden
+                      >
+                        <step.icon size={18} />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-ink">{step.title}</p>
+                        <p className="mt-1 text-xs leading-relaxed text-ink-soft sm:mx-auto sm:max-w-[16ch]">
+                          {step.body}
+                        </p>
+                      </div>
+                    </div>
+                  </Fragment>
+                ))}
+              </div>
+
+              {/* alternate path — visually distinct (dashed border, danger
+                  tone) from the happy path above */}
+              <div className="mt-8 flex items-start gap-3 rounded-xl border border-dashed border-danger/40 bg-danger-soft p-4 sm:p-5">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-paper-raised text-danger">
+                  <AlertTriangle size={16} />
+                </span>
+                <p className="text-sm leading-relaxed text-danger">
+                  Something not right? <strong>Click Report an Issue instead</strong> of approving — your payment
+                  stays held and nothing releases automatically until Durqo&rsquo;s team reviews it.
+                </p>
               </div>
             </div>
           </Inner>
