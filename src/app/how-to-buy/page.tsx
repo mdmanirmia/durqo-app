@@ -25,6 +25,9 @@ import Button from "@/components/ui/Button";
 // the buyer's real action (mark each item Received, then Approve Transfer
 // to release payment), and the inspection window / Report an Issue escape
 // hatch, matching TransferRoomView.tsx's real buyer-side actions exactly.
+// Same-day follow-up: made explicit what "report an issue" actually does
+// (payment stays held, Durqo reviews before anything releases — never
+// automatic) rather than leaving that implied.
 //
 // Sep 11, 2026: new step-by-step buyer guide, built alongside /how-to-sell,
 // /payments, /buyer-faq and /seller-faq (all linked from the Footer's new
@@ -122,14 +125,14 @@ const STEPS = [
   {
     n: "05",
     icon: PackageCheck,
-    title: "Track the transfer in your Transfer Room",
-    body: "Right after paying, you're taken straight to your order's Transfer Room — also listed under Asset Transfers in your dashboard. As the seller hands over each item (domain, code, accounts, socials and more), mark it Received, and message them directly from the room if anything's unclear.",
+    title: "Inspect the transfer in your Transfer Room",
+    body: "Right after paying, you're taken straight to your order's Transfer Room — also listed under Asset Transfers in your dashboard. The seller hands over each item (domain, code, accounts, socials and more) one by one; inspect each one and mark it Received. You have an inspection window to check everything before deciding, and can message the seller directly from the room at any time.",
   },
   {
     n: "06",
     icon: CheckCircle2,
     title: "Approve and take ownership",
-    body: "Once every item is marked Received, click Approve Transfer to release your payment to the seller and close the deal. If something's wrong, report an issue instead during your inspection window and Durqo's team will step in. Your receipt and full order history stay available from your buyer dashboard.",
+    body: "Once every item is marked Received and matches what was agreed, click Approve Transfer — that releases your payment to the seller and makes the sale final. If something doesn't match instead, click Report an Issue before approving: your payment stays held, nothing is released automatically, and Durqo's team reviews the evidence before deciding what happens next. Your receipt and full order history stay available from your buyer dashboard.",
   },
 ] as const;
 
