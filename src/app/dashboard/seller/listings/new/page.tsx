@@ -1294,7 +1294,7 @@ export default function AddNewBusinessPage() {
 
         {/* Last section before submit, per the site owner's explicit request
             (2026-09-13): listed last, not before Sale Includes. */}
-        <Section title="Questions & Answers" hint="Shown on the published listing, above the live comment feed, in the FAQ with Seller section.">
+        <Section title="Questions & Answers" hint="Shown on the published listing in its own Questions & Answers section, above the live Comments feed.">
           <QaListEditor rows={faqRows} setRows={setFaqRows} />
         </Section>
 
