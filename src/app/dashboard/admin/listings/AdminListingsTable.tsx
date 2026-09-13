@@ -6,6 +6,9 @@ import { PlaySquare } from "lucide-react";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { fmtUSD } from "@/lib/format";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
+import { Tag } from "lucide-react";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import EmptyState from "@/components/ui/EmptyState";
 import { setListingStatus, setListingGaVerified } from "../actions";
 
 export interface AdminListingRow {
@@ -72,7 +75,12 @@ function gaSection(l: AdminListingRow, busy: boolean, toggleGaVerified: (id: str
   );
 }
 
-function actionButtons(l: AdminListingRow, busy: boolean, updateStatus: (id: string, status: string) => void) {
+function actionButtons(
+  l: AdminListingRow,
+  busy: boolean,
+  updateStatus: (id: string, status: string) => void,
+  requestArchive: (id: string, title: string, kind: "reject" | "delete") => void
+) {
   return (
     <>
       <Link href={`/dashboard/admin/listings/${l.id}/edit`} className={BTN_NEUTRAL}>
@@ -88,7 +96,7 @@ function actionButtons(l: AdminListingRow, busy: boolean, updateStatus: (id: str
           <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "published")} className={BTN_CONFIRM}>
             Approve
           </button>
-          <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "archived")} className={BTN_DANGER}>
+          <button type="button" disabled={busy} onClick={() => requestArchive(l.id, l.title, "reject")} className={BTN_DANGER}>
             Reject
           </button>
         </>
@@ -108,8 +116,12 @@ function actionButtons(l: AdminListingRow, busy: boolean, updateStatus: (id: str
           Revert to Published
         </button>
       )}
-      {l.status !== "archived" && (
-        <button type="button" disabled={busy} onClick={() => updateStatus(l.id, "archived")} className={BTN_DANGER}>
+      {/* pending_review already has its own "Reject" button right above,
+          which does exactly the same thing (archive) — showing "Delete" too
+          for that status was a redundant second button with a confusingly
+          different label for the same action (2026-09-13 audit fix). */}
+      {l.status !== "archived" && l.status !== "pending_review" && (
+        <button type="button" disabled={busy} onClick={() => requestArchive(l.id, l.title, "delete")} className={BTN_DANGER}>
           Delete
         </button>
       )}
@@ -126,6 +138,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [confirmTarget, setConfirmTarget] = useState<{ id: string; title: string; kind: "reject" | "delete" } | null>(null);
 
   function updateStatus(id: string, status: string) {
     setPendingId(id);
@@ -155,8 +168,12 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
     });
   }
 
+  function requestArchive(id: string, title: string, kind: "reject" | "delete") {
+    setConfirmTarget({ id, title, kind });
+  }
+
   if (rows.length === 0) {
-    return <p className="text-sm text-ink-faint">No listings match this filter.</p>;
+    return <EmptyState icon={Tag} title="No listings match this filter" body="Try a different status filter, or check back once a seller submits one." />;
   }
 
   return (
@@ -196,7 +213,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
                   <td className="mono px-4 py-3">{fmtUSD(l.price)}</td>
                   <td className="mono px-4 py-3 text-ink-faint">{l.createdAt}</td>
                   <td className="px-4 py-3">
-                    <div className="flex flex-wrap justify-end gap-2">{actionButtons(l, busy, updateStatus)}</div>
+                    <div className="flex flex-wrap justify-end gap-2">{actionButtons(l, busy, updateStatus, requestArchive)}</div>
                   </td>
                 </tr>
               );
@@ -234,11 +251,29 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
                 </div>
               </div>
               <div className="mb-3 flex flex-wrap items-center gap-1.5">{gaSection(l, busy, toggleGaVerified)}</div>
-              <div className="flex flex-wrap gap-2 border-t border-rule pt-3">{actionButtons(l, busy, updateStatus)}</div>
+              <div className="flex flex-wrap gap-2 border-t border-rule pt-3">{actionButtons(l, busy, updateStatus, requestArchive)}</div>
             </div>
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={confirmTarget !== null}
+        title={confirmTarget?.kind === "reject" ? `Reject "${confirmTarget.title}"?` : `Delete "${confirmTarget?.title}"?`}
+        body={
+          confirmTarget?.kind === "reject"
+            ? "The seller will get an email saying this listing wasn't approved. It moves to Archived and can be restored later if needed."
+            : "This moves the listing to Archived — it comes off the marketplace immediately, but nothing is permanently erased and it can be restored from the Archived filter."
+        }
+        confirmLabel={confirmTarget?.kind === "reject" ? "Reject listing" : "Delete listing"}
+        danger
+        busy={isPending && pendingId === confirmTarget?.id}
+        onConfirm={() => {
+          if (confirmTarget) updateStatus(confirmTarget.id, "archived");
+          setConfirmTarget(null);
+        }}
+        onCancel={() => setConfirmTarget(null)}
+      />
     </>
   );
 }
