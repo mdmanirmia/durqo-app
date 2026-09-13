@@ -119,8 +119,8 @@ const FAQ_GROUPS = [
     heading: "Buyers & disputes",
     items: [
       {
-        question: "Can I message buyers directly?",
-        answer: "Yes — once your listing is published, interested buyers can message you, and your conversations stay in your dashboard inbox.",
+        question: "How do buyers ask me questions?",
+        answer: "Three ways. When you build a listing, you can write your own Questions & Answers pairs that show up publicly with the listing. Buyers can also post a question in the listing's Comments section — you'll see it (and an unanswered-questions count) on your dashboard's Comments page, and your reply is public. For a private conversation, buyers can message you directly, and it stays in your dashboard inbox.",
       },
       {
         question: "What if a buyer disputes a completed sale?",
