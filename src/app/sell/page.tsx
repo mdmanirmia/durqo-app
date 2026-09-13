@@ -145,7 +145,7 @@ const SELL_FAQS = [
   {
     question: "What information is shown publicly?",
     answer:
-      "Once your listing is published, its business details — category, financial summary and asking price — along with your seller profile are visible to anyone browsing Durqo. Messages with buyers stay private until you choose to share more.",
+      "Once your listing is published, its business details (category, financial summary and asking price) along with your seller profile are visible to anyone browsing Durqo. Messages with buyers stay private until you choose to share more.",
   },
   {
     question: "When do I pay the success fee?",
@@ -212,7 +212,7 @@ export default async function SellPage() {
                   Let the market see it.
                 </h1>
                 <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-white/70">
-                  Get a free valuation, create a reviewed listing and connect with serious buyers — without paying
+                  Get a free valuation, create a reviewed listing and connect with serious buyers, all without paying
                   anything upfront.
                 </p>
 
