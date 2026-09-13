@@ -16,6 +16,13 @@ import GroupedFaq from "@/components/GroupedFaq";
 // reviews — nothing releases automatically), matching TransferRoomView.tsx's
 // real buyer/seller actions.
 //
+// Sep 13, 2026, second follow-up: per direct owner request, bolded the
+// concrete Transfer Room actions (Submitted, Received, Approve Transfer,
+// Report an Issue) across every answer that mentions them, and added a new
+// standalone "What exactly is the Transfer Room?" FAQ at the top of Paying
+// & protection — the mechanism itself, not just the outcome, needed its own
+// clear answer rather than only appearing inside other questions.
+//
 // Sep 11, 2026: new Buyer FAQ page, built alongside /seller-faq, /payments,
 // /how-to-buy and /how-to-sell. Every answer below is grounded in real,
 // live functionality rather than aspirational copy — see /payments's own
@@ -128,12 +135,37 @@ const FAQ_GROUPS = [
         ),
       },
       {
+        question: "What exactly is the Transfer Room?",
+        answer: (
+          <>
+            It&rsquo;s the shared space — separate from the payment screen — where your purchase actually gets
+            handed over. Every order gets one, also listed under <strong>Asset Transfers</strong> in your dashboard.
+            The seller submits each asset there one at a time, you inspect and mark it{" "}
+            <strong>Received</strong>, and clicking <strong>Approve Transfer</strong> is what actually completes the
+            sale and releases your payment.
+          </>
+        ),
+      },
+      {
         question: "Is my payment held securely?",
-        answer: "Yes. For card and SSLCommerz purchases, Durqo holds your payment until you approve the transfer in your Transfer Room. Choosing Escrow.com holds your full payment with that independent, licensed escrow company instead.",
+        answer: (
+          <>
+            Yes. For card and SSLCommerz purchases, Durqo holds your payment until you click{" "}
+            <strong>Approve Transfer</strong> in your <strong>Transfer Room</strong>. Choosing Escrow.com holds your
+            full payment with that independent, licensed escrow company instead.
+          </>
+        ),
       },
       {
         question: "What happens right after I pay?",
-        answer: "You're taken straight to your order's Transfer Room — also listed under Asset Transfers in your dashboard. As the seller hands over each asset, mark it Received, then click Approve Transfer once everything matches what was agreed to complete the sale.",
+        answer: (
+          <>
+            You&rsquo;re taken straight to your order&rsquo;s <strong>Transfer Room</strong> — also listed under{" "}
+            <strong>Asset Transfers</strong> in your dashboard. As the seller hands over each asset, mark it{" "}
+            <strong>Received</strong>, then click <strong>Approve Transfer</strong> once everything matches what was
+            agreed to complete the sale.
+          </>
+        ),
       },
     ],
   },
@@ -146,15 +178,35 @@ const FAQ_GROUPS = [
       },
       {
         question: "How does the seller actually hand things over?",
-        answer: "One asset at a time, inside your Transfer Room. The seller marks each item Submitted as they transfer it — a domain, code, accounts, socials, whatever's included in the sale. You inspect each one as it arrives and mark it Received, then click Approve Transfer once everything matches what was agreed.",
+        answer: (
+          <>
+            One asset at a time, inside your <strong>Transfer Room</strong>. The seller marks each item{" "}
+            <strong>Submitted</strong> as they transfer it — a domain, code, accounts, socials, whatever&rsquo;s
+            included in the sale. You inspect each one as it arrives and mark it <strong>Received</strong>, then
+            click <strong>Approve Transfer</strong> once everything matches what was agreed.
+          </>
+        ),
       },
       {
         question: "What if an item doesn't match what was agreed?",
-        answer: "During your inspection window, click Report an Issue in the Transfer Room instead of approving. Your payment stays held — nothing is released to the seller automatically — and Durqo's team reviews the evidence before deciding what happens next.",
+        answer: (
+          <>
+            During your inspection window, click <strong>Report an Issue</strong> in the Transfer Room instead of
+            approving. <strong>Your payment stays held</strong> — nothing is released to the seller automatically —
+            and Durqo&rsquo;s team reviews the evidence before deciding what happens next.
+          </>
+        ),
       },
       {
         question: "What if something goes wrong with my purchase?",
-        answer: "Contact support@durqo.com as soon as possible — disputes must be reported within 7 days of the transaction completing. Refunds are granted for confirmed fraud, material misrepresentation, or a seller's breach of the agreed terms; where a dispute can't be resolved directly with the seller, Durqo will review the evidence and help mediate.",
+        answer: (
+          <>
+            Contact support@durqo.com as soon as possible — disputes must be reported within{" "}
+            <strong>7 days</strong> of the transaction completing. Refunds are granted for confirmed fraud, material
+            misrepresentation, or a seller&rsquo;s breach of the agreed terms; where a dispute can&rsquo;t be
+            resolved directly with the seller, Durqo will review the evidence and help mediate.
+          </>
+        ),
       },
       {
         question: "Can I cancel an order before I pay?",
