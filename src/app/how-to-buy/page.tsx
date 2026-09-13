@@ -126,25 +126,25 @@ const STEPS = [
     n: "01",
     icon: Search,
     title: "Browse and discover",
-    body: "Explore listings by category — websites, e-commerce stores, apps, YouTube channels, domains and more. Filter by price and review each listing's Quick Statistics.",
+    body: "Explore listings by category: websites, e-commerce stores, apps, YouTube channels, domains and more. Filter by price and review each listing's Quick Statistics.",
   },
   {
     n: "02",
     icon: FileSearch,
     title: "Review the details",
-    body: "Check the financial summary, traffic and audience data, and any Google Analytics numbers Durqo has reviewed. Many listings already answer common questions in their own Questions & Answers section — for anything else, post a question in Comments or message the seller directly.",
+    body: "Check the financial summary, traffic and audience data, and any Google Analytics numbers Durqo has reviewed. Many listings already answer common questions in their own Questions & Answers section. For anything else, post a question in Comments or message the seller directly.",
   },
   {
     n: "03",
     icon: CreditCard,
     title: "Choose how to pay",
-    body: "Pay by card (Stripe), or — if you're in Bangladesh — by bKash, Rocket, Nagad or bank card through SSLCommerz. Want extra protection on a single purchase? Choose Escrow.com instead.",
+    body: "Pay by card (Stripe), or, if you're in Bangladesh, by bKash, Rocket, Nagad or bank card through SSLCommerz. Want extra protection on a single purchase? Choose Escrow.com instead.",
   },
   {
     n: "04",
     icon: ShieldCheck,
     title: "Your payment is held",
-    body: "Durqo holds your payment until you approve the transfer in the next step — or, if you chose Escrow.com, the funds sit with that independent, licensed escrow service until you confirm receipt.",
+    body: "Durqo holds your payment until you approve the transfer in the next step. If you chose Escrow.com instead, the funds sit with that independent, licensed escrow service until you confirm receipt.",
   },
   {
     n: "05",
@@ -152,7 +152,7 @@ const STEPS = [
     title: "Inspect the transfer in your Transfer Room",
     body: (
       <>
-        Right after paying, you&rsquo;re taken straight to your order&rsquo;s <strong className="text-ink">Transfer Room</strong> —
+        Right after paying, you&rsquo;re taken straight to your order&rsquo;s <strong className="text-ink">Transfer Room</strong>,
         also listed under <strong className="text-ink">Asset Transfers</strong> in your dashboard. The seller hands
         over each item (domain, code, accounts, socials and more) one by one, marking it{" "}
         <strong className="text-ink">Submitted</strong>; you inspect each one and mark it{" "}
@@ -168,7 +168,7 @@ const STEPS = [
     body: (
       <>
         Once every item is marked Received and matches what was agreed, click{" "}
-        <strong className="text-ink">Approve Transfer</strong> — that releases your payment to the seller and makes
+        <strong className="text-ink">Approve Transfer</strong>, which releases your payment to the seller and makes
         the sale final. If something doesn&rsquo;t match instead, click{" "}
         <strong className="text-ink">Report an Issue</strong> before approving: your payment stays held, nothing is
         released automatically, and Durqo&rsquo;s team reviews the evidence before deciding what happens next. Your
@@ -197,7 +197,7 @@ const TRANSFER_FLOW = [
   },
   {
     title: "You click Approve Transfer",
-    body: "Releases your payment — the sale is final.",
+    body: "Releases your payment. The sale is final.",
     icon: CheckCircle2,
     badge: "bg-brand text-white",
   },
@@ -206,12 +206,12 @@ const TRANSFER_FLOW = [
 const PAYMENT_METHODS = [
   {
     icon: CreditCard,
-    title: "Card — Stripe",
+    title: "Card (Stripe)",
     body: "Pay by credit or debit card in USD. Available to buyers anywhere.",
   },
   {
     icon: BadgeCheck,
-    title: "bKash / Rocket / Nagad / Bank — SSLCommerz",
+    title: "bKash / Rocket / Nagad / Bank (SSLCommerz)",
     body: "For buyers in Bangladesh. Durqo shows the exact BDT amount and exchange rate before you confirm.",
   },
   {
@@ -247,7 +247,7 @@ export default function HowToBuyPage() {
                 Buy a digital business, <span className="text-brand">step by step.</span>
               </h1>
               <p className="mx-auto mt-5 max-w-[52ch] text-lg leading-relaxed text-white/70">
-                From browsing your first listing to holding the keys — here&rsquo;s exactly how a purchase works on
+                From browsing your first listing to holding the keys, here&rsquo;s exactly how a purchase works on
                 Durqo, and how your payment is protected along the way.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -342,7 +342,7 @@ export default function HowToBuyPage() {
                 <DashEyebrow center>Where every sale actually completes</DashEyebrow>
                 <h2 className="text-2xl font-semibold text-ink sm:text-3xl">The Transfer Room</h2>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                  Every purchase on Durqo goes through a shared <strong className="text-ink">Transfer Room</strong> —
+                  Every purchase on Durqo goes through a shared <strong className="text-ink">Transfer Room</strong>,
                   not just a payment screen. It&rsquo;s where the seller hands over the domain, code, accounts and
                   everything else, one item at a time, and where <strong className="text-ink">you</strong> decide
                   whether the sale is actually done.
@@ -384,8 +384,8 @@ export default function HowToBuyPage() {
                   <AlertTriangle size={16} />
                 </span>
                 <p className="text-sm leading-relaxed text-danger">
-                  Something not right? <strong>Click Report an Issue instead</strong> of approving — your payment
-                  stays held and nothing releases automatically until Durqo&rsquo;s team reviews it.
+                  Something not right? <strong>Click Report an Issue instead</strong> of approving. Your payment
+                  stays held, and nothing releases automatically until Durqo&rsquo;s team reviews it.
                 </p>
               </div>
             </div>
@@ -415,7 +415,7 @@ export default function HowToBuyPage() {
             <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-ink-faint">
               Card (Stripe) and Escrow.com purchases are always charged in full, in one payment. Only for
               Bangladeshi buyers paying above $2,000 in Bangladeshi Taka through SSLCommerz does Durqo collect the
-              BDT equivalent of the first $2,000 online and coordinate the remaining balance separately — the
+              BDT equivalent of the first $2,000 online and coordinate the remaining balance separately. The
               exact amount and remaining-balance process is shown before you confirm. See{" "}
               <Link href="/payments" className="font-semibold text-brand-strong hover:underline">
                 Payment &amp; Withdrawal
