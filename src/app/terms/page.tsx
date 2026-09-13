@@ -593,6 +593,13 @@ export default function TermsPage() {
                   through:
                 </p>
                 <List items={PAYOUT_METHODS_LIST} />
+                <p className="text-left text-sm text-ink-soft">
+                  Durqo normally aims to review and process eligible seller payout requests within 3–5 business
+                  days. This is an estimated processing timeframe, not a guaranteed deposit date. Additional time may
+                  be required for identity verification, compliance review, high-value transactions, incorrect
+                  payout details, disputes, banking delays, provider delays or circumstances outside Durqo&rsquo;s
+                  reasonable control.
+                </p>
 
                 <div className="mt-2 flex items-center gap-2">
                   <SubHeading>Bangladeshi Buyers and Sellers</SubHeading>
