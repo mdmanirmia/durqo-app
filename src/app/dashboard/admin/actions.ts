@@ -424,30 +424,100 @@ export async function setVerificationStatus(userId: string, decision: Verificati
   }
 }
 
-const WITHDRAWAL_DECISIONS = ["approved", "rejected", "paid"] as const;
+// 2026-09-13 payout-policy v2 (045_payout_policy_v2.sql): expanded from the
+// original 3-decision model (approved/rejected/paid, with "pending" as the
+// only starting state) to the owner's 9-status model. The legal transitions
+// below are deliberately narrower than "any status to any status" — see the
+// comment above each check.
+// Payout verification (profiles.payout_verified, 045_payout_policy_v2.sql)
+// is deliberately a SEPARATE flag from is_verified/verification_status
+// above — the public "Verified" badge stays optional (unchanged by this
+// function), while this is what create_withdrawal_request() actually gates
+// a seller's first withdrawal on. Both currently review the same uploaded
+// identity documents, so this lives right next to setVerificationStatus()
+// in the same admin review screen rather than a separate flow — an admin
+// can grant or revoke payout access independently of the badge decision
+// (e.g. approve the badge but hold off on payout access, or the reverse
+// for an already-trusted seller who never wanted the public badge).
+export async function setPayoutVerified(userId: string, verified: boolean) {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ payout_verified: verified, payout_verified_at: verified ? new Date().toISOString() : null })
+    .eq("id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/verification");
+  revalidatePath("/dashboard/seller/earnings");
+
+  if (verified) {
+    const { data: profile } = await admin.from("profiles").select("full_name").eq("id", userId).single();
+    const { data: userLookup } = await admin.auth.admin.getUserById(userId);
+    const sellerEmail = userLookup?.user?.email;
+    const sellerName = profile?.full_name || "there";
+    if (sellerEmail) {
+      await sendEmail(
+        sellerEmail,
+        "You're verified for payouts on Durqo",
+        `<p>Hi ${sellerName},</p><p>Your payout verification is complete — you can now request a withdrawal from your Earnings dashboard whenever you have a balance available.</p><p>— Durqo</p>`
+      );
+    }
+  }
+}
+
+const WITHDRAWAL_DECISIONS = [
+  "under_review", "action_required", "approved", "processing", "paid", "on_hold", "rejected",
+] as const;
 type WithdrawalDecision = (typeof WITHDRAWAL_DECISIONS)[number];
 
-// The ONLY place a withdrawal_requests row can move out of "pending" — the
-// seller's own requestWithdrawal() action (dashboard/seller/earnings/
-// actions.ts) can only ever create one in "pending" via the
-// create_withdrawal_request() RPC (028_withdrawals.sql). Same manual
-// review shape as setVerificationStatus() above: "approved" means admin
-// has agreed to pay it out (money hasn't necessarily moved yet — this app
-// has no automated payout rail), "paid" is the admin confirming they've
-// actually sent it, and "rejected" releases the claimed orders back to the
-// seller's available balance so that money isn't stuck unwithdrawable
-// forever — automatically, with no extra write needed here: every
-// remaining-balance calculation (order_remaining_balances view,
-// create_withdrawal_request() itself) already excludes any claim tied to
-// a `rejected` withdrawal_requests row (033_withdrawal_order_splitting.sql).
-// Before that migration this branch also ran
-// `update orders set withdrawal_id = null where withdrawal_id = requestId`
-// to release whole orders back to null — no longer possible or needed,
-// since a rejected request may have only partially claimed some of its
-// orders, and the ledger-exclusion above covers both whole and partial
-// claims identically.
-export async function setWithdrawalStatus(requestId: string, decision: WithdrawalDecision, adminNote?: string) {
-  await requireAdmin();
+const LEGAL_TRANSITIONS: Record<WithdrawalDecision, readonly string[]> = {
+  // Admin starts working a fresh request, or one that came back from hold.
+  under_review: ["requested", "on_hold"],
+  // Admin needs something from the seller before continuing.
+  action_required: ["requested", "under_review", "on_hold"],
+  approved: ["requested", "under_review", "action_required", "on_hold"],
+  processing: ["approved"],
+  paid: ["approved", "processing"],
+  // A compliance/dispute pause can be applied from most non-terminal states.
+  on_hold: ["requested", "under_review", "action_required", "approved", "processing"],
+  rejected: ["requested", "under_review", "action_required", "on_hold"],
+};
+
+// The ONLY place a withdrawal_requests row can change status — the seller's
+// own requestWithdrawal() action (dashboard/seller/earnings/actions.ts) can
+// only ever create one in "requested" via create_withdrawal_request(), and
+// can only self-cancel it (cancel_withdrawal_request(), requested/
+// under_review only) — everything else is this function, using the
+// service-role client, after a human reviews it. Same manual-review shape
+// as setVerificationStatus() above.
+//
+// Every call writes a withdrawal_status_history row (admin id, previous/new
+// status, reason, provider reference, timestamp) — the audit trail the
+// original 4-status model never had. "rejected" and a fresh "on_hold" both
+// release the request's claimed orders back to the seller's available
+// balance automatically: order_remaining_balances/create_withdrawal_request
+// only exclude claims tied to `rejected`/`cancelled` requests (not
+// `on_hold`), so an on_hold request's orders stay claimed/unavailable while
+// the hold is active — intentional, since "on hold" means a dispute or
+// compliance concern about THIS specific payout, not a decision to release
+// the money back to the seller's balance for a different request.
+//
+// Dispute re-check: before allowing "approved", re-verifies none of this
+// request's claimed orders currently sit in an asset_transfer_rooms stage
+// of 'admin_review' (an open dispute) — closes the gap the original
+// implementation left, where only the order's own status='completed' was
+// trusted and never re-checked at approval time.
+export async function setWithdrawalStatus(
+  requestId: string,
+  decision: WithdrawalDecision,
+  adminNote?: string,
+  payoutReference?: string
+) {
+  const adminProfile = await requireAdmin();
   if (!WITHDRAWAL_DECISIONS.includes(decision)) throw new Error("Invalid decision");
 
   const admin = createAdminClient();
@@ -456,26 +526,59 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
   const { data: request } = await admin.from("withdrawal_requests").select("*").eq("id", requestId).single();
   if (!request) throw new Error("Withdrawal request not found");
 
-  if (decision === "paid" && request.status !== "approved") {
-    throw new Error("Only an approved request can be marked paid.");
-  }
-  if ((decision === "approved" || decision === "rejected") && request.status !== "pending") {
-    throw new Error("This request has already been reviewed.");
+  if (!LEGAL_TRANSITIONS[decision].includes(request.status)) {
+    throw new Error(`Cannot move a request from "${request.status}" to "${decision}".`);
   }
 
-  const update: Record<string, unknown> = { status: decision };
+  if (decision === "approved") {
+    const { data: ledgerRows } = await admin
+      .from("withdrawal_request_orders")
+      .select("order_id")
+      .eq("withdrawal_id", requestId);
+    const orderIds = (ledgerRows ?? []).map((r) => r.order_id as string);
+    if (orderIds.length > 0) {
+      const { data: openDisputeRooms } = await admin
+        .from("asset_transfer_rooms")
+        .select("order_id")
+        .in("order_id", orderIds)
+        .eq("stage", "admin_review");
+      if (openDisputeRooms && openDisputeRooms.length > 0) {
+        throw new Error(
+          "One or more orders in this request have an open dispute under admin review — resolve the dispute before approving this payout."
+        );
+      }
+    }
+  }
+
+  const update: Record<string, unknown> = { status: decision, reviewed_by: adminProfile.id };
   if (adminNote !== undefined) update.admin_note = adminNote.trim() || null;
-  if (decision === "approved" || decision === "rejected") update.reviewed_at = new Date().toISOString();
-  if (decision === "paid") update.paid_at = new Date().toISOString();
+  if (decision === "on_hold" && adminNote !== undefined) update.hold_reason = adminNote.trim() || null;
+  if (["approved", "action_required", "rejected", "on_hold", "under_review"].includes(decision)) {
+    update.reviewed_at = new Date().toISOString();
+  }
+  if (decision === "paid") {
+    update.paid_at = new Date().toISOString();
+    if (payoutReference !== undefined) update.payout_reference = payoutReference.trim() || null;
+  }
 
   const { error } = await admin.from("withdrawal_requests").update(update).eq("id", requestId);
   if (error) throw new Error(error.message);
+
+  await admin.from("withdrawal_status_history").insert({
+    withdrawal_id: requestId,
+    admin_id: adminProfile.id,
+    previous_status: request.status,
+    new_status: decision,
+    reason: adminNote?.trim() || null,
+    payout_reference: decision === "paid" ? payoutReference?.trim() || null : null,
+  });
 
   revalidatePath("/dashboard/admin/withdrawals");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/seller/earnings");
 
-  // Best-effort: let the seller know the outcome. Same getUserById fix as
+  // Best-effort: let the seller know the outcome for every decision that's
+  // actually seller-visible/actionable. Same getUserById fix as
   // setVerificationStatus() above — a plain listUsers() call only sees its
   // first ~50-user page.
   const { data: sellerProfile } = await admin.from("profiles").select("full_name").eq("id", request.seller_id).single();
@@ -483,23 +586,42 @@ export async function setWithdrawalStatus(requestId: string, decision: Withdrawa
   const sellerEmail = userLookup?.user?.email;
   const sellerName = sellerProfile?.full_name || "there";
   const netAmountLabel = `$${Math.round(Number(request.net_amount)).toLocaleString("en-US")}`;
+  const note = adminNote?.trim();
 
-  if (sellerEmail) {
-    const subject =
-      decision === "approved"
-        ? "Your withdrawal request was approved"
-        : decision === "paid"
-        ? "Your withdrawal has been paid"
-        : "Your withdrawal request wasn't approved";
-    const html =
-      decision === "approved"
-        ? `<p>Hi ${sellerName},</p><p>Your withdrawal request for ${netAmountLabel} has been approved and is being processed to your ${request.payout_method.replace("_", " ")} details on file.</p><p>— Durqo</p>`
-        : decision === "paid"
-        ? `<p>Hi ${sellerName},</p><p>Your withdrawal of ${netAmountLabel} has been paid out. Thanks for selling on Durqo!</p><p>— Durqo</p>`
-        : `<p>Hi ${sellerName},</p><p>We weren't able to approve your withdrawal request for ${netAmountLabel}.${
-            adminNote?.trim() ? ` Note from our team: ${adminNote.trim()}` : ""
-          } The related orders are available in your balance again, so you can submit a new request from your seller dashboard.</p><p>— Durqo</p>`;
-    await sendEmail(sellerEmail, subject, html);
+  const EMAIL_COPY: Partial<Record<WithdrawalDecision, { subject: string; html: string }>> = {
+    approved: {
+      subject: "Your withdrawal request was approved",
+      html: `<p>Hi ${sellerName},</p><p>Your withdrawal request for ${netAmountLabel} has been approved and is being processed to your ${request.payout_method.replace("_", " ")} details on file. We normally process approved payouts within 3–5 business days; your bank or payout provider may require additional time to credit the funds.</p><p>— Durqo</p>`,
+    },
+    action_required: {
+      subject: "Action needed on your withdrawal request",
+      html: `<p>Hi ${sellerName},</p><p>We need something from you before we can continue processing your withdrawal request for ${netAmountLabel}.${
+        note ? ` ${note}` : ""
+      }</p><p>Please review and update your payout details from your seller dashboard.</p><p>— Durqo</p>`,
+    },
+    on_hold: {
+      subject: "Your withdrawal request is on hold",
+      html: `<p>Hi ${sellerName},</p><p>Your withdrawal request for ${netAmountLabel} has been placed on hold while our team reviews it.${
+        note ? ` ${note}` : ""
+      } This is not a rejection — we'll email you again once it's resolved.</p><p>— Durqo</p>`,
+    },
+    paid: {
+      subject: "Your withdrawal has been paid",
+      html: `<p>Hi ${sellerName},</p><p>Your withdrawal of ${netAmountLabel} has been paid out.${
+        payoutReference?.trim() ? ` Reference: ${payoutReference.trim()}.` : ""
+      } Thanks for selling on Durqo!</p><p>— Durqo</p>`,
+    },
+    rejected: {
+      subject: "Your withdrawal request wasn't approved",
+      html: `<p>Hi ${sellerName},</p><p>We weren't able to approve your withdrawal request for ${netAmountLabel}.${
+        note ? ` Note from our team: ${note}` : ""
+      } The related orders are available in your balance again, so you can submit a new request from your seller dashboard.</p><p>— Durqo</p>`,
+    },
+  };
+
+  const copy = EMAIL_COPY[decision];
+  if (sellerEmail && copy) {
+    await sendEmail(sellerEmail, copy.subject, copy.html);
   }
 }
 
