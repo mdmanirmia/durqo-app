@@ -131,7 +131,7 @@ const PRINCIPLES = [
   {
     icon: ShieldCheck,
     title: "Credibility",
-    body: "Apply consistent publication requirements and communicate what has — and has not — been verified.",
+    body: "Apply consistent publication requirements and clearly communicate what has and has not been verified.",
   },
   {
     icon: SlidersHorizontal,
