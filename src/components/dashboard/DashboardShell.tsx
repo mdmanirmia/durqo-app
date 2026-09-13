@@ -30,6 +30,7 @@ import { getUnreadTransferMessagesCount } from "@/lib/data/transfer-messages.cli
 import { getMyListingsCount } from "@/lib/data/seller-listings.client";
 import { getBuyerOpenOrdersCount, getSellerOpenOrdersCount } from "@/lib/data/orders.client";
 import { getWishlistCount } from "@/lib/data/wishlist.client";
+import { getAdminBadgeCounts } from "@/lib/data/admin-badges.client";
 import { playNotificationSound } from "@/lib/notification-sound";
 
 // Nav items are defined in src/lib/dashboard-nav.ts, which several
@@ -103,6 +104,17 @@ const MY_LISTINGS_HREF = "/dashboard/seller";
 const ORDERS_HREFS = ["/dashboard/buyer/orders", "/dashboard/seller/orders"];
 const WISHLIST_HREF = "/dashboard/buyer/wishlist";
 
+// Admin nav badges (2026-09-13 dashboard audit follow-up — "admin nav badge
+// counts" deferred item): pending listings, pending verification
+// submissions, pending withdrawal requests. ADMIN_WITHDRAWALS_HREF only
+// ever appears in ADMIN_NAV, so its presence is used below as the signal
+// that this shell instance is the admin dashboard — same "does this specific
+// href exist in `nav`" pattern every other badge on this page already uses,
+// rather than adding a `role` prop that only this one feature would need.
+const ADMIN_LISTINGS_HREF = "/dashboard/admin/listings";
+const ADMIN_VERIFICATION_HREF = "/dashboard/admin/verification";
+const ADMIN_WITHDRAWALS_HREF = "/dashboard/admin/withdrawals";
+
 // Mobile-width redesign (Sep 11, 2026): the desktop sidebar below is
 // untouched. Below md, it's replaced by two pieces that read the same `nav`
 // array — a section-switcher dropdown under the title (so every nav item
@@ -133,12 +145,16 @@ export default function DashboardShell({
   const hasListingsNav = nav.some((item) => item.href === MY_LISTINGS_HREF);
   const hasOrdersNav = nav.some((item) => ORDERS_HREFS.includes(item.href));
   const hasWishlistNav = nav.some((item) => item.href === WISHLIST_HREF);
+  const hasAdminNav = nav.some((item) => item.href === ADMIN_WITHDRAWALS_HREF);
   const [commentsBadge, setCommentsBadge] = useState<number | undefined>(undefined);
   const [messagesBadge, setMessagesBadge] = useState<number | undefined>(undefined);
   const [transfersBadge, setTransfersBadge] = useState<number | undefined>(undefined);
   const [listingsBadge, setListingsBadge] = useState<number | undefined>(undefined);
   const [ordersBadge, setOrdersBadge] = useState<number | undefined>(undefined);
   const [wishlistBadge, setWishlistBadge] = useState<number | undefined>(undefined);
+  const [adminListingsBadge, setAdminListingsBadge] = useState<number | undefined>(undefined);
+  const [adminVerificationBadge, setAdminVerificationBadge] = useState<number | undefined>(undefined);
+  const [adminWithdrawalsBadge, setAdminWithdrawalsBadge] = useState<number | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
 
@@ -231,6 +247,29 @@ export default function DashboardShell({
       window.removeEventListener(COUNTS_CHANGED_EVENT, refetch);
     };
   }, [hasWishlistNav, pathname]);
+
+  // Live admin badges (2026-09-13 fix — see the ADMIN_* hrefs above). Not
+  // wrapped in a COUNTS_CHANGED_EVENT listener like Wishlist/Comments — none
+  // of the three admin actions that clear these (approve/reject a listing,
+  // decide a verification, approve/reject a withdrawal) happen anywhere
+  // near where that event fires, so refetching on mount and on every
+  // dashboard navigation (same baseline as My Listings/Orders above) is
+  // enough to catch a decision made on the admin's own previous page view.
+  useEffect(() => {
+    if (!hasAdminNav) return;
+    let cancelled = false;
+    async function refetch() {
+      const counts = await getAdminBadgeCounts();
+      if (cancelled) return;
+      setAdminListingsBadge(counts.listings > 0 ? counts.listings : undefined);
+      setAdminVerificationBadge(counts.verification > 0 ? counts.verification : undefined);
+      setAdminWithdrawalsBadge(counts.withdrawals > 0 ? counts.withdrawals : undefined);
+    }
+    refetch();
+    return () => {
+      cancelled = true;
+    };
+  }, [hasAdminNav, pathname]);
 
   // Who's signed in — needed to scope both realtime subscriptions below to
   // this user's own rows. Resolved once; both effects wait for it.
@@ -405,6 +444,9 @@ export default function DashboardShell({
     if (item.href === MY_LISTINGS_HREF) return listingsBadge;
     if (ORDERS_HREFS.includes(item.href)) return ordersBadge;
     if (item.href === WISHLIST_HREF) return wishlistBadge;
+    if (item.href === ADMIN_LISTINGS_HREF) return adminListingsBadge;
+    if (item.href === ADMIN_VERIFICATION_HREF) return adminVerificationBadge;
+    if (item.href === ADMIN_WITHDRAWALS_HREF) return adminWithdrawalsBadge;
     return item.badge;
   }
 
