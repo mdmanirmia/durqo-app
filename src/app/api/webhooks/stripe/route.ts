@@ -152,7 +152,7 @@ export async function POST(request: Request) {
                 "Your Durqo purchase is confirmed",
                 `<p>Thanks for your purchase — here's what you bought:</p>
                  <ul>${itemsHtml}</ul>
-                 <p>Durqo is holding your payment in escrow until the seller transfers the assets and you confirm receipt.</p>
+                 <p>Durqo is holding your payment until the seller transfers the assets and you confirm receipt.</p>
                  ${transferSectionHtml}`
               );
             }
