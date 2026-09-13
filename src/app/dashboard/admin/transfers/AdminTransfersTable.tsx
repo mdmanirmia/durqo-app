@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, ChevronRight } from "lucide-react";
+import { AlertTriangle, ChevronRight, ArrowLeftRight } from "lucide-react";
 import { fmtUSD } from "@/lib/format";
 import { Badge } from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
 
 export interface AdminTransferRow {
   roomId: string;
@@ -40,7 +41,7 @@ function StageBadge({ stage }: { stage: string }) {
 
 export default function AdminTransfersTable({ rows }: { rows: AdminTransferRow[] }) {
   if (rows.length === 0) {
-    return <p className="text-sm text-ink-faint">No transfers match this filter.</p>;
+    return <EmptyState icon={ArrowLeftRight} title="No transfers match this filter" body="Asset Transfer Rooms open automatically once an order is paid." />;
   }
 
   return (
