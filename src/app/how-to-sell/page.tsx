@@ -29,7 +29,9 @@ import Button from "@/components/ui/Button";
 // item, TransferRoomView.tsx's real seller-side actions: mark each item In
 // Progress then Submitted) and the real payout-release trigger — the buyer
 // approving the transfer, not just "the deal closing" — per migration 039's
-// payout-on-approval logic.
+// payout-on-approval logic. Same-day follow-up: made explicit that a
+// buyer's "report an issue" doesn't auto-release or auto-refund anything —
+// the payout stays on hold until Durqo reviews it.
 //
 // Sep 11, 2026: a step-by-step operational guide, distinct from /sell's own
 // marketing/valuation-focused landing page (which stays untouched by this
@@ -127,13 +129,13 @@ const STEPS = [
     n: "06",
     icon: Handshake,
     title: "Hand over the assets in your Transfer Room",
-    body: "When a buyer purchases your listing, their payment is collected and held, and you're both taken to a shared Transfer Room — also listed under Asset Transfers in your dashboard. Mark each item In Progress, then Submitted as you hand it over, and message the buyer directly if you need to.",
+    body: "When a buyer purchases your listing, their payment is collected and held, and you're both taken to a shared Transfer Room — also listed under Asset Transfers in your dashboard. Mark each asset In Progress, then Submitted as you hand it over one by one. The buyer then has an inspection window to check everything before approving — message them directly from the room if you need to.",
   },
   {
     n: "07",
     icon: PackageCheck,
     title: "Get approved for payout",
-    body: "Once the buyer marks every item Received and clicks Approve Transfer, the sale is confirmed complete and your payout becomes eligible. If they report an issue instead, Durqo's team reviews it before anything is released.",
+    body: "Once the buyer marks every item Received and clicks Approve Transfer, the sale is confirmed complete and your payout becomes eligible. If they click Report an Issue instead, nothing is released automatically — your payout stays on hold while Durqo's team reviews the evidence and decides what happens next.",
   },
   {
     n: "08",
