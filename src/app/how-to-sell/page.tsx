@@ -75,7 +75,7 @@ import Button from "@/components/ui/Button";
 // never described as instant or automatic.
 export const metadata: Metadata = {
   title: "How to Sell a Business | Durqo",
-  description: "A step-by-step guide to listing, selling and getting paid for your digital business on Durqo — from your first listing to your withdrawal.",
+  description: "A step-by-step guide to listing, selling and getting paid for your digital business on Durqo, from your first listing to your withdrawal.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
@@ -122,7 +122,7 @@ const STEPS = [
     n: "01",
     icon: UserPlus,
     title: "Create your seller account",
-    body: "Sign up with your email and confirm your account. It's free to join and free to list — there's no upfront charge.",
+    body: "Sign up with your email and confirm your account. It's free to join and free to list, with no upfront charge.",
   },
   {
     n: "02",
@@ -155,11 +155,11 @@ const STEPS = [
     body: (
       <>
         When a buyer purchases your listing, their payment is collected and held, and you&rsquo;re both taken to a
-        shared <strong className="text-ink">Transfer Room</strong> — also listed under{" "}
+        shared <strong className="text-ink">Transfer Room</strong>, also listed under{" "}
         <strong className="text-ink">Asset Transfers</strong> in your dashboard. Mark each asset{" "}
         <strong className="text-ink">In Progress</strong>, then <strong className="text-ink">Submitted</strong> as
-        you hand it over one by one. The buyer then has an inspection window to check everything before approving —
-        message them directly from the room if you need to.
+        you hand it over one by one. The buyer then has an inspection window to check everything before approving.
+        Message them directly from the room if you need to.
       </>
     ),
   },
@@ -172,7 +172,7 @@ const STEPS = [
         Once the buyer marks every item <strong className="text-ink">Received</strong> and clicks{" "}
         <strong className="text-ink">Approve Transfer</strong>, the sale is confirmed complete and your payout
         becomes eligible. If they click <strong className="text-ink">Report an Issue</strong> instead, nothing is
-        released automatically — your payout stays on hold while Durqo&rsquo;s team reviews the evidence and
+        released automatically. Your payout stays on hold while Durqo&rsquo;s team reviews the evidence and
         decides what happens next.
       </>
     ),
@@ -204,7 +204,7 @@ const TRANSFER_FLOW = [
   },
   {
     title: "Buyer clicks Approve Transfer",
-    body: "The sale is final — your payout becomes eligible.",
+    body: "The sale is final, and your payout becomes eligible.",
     icon: CheckCircle2,
     badge: "bg-brand text-white",
   },
@@ -239,7 +239,7 @@ export default function HowToSellPage() {
                 From listing to <span className="text-brand">payout</span>, step by step.
               </h1>
               <p className="mx-auto mt-5 max-w-[52ch] text-lg leading-relaxed text-white/70">
-                Here&rsquo;s exactly what happens when you sell a digital business on Durqo — how listings are
+                Here&rsquo;s exactly what happens when you sell a digital business on Durqo: how listings are
                 reviewed, how a sale closes, and how you get paid.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -264,7 +264,7 @@ export default function HowToSellPage() {
               <DashEyebrow>The selling process</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Eight steps, start to finish.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Nothing is charged until your business actually sells — and every listing goes through a real,
+                Nothing is charged until your business actually sells, and every listing goes through a real,
                 manual review before it publishes. Curious what your business might be worth first? Get a{" "}
                 <Link href="/sell" className="font-semibold text-brand-strong hover:underline">
                   free valuation
@@ -310,7 +310,7 @@ export default function HowToSellPage() {
                 <DashEyebrow center>Where your payout actually gets earned</DashEyebrow>
                 <h2 className="text-2xl font-semibold text-ink sm:text-3xl">The Transfer Room</h2>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                  Once a buyer pays, you don&rsquo;t just wait for a payout to appear — you and the buyer share a{" "}
+                  Once a buyer pays, you don&rsquo;t just wait for a payout to appear. You and the buyer share a{" "}
                   <strong className="text-ink">Transfer Room</strong> where you hand over every asset in the open,
                   and what happens there is what decides your payout.
                 </p>
@@ -352,7 +352,7 @@ export default function HowToSellPage() {
                 </span>
                 <p className="text-sm leading-relaxed text-danger">
                   If the buyer clicks <strong>Report an Issue</strong> instead of approving, your payout stays on
-                  hold — nothing releases automatically until Durqo&rsquo;s team reviews the evidence.
+                  hold, and nothing releases automatically until Durqo&rsquo;s team reviews the evidence.
                 </p>
               </div>
             </div>
@@ -369,7 +369,7 @@ export default function HowToSellPage() {
             </DashEyebrow>
             <h2 className="text-2xl text-white sm:text-3xl">One success fee, only when you sell.</h2>
             <p className="mx-auto mt-3 max-w-[52ch] text-[0.95rem] leading-relaxed text-white/65">
-              Lower fees for larger sales — the applicable rate applies to your entire final sale price.
+              Lower fees for larger sales: the applicable rate applies to your entire final sale price.
             </p>
 
             <div className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-xl border border-white/10">
@@ -408,7 +408,7 @@ export default function HowToSellPage() {
                 <h2 className="text-2xl sm:text-3xl">Withdraw your earnings, your way.</h2>
                 <p className="mt-3 max-w-[54ch] text-sm leading-relaxed text-ink-soft">
                   Once a sale is complete, request a withdrawal from your seller dashboard. Our team reviews and
-                  processes every request — bKash, Rocket and Nagad withdrawals are each capped at ৳50,000 per day
+                  processes every request. bKash, Rocket and Nagad withdrawals are each capped at ৳50,000 per day
                   and ৳300,000 per month, based on that day&rsquo;s exchange rate.
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2">
