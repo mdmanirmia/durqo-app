@@ -16,6 +16,7 @@ const METHODS = [
 
 export default function VerificationPage() {
   const [status, setStatus] = useState<VerificationStatus | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [methodId, setMethodId] = useState<(typeof METHODS)[number]["id"] | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -24,7 +25,10 @@ export default function VerificationPage() {
   useEffect(() => {
     let cancelled = false;
     getMyVerification().then((v) => {
-      if (!cancelled) setStatus(v?.status ?? "unverified");
+      if (!cancelled) {
+        setStatus(v?.status ?? "unverified");
+        setRejectionReason(v?.rejectionReason ?? null);
+      }
     });
     return () => {
       cancelled = true;
@@ -86,7 +90,11 @@ export default function VerificationPage() {
               <XCircle size={20} className="mt-0.5 shrink-0 text-danger" />
               <div>
                 <div className="font-semibold text-ink">Not approved</div>
-                <p className="mt-1 text-sm text-ink-soft">Your last submission wasn&rsquo;t approved. Please double-check the document is clear and legible, then resubmit below.</p>
+                <p className="mt-1 text-sm text-ink-soft">
+                  {rejectionReason
+                    ? rejectionReason
+                    : "Your last submission wasn't approved. Please double-check the document is clear and legible, then resubmit below."}
+                </p>
               </div>
             </div>
           )}
