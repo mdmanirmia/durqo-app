@@ -22,9 +22,14 @@ export default async function AdminWithdrawals({
 
     const sellerIds = [...new Set((requests ?? []).map((r) => r.seller_id as string))];
     const requestIds = (requests ?? []).map((r) => r.id as string);
+    // reviewed_by (045_payout_policy_v2.sql) is an admin profile id, not a
+    // seller one — folded into the same profiles lookup below rather than a
+    // second round trip, since profiles.full_name covers both.
+    const reviewerIds = [...new Set((requests ?? []).map((r) => r.reviewed_by as string | null).filter((v): v is string => !!v))];
+    const allProfileIds = [...new Set([...sellerIds, ...reviewerIds])];
 
     const [{ data: profiles }, usersList, { data: ledgerRows }] = await Promise.all([
-      sellerIds.length ? admin.from("profiles").select("id, full_name").in("id", sellerIds) : Promise.resolve({ data: [] }),
+      allProfileIds.length ? admin.from("profiles").select("id, full_name").in("id", allProfileIds) : Promise.resolve({ data: [] }),
       // 2026-09-12 fix: unpaginated listUsers() defaults to a single
       // ~50-user page, silently dropping the email for any seller outside
       // it. listAllAuthUsers() (src/lib/notifications.ts) pages through
@@ -70,11 +75,16 @@ export default async function AdminWithdrawals({
       payoutDetails: r.payout_details,
       status: r.status,
       adminNote: r.admin_note,
+      payoutReference: r.payout_reference ?? null,
+      reviewedByName: r.reviewed_by ? nameById.get(r.reviewed_by) ?? null : null,
       requestedAt: (r.requested_at as string).slice(0, 10),
     }));
   }
 
-  const pendingCount = rows.filter((r) => r.status === "pending").length;
+  // "requested" replaces the original "pending" as the fresh/unactioned
+  // state (045_payout_policy_v2.sql) — "under_review" also still needs
+  // attention, so both count toward the waiting-for-review banner.
+  const pendingCount = rows.filter((r) => r.status === "requested" || r.status === "under_review").length;
 
   return (
     <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
