@@ -21,6 +21,8 @@ export interface AdminWithdrawalRow {
   payoutDetails: string;
   status: string;
   adminNote: string | null;
+  payoutReference: string | null;
+  reviewedByName: string | null;
   requestedAt: string;
 }
 
@@ -35,50 +37,137 @@ const METHOD_LABEL: Record<string, string> = {
   other: "Other",
 };
 
+// 2026-09-13 payout-policy v2: expanded from the original 4-value model
+// (pending/approved/rejected/paid) to the owner's 9-value model — see
+// 045_payout_policy_v2.sql and setWithdrawalStatus()'s LEGAL_TRANSITIONS.
 const STATUS_LABEL: Record<string, string> = {
-  pending: "Pending review",
+  requested: "Requested",
+  under_review: "Under review",
+  action_required: "Action required",
   approved: "Approved",
-  rejected: "Rejected",
+  processing: "Processing",
   paid: "Paid",
+  on_hold: "On hold",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  pending: "border border-gold/30 bg-gold-soft text-[#92730F]",
+  requested: "border border-gold/30 bg-gold-soft text-[#92730F]",
+  under_review: "border border-gold/30 bg-gold-soft text-[#92730F]",
+  action_required: "border border-danger/30 bg-danger-soft text-danger",
   approved: "border border-brand/30 bg-brand-soft text-brand-strong",
+  processing: "border border-brand/30 bg-brand-soft text-brand-strong",
   paid: "border border-brand-strong/30 bg-brand-strong/10 text-brand-strong",
+  on_hold: "border border-danger/30 bg-danger-soft text-danger",
   rejected: "border border-danger/30 bg-danger-soft text-danger",
+  cancelled: "border border-rule bg-paper-sunk text-ink-soft",
 };
+
+// Which action buttons show for a given current status — mirrors
+// LEGAL_TRANSITIONS in dashboard/admin/actions.ts exactly, so a button
+// here never triggers a transition the server would reject.
+type Decision = "under_review" | "action_required" | "approved" | "processing" | "paid" | "on_hold" | "rejected";
+const ACTIONS_FOR_STATUS: Record<string, Decision[]> = {
+  requested: ["under_review", "approved", "action_required", "on_hold", "rejected"],
+  under_review: ["approved", "action_required", "on_hold", "rejected"],
+  action_required: ["under_review", "approved", "on_hold", "rejected"],
+  on_hold: ["under_review", "approved", "action_required", "rejected"],
+  approved: ["processing", "on_hold"],
+  processing: ["paid"],
+  paid: [],
+  rejected: [],
+  cancelled: [],
+};
+
+const ACTION_LABEL: Record<Decision, string> = {
+  under_review: "Start review",
+  action_required: "Need action from seller",
+  approved: "Approve",
+  processing: "Mark processing",
+  paid: "Mark paid",
+  on_hold: "Put on hold",
+  rejected: "Reject",
+};
+
+const ACTION_STYLE: Record<Decision, string> = {
+  under_review: "border border-rule-strong text-ink-soft hover:border-brand-strong",
+  action_required: "border border-gold/40 text-[#92730F] hover:border-gold",
+  approved: "bg-brand text-white hover:bg-brand-hover",
+  processing: "bg-brand-strong text-white hover:opacity-90",
+  paid: "bg-brand-strong text-white hover:opacity-90",
+  on_hold: "border border-danger/40 text-danger hover:bg-danger-soft",
+  rejected: "border border-rule-strong text-ink-soft hover:border-danger/40 hover:text-danger",
+};
+
+// Decisions where a confirm dialog (and, for reject/hold, a required note;
+// for paid, an optional provider reference) is shown instead of firing
+// immediately — matches the sensitivity of each transition.
+const NEEDS_DIALOG: ReadonlySet<Decision> = new Set(["rejected", "on_hold", "action_required", "paid"]);
 
 export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalRow[] }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [errorId, setErrorId] = useState<string | null>(null);
-  const [noteByRow, setNoteByRow] = useState<Record<string, string>>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [rejectTarget, setRejectTarget] = useState<{ id: string; sellerName: string } | null>(null);
+  const [dialogTarget, setDialogTarget] = useState<{ id: string; sellerName: string; decision: Decision } | null>(null);
+  const [dialogNote, setDialogNote] = useState("");
+  const [dialogReference, setDialogReference] = useState("");
 
-  function decide(id: string, decision: "approved" | "rejected" | "paid") {
+  function decide(id: string, decision: Decision, note?: string, reference?: string) {
     setPendingId(id);
     setErrorId(null);
+    setErrorMessage(null);
     startTransition(async () => {
       try {
-        await setWithdrawalStatus(id, decision, noteByRow[id]);
-      } catch {
+        await setWithdrawalStatus(id, decision, note, reference);
+      } catch (e) {
         setErrorId(id);
+        setErrorMessage(e instanceof Error ? e.message : "Failed — retry");
       } finally {
         setPendingId(null);
       }
     });
   }
 
+  function handleAction(row: AdminWithdrawalRow, decision: Decision) {
+    if (NEEDS_DIALOG.has(decision)) {
+      setDialogNote("");
+      setDialogReference("");
+      setDialogTarget({ id: row.id, sellerName: row.sellerName, decision });
+    } else {
+      decide(row.id, decision);
+    }
+  }
+
   if (rows.length === 0) {
     return <EmptyState icon={Wallet} title="No withdrawal requests yet" body="Sellers' payout requests will show up here once they have a balance to withdraw." />;
+  }
+
+  function renderActions(r: AdminWithdrawalRow, busy: boolean) {
+    const actions = ACTIONS_FOR_STATUS[r.status] ?? [];
+    if (actions.length === 0) return null;
+    return (
+      <div className="flex flex-wrap gap-2">
+        {actions.map((a) => (
+          <button
+            key={a}
+            onClick={() => handleAction(r, a)}
+            disabled={busy}
+            className={`rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-60 ${ACTION_STYLE[a]}`}
+          >
+            {ACTION_LABEL[a]}
+          </button>
+        ))}
+      </div>
+    );
   }
 
   return (
     <>
       {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
       <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
-        <table className="w-full min-w-[960px] border-collapse text-sm">
+        <table className="w-full min-w-[1040px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
               <th className="px-4 py-3 font-medium">Seller</th>
@@ -124,46 +213,15 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                       {STATUS_LABEL[r.status] ?? r.status}
                     </span>
                     {r.adminNote && <div className="mt-1 max-w-[200px] text-xs text-ink-faint">{r.adminNote}</div>}
+                    {r.status === "paid" && r.payoutReference && (
+                      <div className="mt-1 max-w-[200px] text-xs text-ink-faint">Ref: {r.payoutReference}</div>
+                    )}
+                    {r.reviewedByName && <div className="mt-1 text-xs text-ink-faint">By {r.reviewedByName}</div>}
                   </td>
                   <td className="px-4 py-3 text-ink-soft">{r.requestedAt}</td>
                   <td className="px-4 py-3">
-                    {r.status === "pending" && (
-                      <div className="flex flex-col gap-2">
-                        <input
-                          type="text"
-                          placeholder="Note (optional)"
-                          value={noteByRow[r.id] ?? ""}
-                          onChange={(e) => setNoteByRow((prev) => ({ ...prev, [r.id]: e.target.value }))}
-                          className="w-40 rounded-md border border-rule-strong px-2 py-1 text-xs focus:border-brand-strong focus:outline-none"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => decide(r.id, "approved")}
-                            disabled={busy}
-                            className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => setRejectTarget({ id: r.id, sellerName: r.sellerName })}
-                            disabled={busy}
-                            className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    {r.status === "approved" && (
-                      <button
-                        onClick={() => decide(r.id, "paid")}
-                        disabled={busy}
-                        className="rounded-md bg-brand-strong px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60"
-                      >
-                        Mark Paid
-                      </button>
-                    )}
-                    {errorId === r.id && <span className="mt-1 block text-xs text-danger">Failed — retry</span>}
+                    {renderActions(r, busy)}
+                    {errorId === r.id && <span className="mt-1 block max-w-[180px] text-xs text-danger">{errorMessage}</span>}
                   </td>
                 </tr>
               );
@@ -223,44 +281,11 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                 </div>
               </div>
               {r.adminNote && <div className="mb-3 text-xs text-ink-faint">{r.adminNote}</div>}
+              {r.status === "paid" && r.payoutReference && <div className="mb-3 text-xs text-ink-faint">Ref: {r.payoutReference}</div>}
+              {r.reviewedByName && <div className="mb-3 text-xs text-ink-faint">By {r.reviewedByName}</div>}
               <div className="border-t border-rule pt-3">
-                {r.status === "pending" && (
-                  <div className="flex flex-col gap-2">
-                    <input
-                      type="text"
-                      placeholder="Note (optional)"
-                      value={noteByRow[r.id] ?? ""}
-                      onChange={(e) => setNoteByRow((prev) => ({ ...prev, [r.id]: e.target.value }))}
-                      className="w-full rounded-md border border-rule-strong px-2 py-1.5 text-xs focus:border-brand-strong focus:outline-none"
-                    />
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => decide(r.id, "approved")}
-                        disabled={busy}
-                        className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => setRejectTarget({ id: r.id, sellerName: r.sellerName })}
-                        disabled={busy}
-                        className="rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
-                      >
-                        Reject
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {r.status === "approved" && (
-                  <button
-                    onClick={() => decide(r.id, "paid")}
-                    disabled={busy}
-                    className="rounded-md bg-brand-strong px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-60"
-                  >
-                    Mark Paid
-                  </button>
-                )}
-                {errorId === r.id && <span className="mt-1 block text-xs text-danger">Failed — retry</span>}
+                {renderActions(r, busy)}
+                {errorId === r.id && <span className="mt-1 block text-xs text-danger">{errorMessage}</span>}
               </div>
             </div>
           );
@@ -268,17 +293,64 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
       </div>
 
       <ConfirmDialog
-        open={rejectTarget !== null}
-        title={`Reject ${rejectTarget?.sellerName}'s withdrawal request?`}
-        body="They'll get an email with your note (if you added one). The orders this request claimed go back into their available balance, so this doesn't lose them any money — they can submit a new request any time."
-        confirmLabel="Reject request"
-        danger
-        busy={isPending && pendingId === rejectTarget?.id}
+        open={dialogTarget !== null}
+        title={
+          dialogTarget
+            ? dialogTarget.decision === "rejected"
+              ? `Reject ${dialogTarget.sellerName}'s withdrawal request?`
+              : dialogTarget.decision === "on_hold"
+              ? `Put ${dialogTarget.sellerName}'s withdrawal on hold?`
+              : dialogTarget.decision === "action_required"
+              ? `Request action from ${dialogTarget.sellerName}?`
+              : `Mark ${dialogTarget.sellerName}'s withdrawal paid?`
+            : ""
+        }
+        body={
+          <>
+            {dialogTarget?.decision === "rejected" && (
+              <p className="mb-2">They&rsquo;ll get an email with your note (if you added one). The orders this request claimed go back into their available balance, so this doesn&rsquo;t lose them any money — they can submit a new request any time.</p>
+            )}
+            {dialogTarget?.decision === "on_hold" && (
+              <p className="mb-2">They&rsquo;ll get an email letting them know it&rsquo;s on hold, not rejected. The claimed orders stay reserved for this request while it&rsquo;s on hold.</p>
+            )}
+            {dialogTarget?.decision === "action_required" && (
+              <p className="mb-2">They&rsquo;ll get an email asking them to check their seller dashboard. Explain what needs fixing below.</p>
+            )}
+            {dialogTarget?.decision === "paid" && (
+              <p className="mb-2">Optionally record a payout/provider reference (a bank confirmation number, a PayPal transaction ID) so it&rsquo;s on file for this request.</p>
+            )}
+            {dialogTarget?.decision === "paid" ? (
+              <input
+                type="text"
+                autoFocus
+                placeholder="Payout reference (optional)"
+                value={dialogReference}
+                onChange={(e) => setDialogReference(e.target.value)}
+                className="w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm text-ink focus:border-brand-strong focus:outline-none"
+              />
+            ) : (
+              <textarea
+                rows={3}
+                autoFocus
+                placeholder={dialogTarget?.decision === "rejected" ? "Reason (optional, but seller will see it)" : "Note for the seller"}
+                value={dialogNote}
+                onChange={(e) => setDialogNote(e.target.value)}
+                className="w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm text-ink focus:border-brand-strong focus:outline-none"
+              />
+            )}
+          </>
+        }
+        confirmLabel={dialogTarget ? ACTION_LABEL[dialogTarget.decision] : "Confirm"}
+        danger={dialogTarget?.decision === "rejected" || dialogTarget?.decision === "on_hold"}
+        busy={isPending && pendingId === dialogTarget?.id}
         onConfirm={() => {
-          if (rejectTarget) decide(rejectTarget.id, "rejected");
-          setRejectTarget(null);
+          if (dialogTarget) {
+            if (dialogTarget.decision === "paid") decide(dialogTarget.id, "paid", undefined, dialogReference);
+            else decide(dialogTarget.id, dialogTarget.decision, dialogNote);
+          }
+          setDialogTarget(null);
         }}
-        onCancel={() => setRejectTarget(null)}
+        onCancel={() => setDialogTarget(null)}
       />
     </>
   );
