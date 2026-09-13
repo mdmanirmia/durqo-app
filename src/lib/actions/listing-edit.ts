@@ -103,6 +103,12 @@ export type ListingFullEditFields = {
   // unrelated fields on this form never silently un-confirms an
   // already-confirmed asset list (see the comment at its call site below).
   listingAssets: { id?: string; name: string; buyerReceives: string; transferMethod: string; note: string }[];
+  // Seller-authored Questions & Answers (listing_faqs — see QaListEditor.tsx).
+  // Always sent (never undefined): applies to every category, not gated
+  // like copyrightNotes/topVideos/channelOverview above. Full replace, same
+  // reasoning as monthly income / social stats — the form always sends
+  // every row it currently has.
+  faqs: { question: string; answer: string }[];
 };
 
 // Core listing row + every related "profile" table (quick stats live as
@@ -262,6 +268,20 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
     if (videoRows.length) {
       const { error } = await admin.from("listing_top_videos").insert(videoRows);
       if (error) throw new Error(`Saving Top Performing Videos failed: ${error.message}`);
+    }
+  }
+
+  // Questions & Answers (listing_faqs): full replace, same delete-then-
+  // insert reasoning as monthly income / social stats above.
+  {
+    const { error: deleteFaqsError } = await admin.from("listing_faqs").delete().eq("listing_id", listingId);
+    if (deleteFaqsError) throw new Error(deleteFaqsError.message);
+    const faqRows = fields.faqs
+      .filter((f) => f.question.trim() && f.answer.trim())
+      .map((f, i) => ({ listing_id: listingId, question: f.question.trim(), answer: f.answer.trim(), sort_order: i }));
+    if (faqRows.length) {
+      const { error } = await admin.from("listing_faqs").insert(faqRows);
+      if (error) throw new Error(`Saving Questions & Answers failed: ${error.message}`);
     }
   }
 
