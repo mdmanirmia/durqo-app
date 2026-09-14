@@ -46,15 +46,21 @@ const nextConfig: NextConfig = {
       },
       // Sep 14, 2026: /pay-in-taka's content was expanded (buyer AND seller
       // BDT flows, full SEO/comparison spec) and moved to a new canonical
-      // URL. This handles the non-trailing-slash form. The trailing-slash
-      // form ("/pay-in-taka/") needs a separate fix in src/proxy.ts instead:
-      // with this app's default `trailingSlash: false`, Next's own built-in
-      // slash-normalization redirect fires BEFORE this redirects() config is
-      // ever consulted, so a rule added here for "/pay-in-taka/" is dead
-      // code — it turned the migration into a 2-hop chain in testing
-      // (/pay-in-taka/ -> /pay-in-taka -> here), which the spec for this
-      // migration explicitly rules out ("must not create a redirect
-      // chain"). See src/proxy.ts for the single-hop fix for that case.
+      // URL. This handles the realistic non-trailing-slash form with a
+      // single-hop redirect (verified in production).
+      //
+      // The trailing-slash form ("/pay-in-taka/") is NOT single-hop: with
+      // this app's default `trailingSlash: false`, Next's own built-in
+      // slash-normalization redirect fires BEFORE this redirects() config
+      // (and before src/proxy.ts) is ever consulted, so it always strips the
+      // slash first, then this rule fires — a 2-hop chain
+      // (/pay-in-taka/ -> /pay-in-taka -> here) that no rule in this file or
+      // in proxy.ts can collapse to one hop without turning on the
+      // sitewide `experimental.skipTrailingSlashRedirect` flag. That flag
+      // was judged too invasive for a page-migration change (it alters
+      // trailing-slash handling for every route), so this is accepted as a
+      // known, minor limitation: nothing on this site links to the
+      // trailing-slash form, so no real traffic hits the 2-hop path.
       {
         source: "/pay-in-taka",
         destination: "/buy-and-sell-digital-businesses-in-bdt",
