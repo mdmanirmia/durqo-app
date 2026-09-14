@@ -303,7 +303,7 @@ export default function PayInTakaPage() {
             <DashEyebrow>How this was checked</DashEyebrow>
             <ul className="mt-2 grid gap-2 text-sm text-ink-soft sm:grid-cols-2">
               <li>
-                
+                <a
                   href="https://www.escrow.com/support/payment-options"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -314,7 +314,7 @@ export default function PayInTakaPage() {
                 </a>
               </li>
               <li>
-                
+                <a
                   href="https://support.flippa.com/hc/en-us/articles/202470084-Payment-options"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -325,7 +325,7 @@ export default function PayInTakaPage() {
                 </a>
               </li>
               <li>
-                
+                <a
                   href="https://blog.acquire.com/acquire-partners-with-escrow-com-for-safe-transactions/"
                   target="_blank"
                   rel="noopener noreferrer"
