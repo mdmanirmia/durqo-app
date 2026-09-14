@@ -100,10 +100,16 @@ export default function Footer() {
   // than intentional spacing. Every section already carries its own
   // py-14/py-16 padding, so removing the extra margin here doesn't leave
   // pages with a light final section feeling cramped against the footer.
+  //
+  // Added a top border on the trust bar itself right after: with the margin
+  // gone, a dark-ending page (same bg-brand-strong as this bar) had no
+  // visual seam left at all between its own final section and this one.
+  // The border-b below already separated the trust bar from the footer
+  // columns beneath it; border-t does the same job above it.
   return (
     <footer className="bg-brand-strong text-white/80">
       {showTrustBar && (
-        <div className="border-b border-white/10">
+        <div className="border-y border-white/10">
           <Container className="flex flex-wrap items-center justify-between gap-4 py-5">
             <div className="flex flex-wrap items-center gap-x-7 gap-y-2">
               {TRUST_BAR.map(({ icon: Icon, label }) => (

@@ -944,16 +944,6 @@ export default function BuyAndSellInBdtPage() {
                 Sell a Business
               </Button>
             </div>
-            <p className="mt-6 text-sm text-white/50">
-              Questions about BDT payments?{" "}
-              <a href="mailto:support@durqo.com" className="font-semibold text-white/80 hover:text-white">
-                Contact support@durqo.com
-              </a>
-            </p>
-            <p className="mx-auto mt-4 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-white/40">
-              <span>Transparent transaction process</span>
-              <span>Support from listing to asset transfer</span>
-            </p>
           </Inner>
         </Container>
       </section>
