@@ -409,7 +409,11 @@ export default function HowToSellPage() {
                 <p className="mt-3 max-w-[54ch] text-sm leading-relaxed text-ink-soft">
                   Once a sale is complete, request a withdrawal from your seller dashboard. Our team reviews and
                   processes every request. bKash, Rocket and Nagad withdrawals are each capped at ৳50,000 per day
-                  and ৳300,000 per month, based on that day&rsquo;s exchange rate.
+                  and ৳300,000 per month, based on that day&rsquo;s exchange rate. See{" "}
+                  <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+                    Buy and Sell Digital Businesses in BDT
+                  </Link>{" "}
+                  for the exact conversion rate applied to BDT payouts.
                 </p>
                 <p className="mt-2 max-w-[54ch] text-sm font-medium text-ink">Processing time: Normally 3–5 business days.</p>
                 <div className="mt-5 flex flex-wrap gap-2">

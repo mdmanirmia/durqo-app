@@ -19,6 +19,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE_URL}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${BASE_URL}/buy`, changeFrequency: "daily", priority: 0.9 },
     { url: `${BASE_URL}/sell`, changeFrequency: "monthly", priority: 0.7 },
+    {
+      url: `${BASE_URL}/buy-and-sell-digital-businesses-in-bdt`,
+      // Sep 14, 2026: replaces /pay-in-taka (never itself in this sitemap —
+      // see next.config.ts for the permanent redirect). lastModified is the
+      // real date this page was published, not a placeholder.
+      lastModified: new Date("2026-09-14"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     { url: `${BASE_URL}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.3 },

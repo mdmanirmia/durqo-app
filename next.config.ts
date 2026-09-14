@@ -44,6 +44,22 @@ const nextConfig: NextConfig = {
         destination: "https://www.durqo.com/:path*",
         permanent: true,
       },
+      // Sep 14, 2026: /pay-in-taka's content was expanded (buyer AND seller
+      // BDT flows, full SEO/comparison spec) and moved to a new canonical
+      // URL. This handles the non-trailing-slash form. The trailing-slash
+      // form ("/pay-in-taka/") needs a separate fix in src/proxy.ts instead:
+      // with this app's default `trailingSlash: false`, Next's own built-in
+      // slash-normalization redirect fires BEFORE this redirects() config is
+      // ever consulted, so a rule added here for "/pay-in-taka/" is dead
+      // code — it turned the migration into a 2-hop chain in testing
+      // (/pay-in-taka/ -> /pay-in-taka -> here), which the spec for this
+      // migration explicitly rules out ("must not create a redirect
+      // chain"). See src/proxy.ts for the single-hop fix for that case.
+      {
+        source: "/pay-in-taka",
+        destination: "/buy-and-sell-digital-businesses-in-bdt",
+        permanent: true,
+      },
     ];
   },
 };

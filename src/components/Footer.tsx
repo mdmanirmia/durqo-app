@@ -70,6 +70,10 @@ const TRUST_BAR = [
 // trail behind their content). The desktop grid widened from 4 to 5
 // columns to fit it; the brand column still spans 2 of 2 on mobile so the
 // existing mobile wrap behavior is unchanged, just one row longer.
+//
+// Sep 14, 2026: added a 6th Resources link to /buy-and-sell-digital-
+// businesses-in-bdt (the page that replaced /pay-in-taka — see that page's
+// own top-of-file comment). One more line doesn't overcrowd the column.
 export default function Footer() {
   // Sep 2026 About-page redesign: the About page's own Final CTA already
   // closes with the same "browse marketplace / sell a business" pair this
@@ -144,6 +148,7 @@ export default function Footer() {
               <li><Link href="/buyer-faq" className="hover:text-white">Buyer FAQ</Link></li>
               <li><Link href="/seller-faq" className="hover:text-white">Seller FAQ</Link></li>
               <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
+              <li><Link href="/buy-and-sell-digital-businesses-in-bdt" className="hover:text-white">Buy &amp; Sell in BDT</Link></li>
             </ul>
           </div>
 
