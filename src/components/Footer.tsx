@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Eye, LifeBuoy, Mail, CreditCard, ShieldCheck, Smartphone, Landmark } from "lucide-react";
+import { Eye, LifeBuoy, Mail, ShieldCheck, Smartphone, Landmark } from "lucide-react";
 import Container from "./ui/Container";
 import { FacebookIcon, InstagramIcon } from "./icons/SocialIcons";
+import { StripeIcon } from "./icons/PaymentIcons";
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return <h4 className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-white/45">{children}</h4>;
@@ -16,16 +17,22 @@ function ColumnHeading({ children }: { children: React.ReactNode }) {
 // the Sep 2026 live-mode cutover (claude/stripe-live-mode-setup-addendum.md),
 // Escrow.com is a genuine third-party escrow option, and bKash/Rocket/Nagad/
 // Bank transfer all run through the live SSLCommerz rail for Bangladeshi
-// buyers. Deliberately plain lucide icons + text, not scraped/embedded
-// brand logo art, matching how /payments (BUYER_METHODS) already presents
-// these same six rails — no third-party trademarked graphics in the repo.
+// buyers.
+//
+// Stripe's badge uses its real mark (see icons/PaymentIcons.tsx for exactly
+// where that path came from and why it's safe to use — Stripe itself
+// publishes it for merchants). The other five stay plain lucide icon + text:
+// no official brand-kit was found for bKash, Nagad, Rocket or Escrow.com,
+// and their only available logo copies (Wikipedia included) are explicitly
+// non-free/no-external-reuse — see the PaymentIcons.tsx comment for the
+// full reasoning. "Bank Transfer" was never brand-specific to begin with.
 const PAYMENT_BADGES = [
-  { icon: CreditCard, label: "Stripe" },
-  { icon: ShieldCheck, label: "Escrow.com" },
-  { icon: Smartphone, label: "bKash" },
-  { icon: Smartphone, label: "Rocket" },
-  { icon: Smartphone, label: "Nagad" },
-  { icon: Landmark, label: "Bank Transfer" },
+  { icon: StripeIcon, label: "Stripe", iconClassName: "text-[#635BFF]" },
+  { icon: ShieldCheck, label: "Escrow.com", iconClassName: "text-brand" },
+  { icon: Smartphone, label: "bKash", iconClassName: "text-brand" },
+  { icon: Smartphone, label: "Rocket", iconClassName: "text-brand" },
+  { icon: Smartphone, label: "Nagad", iconClassName: "text-brand" },
+  { icon: Landmark, label: "Bank Transfer", iconClassName: "text-brand" },
 ];
 
 // Sep 6, 2026: "Every deal held in escrow" / "Payments secured by Stripe"
@@ -146,12 +153,12 @@ export default function Footer() {
         <div className="mt-12 border-t border-white/10 pt-6">
           <p className="mono mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">Secure payments</p>
           <div className="flex flex-wrap items-center gap-2">
-            {PAYMENT_BADGES.map(({ icon: Icon, label }) => (
+            {PAYMENT_BADGES.map(({ icon: Icon, label, iconClassName }) => (
               <span
                 key={label}
                 className="mono flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/70"
               >
-                <Icon size={13} className="text-brand" />
+                <Icon size={13} className={iconClassName} />
                 {label}
               </span>
             ))}
