@@ -2,13 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Eye, LifeBuoy, Mail } from "lucide-react";
+import { Eye, LifeBuoy, Mail, CreditCard, ShieldCheck, Smartphone, Landmark } from "lucide-react";
 import Container from "./ui/Container";
 import { FacebookIcon, InstagramIcon } from "./icons/SocialIcons";
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return <h4 className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-white/45">{children}</h4>;
 }
+
+// Sep 14, 2026: sitewide trust-badge row for the real payment rails Durqo
+// actually supports today (see /payments and claude/sslcommerz-bdt-
+// confirmation-and-payment-breakdown-addendum.md) — Stripe is live as of
+// the Sep 2026 live-mode cutover (claude/stripe-live-mode-setup-addendum.md),
+// Escrow.com is a genuine third-party escrow option, and bKash/Rocket/Nagad/
+// Bank transfer all run through the live SSLCommerz rail for Bangladeshi
+// buyers. Deliberately plain lucide icons + text, not scraped/embedded
+// brand logo art, matching how /payments (BUYER_METHODS) already presents
+// these same six rails — no third-party trademarked graphics in the repo.
+const PAYMENT_BADGES = [
+  { icon: CreditCard, label: "Stripe" },
+  { icon: ShieldCheck, label: "Escrow.com" },
+  { icon: Smartphone, label: "bKash" },
+  { icon: Smartphone, label: "Rocket" },
+  { icon: Smartphone, label: "Nagad" },
+  { icon: Landmark, label: "Bank Transfer" },
+];
 
 // Sep 6, 2026: "Every deal held in escrow" / "Payments secured by Stripe"
 // were removed — Stripe Checkout currently runs on test-mode keys only (see
@@ -125,27 +143,42 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/45">
-          <p>&copy; {new Date().getFullYear()} Durqo. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <a
-              href="https://www.facebook.com/Durqo"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Durqo on Facebook"
-              className="text-white/60 transition hover:text-white"
-            >
-              <FacebookIcon size={16} />
-            </a>
-            <a
-              href="https://www.instagram.com/durqomarketplace/"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Durqo on Instagram"
-              className="text-white/60 transition hover:text-white"
-            >
-              <InstagramIcon size={16} />
-            </a>
+        <div className="mt-12 border-t border-white/10 pt-6">
+          <p className="mono mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">Secure payments</p>
+          <div className="flex flex-wrap items-center gap-2">
+            {PAYMENT_BADGES.map(({ icon: Icon, label }) => (
+              <span
+                key={label}
+                className="mono flex items-center gap-1.5 rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/70"
+              >
+                <Icon size={13} className="text-brand" />
+                {label}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-white/45">
+            <p>&copy; {new Date().getFullYear()} Durqo. All rights reserved.</p>
+            <div className="flex items-center gap-4">
+              <a
+                href="https://www.facebook.com/Durqo"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Durqo on Facebook"
+                className="text-white/60 transition hover:text-white"
+              >
+                <FacebookIcon size={16} />
+              </a>
+              <a
+                href="https://www.instagram.com/durqomarketplace/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Durqo on Instagram"
+                className="text-white/60 transition hover:text-white"
+              >
+                <InstagramIcon size={16} />
+              </a>
+            </div>
           </div>
         </div>
       </Container>
