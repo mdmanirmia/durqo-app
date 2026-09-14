@@ -61,11 +61,22 @@ export const metadata: Metadata = {
 
 // Organization + WebSite JSON-LD (Section 13) — server-rendered on the
 // homepage only, using only information that's already publicly visible
-// elsewhere on the site: the support email and office address both appear
-// on /contact, and the Facebook/Instagram links are the same official,
-// already-live ones in the site footer. No private data, no invented
-// fields. SearchAction points at /buy?q=..., which is a real, stable,
-// crawlable URL (src/lib/marketplace-filters.ts reads the `q` param).
+// elsewhere on the site: the support email appears on /contact, and the
+// Facebook/Instagram links are the same official, already-live ones in the
+// site footer. No private data, no invented fields. SearchAction points at
+// /buy?q=..., which is a real, stable, crawlable URL
+// (src/lib/marketplace-filters.ts reads the `q` param).
+//
+// Sep 14, 2026 (SEO fix): deliberately no `address` field. Durqo is an
+// online marketplace with no physical storefront — declaring a
+// schema.org PostalAddress here is exactly the kind of signal Google can
+// use to auto-generate an unwanted "local business" Knowledge Panel /
+// Business Profile entry (this is what produced the stray "Durqo Limited"
+// / "Durqo Marketplace Inc." Google Maps listings that had to be manually
+// removed). The correspondence address still appears as plain text on
+// /contact — that's fine; it's the structured-data declaration of a
+// physical place that caused the problem, not the address being visible
+// on the page.
 const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -73,14 +84,6 @@ const ORGANIZATION_JSON_LD = {
   url: "https://www.durqo.com",
   logo: "https://www.durqo.com/android-chrome-512x512.png",
   email: "support@durqo.com",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "40A Rutledge Crescent",
-    addressLocality: "St. John's",
-    addressRegion: "NL",
-    postalCode: "A1A 3J6",
-    addressCountry: "CA",
-  },
   sameAs: ["https://www.facebook.com/Durqo", "https://www.instagram.com/durqomarketplace/"],
 };
 
