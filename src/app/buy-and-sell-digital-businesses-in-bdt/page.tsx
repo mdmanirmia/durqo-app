@@ -12,6 +12,9 @@ import {
   Tag,
   FileText,
   Info,
+  Layers,
+  Users,
+  Percent,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -19,65 +22,66 @@ import GroupedFaq, { type FaqGroup } from "@/components/GroupedFaq";
 import { BkashIcon } from "@/components/icons/PaymentIcons";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 
-// Sep 14, 2026: replaces /pay-in-taka (see next.config.ts for the permanent
-// redirect) with the full spec supplied by the merchant — "DURQO: Buy and
-// Sell Digital Businesses with Bangladeshi Taka (BDT), Complete SEO Website
-// Copy, Marketplace Comparison and Design Specification", reviewed 14 Sep
-// 2026. That document is the source of truth for every sentence below;
-// nothing here is invented copy.
+// Sep 14, 2026: content/SEO/positioning rewrite of this page per the
+// merchant's follow-up brief (see chat — "Update and improve the complete
+// content of the following existing Durqo page"), superseding the copy this
+// file originally shipped with the same day. Two changes worth flagging for
+// future readers of this file:
 //
-// Pre-implementation findings reported to the merchant before this file was
-// written (see chat): SSLCommerz is confirmed live in production
-// (src/app/api/sslcommerz/init, /ipn), so this page describes BDT payment
-// as currently available, not "coming soon," per the spec's own gate.
-// Buyer/seller figures below are traced to the same real code /payments
-// already uses — no numbers are invented for this page:
+// 1. The buyer (+৳6/USD) and seller-withdrawal (-৳1.50/USD) exchange-rate
+//    margins were disclosed in plain language in the previous version of
+//    this page, per that version's own spec. This revision's spec
+//    explicitly reverses that instruction and asks the exact margins not to
+//    appear publicly, describing instead only that the applicable rate and
+//    exact BDT amount are shown on the confirmation screen before the
+//    payment or payout is submitted. This is a copy-visibility change only —
+//    the underlying calculation is untouched. It still lives in
+//    src/lib/currency.ts: convertUsdToBdt() (buyer, +6 BDT) and
+//    getUsdToBdtWithdrawalRate() (seller, -1.5 BDT). Anyone reinstating a
+//    public disclosure of these numbers later should re-derive the copy
+//    from that file, never hardcode a figure here.
+// 2. Every "may include" instance describing a confirmed, already-live
+//    payment or payout channel was changed to "include" — those channels
+//    are not speculative, so the more confident wording is accurate, not
+//    aspirational.
+//
+// No payment calculation, database schema, checkout behavior, withdrawal
+// rule or legal document was touched to make this revision — same as the
+// original build of this page, it is a copy/design/SEO pass over existing,
+// already-live behavior only. Source-of-truth figures un-changed by this
+// pass and still traced to real code, not invented:
 //   - $2,000 online cap: src/lib/payment-terms.ts (ONLINE_DEPOSIT_CAP)
-//   - buyer BDT rate = market rate + a flat ৳6/USD margin: src/lib/currency.ts
-//     (convertUsdToBdt) — disclosed in plain language per the spec's explicit
-//     instruction not to use a vague phrase like "conversion margin"
-//   - seller BDT payout rate (bKash/Rocket/Nagad only) = market rate minus
-//     ৳1.50/USD: src/lib/currency.ts (getUsdToBdtWithdrawalRate)
 //   - ৳50,000/day + ৳300,000/month per-method caps on bKash/Rocket/Nagad
 //     payouts, 3–5 business day manual review: matches /payments and
 //     src/app/dashboard/seller/earnings/page.tsx
 //   - Success fee tiers imported from src/lib/fees.ts, the single
-//     authoritative source (never hardcoded) — "up to 10%" matches exactly.
-// No payment calculation, database schema, checkout behavior, withdrawal
-// rule or legal document was touched to build this page — it is a copy/
-// design/SEO pass over existing, already-live behavior only.
+//     authoritative source (never hardcoded) — 10%/7%/5% matches exactly.
 //
-// Colors: the spec's brand-color table (#F7F9FC / #0B1426 / #64748B /
-// #10B981 / #E8F8F2 / #FFFFFF / #DCE5EF / #FFF8E6 / #8A6410) maps almost
-// exactly onto Durqo's existing design tokens (paper/brand-strong/ink-soft/
-// brand/brand-soft/paper-raised/rule/gold-soft) — several are exact hex
-// matches. Reusing those existing tokens instead of hardcoding the spec's
-// literal hex values keeps this page inside Durqo's real design system
-// (per the "honor what exists" rule) and preserves sitewide dark-mode
-// support, which literal hex values would silently break. The one color
-// the spec calls out as distinctly darker ("Amber text #8A6410", chosen for
-// WCAG contrast on a soft-amber background) is matched using the app's own
-// existing convention for that exact situation — `text-[#92730F]` — already
-// used sitewide for gold-soft badges/panels (Badge.tsx, admin tables,
-// seller earnings notices), not a new one-off value.
+// Design: unchanged from the original build of this page. The spec's brand
+// colors (#F7F9FC / #0B1426 / #64748B / #10B981 / #E8F8F2 / #FFFFFF /
+// #DCE5EF / #FFF8E6 / #8A6410) map onto Durqo's existing design tokens
+// (paper/brand-strong/ink-soft/brand/brand-soft/paper-raised/rule/gold-soft,
+// and text-[#92730F] for amber text — the app's existing convention for
+// that exact situation) rather than hardcoded hex, preserving sitewide
+// dark-mode support and staying inside the real design system.
 export const metadata: Metadata = {
-  title: "Buy and Sell Digital Businesses with Bangladeshi Taka (BDT) | Durqo",
+  title: "Buy and Sell Digital Businesses in BDT | Durqo",
   description:
-    "Buy and sell digital businesses in Bangladesh using BDT. Pay through SSLCommerz and request eligible seller payouts through supported local methods.",
+    "Durqo is the first marketplace for buying and selling digital businesses in BDT. Buyers can pay through SSLCommerz, while eligible sellers can receive payouts through supported local methods.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     siteName: "Durqo",
-    title: "Buy and Sell Digital Businesses with Bangladeshi Taka (BDT) | Durqo",
+    title: "Buy and Sell Digital Businesses in BDT | Durqo",
     description:
-      "Bangladesh-based buyers can pay for eligible digital-business purchases in BDT, while eligible sellers can request payouts through supported local methods.",
+      "Durqo is the first marketplace for buying and selling digital businesses in BDT. Pay through SSLCommerz and receive eligible seller payouts through supported local methods.",
     url: "https://www.durqo.com/buy-and-sell-digital-businesses-in-bdt",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Buy and Sell Digital Businesses with Bangladeshi Taka (BDT) | Durqo",
+    title: "Buy and Sell Digital Businesses in BDT | Durqo",
     description:
-      "Bangladesh-based buyers can pay for eligible digital-business purchases in BDT, while eligible sellers can request payouts through supported local methods.",
+      "Durqo is the first marketplace for buying and selling digital businesses in BDT. Pay through SSLCommerz and receive eligible seller payouts through supported local methods.",
   },
   alternates: { canonical: "https://www.durqo.com/buy-and-sell-digital-businesses-in-bdt" },
 };
@@ -97,6 +101,8 @@ const WEBPAGE_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "Buy and Sell Digital Businesses with Bangladeshi Taka (BDT)",
+  description:
+    "Durqo is the first marketplace for buying and selling digital businesses in BDT, with SSLCommerz buyer payments and eligible seller payouts through supported local methods.",
   url: PAGE_URL,
   isPartOf: { "@type": "WebSite", name: "Durqo", url: "https://www.durqo.com" },
 };
@@ -127,12 +133,9 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 }
 
 // Horizontal-on-desktop / vertical-on-mobile numbered flow, used for both
-// the 5-step buyer timeline and the 6-step seller payout-status flow (spec:
-// "display the steps horizontally with numbered circles and a subtle
-// connecting line [on desktop]. Switch to a vertical layout before the
-// content becomes compressed."). Pure CSS toggle (no client JS / no
-// hydration cost) — the inactive variant is `display:none`, so it isn't
-// duplicated for screen readers either.
+// the 5-step buyer timeline and the 6-step seller payout-status flow. Pure
+// CSS toggle (no client JS / no hydration cost) — the inactive variant is
+// `display:none`, so it isn't duplicated for screen readers either.
 function NumberedFlow({ steps }: { steps: { title: string; body?: string }[] }) {
   const n = steps.length;
   const inset = (0.5 / n) * 100;
@@ -174,12 +177,14 @@ function NumberedFlow({ steps }: { steps: { title: string; body?: string }[] }) 
   );
 }
 
+const BUYER_PAYMENT_CHANNELS = ["bKash", "Nagad", "Rocket", "Supported Banks", "Credit or Debit Card"];
+
 const BUYER_STEPS = [
-  { title: "Choose a Business", body: "Review the listing, examine the available information and message the seller if you need clarification." },
-  { title: "Select BDT Payment", body: "Choose SSLCommerz and pick one of the payment channels available for the transaction." },
-  { title: "Review the Amount", body: "Check the listing price, the applicable exchange rate and the exact BDT amount before confirming." },
-  { title: "Complete the Funding", body: "Pay the full BDT amount at $2,000 or less, or the initial $2,000 equivalent above that." },
-  { title: "Start the Asset Transfer", body: "Once the full price is received and verified, use the order's private Transfer Room." },
+  { title: "Choose a Business", body: "Review the listing, examine the available business information and communicate with the seller if you need clarification." },
+  { title: "Select BDT Payment", body: "Choose SSLCommerz at checkout and select one of the supported payment channels." },
+  { title: "Review the Amount", body: "Review the listing price, applicable exchange rate and exact BDT amount before confirming your payment." },
+  { title: "Complete the Funding", body: "For a purchase priced at USD 2,000 or less, pay the complete BDT amount through SSLCommerz. For a purchase priced above USD 2,000, pay the initial USD 2,000 equivalent and follow Durqo's emailed instructions for paying the remaining balance." },
+  { title: "Start the Asset Transfer", body: "After the complete purchase price has been received and verified, the buyer and seller can use the order's private Transfer Room to complete the agreed asset handover." },
 ];
 
 const SELLER_STATUSES = [
@@ -198,6 +203,12 @@ const PAYOUT_METHODS = [
   { icon: RocketGlyph, title: "Rocket", body: "Request an eligible payout to a valid Rocket account.", tint: "text-[#7B1E3F]" },
 ];
 
+const PAYOUT_LIMITS = [
+  { method: "bKash", limit: "Up to ৳50,000 per day and ৳300,000 per month" },
+  { method: "Nagad", limit: "Up to ৳50,000 per day and ৳300,000 per month" },
+  { method: "Rocket", limit: "Up to ৳50,000 per day and ৳300,000 per month" },
+];
+
 const TRANSFER_STEPS = [
   { title: "Seller Submits the Agreed Assets", body: "The seller provides the websites, domains, applications, source files, accounts, operating documents or other assets included in the accepted agreement." },
   { title: "Buyer Reviews Each Item", body: "The buyer reviews the submitted assets and confirms whether each item matches the agreed sale terms." },
@@ -208,44 +219,66 @@ type Cell = { text: string; highlight?: boolean };
 const COMPARISON_ROWS: { feature: string; durqo: Cell; flippa: Cell; acquire: Cell; empireFlippers: Cell; motionInvest: Cell }[] = [
   {
     feature: "Market focus",
-    durqo: { text: "Global, with Bangladesh focus", highlight: true },
-    flippa: { text: "Global" },
-    acquire: { text: "Global" },
-    empireFlippers: { text: "Global" },
-    motionInvest: { text: "Global" },
+    durqo: { text: "Bangladesh-focused with global digital-business access", highlight: true },
+    flippa: { text: "Global digital-business marketplace and exit platform" },
+    acquire: { text: "Global marketplace for profitable online businesses" },
+    empireFlippers: { text: "Curated brokerage-style marketplace for established online businesses" },
+    motionInvest: { text: "Specialized marketplace for profitable content websites and YouTube channels" },
   },
   {
     feature: "Digital business types",
-    durqo: { text: "Wide range: websites, e-commerce, SaaS, apps", highlight: true },
-    flippa: { text: "Wide range" },
-    acquire: { text: "Wide range" },
-    empireFlippers: { text: "Vetted listings" },
-    motionInvest: { text: "Content sites & YouTube channels" },
+    durqo: { text: "Websites, e-commerce businesses, SaaS products, mobile apps and other eligible income-generating digital businesses", highlight: true },
+    flippa: { text: "A broad range of online businesses and digital assets" },
+    acquire: { text: "SaaS, e-commerce, agencies, content businesses, mobile apps and other online businesses" },
+    empireFlippers: { text: "Vetted e-commerce, SaaS, content, service and other online businesses" },
+    motionInvest: { text: "Primarily content websites and YouTube channels" },
   },
   {
     feature: "Bangladesh-focused BDT flow",
-    durqo: { text: "Yes", highlight: true },
-    flippa: { text: "No" },
-    acquire: { text: "No" },
-    empireFlippers: { text: "No" },
-    motionInvest: { text: "No" },
+    durqo: { text: "Yes — BDT buyer payments and eligible seller payouts", highlight: true },
+    flippa: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
+    acquire: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
+    empireFlippers: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
+    motionInvest: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
   },
   {
-    feature: "Seller fee model",
-    durqo: { text: "Up to 10%, transparent tiers", highlight: true },
-    flippa: { text: "Packages from $29 + fees from 5%" },
-    acquire: { text: "Monthly listing + closing fee (varies)" },
-    empireFlippers: { text: "Brokerage commission (curated service)" },
-    motionInvest: { text: "Varies — check directly" },
+    feature: "Seller fee",
+    durqo: { text: "Tiered success fee deducted only after a successful sale", highlight: true },
+    flippa: { text: "Listing packages and success fees based on the applicable service and transaction" },
+    acquire: { text: "Listing and closing fees depend on the applicable plan and transaction" },
+    empireFlippers: { text: "Brokerage commission based on the applicable sale terms" },
+    motionInvest: { text: "Applicable fees depend on the transaction and current platform terms" },
   },
   {
     feature: "Transfer support",
-    durqo: { text: "Yes (Transfer Room)", highlight: true },
-    flippa: { text: "Limited" },
-    acquire: { text: "Limited" },
-    empireFlippers: { text: "Yes (managed migration)" },
-    motionInvest: { text: "Varies" },
+    durqo: { text: "Private Transfer Room connected to the order and full-payment status", highlight: true },
+    flippa: { text: "Deal-management and transaction-support tools" },
+    acquire: { text: "Acquisition, document and closing tools" },
+    empireFlippers: { text: "Managed migration and transaction assistance" },
+    motionInvest: { text: "Transfer assistance for eligible digital assets" },
   },
+];
+
+// Mobile stacked-card view derives from COMPARISON_ROWS (single source of
+// truth — nothing here is retyped) so the two layouts can never drift apart.
+const COMPARISON_COMPANIES = [
+  { name: "Durqo", highlight: true, key: "durqo" as const },
+  { name: "Flippa", key: "flippa" as const },
+  { name: "Acquire.com", key: "acquire" as const },
+  { name: "Empire Flippers", key: "empireFlippers" as const },
+  { name: "Motion Invest", key: "motionInvest" as const },
+].map((company) => ({
+  ...company,
+  rows: COMPARISON_ROWS.map((row) => ({ feature: row.feature, value: row[company.key].text })),
+}));
+
+const WHY_DIFFERENT_CARDS = [
+  { icon: ShoppingCart, title: "Buy Digital Businesses in BDT", body: "Bangladesh-based buyers can pay for eligible digital businesses in Bangladeshi Taka through SSLCommerz and review the exact payable amount before confirming." },
+  { icon: Landmark, title: "Receive Sale Proceeds in BDT", body: "After completing the sale and transfer requirements, eligible sellers can request their available earnings through bank transfer, bKash, Nagad or Rocket." },
+  { icon: Layers, title: "Explore Multiple Business Categories", body: "Buy and sell eligible websites, e-commerce businesses, SaaS products, mobile applications and other income-generating digital businesses." },
+  { icon: ShieldCheck, title: "Use a Tracked Transfer Process", body: "Payment status and asset transfer remain connected to the order. The Transfer Room stays locked until the complete purchase price has been received and verified." },
+  { icon: Users, title: "No Buyer Marketplace Fee", body: "Durqo does not charge buyers a marketplace fee. Buyers pay the agreed purchase price, although disclosed payment-provider, banking or currency-related charges may apply." },
+  { icon: Percent, title: "Pay a Seller Fee Only After a Sale", body: "Durqo deducts the applicable success fee from the seller only after a successful sale." },
 ];
 
 const FAQ_GROUPS: FaqGroup[] = [
@@ -254,31 +287,26 @@ const FAQ_GROUPS: FaqGroup[] = [
     items: [
       {
         question: "Who can pay for a business in BDT?",
-        answer: (
-          <>
-            The BDT checkout option is intended for eligible Bangladesh-based buyers who select SSLCommerz. Other
-            available payment methods are explained on Durqo&rsquo;s{" "}
-            <Link href="/payments" className="font-semibold text-brand-strong hover:underline">
-              Payment &amp; Withdrawal
-            </Link>{" "}
-            page.
-          </>
-        ),
+        answer: "The BDT checkout option is for Bangladesh-based buyers who select SSLCommerz.",
       },
       {
         question: "Which payment methods are available through SSLCommerz?",
-        answer:
-          "Available channels may include bKash, Nagad, Rocket, supported banks, and credit or debit cards. The methods currently available will be shown on the SSLCommerz payment screen.",
+        answer: "SSLCommerz payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards.",
       },
       {
         question: "What happens if the business costs USD 2,000 or less?",
         answer:
-          "You pay the full BDT equivalent through SSLCommerz at checkout. The applicable exchange rate and exact BDT amount are shown before you confirm.",
+          "You pay the complete BDT equivalent through SSLCommerz at checkout. Durqo shows the applicable exchange rate and exact BDT amount before you confirm the payment.",
       },
       {
         question: "What happens if the business costs more than USD 2,000?",
         answer:
-          "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. Durqo then emails instructions for paying the remaining balance. The purchase proceeds only after the complete balance has been received and verified.",
+          "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. After that payment is confirmed, Durqo emails you instructions for paying the remaining balance. The purchase proceeds to asset transfer only after the complete balance has been received and verified.",
+      },
+      {
+        question: "Can buyers and sellers both use Bangladeshi Taka on Durqo?",
+        answer:
+          "Yes. Bangladesh-based buyers can pay for eligible digital businesses in BDT through SSLCommerz. After a successful sale, completed asset transfer and required review, eligible sellers can request their available earnings through supported BDT payout methods.",
       },
     ],
   },
@@ -288,17 +316,22 @@ const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "When does the Transfer Room become available?",
         answer:
-          "After the complete purchase price has been received and verified. An initial partial payment does not make the order fully funded.",
+          "The Transfer Room becomes available after the complete purchase price has been received and verified. An initial partial payment does not make the order fully funded.",
       },
       {
         question: "When can a seller request a payout?",
         answer:
-          "After the sale and agreed asset transfer are completed, any required review has finished, and the eligible earnings appear as available in the Seller Dashboard.",
+          "A seller can request a payout after the sale and agreed asset transfer are completed, any required review has finished and the eligible earnings appear as available in the Seller Dashboard.",
+      },
+      {
+        question: "Which BDT payout methods does Durqo support?",
+        answer:
+          "Supported local payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller eligibility, verification and applicable withdrawal limits.",
       },
       {
         question: "How long does a seller payout take?",
         answer:
-          "Durqo normally reviews and processes a payout request within 3–5 business days. The receiving bank or payment provider may require additional time to credit the seller’s account.",
+          "Durqo normally reviews and processes a payout request within 3–5 business days. The receiving bank or payment provider may require additional time to credit the seller's account.",
       },
     ],
   },
@@ -308,16 +341,13 @@ const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "Does Durqo charge buyers a marketplace fee?",
         answer:
-          "No. Durqo does not charge buyers a marketplace fee. The buyer pays the agreed purchase price, although disclosed payment-provider, banking or currency-related charges may apply where relevant.",
+          "No. Durqo does not charge buyers a marketplace fee. The buyer pays the agreed purchase price, although disclosed payment-provider, banking or currency-related charges may apply.",
       },
       {
         question: "How much does Durqo charge sellers?",
         answer: (
           <>
-            <p>
-              A tiered success fee based on the final sale price, deducted only after a successful sale. The
-              applicable fee is displayed before the seller publishes or accepts the relevant transaction terms.
-            </p>
+            <p>Durqo deducts a tiered success fee based on the final sale price. The success fee is deducted only after a successful sale.</p>
             <dl className="mt-3 flex flex-col gap-1.5 rounded-lg bg-paper-sunk px-3.5 py-3">
               {SUCCESS_FEE_TIERS.map((tier) => (
                 <div key={tier.id} className="flex items-center justify-between gap-4">
@@ -336,18 +366,18 @@ const FAQ_GROUPS: FaqGroup[] = [
     items: [
       {
         question: "Is SSLCommerz an escrow service?",
-        answer: "No. SSLCommerz is a payment gateway or payment processor. Durqo does not describe it as an escrow provider.",
+        answer: "No. SSLCommerz is a payment gateway or payment processor and is not described as an escrow provider.",
       },
       {
-        question: "Is Durqo the same as Flippa or Acquire.com?",
+        question: "How is Durqo different from Flippa or Acquire.com?",
         answer:
-          "All three platforms help connect buyers and sellers of digital businesses, but they have different markets, fees and transaction processes. Durqo’s intended distinction is its Bangladesh-focused BDT payment and local payout experience.",
+          "Flippa and Acquire.com are established international marketplaces serving broad global audiences. Durqo is the first marketplace specifically built to support the purchase of digital businesses in BDT and eligible seller payouts through supported local methods.",
       },
       {
         question: "What should I do if my payment status is pending?",
         answer: (
           <>
-            Do not submit the same payment again immediately. Check the order status and contact{" "}
+            Do not submit the same payment again immediately. Check your order status and contact{" "}
             <a href="mailto:support@durqo.com" className="font-semibold text-brand-strong hover:underline">
               support@durqo.com
             </a>{" "}
@@ -372,25 +402,28 @@ const FAQ_GROUPS: FaqGroup[] = [
 ];
 
 // Plain-text mirror of FAQ_GROUPS for FAQPage structured data — schema.org
-// wants the same visible questions and answers, as plain text (spec:
-// "Add FAQPage structured data containing exactly the visible questions and
-// answers").
+// wants the same visible questions and answers, as plain text. Kept
+// hand-written rather than derived from the JSX above because a couple of
+// answers there are React fragments including links; this list is checked
+// against the visible copy above whenever either changes.
 const FAQ_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: [
-    { q: "Who can pay for a business in BDT?", a: "The BDT checkout option is intended for eligible Bangladesh-based buyers who select SSLCommerz. Other available payment methods are explained on Durqo's Payment & Withdrawal page." },
-    { q: "Which payment methods are available through SSLCommerz?", a: "Available channels may include bKash, Nagad, Rocket, supported banks, and credit or debit cards. The methods currently available will be shown on the SSLCommerz payment screen." },
-    { q: "What happens if the business costs USD 2,000 or less?", a: "You pay the full BDT equivalent through SSLCommerz at checkout. The applicable exchange rate and exact BDT amount are shown before you confirm." },
-    { q: "What happens if the business costs more than USD 2,000?", a: "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. Durqo then emails instructions for paying the remaining balance. The purchase proceeds only after the complete balance has been received and verified." },
-    { q: "When does the Transfer Room become available?", a: "After the complete purchase price has been received and verified. An initial partial payment does not make the order fully funded." },
-    { q: "When can a seller request a payout?", a: "After the sale and agreed asset transfer are completed, any required review has finished, and the eligible earnings appear as available in the Seller Dashboard." },
+    { q: "Who can pay for a business in BDT?", a: "The BDT checkout option is for Bangladesh-based buyers who select SSLCommerz." },
+    { q: "Which payment methods are available through SSLCommerz?", a: "SSLCommerz payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards." },
+    { q: "What happens if the business costs USD 2,000 or less?", a: "You pay the complete BDT equivalent through SSLCommerz at checkout. Durqo shows the applicable exchange rate and exact BDT amount before you confirm the payment." },
+    { q: "What happens if the business costs more than USD 2,000?", a: "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. After that payment is confirmed, Durqo emails you instructions for paying the remaining balance. The purchase proceeds to asset transfer only after the complete balance has been received and verified." },
+    { q: "Can buyers and sellers both use Bangladeshi Taka on Durqo?", a: "Yes. Bangladesh-based buyers can pay for eligible digital businesses in BDT through SSLCommerz. After a successful sale, completed asset transfer and required review, eligible sellers can request their available earnings through supported BDT payout methods." },
+    { q: "When does the Transfer Room become available?", a: "The Transfer Room becomes available after the complete purchase price has been received and verified. An initial partial payment does not make the order fully funded." },
+    { q: "When can a seller request a payout?", a: "A seller can request a payout after the sale and agreed asset transfer are completed, any required review has finished and the eligible earnings appear as available in the Seller Dashboard." },
+    { q: "Which BDT payout methods does Durqo support?", a: "Supported local payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller eligibility, verification and applicable withdrawal limits." },
     { q: "How long does a seller payout take?", a: "Durqo normally reviews and processes a payout request within 3-5 business days. The receiving bank or payment provider may require additional time to credit the seller's account." },
-    { q: "Does Durqo charge buyers a marketplace fee?", a: "No. Durqo does not charge buyers a marketplace fee. The buyer pays the agreed purchase price, although disclosed payment-provider, banking or currency-related charges may apply where relevant." },
-    { q: "How much does Durqo charge sellers?", a: `A tiered success fee based on the final sale price, deducted only after a successful sale: ${SUCCESS_FEE_TIERS.map((t) => `${t.label} → ${fmtRate(t.rate)}`).join(", ")}. The applicable fee is displayed before the seller publishes or accepts the relevant transaction terms.` },
-    { q: "Is SSLCommerz an escrow service?", a: "No. SSLCommerz is a payment gateway or payment processor. Durqo does not describe it as an escrow provider." },
-    { q: "Is Durqo the same as Flippa or Acquire.com?", a: "All three platforms help connect buyers and sellers of digital businesses, but they have different markets, fees and transaction processes. Durqo's intended distinction is its Bangladesh-focused BDT payment and local payout experience." },
-    { q: "What should I do if my payment status is pending?", a: "Do not submit the same payment again immediately. Check the order status and contact support@durqo.com so the transaction can be reviewed." },
+    { q: "Does Durqo charge buyers a marketplace fee?", a: "No. Durqo does not charge buyers a marketplace fee. The buyer pays the agreed purchase price, although disclosed payment-provider, banking or currency-related charges may apply." },
+    { q: "How much does Durqo charge sellers?", a: `Durqo deducts a tiered success fee based on the final sale price: ${SUCCESS_FEE_TIERS.map((t) => `${t.label} → ${fmtRate(t.rate)}`).join(", ")}. The success fee is deducted only after a successful sale.` },
+    { q: "Is SSLCommerz an escrow service?", a: "No. SSLCommerz is a payment gateway or payment processor and is not described as an escrow provider." },
+    { q: "How is Durqo different from Flippa or Acquire.com?", a: "Flippa and Acquire.com are established international marketplaces serving broad global audiences. Durqo is the first marketplace specifically built to support the purchase of digital businesses in BDT and eligible seller payouts through supported local methods." },
+    { q: "What should I do if my payment status is pending?", a: "Do not submit the same payment again immediately. Check your order status and contact support@durqo.com so the transaction can be reviewed." },
     { q: "Where can I get help?", a: "Contact support@durqo.com before repeating a payment, changing payment methods or sending money using different instructions." },
   ].map(({ q, a }) => ({
     "@type": "Question",
@@ -410,17 +443,19 @@ export default function BuyAndSellInBdtPage() {
       <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
         <Container>
           <Inner>
-            <div className="grid gap-10 lg:grid-cols-[56%_44%] lg:gap-16">
-              <div>
+            <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:gap-16">
+              <div className="min-w-0">
                 <DashEyebrow>BDT payments for Bangladesh</DashEyebrow>
                 <h1 className="text-4xl leading-[1.1] sm:text-5xl lg:text-[3.4rem]">
                   Buy and Sell Digital Businesses with{" "}
                   <span className="text-brand">Bangladeshi Taka (BDT).</span>
                 </h1>
-                <p className="mt-5 max-w-[58ch] text-lg leading-relaxed text-ink-soft">
-                  Durqo helps Bangladesh-based buyers purchase digital businesses using supported local payment
-                  channels. After a successful sale and completed asset transfer, eligible Bangladesh-based sellers
-                  can request their available earnings through supported BDT payout methods.
+                <p className="mt-5 max-w-[62ch] text-lg leading-relaxed text-ink-soft">
+                  Durqo is the first marketplace for buying and selling digital businesses in BDT. Bangladesh-based
+                  buyers can purchase eligible websites, e-commerce businesses, SaaS products, mobile apps and other
+                  income-generating digital businesses using supported local payment channels. After a successful
+                  sale and completed asset transfer, eligible sellers can receive their sale proceeds through
+                  supported BDT payout methods.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Button href="/buy" size="lg">
@@ -445,7 +480,7 @@ export default function BuyAndSellInBdtPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
+              <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
                 <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
                   BDT Transaction Overview
                 </p>
@@ -458,7 +493,8 @@ export default function BuyAndSellInBdtPage() {
                     <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">For buyers</p>
                     <h3 className="text-sm font-semibold text-ink">Pay in BDT through SSLCommerz</h3>
                     <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      Available channels may include bKash, Nagad, Rocket, supported banks, and credit or debit cards.
+                      Payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards
+                      through SSLCommerz.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {["bKash", "Nagad", "Rocket", "Bank", "Card"].map((label) => (
@@ -478,10 +514,10 @@ export default function BuyAndSellInBdtPage() {
                   </span>
                   <div>
                     <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">For sellers</p>
-                    <h3 className="text-sm font-semibold text-ink">Request eligible earnings in BDT</h3>
+                    <h3 className="text-sm font-semibold text-ink">Receive eligible earnings in BDT</h3>
                     <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      Available payout methods may include bank transfer, bKash, Nagad and Rocket, subject to seller
-                      eligibility and verification.
+                      Supported payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller
+                      eligibility, account verification and applicable withdrawal limits.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
                       {["Bank Transfer", "bKash", "Nagad", "Rocket"].map((label) => (
@@ -496,7 +532,8 @@ export default function BuyAndSellInBdtPage() {
                 <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-paper-sunk px-3.5 py-3">
                   <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
                   <p className="text-xs leading-relaxed text-ink-faint">
-                    Buyer payments and seller payouts are separate processes.
+                    Buyer payments and seller payouts follow separate processes. A confirmed buyer payment does not
+                    immediately create an available seller balance.
                   </p>
                 </div>
               </div>
@@ -511,7 +548,10 @@ export default function BuyAndSellInBdtPage() {
           <Inner>
             <div className="mb-10 text-center">
               <DashEyebrow center>Choose the information relevant to you</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Buying and selling involve different payment steps.</h2>
+              <h2 className="text-2xl sm:text-3xl">Buying and Selling Follow Different BDT Processes</h2>
+              <p className="mx-auto mt-3 max-w-[52ch] text-sm text-ink-soft">
+                Choose the information that applies to your role in the transaction.
+              </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="rounded-xl border border-rule bg-paper-raised p-7">
@@ -519,9 +559,9 @@ export default function BuyAndSellInBdtPage() {
                   <ShoppingCart size={19} />
                 </span>
                 <p className="mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">For buyers</p>
-                <h3 className="text-lg font-semibold text-ink">Purchase a digital business in BDT</h3>
+                <h3 className="text-lg font-semibold text-ink">Purchase a Digital Business in BDT</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Learn how Durqo displays the checkout amount, processes an eligible SSLCommerz payment and handles
+                  Learn how Durqo displays the BDT checkout amount, processes SSLCommerz payments and handles
                   purchases priced above USD 2,000.
                 </p>
                 <a href="#buyer-payment" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
@@ -534,10 +574,10 @@ export default function BuyAndSellInBdtPage() {
                   <Store size={19} />
                 </span>
                 <p className="mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">For sellers</p>
-                <h3 className="text-lg font-semibold text-ink">Receive eligible earnings in BDT</h3>
+                <h3 className="text-lg font-semibold text-ink">Receive Eligible Sale Proceeds in BDT</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Learn when completed sale proceeds become available and how an eligible Bangladesh-based seller
-                  submits a local payout request.
+                  Learn when completed sale proceeds become available and how an eligible seller submits a local
+                  payout request.
                 </p>
                 <a href="#seller-payout" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-[#92730F] hover:underline">
                   How Seller Payouts Work
@@ -549,7 +589,7 @@ export default function BuyAndSellInBdtPage() {
         </Container>
       </section>
 
-      {/* BUYER PAYMENT — RULES + TIMELINE */}
+      {/* BUYER PAYMENT — INTRO + CHANNELS + RULES + PROCESS */}
       <section id="buyer-payment" className="scroll-mt-20 border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
@@ -557,18 +597,28 @@ export default function BuyAndSellInBdtPage() {
               <DashEyebrow>For buyers</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Pay for a Digital Business in BDT</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Eligible Bangladesh-based buyers can choose SSLCommerz at checkout. Before confirming payment, Durqo
-                displays the applicable exchange rate and the exact amount payable in Bangladeshi Taka. Available
-                payment channels may include bKash, Nagad, Rocket, supported banks, and credit or debit cards — the
-                methods currently available will be shown on the SSLCommerz payment screen.
+                Bangladesh-based buyers can choose SSLCommerz at checkout. Before confirming payment, Durqo displays
+                the applicable exchange rate and exact amount payable in Bangladeshi Taka.
               </p>
+            </div>
+
+            <h3 className="mb-2 text-lg font-semibold text-ink">Supported Payment Channels</h3>
+            <p className="mb-4 max-w-[70ch] text-sm text-ink-soft">
+              SSLCommerz payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards.
+            </p>
+            <div className="mb-14 flex flex-wrap gap-2">
+              {BUYER_PAYMENT_CHANNELS.map((label) => (
+                <span key={label} className="mono rounded-full border border-rule bg-paper-raised px-3.5 py-1.5 text-xs text-ink-soft">
+                  {label}
+                </span>
+              ))}
             </div>
 
             <h3 className="mb-5 text-lg font-semibold text-ink">How Much Will You Pay at Checkout?</h3>
             <p className="mb-6 max-w-[70ch] text-sm text-ink-soft">
               The amount collected through SSLCommerz depends on the listing&rsquo;s price in USD.
             </p>
-            <div className="mb-14 grid gap-5 sm:grid-cols-2">
+            <div className="mb-5 grid gap-5 sm:grid-cols-2">
               <div className="rounded-xl border border-rule bg-brand-soft p-6">
                 <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-paper-raised text-brand-strong">
                   <Tag size={18} />
@@ -576,8 +626,8 @@ export default function BuyAndSellInBdtPage() {
                 <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">USD 2,000 or less</p>
                 <h4 className="mt-1 text-base font-semibold text-ink">Pay the Full BDT Amount Online</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                  You pay the full BDT equivalent through SSLCommerz at checkout. The applicable exchange rate and
-                  exact BDT total are displayed before you confirm the payment.
+                  You pay the complete BDT equivalent through SSLCommerz at checkout. Durqo displays the applicable
+                  exchange rate and exact BDT total before you confirm the payment.
                 </p>
                 <p className="mono mt-3 text-xs font-semibold text-brand-strong">Status: Full payment at checkout</p>
               </div>
@@ -588,16 +638,27 @@ export default function BuyAndSellInBdtPage() {
                 <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">Above USD 2,000</p>
                 <h4 className="mt-1 text-base font-semibold text-ink">Pay the Initial USD 2,000 Equivalent</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                  You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. Once the initial payment is
-                  confirmed, Durqo emails instructions for paying the remaining balance by wire transfer, credit card
-                  or debit card.
+                  You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. After the initial payment
+                  is confirmed, Durqo emails you instructions for paying the remaining balance by wire transfer,
+                  credit card or debit card.
                 </p>
-                <p className="mono mt-3 text-xs font-semibold text-[#92730F]">Status: Full balance must be verified</p>
+                <p className="mono mt-3 text-xs font-semibold text-[#92730F]">Status: The complete balance must be received and verified</p>
               </div>
             </div>
+            <div className="mb-14 flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-5">
+              <Info size={18} className="mt-0.5 shrink-0 text-brand-strong" />
+              <p className="text-sm leading-relaxed text-ink-soft">
+                A purchase priced above USD 2,000 is not fully funded after the initial SSLCommerz payment. The
+                transaction proceeds to asset transfer only after Durqo receives and verifies the complete purchase
+                price.
+              </p>
+            </div>
 
+            <DashEyebrow>Step by step</DashEyebrow>
             <h3 className="mb-2 text-lg font-semibold text-ink">How Buying in BDT Works</h3>
-            <p className="mb-8 max-w-[70ch] text-sm text-ink-soft">A simple and secure process from browsing to asset transfer.</p>
+            <p className="mb-8 max-w-[70ch] text-sm text-ink-soft">
+              A clear process connects the buyer&rsquo;s payment with the digital-asset transfer.
+            </p>
             <NumberedFlow steps={BUYER_STEPS} />
           </Inner>
         </Container>
@@ -617,11 +678,11 @@ export default function BuyAndSellInBdtPage() {
               </p>
             </div>
 
-            <h3 className="mb-8 text-lg font-semibold text-ink">How Bangladeshi Sellers Get Paid</h3>
+            <h3 className="mb-8 text-lg font-semibold text-ink">How Sellers Get Paid in BDT</h3>
             <NumberedFlow steps={SELLER_STATUSES} />
 
             <h3 className="mb-5 mt-14 text-lg font-semibold text-ink">Supported Local Payout Methods</h3>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-4">
               {PAYOUT_METHODS.map(({ icon: Icon, title, body, tint }) => (
                 <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
                   <Icon size={18} className={`mb-2 ${tint}`} />
@@ -630,13 +691,36 @@ export default function BuyAndSellInBdtPage() {
                 </div>
               ))}
             </div>
-            <p className="mt-5 max-w-[72ch] text-xs leading-relaxed text-ink-faint">
-              Each limit displayed for bKash, Nagad or Rocket applies independently to the selected method: up to
-              ৳50,000 per day and ৳300,000 per month per method, calculated at that day&rsquo;s exchange rate. Bank
-              Transfer has no such cap. Once eligible earnings appear as available in the Seller Dashboard, open
-              Earnings &amp; Withdrawals, select an available payout method, provide the required account details and
-              submit the withdrawal request.
+
+            <p className="mt-5 max-w-[72ch] text-sm leading-relaxed text-ink-soft">
+              Once eligible earnings appear as available in the Seller Dashboard, the seller can open Earnings &amp;
+              Withdrawals, select a supported payout method, provide the required account details and submit a
+              withdrawal request.
             </p>
+
+            <div className="mt-5 max-w-[72ch] rounded-xl border border-rule bg-paper-raised p-5">
+              <p className="text-sm font-semibold text-ink">Each withdrawal limit applies independently to the selected method:</p>
+              <dl className="mt-3 flex flex-col gap-1.5">
+                {PAYOUT_LIMITS.map(({ method, limit }) => (
+                  <div key={method} className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                    <dt className="mono text-xs font-semibold uppercase tracking-wider text-ink-soft">{method}</dt>
+                    <dd className="text-sm text-ink">{limit}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-3 text-xs leading-relaxed text-ink-faint">
+                Durqo does not combine the bKash, Nagad and Rocket limits. Bank Transfer does not use these mobile
+                financial service limits. The withdrawal form displays both the USD amount deducted from your
+                available earnings and the estimated BDT amount you will receive.
+              </p>
+            </div>
+
+            <p className="mt-5 max-w-[72ch] text-sm leading-relaxed text-ink-soft">
+              Durqo normally reviews and processes payout requests within 3&ndash;5 business days. The receiving bank
+              or payment provider may require additional time to credit the seller&rsquo;s account after Durqo sends
+              the payment.
+            </p>
+
             <Link href="/payments" className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
               View Payment &amp; Withdrawal Details
               <ArrowRight size={14} />
@@ -659,9 +743,8 @@ export default function BuyAndSellInBdtPage() {
                     <h4 className="text-sm font-semibold text-ink">When You Purchase</h4>
                   </div>
                   <p className="text-sm leading-relaxed text-ink-soft">
-                    Digital businesses are listed in USD. When an eligible buyer chooses BDT payment, Durqo displays
-                    the applicable exchange rate and exact BDT amount before the payment is confirmed. The rate
-                    applied is the current market USD&ndash;BDT rate plus a flat &#2547;6 per US dollar.
+                    Digital businesses are listed in USD. When a Bangladesh-based buyer chooses BDT payment, Durqo
+                    displays the applicable exchange rate and exact BDT amount before the payment is confirmed.
                   </p>
                 </div>
                 <div>
@@ -671,9 +754,8 @@ export default function BuyAndSellInBdtPage() {
                   </div>
                   <p className="text-sm leading-relaxed text-ink-soft">
                     When eligible USD earnings are requested through a BDT payout method, the Seller Dashboard
-                    displays the applicable conversion rate, USD deduction and estimated BDT payout before the
-                    request is submitted. For bKash, Nagad and Rocket payouts, the rate applied is the current market
-                    USD&ndash;BDT rate minus &#2547;1.50 per US dollar.
+                    displays the applicable exchange rate, USD deduction and estimated BDT payout before the
+                    withdrawal request is submitted.
                   </p>
                 </div>
               </div>
@@ -692,9 +774,10 @@ export default function BuyAndSellInBdtPage() {
             <div className="mb-10 text-center">
               <DashEyebrow center>After full payment</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Complete the Handover in the Transfer Room</h2>
-              <p className="mx-auto mt-3 max-w-[62ch] text-[0.95rem] leading-relaxed text-ink-soft">
-                After the required full payment has been received and verified, the buyer and seller use a private
-                Transfer Room for the order.
+              <p className="mx-auto mt-3 max-w-[64ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                After the complete purchase price has been received and verified, the buyer and seller use a private
+                Transfer Room for the order. The seller submits each asset included in the sale, and the buyer
+                reviews and confirms each item before approving the completed transfer or reporting an issue.
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-3">
@@ -711,32 +794,37 @@ export default function BuyAndSellInBdtPage() {
             <div className="mt-6 flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-5">
               <Info size={18} className="mt-0.5 shrink-0 text-brand-strong" />
               <p className="text-sm leading-relaxed text-ink-soft">
-                The Transfer Room opens only after full payment is verified. For a purchase above USD 2,000, the
-                initial SSLCommerz payment does not unlock the Transfer Room. SSLCommerz is a payment gateway or
-                payment processor, not an escrow provider &mdash; it does not hold the seller&rsquo;s money until
-                buyer approval.
+                The Transfer Room opens only after the complete purchase price has been received and verified. For a
+                purchase above USD 2,000, the initial SSLCommerz payment does not unlock the Transfer Room.
+                SSLCommerz is a payment gateway or payment processor, not an escrow provider &mdash; it does not hold
+                the seller&rsquo;s funds until the buyer approves the transfer.
               </p>
             </div>
           </Inner>
         </Container>
       </section>
 
-      {/* COMPARISON */}
+      {/* MARKETPLACE COMPARISON */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[70ch]">
-              <DashEyebrow>How Durqo compares</DashEyebrow>
+            <div className="mb-10 max-w-[75ch]">
+              <DashEyebrow>Compare marketplaces</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">How Durqo Compares with Major Digital-Business Marketplaces</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                International platforms have built extensive global networks and transaction tools. Durqo isn&rsquo;t
-                presented as larger than these established marketplaces &mdash; its intended distinction is a
-                Bangladesh-focused experience combining eligible BDT buyer payments, supported local seller payouts
-                and a tracked asset-transfer workflow.
+                Flippa, Acquire.com, Empire Flippers and Motion Invest serve international buyers and sellers
+                through different marketplace and brokerage models. Durqo is the first marketplace specifically
+                built to let buyers purchase digital businesses in BDT and eligible sellers receive their sale
+                proceeds through supported local BDT payout methods. Durqo is not presented as larger or more
+                established than these international platforms. Its distinction is its Bangladesh-focused BDT
+                transaction experience.
               </p>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-rule">
+            {/* Desktop / tablet: full comparison table. Hidden on mobile per
+                spec ("do not create a horizontally scrolling comparison
+                table on mobile") in favor of the stacked cards below. */}
+            <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
               <table className="w-full min-w-[820px] border-collapse bg-paper-raised text-left">
                 <thead>
                   <tr className="border-b border-rule bg-paper-sunk">
@@ -763,22 +851,59 @@ export default function BuyAndSellInBdtPage() {
               </table>
             </div>
 
+            {/* Mobile: stacked comparison cards, one per marketplace, derived
+                from the same COMPARISON_ROWS data as the table above. */}
+            <div className="flex flex-col gap-4 md:hidden">
+              {COMPARISON_COMPANIES.map((company) => (
+                <div
+                  key={company.name}
+                  className={`rounded-xl border p-5 ${
+                    company.highlight ? "border-brand/30 bg-brand-soft/40" : "border-rule bg-paper-raised"
+                  }`}
+                >
+                  <h3 className={`text-sm font-semibold ${company.highlight ? "text-brand-strong" : "text-ink"}`}>
+                    {company.name}
+                  </h3>
+                  <dl className="mt-3 flex flex-col gap-3">
+                    {company.rows.map((row) => (
+                      <div key={row.feature}>
+                        <dt className="mono text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">{row.feature}</dt>
+                        <dd className="mt-0.5 text-sm leading-relaxed text-ink-soft">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ))}
+            </div>
+
             <p className="mt-4 max-w-[80ch] text-xs leading-relaxed text-ink-faint">
-              Reviewed 14 September 2026 against each marketplace&rsquo;s own public pages ({" "}
+              Marketplace services, fees and eligibility requirements can change. Buyers and sellers should review
+              each platform&rsquo;s current terms before making a transaction decision. Reviewed 14 September 2026
+              against each marketplace&rsquo;s own public pages ({" "}
               <a href="https://flippa.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-strong">Flippa</a>,{" "}
               <a href="https://acquire.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-strong">Acquire.com</a>,{" "}
               <a href="https://empireflippers.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-strong">Empire Flippers</a>,{" "}
               <a href="https://www.motioninvest.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-brand-strong">Motion Invest</a>
-              ). Competitor services, eligibility rules and fees can change &mdash; verify current terms directly with
-              each marketplace before relying on this comparison.
+              ).
             </p>
+          </Inner>
+        </Container>
+      </section>
 
-            <div className="mt-10 grid gap-4 sm:grid-cols-3">
-              {[
-                { icon: Landmark, title: "Pay in Bangladeshi Taka", body: "Eligible Bangladesh-based buyers can review the applicable exchange rate and exact BDT amount before confirming payment through a supported local channel." },
-                { icon: ShoppingCart, title: "Sell Across Multiple Digital Categories", body: "Durqo is designed for eligible websites, e-commerce businesses, SaaS products, mobile applications and other income-generating digital businesses." },
-                { icon: ShieldCheck, title: "Follow a Connected Transfer Process", body: "Payment status and asset transfer remain connected to the order. The Transfer Room stays unavailable until the complete purchase price has been verified." },
-              ].map(({ icon: Icon, title, body }) => (
+      {/* WHY DURQO IS DIFFERENT */}
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="mb-10 max-w-[70ch] text-center sm:mx-auto">
+              <DashEyebrow center>Built for Bangladesh</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Why Buy and Sell Digital Businesses Through Durqo?</h2>
+              <p className="mx-auto mt-3 max-w-[60ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                Durqo combines Bangladesh-focused payment accessibility with a structured marketplace and
+                asset-transfer process.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {WHY_DIFFERENT_CARDS.map(({ icon: Icon, title, body }) => (
                 <div key={title} className="rounded-xl border border-rule bg-paper-raised p-6">
                   <Icon size={18} className="mb-2 text-brand-strong" />
                   <h4 className="text-sm font-semibold text-ink">{title}</h4>
@@ -791,7 +916,7 @@ export default function BuyAndSellInBdtPage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[860px]">
             <DashEyebrow center>Frequently asked questions</DashEyebrow>
@@ -806,8 +931,9 @@ export default function BuyAndSellInBdtPage() {
         <Container>
           <Inner>
             <h2 className="text-2xl text-white sm:text-3xl">Ready to Buy or Sell a Digital Business?</h2>
-            <p className="mx-auto mt-3 max-w-[52ch] text-[0.95rem] leading-relaxed text-white/65">
-              Explore available digital businesses, or create a listing and connect with interested buyers on Durqo.
+            <p className="mx-auto mt-3 max-w-[54ch] text-[0.95rem] leading-relaxed text-white/65">
+              Explore income-generating digital businesses or create a listing and connect with interested buyers
+              through Durqo.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Button href="/buy" size="lg">
@@ -823,6 +949,10 @@ export default function BuyAndSellInBdtPage() {
               <a href="mailto:support@durqo.com" className="font-semibold text-white/80 hover:text-white">
                 Contact support@durqo.com
               </a>
+            </p>
+            <p className="mx-auto mt-4 flex max-w-[52ch] flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-white/40">
+              <span>Transparent transaction process</span>
+              <span>Support from listing to asset transfer</span>
             </p>
           </Inner>
         </Container>
