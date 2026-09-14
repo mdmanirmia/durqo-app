@@ -140,7 +140,16 @@ const FAQ_GROUPS = [
       },
       {
         question: "What withdrawal methods can I use?",
-        answer: "Bank Transfer, bKash, Rocket, Nagad, PayPal or Wise. bKash, Rocket and Nagad each have their own independent limit of ৳50,000 per day and ৳300,000 per month; the other methods have no such cap.",
+        answer: (
+          <>
+            Bank Transfer, bKash, Rocket, Nagad, PayPal or Wise. bKash, Rocket and Nagad each have their own
+            independent limit of ৳50,000 per day and ৳300,000 per month; the other methods have no such cap. See{" "}
+            <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+              Buy and Sell Digital Businesses in BDT
+            </Link>{" "}
+            for the exact BDT conversion rate applied to payouts.
+          </>
+        ),
       },
     ],
   },
