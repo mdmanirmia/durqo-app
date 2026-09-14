@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Eye, LifeBuoy, Mail, ShieldCheck, Smartphone, Landmark } from "lucide-react";
+import { Eye, LifeBuoy, Mail, ShieldCheck, Smartphone, Landmark, Rocket as RocketGlyph } from "lucide-react";
 import Container from "./ui/Container";
 import { FacebookIcon, InstagramIcon } from "./icons/SocialIcons";
 import { StripeIcon } from "./icons/PaymentIcons";
@@ -20,18 +20,28 @@ function ColumnHeading({ children }: { children: React.ReactNode }) {
 // buyers.
 //
 // Stripe's badge uses its real mark (see icons/PaymentIcons.tsx for exactly
-// where that path came from and why it's safe to use — Stripe itself
-// publishes it for merchants). The other five stay plain lucide icon + text:
-// no official brand-kit was found for bKash, Nagad, Rocket or Escrow.com,
-// and their only available logo copies (Wikipedia included) are explicitly
-// non-free/no-external-reuse — see the PaymentIcons.tsx comment for the
-// full reasoning. "Bank Transfer" was never brand-specific to begin with.
+// where that path came from and why it's safe to use). The other four brand
+// badges are deliberately NOT their real logos — no official brand-kit was
+// found for bKash, Nagad, Rocket or Escrow.com, and their only available
+// logo copies (Wikipedia included) are explicitly non-free/no-external-reuse
+// (see PaymentIcons.tsx). Per the merchant's own call ("exact na parle o oi
+// rokom dite dao" — approximate is fine if exact isn't available), each
+// keeps a generic lucide glyph but tinted to that brand's real, publicly
+// documented color so the badge still reads as "that brand" at a glance,
+// without tracing anyone's actual copyrighted logo artwork:
+//   - bKash   #E2136E — bKash's own pink (logotyp.us bKash brand page)
+//   - Nagad   #ED1C24 — Nagad's own red/orange (logotyp.us Nagad brand page)
+//   - Rocket  #7B1E3F — DBBL Rocket's dark maroon; no official hex found,
+//             best-effort approximation from the logo's visual color
+//   - Escrow.com #42C31D — Escrow.com's own green (logotyp.us Escrow page)
+// "Bank Transfer" was never brand-specific, so it keeps the site's own
+// accent color instead of a made-up one.
 const PAYMENT_BADGES = [
   { icon: StripeIcon, label: "Stripe", iconClassName: "text-[#635BFF]" },
-  { icon: ShieldCheck, label: "Escrow.com", iconClassName: "text-brand" },
-  { icon: Smartphone, label: "bKash", iconClassName: "text-brand" },
-  { icon: Smartphone, label: "Rocket", iconClassName: "text-brand" },
-  { icon: Smartphone, label: "Nagad", iconClassName: "text-brand" },
+  { icon: ShieldCheck, label: "Escrow.com", iconClassName: "text-[#42C31D]" },
+  { icon: Smartphone, label: "bKash", iconClassName: "text-[#E2136E]" },
+  { icon: RocketGlyph, label: "Rocket", iconClassName: "text-[#7B1E3F]" },
+  { icon: Smartphone, label: "Nagad", iconClassName: "text-[#ED1C24]" },
   { icon: Landmark, label: "Bank Transfer", iconClassName: "text-brand" },
 ];
 
