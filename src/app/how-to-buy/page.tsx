@@ -420,7 +420,11 @@ export default function HowToBuyPage() {
               <Link href="/payments" className="font-semibold text-brand-strong hover:underline">
                 Payment &amp; Withdrawal
               </Link>{" "}
-              for the full breakdown.
+              for the full breakdown, or{" "}
+              <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+                Buy and Sell Digital Businesses in BDT
+              </Link>{" "}
+              for the Bangladesh-specific walkthrough.
             </p>
           </Inner>
         </Container>
