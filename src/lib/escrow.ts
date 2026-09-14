@@ -51,6 +51,37 @@ function authHeader(config: EscrowConfig): string {
   return "Basic " + Buffer.from(`${config.apiEmail}:${config.apiKey}`).toString("base64");
 }
 
+// Sep 14, 2026: a real "Pay with Escrow.com" attempt failed with the API
+// returning HTTP 422 (Unprocessable Entity — the request was rejected on
+// validation, not a transport/auth problem), but the buyer only ever saw
+// the bare "Escrow.com API returned HTTP 422" fallback below. Per Escrow.com's
+// own API reference (escrow.com/api/docs/reference), a 422 comes back as a
+// TYPED validation-error object — TransactionValidationErrors,
+// ItemValidationErrors, ExtraAttributesErrors, etc. — with per-field
+// messages nested inside, not a flat `{ message: "..." }` the way the old
+// code assumed. That shape didn't match the `"message" in data` check
+// above, so the real reason was silently discarded on both sides: the
+// buyer's modal and this server's own logs. Fixed below by (1) always
+// logging the raw response body server-side on failure, regardless of its
+// shape, so the actual validation error is visible in Vercel logs next
+// time, and (2) walking the parsed error body for every string it
+// contains (whatever the exact field names turn out to be) so the buyer
+// sees something more specific than a bare status code. This does not
+// change anything about a *successful* request/response.
+function flattenErrorStrings(value: unknown, path: string[] = [], out: string[] = []): string[] {
+  if (value == null) return out;
+  if (typeof value === "string") {
+    if (value.trim()) out.push(path.length ? `${path.join(".")}: ${value}` : value);
+  } else if (Array.isArray(value)) {
+    value.forEach((v, i) => flattenErrorStrings(v, [...path, String(i)], out));
+  } else if (typeof value === "object") {
+    for (const [key, v] of Object.entries(value as Record<string, unknown>)) {
+      flattenErrorStrings(v, [...path, key], out);
+    }
+  }
+  return out;
+}
+
 async function escrowFetch<T>(config: EscrowConfig, path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${config.apiBase}${path}`, {
     ...init,
@@ -68,11 +99,27 @@ async function escrowFetch<T>(config: EscrowConfig, path: string, init?: Request
     // non-JSON error body — fall through, message below covers it
   }
   if (!res.ok) {
-    const message =
-      (data && typeof data === "object" && "message" in data && typeof (data as { message?: unknown }).message === "string"
-        ? (data as { message: string }).message
-        : undefined) ?? `Escrow.com API returned HTTP ${res.status}`;
-    throw new Error(message);
+    // Always log the raw body — this is what actually diagnoses a failure
+    // like the 422 above; the message returned to the caller may still be
+    // trimmed/generic, but this line is the source of truth in Vercel logs.
+    console.error(`[escrow] ${init?.method ?? "GET"} ${path} failed: HTTP ${res.status} — ${text || "(empty body)"}`);
+
+    let message: string | undefined;
+    if (data && typeof data === "object") {
+      const obj = data as Record<string, unknown>;
+      if (typeof obj.message === "string" && obj.message.trim()) {
+        message = obj.message;
+      } else if (typeof obj.error === "string" && obj.error.trim()) {
+        message = obj.error;
+      } else {
+        // Drop the schema-name discriminator field ("type": "ItemValidationErrors"
+        // etc.) so it doesn't get mixed into the flattened message text.
+        const { type: _discriminator, ...rest } = obj;
+        const flattened = flattenErrorStrings(rest);
+        if (flattened.length > 0) message = flattened.join("; ");
+      }
+    }
+    throw new Error(message || `Escrow.com API returned HTTP ${res.status}`);
   }
   return data as T;
 }
