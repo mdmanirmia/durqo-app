@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Eye, LifeBuoy, Mail, ShieldCheck, Smartphone, Landmark, Rocket as RocketGlyph } from "lucide-react";
 import Container from "./ui/Container";
 import { FacebookIcon, InstagramIcon } from "./icons/SocialIcons";
-import { StripeIcon } from "./icons/PaymentIcons";
+import { StripeIcon, BkashIcon } from "./icons/PaymentIcons";
 
 function ColumnHeading({ children }: { children: React.ReactNode }) {
   return <h4 className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-white/45">{children}</h4>;
@@ -19,27 +19,31 @@ function ColumnHeading({ children }: { children: React.ReactNode }) {
 // Bank transfer all run through the live SSLCommerz rail for Bangladeshi
 // buyers.
 //
-// Stripe's badge uses its real mark (see icons/PaymentIcons.tsx for exactly
-// where that path came from and why it's safe to use). The other four brand
-// badges are deliberately NOT their real logos — no official brand-kit was
-// found for bKash, Nagad, Rocket or Escrow.com, and their only available
-// logo copies (Wikipedia included) are explicitly non-free/no-external-reuse
-// (see PaymentIcons.tsx). Per the merchant's own call ("exact na parle o oi
-// rokom dite dao" — approximate is fine if exact isn't available), each
-// keeps a generic lucide glyph but tinted to that brand's real, publicly
-// documented color so the badge still reads as "that brand" at a glance,
-// without tracing anyone's actual copyrighted logo artwork:
-//   - bKash   #E2136E — bKash's own pink (logotyp.us bKash brand page)
+// Stripe and bKash now use each brand's own real mark (see
+// icons/PaymentIcons.tsx for exactly where each path came from — Stripe's
+// official newsroom asset via Simple Icons, bKash's own live-site header
+// SVG). Escrow.com's real wordmark was extracted the same way (also in
+// PaymentIcons.tsx, kept there for future use) but the merchant asked to
+// leave its badge as-is, so it stays the generic ShieldCheck tinted to
+// Escrow.com's own documented green. Nagad and Rocket (Dutch-Bangla Bank)
+// still don't have a real mark: both brands only serve their logo as a
+// raster PNG on their own sites (not inline vector like bKash/Escrow/
+// Stripe), and DBBL's site has no "Rocket"-specific mark at all — only the
+// parent bank's own logo, which would misidentify the payment method if
+// used here. Per the merchant's own call ("exact na parle o oi rokom dite
+// dao" — approximate is fine if exact isn't available), each of these
+// three keeps a generic lucide glyph tinted to that brand's real, publicly
+// documented color so the badge still reads as "that brand" at a glance:
+//   - Escrow.com #42C31D — Escrow.com's own green (logotyp.us Escrow page)
 //   - Nagad   #ED1C24 — Nagad's own red/orange (logotyp.us Nagad brand page)
 //   - Rocket  #7B1E3F — DBBL Rocket's dark maroon; no official hex found,
 //             best-effort approximation from the logo's visual color
-//   - Escrow.com #42C31D — Escrow.com's own green (logotyp.us Escrow page)
 // "Bank Transfer" was never brand-specific, so it keeps the site's own
 // accent color instead of a made-up one.
 const PAYMENT_BADGES = [
   { icon: StripeIcon, label: "Stripe", iconClassName: "text-[#635BFF]" },
   { icon: ShieldCheck, label: "Escrow.com", iconClassName: "text-[#42C31D]" },
-  { icon: Smartphone, label: "bKash", iconClassName: "text-[#E2136E]" },
+  { icon: BkashIcon, label: "bKash", iconClassName: "text-[#E2136E]" },
   { icon: RocketGlyph, label: "Rocket", iconClassName: "text-[#7B1E3F]" },
   { icon: Smartphone, label: "Nagad", iconClassName: "text-[#ED1C24]" },
   { icon: Landmark, label: "Bank Transfer", iconClassName: "text-brand" },
