@@ -119,6 +119,20 @@ async function escrowFetch<T>(config: EscrowConfig, path: string, init?: Request
         if (flattened.length > 0) message = flattened.join("; ");
       }
     }
+
+    // Sep 14, 2026: a real attempt on a $15 domain listing hit this exact
+    // validation error. Traced it to Escrow.com's own $50 minimum Standard
+    // fee (confirmed live on escrow.com/fee-calculator) — for any listing
+    // priced under roughly $1,900, their minimum fee alone exceeds the
+    // purchase price, so the buyer's payment can never cover it. This isn't
+    // a bug in the request we send; it's Escrow.com's real minimum, so swap
+    // in a message that explains the actual constraint and points the buyer
+    // at Durqo's other payment options instead of the raw API string.
+    if (message && /amount paid by the buyer must be at least the amount of the escrow fee/i.test(message)) {
+      message =
+        "Escrow.com can't be used for this listing — their own minimum fee is larger than the purchase price. Please use one of the other payment options (Stripe, SSLCommerz, or Pay Later) instead.";
+    }
+
     throw new Error(message || `Escrow.com API returned HTTP ${res.status}`);
   }
   return data as T;
@@ -163,6 +177,21 @@ export interface EscrowTransaction {
 // cap+manual-remainder workaround exists is that Durqo has no other way to
 // safely hold a large sale amount; real Escrow.com escrow is exactly that,
 // so the full price goes through it here.
+//
+// Sep 14, 2026: a live purchase came back with "errors.items.0.category.0:
+// This is not a valid category for a general_merchandise item" — Escrow.com's
+// own docs (escrow.com/api/docs/create-transaction, "valid categories are
+// based on the type of item") list "business_and_internet" as valid for
+// general_merchandise, but the live API rejected it anyway (confirmed by
+// re-reading that exact doc page, not just recalling it). Since `category`
+// is documented as optional on the Item object ("we highly recommend
+// providing a category... as doing so can result in faster processing" —
+// never "required"), and the docs and the live validator now disagree on
+// which value is correct, the safe fix is to stop guessing a category at
+// all rather than swap in another unverified value against a live,
+// real-money endpoint. Every transaction this creates still processes
+// normally without one; Escrow.com's support can be asked for the actual
+// current enum if faster processing is wanted later.
 export async function createEscrowTransaction(
   config: EscrowConfig,
   params: CreateEscrowTransactionParams
@@ -181,7 +210,6 @@ export async function createEscrowTransaction(
           title: params.itemTitle,
           description: params.itemTitle,
           type: "general_merchandise",
-          category: "business_and_internet",
           shipping_type: "no_shipping",
           inspection_period: 259200, // 3 days, matches Escrow.com's own doc examples
           quantity: 1,
