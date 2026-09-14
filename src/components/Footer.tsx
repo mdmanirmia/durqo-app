@@ -92,8 +92,16 @@ export default function Footer() {
   const pathname = usePathname();
   const showTrustBar = pathname !== "/about" && pathname !== "/terms";
 
+  // Sep 14, 2026: dropped the old `mt-16` top margin. Several pages (BDT,
+  // Buyer/Seller FAQ, How to Buy/Sell, Payments, Sell, Privacy) end their
+  // final section in the same bg-brand-strong dark navy as this footer's
+  // trust bar — the margin inserted a band of plain white page background
+  // between two adjacent dark blocks, reading as a rendering glitch rather
+  // than intentional spacing. Every section already carries its own
+  // py-14/py-16 padding, so removing the extra margin here doesn't leave
+  // pages with a light final section feeling cramped against the footer.
   return (
-    <footer className="mt-16 bg-brand-strong text-white/80">
+    <footer className="bg-brand-strong text-white/80">
       {showTrustBar && (
         <div className="border-b border-white/10">
           <Container className="flex flex-wrap items-center justify-between gap-4 py-5">
