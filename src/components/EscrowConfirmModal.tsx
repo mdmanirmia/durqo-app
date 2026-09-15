@@ -2,9 +2,9 @@
 
 import { fmtUSD } from "@/lib/format";
 
-// Confirmation step shown before a buyer is redirected to Escrow.com's own
-// hosted page — same purpose as SslcommerzConfirmModal.tsx (make sure the
-// buyer understands what's about to happen before they leave Durqo), but
+// Confirmation step shown before a buyer starts an Escrow.com transaction —
+// same purpose as SslcommerzConfirmModal.tsx (make sure the buyer
+// understands what's about to happen before they leave Durqo), but
 // simpler: there's no currency conversion to show, since Escrow.com charges
 // the full USD listing price directly, with no deposit cap and no
 // off-platform remainder — the whole point of real escrow is that Durqo
@@ -14,6 +14,18 @@ import { fmtUSD } from "@/lib/format";
 // Escrow.com account to complete payment there, and Escrow.com charges its
 // own separate service fee on top of the listing price (shown on their
 // site before payment, not duplicated/estimated here to avoid drift).
+//
+// Sep 15, 2026: this used to redirect the buyer straight to an Escrow.com
+// agree+pay URL on confirm. Two live attempts showed Durqo's Escrow.com
+// account can't generate that link at all right now — see the long comment
+// on getEscrowAgreeLink() in src/lib/escrow.ts for the full trail (one
+// attempt got "Buyer is unable to agree at this stage," the next got
+// "Partner account not authorized to perform actions on behalf of
+// customers," an approved-partner-only feature Durqo's account doesn't
+// have). What does work, confirmed on both of those same live attempts, is
+// Escrow.com's own automatic "please agree" email straight to the buyer —
+// so the "success" status below replaces the redirect with a message
+// pointing the buyer at that email instead.
 export interface EscrowQuote {
   fullPriceUsd: number;
   listingTitle: string;
@@ -24,13 +36,15 @@ export default function EscrowConfirmModal({
   quote,
   error,
   confirming,
+  buyerEmail,
   onConfirm,
   onCancel,
 }: {
-  status: "loading" | "ready" | "error";
+  status: "loading" | "ready" | "error" | "success";
   quote: EscrowQuote | null;
   error: string | null;
   confirming: boolean;
+  buyerEmail?: string | null;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -78,11 +92,12 @@ export default function EscrowConfirmModal({
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-              You&rsquo;ll be redirected to Escrow.com to complete this purchase. If you don&rsquo;t already have an
-              Escrow.com account, they&rsquo;ll create one for you and email you instructions to set a password.
-              Escrow.com charges its own service fee on top of the {fmtUSD(quote.fullPriceUsd)} price — you&rsquo;ll
-              see the exact amount on their site before you pay. Funds are released to the seller only after you
-              confirm you&rsquo;ve received the business.
+              Confirming creates a real Escrow.com transaction for this purchase, then Escrow.com emails you a
+              &ldquo;please agree&rdquo; link to finish there. If you don&rsquo;t already have an Escrow.com account,
+              they&rsquo;ll create one for you and email you instructions to set a password. Escrow.com charges its
+              own service fee on top of the {fmtUSD(quote.fullPriceUsd)} price — you&rsquo;ll see the exact amount on
+              their site before you pay. Funds are released to the seller only after you confirm you&rsquo;ve
+              received the business.
             </p>
 
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -100,7 +115,31 @@ export default function EscrowConfirmModal({
                 disabled={confirming}
                 className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
               >
-                {confirming ? "Redirecting…" : `Continue to Escrow.com`}
+                {confirming ? "Creating transaction…" : `Confirm and create transaction`}
+              </button>
+            </div>
+          </>
+        )}
+
+        {status === "success" && (
+          <>
+            <div className="mt-5 rounded-lg border border-rule bg-paper p-4">
+              <p className="text-sm font-semibold text-ink">Check your email to continue</p>
+              <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+                Your Escrow.com transaction has been created. Escrow.com just sent
+                {buyerEmail ? <> <span className="font-semibold text-ink">{buyerEmail}</span></> : " you"} an email
+                titled something like &ldquo;Please agree to the transaction&rdquo; — open it and click{" "}
+                <span className="font-semibold text-ink">Click to Agree</span> to review the terms and pay. It can
+                take a minute or two to arrive; check spam if you don&rsquo;t see it.
+              </p>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-hover"
+              >
+                Got it
               </button>
             </div>
           </>
