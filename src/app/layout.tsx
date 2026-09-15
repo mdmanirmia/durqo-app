@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 // Self-hosted fonts (bundled via npm, no runtime fetch to Google's CDN needed).
 import "@fontsource/inter/400.css";
@@ -90,6 +91,20 @@ export const metadata: Metadata = {
   },
 };
 
+// Sep 16, 2026: GA4 wired up via @next/third-parties/google's <GoogleAnalytics>
+// component — Next's own recommended way to load gtag.js (see
+// node_modules/next/dist/docs/01-app/02-guides/third-party-libraries.md),
+// rather than hand-rolling the <script> snippet with next/script. Gated
+// behind NEXT_PUBLIC_GA_ID (set in Vercel -> Environment Variables) instead
+// of hardcoding the measurement ID in source, matching every other
+// integration in this app (Stripe, SSLCommerz, Escrow.com, Resend all read
+// their config from env vars, never a literal in code). Leaving it unset
+// simply skips loading GA — same guarded-optional pattern as
+// RESEND_API_KEY in src/lib/email.ts. NEXT_PUBLIC_* vars are baked in at
+// build time, so changing this value requires a redeploy, not just a
+// dashboard save.
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -98,6 +113,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         {children}
         <Footer />
+        {GA_MEASUREMENT_ID && <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />}
       </body>
     </html>
   );
