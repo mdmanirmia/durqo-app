@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { GoogleAnalytics } from "@next/third-parties/google";
+import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 // Self-hosted fonts (bundled via npm, no runtime fetch to Google's CDN needed).
 import "@fontsource/inter/400.css";
@@ -105,10 +105,40 @@ export const metadata: Metadata = {
 // dashboard save.
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
 
+// Sep 15, 2026: Google Tag Manager, added to drive the Meta (Facebook)
+// Pixel + future conversion tags from GTM's own console instead of hand-
+// wiring each third-party pixel into this file. Same guarded-optional,
+// env-var-gated pattern as GA_MEASUREMENT_ID above — NEXT_PUBLIC_GTM_ID
+// isn't a secret (GTM container IDs are always visible in page source),
+// it's just kept out of source for the same consistency reason GA's ID
+// is: every tracking/integration ID in this app comes from an env var,
+// never a literal in code, so swapping environments or pausing tracking
+// never needs a code change. Uses @next/third-parties' own
+// <GoogleTagManager> component (see
+// node_modules/next/dist/docs/01-app/02-guides/third-party-libraries.md)
+// rather than hand-rolling the <script> snippet, matching how GA4 is
+// wired up two lines below. That component only injects the <head>-side
+// script pair — GTM's <noscript><iframe> fallback for JS-disabled
+// browsers isn't part of it, so it's added by hand as the very first
+// element inside <body>, exactly where Google's own installation
+// instructions place it.
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      {GTM_ID && <GoogleTagManager gtmId={GTM_ID} />}
       <body className="antialiased">
+        {GTM_ID && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            />
+          </noscript>
+        )}
         <ScrollRevealInit />
         <Header />
         {children}
