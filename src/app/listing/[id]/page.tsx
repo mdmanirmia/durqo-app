@@ -1032,7 +1032,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
                 <div className="mono text-3xl font-bold text-ink">{fmtUSD(price)}</div>
               </div>
               <div className="flex flex-col gap-1.5 px-5 py-3 sm:px-6">
-                <BuyNowButton listingId={listing.id} sold={listing.status === "sold"} />
+                <BuyNowButton listingId={listing.id} title={listing.title} price={price} sold={listing.status === "sold"} />
                 <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
                 <WishlistButton listingId={listing.id} variant="full" />
               </div>
