@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { isRealListingId } from "@/lib/is-demo-listing";
 import SslcommerzConfirmModal, { type SslcommerzQuote } from "@/components/SslcommerzConfirmModal";
 import EscrowConfirmModal, { type EscrowQuote } from "@/components/EscrowConfirmModal";
+import { trackBeginCheckout } from "@/lib/analytics";
 
 // "Buy Now" — skips the cart entirely and starts a checkout session for
 // just this one listing, via Stripe (/api/checkout), SSLCommerz's
@@ -32,7 +33,21 @@ import EscrowConfirmModal, { type EscrowQuote } from "@/components/EscrowConfirm
 // the copy sets expectations that the buyer will finish payment on
 // Escrow.com's own hosted page, possibly signing into (or being issued) an
 // Escrow.com account along the way.
-export default function BuyNowButton({ listingId, sold }: { listingId: string; sold?: boolean }) {
+export default function BuyNowButton({
+  listingId,
+  title,
+  price,
+  sold,
+}: {
+  listingId: string;
+  // Sep 16, 2026: optional — only used to enrich the GA4 begin_checkout
+  // event below with a real item name/value. The listing detail page (the
+  // only real caller) always has these on hand already; omitting them just
+  // means the event fires with a generic item_name instead of failing.
+  title?: string;
+  price?: number;
+  sold?: boolean;
+}) {
   const router = useRouter();
   const [stripeBusy, setStripeBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,6 +102,11 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         setStripeBusy(false);
         return;
       }
+      trackBeginCheckout({
+        value: price ?? 0,
+        paymentChannel: "stripe",
+        items: [{ item_id: listingId, item_name: title ?? "Listing", price }],
+      });
       // Deliberately don't reset `stripeBusy` — the browser is about to
       // navigate away to Stripe's hosted page.
       window.location.href = data.url;
@@ -149,6 +169,11 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         setSslConfirming(false);
         return;
       }
+      trackBeginCheckout({
+        value: sslQuote?.fullPriceUsd ?? price ?? 0,
+        paymentChannel: "sslcommerz",
+        items: [{ item_id: listingId, item_name: title ?? "Listing", price }],
+      });
       // Deliberately not resetting `sslConfirming` on success — this
       // component is about to be torn down by the navigation.
       window.location.href = data.url;
@@ -240,6 +265,11 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         setEscrowConfirming(false);
         return;
       }
+      trackBeginCheckout({
+        value: escrowQuote?.fullPriceUsd ?? price ?? 0,
+        paymentChannel: "escrow_com",
+        items: [{ item_id: listingId, item_name: title ?? "Listing", price }],
+      });
       // No redirect anymore — see EscrowConfirmModal.tsx's top-of-file
       // comment. The transaction is created; Escrow.com's own email to the
       // buyer is what carries them the rest of the way.

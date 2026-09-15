@@ -32,6 +32,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { playNotificationSound } from "@/lib/notification-sound";
 import { markTransferMessagesRead } from "@/lib/data/transfer-messages.client";
+import { trackPurchase, trackPayLaterOrderCreated, hasTrackedPurchase, markPurchaseTracked } from "@/lib/analytics";
 
 // Phase 3 — Transfer Room UI. Renders two arrangements of the same
 // sub-pieces from one dataset: a `md:hidden` mobile flow in the order the
@@ -136,6 +137,7 @@ export interface TransferRoomData {
   buyerName: string;
   sellerName: string;
   amount: number;
+  paymentChannel: string;
   orderStatus: string;
   orderDate: string;
   room: TransferRoomState | null;
@@ -230,6 +232,37 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
   const [issueItemId, setIssueItemId] = useState<string>("");
   const [issueCategory, setIssueCategory] = useState(ISSUE_CATEGORIES[0].value);
   const [issueExplanation, setIssueExplanation] = useState("");
+
+  // Sep 16, 2026: GA4 purchase tracking. This page is reached by the buyer
+  // exactly once per order across all 4 checkout rails (see the comment on
+  // `paymentChannel` in page.tsx), and — unlike checkout/success — is also
+  // revisited many times afterward as the transfer progresses, so this
+  // fires the event once (via hasTrackedPurchase/markPurchaseTracked's
+  // localStorage guard) rather than on every render. Seller-side visits to
+  // this same room never fire it — the buyer's visit is the one that
+  // represents the actual conversion. A room only exists once payment (or,
+  // for Pay Later, order creation) has already succeeded, so `room` being
+  // non-null is itself the "this really happened" signal — no need to also
+  // check orderStatus here.
+  useEffect(() => {
+    if (data.viewerSide !== "buyer" || !room) return;
+    if (hasTrackedPurchase(data.orderId)) return;
+    const items = [{ item_id: data.orderId, item_name: data.listingTitle, price: data.amount }];
+    if (data.paymentChannel === "durqo_platform") {
+      trackPayLaterOrderCreated({ orderId: data.orderId, value: data.amount, items });
+    } else {
+      const channel =
+        data.paymentChannel === "stripe" || data.paymentChannel === "sslcommerz" || data.paymentChannel === "escrow_com"
+          ? data.paymentChannel
+          : "stripe"; // unrecognized/legacy channel value — still real money, default to a real-channel label rather than dropping the event
+      trackPurchase({ orderId: data.orderId, value: data.amount, paymentChannel: channel, items });
+    }
+    markPurchaseTracked(data.orderId);
+    // Only re-run if the identity of the thing being tracked changes —
+    // `room` going from null to non-null (or any other data field
+    // changing) shouldn't refire this once it's already tracked.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.orderId, data.viewerSide, !!room]);
 
   function run(key: string, fn: () => Promise<unknown>) {
     setActionError(null);

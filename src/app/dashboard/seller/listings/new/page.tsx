@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/client";
 import { confirmListingAssets } from "@/lib/actions/listing-assets";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds } from "@/lib/format";
+import { trackListingSubmitted } from "@/lib/analytics";
 
 const MONTHS = ["Sep 2025","Oct 2025","Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026"];
 const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01-01","2026-02-01","2026-03-01","2026-04-01","2026-05-01","2026-06-01","2026-07-01","2026-08-01"];
@@ -559,6 +560,7 @@ export default function AddNewBusinessPage() {
         await uploadGallery(supabase, sellerId, listingId, copyrightImages, "copyright_notes");
       }
 
+      trackListingSubmitted({ category: categoryId, price: Number(price) });
       setSubmitted(true);
       if (category.hasSeoData) {
         setCreatedListingId(listingId);
