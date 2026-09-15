@@ -234,16 +234,26 @@ export async function fetchEscrowTransaction(config: EscrowConfig, transactionId
 // STEP 2: a link the buyer's browser can be redirected straight to, to
 // agree to the transaction and pay, on Escrow.com's own hosted page —
 // exactly the "Durqo API -> escrow.com hosted page" flow the merchant
-// asked for. Escrow.com's own docs don't spell out how this endpoint picks
-// which party the link is for when more than one party still needs to
-// act (both buyer and seller are unagreed right after creation here,
-// unlike their docs' own examples where the API caller is "me" = the
-// buyer and only the seller is left to agree) — this hasn't been verified
-// against a real transaction yet. If the link this returns doesn't land the
-// buyer on the right action, the fallback is Escrow.com's own transaction
-// page (https://www.escrow.com/transactions/{id}/payment, from their
-// funding-a-transaction guide) or contacting developers@escrow.com.
-export async function getEscrowAgreeLink(config: EscrowConfig, transactionId: number): Promise<string> {
-  const data = await escrowFetch<{ landing_page: string }>(config, `/transaction/${transactionId}/web_link/agree`);
+// asked for.
+//
+// Sep 15, 2026: the first real attempt (once the category/fee bugs above
+// were fixed and a transaction actually got created) failed at this exact
+// step with "Buyer is unable to agree at this stage in the transaction."
+// Two pieces of evidence from that live transaction explain why: (1)
+// Escrow.com's own post-creation email went to the SELLER, saying their
+// "next step is to ask the Buyer to review and agree to the transaction by
+// sharing [a] link with them" — i.e. Durqo's partner key is treated as the
+// initiator, the seller side needs no further action, and only the buyer
+// still has to agree; (2) escrow.com/api/docs/basics documents an
+// `As-Customer: <email>` header that lets an approved partner "perform...
+// the agree... action on a transaction on behalf of another party," and
+// the agree-transaction guide notes the web_link variant is "most useful
+// when performed on behalf of another customer" via that same header. The
+// original call above never set it, so Escrow.com had no way to know this
+// link should be scoped to the buyer — passing it now is what was missing.
+export async function getEscrowAgreeLink(config: EscrowConfig, transactionId: number, onBehalfOfEmail: string): Promise<string> {
+  const data = await escrowFetch<{ landing_page: string }>(config, `/transaction/${transactionId}/web_link/agree`, {
+    headers: { "As-Customer": onBehalfOfEmail },
+  });
   return data.landing_page;
 }
