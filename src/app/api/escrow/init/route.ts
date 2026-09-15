@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getEscrowConfig, createEscrowTransaction } from "@/lib/escrow";
 import { getUserEmails } from "@/lib/notifications";
 import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listing-assets-gate";
+import { computeSuccessFee, centsToUSD } from "@/lib/fees";
 
 // Escrow.com counterpart to /api/sslcommerz/init (and /api/checkout for
 // Stripe) — turns a single listing into a real `orders` row (status
@@ -128,7 +129,15 @@ export async function POST(request: Request) {
 
     await supabase.from("orders").update({ escrow_transaction_id: transaction.id }).eq("id", insertedOrder.id);
 
-    console.log(`[escrow-init] order ${insertedOrder.id}: created Escrow.com transaction ${transaction.id} for $${price}`);
+    // Success Fee is now collected as a partner_fee item on the same
+    // Escrow.com transaction (see the dated comment on createEscrowTransaction()
+    // in src/lib/escrow.ts) rather than through Durqo's own withdrawal
+    // ledger, which deliberately excludes escrow_com orders. Logged here
+    // purely for visibility — nothing reads this value back.
+    const platformFeeUsd = centsToUSD(computeSuccessFee(price).feeCents);
+    console.log(
+      `[escrow-init] order ${insertedOrder.id}: created Escrow.com transaction ${transaction.id} for $${price} (Durqo Success Fee: $${platformFeeUsd}, seller-paid via partner_fee item)`
+    );
 
     return NextResponse.json({ ok: true, buyerEmail });
   } catch (err) {
