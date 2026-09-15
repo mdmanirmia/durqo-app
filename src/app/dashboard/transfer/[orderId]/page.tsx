@@ -50,6 +50,13 @@ export default async function TransferRoomPage({ params }: { params: Promise<{ o
     buyerName,
     sellerName,
     amount: Number(order.amount),
+    // Sep 16, 2026: which of the 4 checkout rails paid for this order —
+    // this page is the one shared landing point every rail's buyer
+    // eventually reaches (Stripe/SSLCommerz's redirect, Escrow.com's email
+    // link, Pay Later's direct redirect), so it's also the one place that
+    // fires GA4's "purchase" event. See the tracking effect in
+    // TransferRoomView.tsx.
+    paymentChannel: order.payment_channel as string,
     orderStatus: order.status,
     orderDate: (order.created_at as string).slice(0, 10),
     room: null,
