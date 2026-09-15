@@ -1,4 +1,5 @@
 import "server-only";
+import { computeSuccessFee, centsToUSD } from "@/lib/fees";
 
 // SERVER-ONLY Escrow.com client — same guarded-factory pattern as
 // src/lib/stripe.ts and src/lib/sslcommerz.ts: returns null until the
@@ -192,10 +193,53 @@ export interface EscrowTransaction {
 // real-money endpoint. Every transaction this creates still processes
 // normally without one; Escrow.com's support can be asked for the actual
 // current enum if faster processing is wanted later.
+//
+// Sep 15, 2026: added Durqo's Success Fee as a second, non-transferable
+// `partner_fee` item on the same transaction — closes a real gap found
+// while auditing whether Durqo actually gets paid on an Escrow.com sale.
+// For Stripe/SSLCommerz, Durqo collects its cut by deducting it from the
+// seller's balance when they request a withdrawal (order_success_fee() in
+// 033_withdrawal_order_splitting.sql) — that only works because the money
+// lands in Durqo's own account first. Escrow.com orders were deliberately
+// EXCLUDED from that same withdrawal ledger (035_exclude_escrow_com_from_
+// payout_ledger.sql) — "the licensed provider's own release is the only
+// payout event" — because the money never touches Durqo at all: the buyer
+// pays Escrow.com directly, Escrow.com pays the seller directly. Nothing
+// was ever put in its place, so up to this point Durqo earned $0 on every
+// Escrow.com sale.
+//
+// Escrow.com's own API has a built-in mechanism for exactly this
+// (escrow.com/api/docs/create-transaction, "Non transferable items...
+// Broker fees, Partner fees" + the worked JSON example under that section):
+// a `partner_fee` item, whose `schedule.beneficiary_customer` can be the
+// literal string "me" — Escrow.com's own docs: "This field may also
+// contain the value 'me', which refers to the currently logged in
+// customer" — which is Durqo's own API-key account, since Durqo is
+// automatically the transaction's "partner" (same reasoning as the
+// no-need-for-a-partner-party-object note above). `payer_customer` is set
+// to the seller, matching the existing Stripe/SSLCommerz model where the
+// Success Fee comes out of the seller's proceeds, not an added buyer
+// surcharge — the buyer's own schedule entry on the main item is
+// unchanged. Fee amount reuses the one tiered schedule already defined in
+// src/lib/fees.ts (10% under $50k, 7% $50k-$250k, 5% over $250k) so this
+// never drifts from the number shown anywhere else on the site.
+//
+// Not yet independently confirmed live: whether Escrow.com nets this
+// straight out of the seller's disbursement from the same pool of buyer
+// funds (the expected/intended behavior) or requires the seller to fund it
+// as a separate amount. Escrow.com's own docs don't spell out the
+// disbursement mechanics for a seller-paid fee item beyond the schema
+// itself. Worth confirming on the next real Escrow.com sale by checking
+// the transaction's item schedule (GET /transaction/{id}) once secured,
+// and, if anything looks off, escrow.com's support can confirm the exact
+// disbursement behavior.
 export async function createEscrowTransaction(
   config: EscrowConfig,
   params: CreateEscrowTransactionParams
 ): Promise<EscrowTransaction> {
+  const fee = computeSuccessFee(params.amountUsd);
+  const feeUsd = centsToUSD(fee.feeCents);
+
   return escrowFetch<EscrowTransaction>(config, "/transaction", {
     method: "POST",
     body: JSON.stringify({
@@ -222,6 +266,26 @@ export async function createEscrowTransaction(
           ],
           ...(params.listingUrl ? { extra_attributes: { merchant_url: params.listingUrl } } : {}),
         },
+        // Durqo's Success Fee — see the dated comment above. Only added
+        // when there's actually a fee to collect (always true today since
+        // every tier is > 0%, but this guard keeps the item list honest if
+        // a future 0% tier is ever introduced).
+        ...(feeUsd > 0
+          ? [
+              {
+                type: "partner_fee",
+                title: "Durqo Success Fee",
+                description: `Durqo Success Fee (${Math.round(fee.rate * 100)}%)`,
+                schedule: [
+                  {
+                    amount: feeUsd,
+                    payer_customer: params.sellerEmail,
+                    beneficiary_customer: "me",
+                  },
+                ],
+              },
+            ]
+          : []),
       ],
     }),
   });
