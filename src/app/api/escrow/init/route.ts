@@ -114,7 +114,7 @@ export async function POST(request: Request) {
 
     console.log(`[escrow-init] order ${insertedOrder.id}: created Escrow.com transaction ${transaction.id} for $${price}`);
 
-    const agreeUrl = await getEscrowAgreeLink(config, transaction.id);
+    const agreeUrl = await getEscrowAgreeLink(config, transaction.id, buyerEmail);
 
     return NextResponse.json({ url: agreeUrl });
   } catch (err) {
