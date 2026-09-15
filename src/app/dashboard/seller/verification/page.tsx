@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { getMyVerification, uploadVerificationDocuments, type VerificationStatus } from "@/lib/data/verification.client";
 import { submitVerification } from "./actions";
+import { trackVerificationSubmitted } from "@/lib/analytics";
 
 const METHODS = [
   { id: "passport", label: "Passport" },
@@ -43,6 +44,7 @@ export default function VerificationPage() {
     try {
       const paths = await uploadVerificationDocuments(files);
       await submitVerification(methodId, paths);
+      trackVerificationSubmitted(methodId);
       setStatus("pending");
       setFiles([]);
     } catch (err) {
