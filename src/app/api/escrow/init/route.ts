@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getEscrowConfig, createEscrowTransaction, getEscrowAgreeLink } from "@/lib/escrow";
+import { getEscrowConfig, createEscrowTransaction } from "@/lib/escrow";
 import { getUserEmails } from "@/lib/notifications";
 import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listing-assets-gate";
 
 // Escrow.com counterpart to /api/sslcommerz/init (and /api/checkout for
 // Stripe) — turns a single listing into a real `orders` row (status
 // "awaiting_payment", payment_channel "escrow_com") plus a real Escrow.com
-// transaction, then hands back the URL to redirect the buyer's browser to
-// Escrow.com's own hosted page to agree and pay. Single-listing (Buy Now)
-// only — see the note in api/escrow/quote/route.ts on why cart checkout
-// isn't wired up yet.
+// transaction. Single-listing (Buy Now) only — see the note in
+// api/escrow/quote/route.ts on why cart checkout isn't wired up yet.
 //
 // Unlike Stripe/SSLCommerz, there is no webhook-independent way to confirm
 // payment from this route — Escrow.com only tells this app a transaction's
@@ -19,6 +17,24 @@ import { unconfirmedListingTitles, assetsNotConfirmedMessage } from "@/lib/listi
 // always re-fetches the transaction from Escrow.com's API before trusting
 // it. This route only ever creates "awaiting_payment" rows, exactly like
 // the Stripe and SSLCommerz init routes.
+//
+// Sep 15, 2026: this used to also call getEscrowAgreeLink() and hand back a
+// URL to redirect the buyer straight to Escrow.com's agree+pay page. Two
+// live attempts proved that path doesn't work with Durqo's current
+// Escrow.com account: calling it plain (no As-Customer) gets "Buyer is
+// unable to agree at this stage in the transaction," and calling it scoped
+// to the buyer via As-Customer — the fix shipped right before this —
+// instead gets "Partner account not authorized to perform actions on
+// behalf of customers." That header is documented (api/docs/basics) as an
+// "approved partner" feature, and Durqo's account isn't approved for it, so
+// no API call we can make generates a working link. What does demonstrably
+// work, confirmed by two real inboxes receiving them on these same live
+// attempts, is Escrow.com's own automatic "please agree" email straight to
+// the buyer. So this route no longer tries to manufacture a redirect link
+// at all — it just reports success, and the buyer finishes on Escrow.com's
+// side via that email. If Durqo's account is ever approved as an Escrow.com
+// partner, getEscrowAgreeLink() (still in src/lib/escrow.ts) can be wired
+// back in here.
 export async function POST(request: Request) {
   const supabase = await createClient();
   if (!supabase) {
@@ -114,9 +130,7 @@ export async function POST(request: Request) {
 
     console.log(`[escrow-init] order ${insertedOrder.id}: created Escrow.com transaction ${transaction.id} for $${price}`);
 
-    const agreeUrl = await getEscrowAgreeLink(config, transaction.id, buyerEmail);
-
-    return NextResponse.json({ url: agreeUrl });
+    return NextResponse.json({ ok: true, buyerEmail });
   } catch (err) {
     await supabase.from("orders").delete().eq("id", insertedOrder.id);
     const message = err instanceof Error ? err.message : "Couldn't start checkout. Please try again.";
