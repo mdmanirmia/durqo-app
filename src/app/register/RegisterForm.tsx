@@ -10,6 +10,7 @@ import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Container from "@/components/ui/Container";
 import { notifySellerAccountCreated } from "./actions";
+import { trackSignUp } from "@/lib/analytics";
 
 function RegisterForm() {
   const router = useRouter();
@@ -44,6 +45,8 @@ function RegisterForm() {
     });
     setLoading(false);
     if (error) { setError(error.message); return; }
+
+    trackSignUp(role);
 
     // Admin + welcome notification for a brand-new seller account — separate
     // from Supabase's own confirmation-link email (see register/actions.ts).
