@@ -57,11 +57,15 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
 
   // Escrow.com confirm-modal state — same "closed means hidden" shape as
   // the SSLCommerz one above. Sep 10, 2026: replaces the disabled "coming
-  // soon" placeholder that used to sit here.
-  const [escrowStatus, setEscrowStatus] = useState<"closed" | "loading" | "ready" | "error">("closed");
+  // soon" placeholder that used to sit here. "success" added Sep 15, 2026
+  // when the confirm step stopped redirecting to Escrow.com (see
+  // EscrowConfirmModal.tsx's top-of-file comment) and started just
+  // reporting that the transaction was created and to check email instead.
+  const [escrowStatus, setEscrowStatus] = useState<"closed" | "loading" | "ready" | "error" | "success">("closed");
   const [escrowQuote, setEscrowQuote] = useState<EscrowQuote | null>(null);
   const [escrowError, setEscrowError] = useState<string | null>(null);
   const [escrowConfirming, setEscrowConfirming] = useState(false);
+  const [escrowBuyerEmail, setEscrowBuyerEmail] = useState<string | null>(null);
 
   async function handleStripe() {
     if (stripeBusy || locked || sslStatus !== "closed" || escrowStatus !== "closed") return;
@@ -213,6 +217,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
     setEscrowStatus("closed");
     setEscrowQuote(null);
     setEscrowError(null);
+    setEscrowBuyerEmail(null);
   }
 
   async function confirmEscrow() {
@@ -229,15 +234,18 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
         return;
       }
       const data = await res.json();
-      if (!res.ok || !data.url) {
+      if (!res.ok || !data.ok) {
         setEscrowError(data.error ?? "Something went wrong. Please try again.");
         setEscrowStatus("error");
         setEscrowConfirming(false);
         return;
       }
-      // Deliberately not resetting `escrowConfirming` on success — this
-      // component is about to be torn down by the navigation.
-      window.location.href = data.url;
+      // No redirect anymore — see EscrowConfirmModal.tsx's top-of-file
+      // comment. The transaction is created; Escrow.com's own email to the
+      // buyer is what carries them the rest of the way.
+      setEscrowBuyerEmail(typeof data.buyerEmail === "string" ? data.buyerEmail : null);
+      setEscrowStatus("success");
+      setEscrowConfirming(false);
     } catch {
       setEscrowError("Something went wrong. Please try again.");
       setEscrowStatus("error");
@@ -312,6 +320,7 @@ export default function BuyNowButton({ listingId, sold }: { listingId: string; s
           quote={escrowQuote}
           error={escrowError}
           confirming={escrowConfirming}
+          buyerEmail={escrowBuyerEmail}
           onConfirm={confirmEscrow}
           onCancel={closeEscrowModal}
         />

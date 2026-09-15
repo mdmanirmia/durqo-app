@@ -231,26 +231,31 @@ export async function fetchEscrowTransaction(config: EscrowConfig, transactionId
   return escrowFetch<EscrowTransaction>(config, `/transaction/${transactionId}`);
 }
 
-// STEP 2: a link the buyer's browser can be redirected straight to, to
-// agree to the transaction and pay, on Escrow.com's own hosted page —
-// exactly the "Durqo API -> escrow.com hosted page" flow the merchant
-// asked for.
+// STEP 2 (currently unused — see below): a link the buyer's browser could
+// be redirected straight to, to agree to the transaction and pay, on
+// Escrow.com's own hosted page — the "Durqo API -> escrow.com hosted page"
+// flow the merchant originally asked for.
 //
-// Sep 15, 2026: the first real attempt (once the category/fee bugs above
-// were fixed and a transaction actually got created) failed at this exact
-// step with "Buyer is unable to agree at this stage in the transaction."
-// Two pieces of evidence from that live transaction explain why: (1)
-// Escrow.com's own post-creation email went to the SELLER, saying their
-// "next step is to ask the Buyer to review and agree to the transaction by
-// sharing [a] link with them" — i.e. Durqo's partner key is treated as the
-// initiator, the seller side needs no further action, and only the buyer
-// still has to agree; (2) escrow.com/api/docs/basics documents an
-// `As-Customer: <email>` header that lets an approved partner "perform...
-// the agree... action on a transaction on behalf of another party," and
-// the agree-transaction guide notes the web_link variant is "most useful
-// when performed on behalf of another customer" via that same header. The
-// original call above never set it, so Escrow.com had no way to know this
-// link should be scoped to the buyer — passing it now is what was missing.
+// Sep 15, 2026: two live attempts proved this doesn't work with Durqo's
+// current Escrow.com account, for two different reasons. First, calling it
+// plain (no header) failed with "Buyer is unable to agree at this stage in
+// the transaction" — Escrow.com's post-creation email to the seller that
+// same attempt explained why: since Durqo's partner key is the
+// transaction's initiator, the seller needs no further action and only the
+// buyer must still agree, so the plain call had no way to know the link
+// should be scoped to the buyer. Adding the `As-Customer: <email>` header
+// documented on escrow.com/api/docs/basics ("Performing actions on behalf
+// of customers") looked like the fix for exactly that — but the very next
+// live attempt with it got "Partner account not authorized to perform
+// actions on behalf of customers." That's an account-tier permission,
+// granted by Escrow.com to specific "approved partners," and Durqo's
+// account isn't one. So there is currently no API call this app can make
+// that generates a working agree link — api/escrow/init/route.ts no longer
+// calls this function; it relies on Escrow.com's own automatic "please
+// agree" email to the buyer instead (confirmed working on both live
+// attempts above). Leaving this function in place in case Durqo's account
+// is approved as an Escrow.com partner later, at which point the
+// As-Customer version below should start working and can be wired back in.
 export async function getEscrowAgreeLink(config: EscrowConfig, transactionId: number, onBehalfOfEmail: string): Promise<string> {
   const data = await escrowFetch<{ landing_page: string }>(config, `/transaction/${transactionId}/web_link/agree`, {
     headers: { "As-Customer": onBehalfOfEmail },
