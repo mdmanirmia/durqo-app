@@ -111,6 +111,6 @@ export function sellerTransferGuidanceHtml(): string {
 // missing from admin's purchase-notification emails (they only got the
 // listing's plain title text), and is a harmless, useful addition wherever
 // else a listing title appears in an item list.
-export function listingLinkHtml(origin: string, listingId: string, title: string): string {
-  return `<a href="${origin}/listing/${listingId}">${title}</a>`;
+export function listingLinkHtml(origin: string, listingSlug: string, title: string): string {
+  return `<a href="${origin}/listing/${listingSlug}">${title}</a>`;
 }
