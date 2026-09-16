@@ -133,7 +133,7 @@ export default async function CategoryPage({
       itemListElement: marketplaceData.listings.map((listing, i) => ({
         "@type": "ListItem",
         position: i + 1,
-        url: `https://www.durqo.com/listing/${listing.id}`,
+        url: `https://www.durqo.com/listing/${listing.slug}`,
         name: listing.title,
       })),
     },
