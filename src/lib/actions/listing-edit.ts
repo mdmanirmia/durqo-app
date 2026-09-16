@@ -118,6 +118,14 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
 
   if (!fields.title.trim()) throw new Error("Title is required.");
   if (!Number.isFinite(fields.price) || fields.price < 0) throw new Error("Invalid price.");
+  // Mandatory since 2026-09-16 (site owner request): re-checked here, not
+  // just in ListingEditForm.tsx's client-side guard, since this is the one
+  // choke point both the seller and admin edit forms actually persist
+  // through — a listing can't be saved with zero named rows in the
+  // structured "Assets included" list (listingAssets / listing_assets).
+  if (!fields.listingAssets.some((r) => r.name.trim())) {
+    throw new Error("Add at least one asset in Sale Includes before saving — listings can't be updated without at least one asset listed.");
+  }
 
   const { error: listingError } = await admin
     .from("listings")

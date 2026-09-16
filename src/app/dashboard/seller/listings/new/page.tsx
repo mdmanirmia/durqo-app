@@ -343,6 +343,19 @@ export default function AddNewBusinessPage() {
     e.preventDefault();
     setError(null);
 
+    // Mandatory since 2026-09-16 (site owner request): a listing can't be
+    // published without at least one named row in the structured "Assets
+    // included" list (AssetListEditor) — this is the same list that
+    // confirms instantly on save and freezes into the buyer's Transfer
+    // Room, so a listing with none of these would sell with nothing
+    // concrete promised to the buyer. Checked here, before anything is
+    // written, so a seller who forgets sees this instead of a half-created
+    // "pending_review" listing.
+    if (!assetRows.some((r) => r.name.trim())) {
+      setError("Add at least one asset in Sale Includes before publishing — buyers need to see exactly what they're getting.");
+      return;
+    }
+
     const supabase = createClient();
     if (!supabase) {
       // Backend isn't connected — preview-only submit.

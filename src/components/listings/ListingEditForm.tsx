@@ -476,6 +476,18 @@ export default function ListingEditForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    // Mandatory since 2026-09-16 (site owner request) — same rule as the
+    // "new listing" form: no saving an update (seller or admin, this
+    // component is shared by both) with zero named rows in the structured
+    // "Assets included" list. updateListingFull() re-checks this
+    // server-side too; this client-side check just avoids a round trip and
+    // the image-upload work below for a save that would fail anyway.
+    if (!assetRows.some((r) => r.name.trim())) {
+      setError("Add at least one asset in Sale Includes before saving — listings can't be updated without at least one asset listed.");
+      return;
+    }
+
     setSaving(true);
     try {
       const quickStatColumns: Record<string, unknown> = {};
