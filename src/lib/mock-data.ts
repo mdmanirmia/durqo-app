@@ -1,4 +1,5 @@
 import { Listing } from "./types";
+import { slugify } from "./slug";
 
 const seller1 = {
   id: "s1", name: "Marcus Feld", location: "Toronto, Canada",
@@ -31,7 +32,7 @@ function months(from: string, n: number) {
 // of them have real GA access granted or reviewed, so every one defaults to
 // unconfirmed/unverified rather than repeating those two fields on each
 // literal below.
-const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "niches" | "listingAssets">[] = [
+const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "niches" | "listingAssets" | "slug">[] = [
   {
     id: "DQ-0412",
     categoryId: "saas",
@@ -306,6 +307,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "nic
 
 export const MOCK_LISTINGS: Listing[] = RAW_MOCK_LISTINGS.map((l) => ({
   ...l,
+  slug: slugify(l.title),
   gaAccessConfirmed: false,
   gaVerified: false,
   niches: [],
@@ -314,4 +316,8 @@ export const MOCK_LISTINGS: Listing[] = RAW_MOCK_LISTINGS.map((l) => ({
 
 export function getListingById(id: string) {
   return MOCK_LISTINGS.find((l) => l.id === id);
+}
+
+export function getListingBySlug(slug: string) {
+  return MOCK_LISTINGS.find((l) => l.slug === slug);
 }
