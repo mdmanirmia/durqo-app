@@ -5,6 +5,7 @@ import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { sendMetaPurchaseEvent } from "@/lib/meta-capi";
 import {
   maybeCreateTransferRoomsOnPayment,
   transferRoomEmailCta,
@@ -122,6 +123,24 @@ export async function POST(request: Request) {
               .map((l) => `<li>${listingLinkHtml(origin, l.id as string, l.title as string)} — $${Number(l.price).toLocaleString()}</li>`)
               .join("");
             const total = (purchasedListings ?? []).reduce((sum, l) => sum + Number(l.price || 0), 0);
+
+            // Meta Conversions API — one Purchase event per order, mirroring
+            // trackPurchase()'s per-order shape on the Transfer Room page
+            // (a multi-item Stripe checkout creates one order per listing).
+            // Best-effort: sendMetaPurchaseEvent() never throws, but this
+            // whole block already only runs inside this try/catch, same as
+            // the notification emails below.
+            for (const listing of purchasedListings ?? []) {
+              const orderId = orderIdByListingId.get(listing.id as string);
+              if (!orderId) continue;
+              await sendMetaPurchaseEvent({
+                orderId,
+                value: Number(listing.price),
+                buyerEmail,
+                buyerUserId: buyerId,
+                eventSourceUrl: `${origin}/dashboard/transfer/${orderId}`,
+              });
+            }
 
             await sendEmail(
               ADMIN_EMAIL,
