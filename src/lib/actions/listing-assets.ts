@@ -36,5 +36,5 @@ export async function confirmListingAssets(listingId: string) {
 
   revalidatePath(`/dashboard/seller/listings/${listingId}/edit`);
   revalidatePath(`/dashboard/admin/listings/${listingId}/edit`);
-  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/listing/[slug]", "page");
 }
