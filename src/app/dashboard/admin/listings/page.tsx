@@ -34,7 +34,7 @@ export default async function AdminListings({
   if (admin) {
     let query = admin
       .from("listings")
-      .select("id, title, category_id, status, price, seller_id, created_at, ga_access_confirmed, ga_verified, loom_video_url")
+      .select("id, slug, title, category_id, status, price, seller_id, created_at, ga_access_confirmed, ga_verified, loom_video_url")
       .order("created_at", { ascending: false });
     if (status) query = query.eq("status", status);
     const { data: listings } = await query;
@@ -47,6 +47,7 @@ export default async function AdminListings({
 
     rows = (listings ?? []).map((l) => ({
       id: l.id,
+      slug: l.slug,
       title: l.title,
       categoryId: l.category_id,
       status: l.status,
