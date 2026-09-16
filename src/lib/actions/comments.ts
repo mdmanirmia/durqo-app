@@ -83,7 +83,7 @@ export async function postComment(
   });
   if (insertError) return { error: "Couldn't post your comment. Please try again." };
 
-  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/listing/[slug]", "page");
   revalidatePath("/dashboard/seller/questions");
   revalidatePath("/dashboard/buyer/comments");
 
