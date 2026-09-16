@@ -16,7 +16,7 @@ function emptyRow(): QaRow {
 // `listing_faqs` — a table and RLS policy pair that already existed in the
 // base schema (schema.sql) and was already wired into the public listing
 // page (FaqAccordion, rendered at the top of the "FAQ with Seller" card,
-// above the live buyer-comment feed — see src/app/listing/[id]/page.tsx)
+// above the live buyer-comment feed — see src/app/listing/[slug]/page.tsx)
 // but had no seller-facing form to actually write rows into it until now.
 //
 // One card per Q&A pair, same "cards over a dense table" reasoning as
