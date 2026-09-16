@@ -1,5 +1,5 @@
 // Shared with the "Payment Terms" copy shown on every listing page
-// (src/app/listing/[id]/page.tsx): a Bangladeshi buyer paying in BDT
+// (src/app/listing/[slug]/page.tsx): a Bangladeshi buyer paying in BDT
 // through SSLCommerz on a listing priced above this cap only pays the BDT
 // equivalent of ONLINE_DEPOSIT_CAP through SSLCommerz at checkout. Durqo
 // then emails the buyer with instructions for paying the remainder by
