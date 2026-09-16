@@ -4,6 +4,7 @@ import { getSslcommerzConfig, validateSslcommerzPayment } from "@/lib/sslcommerz
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { sendMetaPurchaseEvent } from "@/lib/meta-capi";
 import {
   maybeCreateTransferRoomsOnPayment,
   transferRoomEmailCta,
@@ -145,6 +146,23 @@ export async function POST(request: Request) {
           return `<li>${listingLinkHtml(origin, l.id as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
         })
         .join("");
+      // Meta Conversions API — one Purchase event per order, using
+      // orders.amount (the full agreed sale price) same as TransferRoomView
+      // does for GA4's client-side trackPurchase() (data.amount there is
+      // literally order.amount — see dashboard/transfer/[orderId]/page.tsx),
+      // regardless of remainder_usd. Fired here even for a deposit-capped
+      // order that won't get an auto-created Transfer Room yet — real money
+      // was still charged through SSLCommerz right now, unlike Pay Later.
+      for (const order of matchingOrders) {
+        await sendMetaPurchaseEvent({
+          orderId: order.id,
+          value: Number(order.amount),
+          buyerEmail,
+          buyerUserId: buyerId,
+          eventSourceUrl: `${origin}/dashboard/transfer/${order.id}`,
+        });
+      }
+
       const riskNote = isRisky
         ? `<p style="color:#b91c1c"><strong>Risk flag:</strong> SSLCommerz marked this transaction risk_level=1 (${validation.riskTitle ?? "unspecified"}). Please verify the customer before releasing the held funds.</p>`
         : "";
