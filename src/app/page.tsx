@@ -188,12 +188,12 @@ const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Dat
 // Sep 2026: the stats bar (Active listings / Listed value / Verified sellers)
 // and the featured spotlight below were silently going stale — `next build`
 // was prerendering "/" as a fully static route (no `searchParams`/other
-// dynamic API forced it dynamic the way `/buy` and `/listing/[id]` already
+// dynamic API forced it dynamic the way `/buy` and `/listing/[slug]` already
 // are), so every visitor saw whatever numbers existed at the last deploy
 // until one of the handful of `revalidatePath("/")` calls elsewhere in the
 // app happened to fire. Forcing this route dynamic makes it recompute from
 // the live database on every request instead, matching `/buy` and
-// `/listing/[id]`'s existing behavior — the safer fix than trying to find
+// `/listing/[slug]`'s existing behavior — the safer fix than trying to find
 // and patch every mutation path that can change these counts.
 export const dynamic = "force-dynamic";
 
@@ -427,7 +427,7 @@ export default async function Home() {
                       <div className="flex items-center gap-2">
                         <WishlistButton listingId={spotlight.id} />
                         <Link
-                          href={`/listing/${spotlight.id}`}
+                          href={`/listing/${spotlight.slug}`}
                           className="flex min-h-11 items-center rounded-lg bg-brand-strong px-3.5 py-2 text-xs font-semibold text-white hover:bg-navy-secondary"
                         >
                           View Listing
