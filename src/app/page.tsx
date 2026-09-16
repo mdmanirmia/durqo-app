@@ -389,7 +389,7 @@ export default async function Home() {
               </div>
 
               <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-rule pt-6">
-                {["Reviewed listings", "Clear performance data", "Guided deal process"].map((label) => (
+                {["Verified Listings", "Clear performance data", "Guided deal process"].map((label) => (
                   <span key={label} className="flex items-center gap-1.5 text-xs font-medium text-ink-soft">
                     <CheckCircle2 size={14} className="text-brand" />
                     {label}
