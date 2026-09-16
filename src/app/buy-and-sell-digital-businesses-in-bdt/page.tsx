@@ -219,39 +219,39 @@ type Cell = { text: string; highlight?: boolean };
 const COMPARISON_ROWS: { feature: string; durqo: Cell; flippa: Cell; acquire: Cell; empireFlippers: Cell; motionInvest: Cell }[] = [
   {
     feature: "Market focus",
-    durqo: { text: "Bangladesh-focused with global digital-business access", highlight: true },
-    flippa: { text: "Global digital-business marketplace and exit platform" },
-    acquire: { text: "Global marketplace for profitable online businesses" },
-    empireFlippers: { text: "Curated brokerage-style marketplace for established online businesses" },
-    motionInvest: { text: "Specialized marketplace for profitable content websites and YouTube channels" },
+    durqo: { text: "Built for Bangladesh, open to global listings", highlight: true },
+    flippa: { text: "Global marketplace and exit platform" },
+    acquire: { text: "Global marketplace for online businesses" },
+    empireFlippers: { text: "Curated brokerage for established businesses" },
+    motionInvest: { text: "Focused on content sites and YouTube channels" },
   },
   {
     feature: "Digital business types",
-    durqo: { text: "Websites, e-commerce businesses, SaaS products, mobile apps and other eligible income-generating digital businesses", highlight: true },
-    flippa: { text: "A broad range of online businesses and digital assets" },
-    acquire: { text: "SaaS, e-commerce, agencies, content businesses, mobile apps and other online businesses" },
-    empireFlippers: { text: "Vetted e-commerce, SaaS, content, service and other online businesses" },
-    motionInvest: { text: "Primarily content websites and YouTube channels" },
+    durqo: { text: "Websites, e-commerce, SaaS, apps and more", highlight: true },
+    flippa: { text: "A wide range of online businesses" },
+    acquire: { text: "SaaS, e-commerce, agencies, apps and more" },
+    empireFlippers: { text: "Vetted e-commerce, SaaS, content and service businesses" },
+    motionInvest: { text: "Mainly content sites and YouTube channels" },
   },
   {
     feature: "Bangladesh-focused BDT flow",
-    durqo: { text: "Yes — BDT buyer payments and eligible seller payouts", highlight: true },
-    flippa: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
-    acquire: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
-    empireFlippers: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
-    motionInvest: { text: "Not specifically designed around local Bangladesh buyer payments and seller payouts" },
+    durqo: { text: "Yes — BDT payments and payouts", highlight: true },
+    flippa: { text: "No dedicated BDT payment flow" },
+    acquire: { text: "No dedicated BDT payment flow" },
+    empireFlippers: { text: "No dedicated BDT payment flow" },
+    motionInvest: { text: "No dedicated BDT payment flow" },
   },
   {
     feature: "Seller fee",
-    durqo: { text: "Tiered success fee deducted only after a successful sale", highlight: true },
-    flippa: { text: "Listing packages and success fees based on the applicable service and transaction" },
-    acquire: { text: "Listing and closing fees depend on the applicable plan and transaction" },
-    empireFlippers: { text: "Brokerage commission based on the applicable sale terms" },
-    motionInvest: { text: "Applicable fees depend on the transaction and current platform terms" },
+    durqo: { text: "Tiered success fee, charged only after a sale", highlight: true },
+    flippa: { text: "Listing fee plus a plan-based success fee" },
+    acquire: { text: "Listing and closing fees, plan-based" },
+    empireFlippers: { text: "Brokerage commission, based on sale terms" },
+    motionInvest: { text: "Fees vary by transaction and platform terms" },
   },
   {
     feature: "Transfer support",
-    durqo: { text: "Private Transfer Room connected to the order and full-payment status", highlight: true },
+    durqo: { text: "Private Transfer Room tied to each order", highlight: true },
     flippa: { text: "Deal-management and transaction-support tools" },
     acquire: { text: "Acquisition, document and closing tools" },
     empireFlippers: { text: "Managed migration and transaction assistance" },
@@ -812,12 +812,11 @@ export default function BuyAndSellInBdtPage() {
               <DashEyebrow>Compare marketplaces</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">How Durqo Compares with Major Digital-Business Marketplaces</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Flippa, Acquire.com, Empire Flippers and Motion Invest serve international buyers and sellers
-                through different marketplace and brokerage models. Durqo is the first marketplace specifically
-                built to let buyers purchase digital businesses in BDT and eligible sellers receive their sale
-                proceeds through supported local BDT payout methods. Durqo is not presented as larger or more
-                established than these international platforms. Its distinction is its Bangladesh-focused BDT
-                transaction experience.
+                Flippa, Acquire.com, Empire Flippers and Motion Invest are established international marketplaces.
+                Durqo is the first marketplace built specifically for buying and selling digital businesses in
+                BDT — buyers pay in BDT, and eligible sellers get paid out through supported local BDT methods.
+                Durqo isn&rsquo;t bigger or more established than these platforms; its edge is the Bangladesh BDT
+                experience.
               </p>
             </div>
 
