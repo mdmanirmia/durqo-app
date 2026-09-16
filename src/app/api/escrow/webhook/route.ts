@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getEscrowConfig, fetchEscrowTransaction } from "@/lib/escrow";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { sendMetaPurchaseEvent } from "@/lib/meta-capi";
 import {
   maybeCreateTransferRoomsOnPayment,
   transferRoomEmailCta,
@@ -46,7 +47,7 @@ export async function POST(request: Request) {
 
   const { data: matchingOrders } = await admin
     .from("orders")
-    .select("id, listing_id, buyer_id, seller_id, status")
+    .select("id, listing_id, buyer_id, seller_id, status, amount")
     .eq("escrow_transaction_id", transactionId);
 
   if (!matchingOrders || matchingOrders.length === 0) {
@@ -101,6 +102,18 @@ export async function POST(request: Request) {
       const title = listing?.title ?? "your purchase";
       const buyerEmail = emails[order.buyer_id];
       const sellerEmail = emails[order.seller_id];
+
+      // Meta Conversions API — same Purchase event trackPurchase() fires
+      // client-side once the buyer lands on this order's Transfer Room
+      // page, using order.amount as the value (matches data.amount there —
+      // see dashboard/transfer/[orderId]/page.tsx).
+      await sendMetaPurchaseEvent({
+        orderId: order.id,
+        value: Number(order.amount),
+        buyerEmail,
+        buyerUserId: order.buyer_id,
+        eventSourceUrl: `${origin}/dashboard/transfer/${order.id}`,
+      });
 
       await sendEmail(
         ADMIN_EMAIL,
