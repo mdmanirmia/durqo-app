@@ -199,9 +199,27 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const [listings, verifiedSellerCount] = await Promise.all([getPublishedListings(), getVerifiedSellerCount()]);
-  // "Businesses gaining attention" — the 3 most recently published, in the
-  // order getPublishedListings() already returns (newest first).
-  const featured = listings.slice(0, 3);
+
+  // "Businesses gaining attention" — Sep 16 2026 change ("jei gulor price or
+  // profit sob theke beshi": show the listings whose price or profit is
+  // highest, not just whichever 3 were published most recently). Ranked by
+  // monthly profit first, since that's the stronger buyer-attention signal,
+  // falling back to price when profit is tied or unrecorded (e.g. a bare
+  // Domains listing) — same profit formula ListingCard/the hero spotlight
+  // already use, so "Profit/mo" on these cards matches this ranking.
+  const featuredProfit = (l: (typeof listings)[number]) => {
+    const revenue = l.quickStats.monthly_income as number | undefined;
+    if (revenue === undefined) return undefined;
+    const expenseTotal = l.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    return l.monthlyExpenses.length > 0 ? revenue - expenseTotal : revenue;
+  };
+  const featured = [...listings]
+    .sort((a, b) => {
+      const profitDiff = (featuredProfit(b) ?? -1) - (featuredProfit(a) ?? -1);
+      if (profitDiff !== 0) return profitDiff;
+      return (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price);
+    })
+    .slice(0, 3);
 
   // getPublishedListings() intentionally includes sold listings too (so
   // Sold badges/social proof can render on cards/tables sitewide — see that
