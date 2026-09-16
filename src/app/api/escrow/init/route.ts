@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
   const { data: listing, error: listingError } = await supabase
     .from("listings")
-    .select("id, title, price, discounted_price, seller_id, assets_confirmed_at")
+    .select("id, slug, title, price, discounted_price, seller_id, assets_confirmed_at")
     .eq("id", listingId)
     .eq("status", "published")
     .maybeSingle();
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
       description: `Durqo purchase: ${listing.title}`,
       itemTitle: listing.title,
       amountUsd: price,
-      listingUrl: `${origin}/listing/${listing.id}`,
+      listingUrl: `${origin}/listing/${listing.slug}`,
     });
 
     await supabase.from("orders").update({ escrow_transaction_id: transaction.id }).eq("id", insertedOrder.id);
