@@ -187,7 +187,14 @@ function StatGrid({ items, colsDesktop = 4 }: { items: StatItem[]; colsDesktop?:
     <div className={`grid grid-cols-2 gap-3 ${desktopColsClass}`}>
       {visible.map((item) => (
         <div key={item.label} className="rounded-xl border border-brand/10 bg-brand-soft/25 p-4">
-          <div className="mono text-lg font-bold leading-tight tracking-tight text-brand-strong sm:text-xl">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
+          {/* Sep 16 2026 (site owner request): was text-lg/sm:text-xl font-bold —
+              read as oversized once a tile's value is a wrapped two-line phrase
+              ("Austin, USA (Remote team)", "AI & Automation, Business") rather
+              than a short number. Sized down and dropped to font-semibold so
+              long values sit comfortably at two lines without dominating the
+              tile; short numeric values (450K, 6, $180,000) still read fine
+              at this size. */}
+          <div className="mono text-sm font-semibold leading-snug tracking-tight text-brand-strong sm:text-base">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
           <div className="mono mt-1.5 text-[0.7rem] font-medium uppercase tracking-wider text-brand-hover/60">{item.label}</div>
         </div>
       ))}
