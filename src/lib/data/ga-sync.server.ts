@@ -58,7 +58,7 @@ export async function syncListingGaStats(listingId: string): Promise<void> {
     // The listing page's initial GA snapshot comes from listing_ga_public_stats
     // read at render time — harmless to skip while /listing/[id] stays
     // force-dynamic, but this keeps the page correct even if that changes.
-    revalidatePath(`/listing/${listingId}`);
+    revalidatePath("/listing/[slug]", "page");
   } catch (err) {
     const message = err instanceof Error ? err.message : "Sync failed.";
     await admin
