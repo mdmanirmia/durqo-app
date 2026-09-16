@@ -30,8 +30,10 @@ import {
   MessageCircle,
   type LucideIcon,
 } from "lucide-react";
+import { permanentRedirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getListingById } from "@/lib/data/listings.server";
+import { getListingById, getListingBySlug } from "@/lib/data/listings.server";
+import { isUuid } from "@/lib/slug";
 import { CATEGORY_MAP, QUICK_STAT_LABELS, QuickStatKey } from "@/lib/categories";
 import { NICHE_MAP } from "@/lib/niches";
 import { INDUSTRY_MAP } from "@/lib/industries";
@@ -67,14 +69,28 @@ export const dynamic = "force-dynamic";
 // public-facing marketing photo (the only per-listing images are proof-of-
 // income/GA/GSC/SEMrush/Ahrefs verification screenshots — evidence, not
 // something to publish via a social-share preview, per Section 25).
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
-  const { id } = await params;
-  const listing = await getListingById(id);
+// Sep 16, 2026 ("listing er url business name e hobe"): the route segment
+// is now the listing's slug, not its raw id. A param is resolved as a slug
+// first; if that misses and the param happens to be a bare UUID, it's
+// almost certainly an old pre-slug link (shared or already indexed) —
+// resolve it by id too, so generateMetadata can still build a canonical
+// URL for it, and the page component below 301s it to that canonical slug
+// URL instead of 404ing. See src/lib/slug.ts.
+async function resolveListingByParam(param: string) {
+  const bySlug = await getListingBySlug(param);
+  if (bySlug) return bySlug;
+  if (isUuid(param)) return getListingById(param);
+  return undefined;
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const listing = await resolveListingByParam(slug);
   if (!listing) return {};
 
   const category = CATEGORY_MAP[listing.categoryId];
   const categoryName = category?.name ?? listing.categoryId;
-  const canonical = `https://www.durqo.com/listing/${listing.id}`;
+  const canonical = `https://www.durqo.com/listing/${listing.slug}`;
   const isPublic = listing.status === "published" || listing.status === "sold";
 
   const longTitle = `${listing.title} - ${categoryName} for Sale | Durqo`;
@@ -219,10 +235,14 @@ function LabelGrid({ labels, colsDesktop = 3 }: { labels: string[]; colsDesktop?
   );
 }
 
-export default async function ListingDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const listing = await getListingById(id);
+export default async function ListingDetail({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const listing = await resolveListingByParam(slug);
   if (!listing) notFound();
+  // Old bare-UUID link (or any URL that doesn't match this listing's
+  // current slug) — send it to the canonical slug URL rather than serving
+  // the page at a non-canonical address.
+  if (slug !== listing.slug) permanentRedirect(`/listing/${listing.slug}`);
 
   // Sep 9, 2026: who's viewing decides what the merged FAQ/comments section
   // below can do — a logged-in visitor can post a new question, and only
@@ -369,7 +389,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ id: 
   // this listing's own already-public data (the same values rendered on
   // the page). No invented SKU, brand, review, aggregate rating, price
   // validity date, inventory or seller identity.
-  const listingUrl = `https://www.durqo.com/listing/${listing.id}`;
+  const listingUrl = `https://www.durqo.com/listing/${listing.slug}`;
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
