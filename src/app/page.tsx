@@ -27,9 +27,9 @@ import { fmtUSD } from "@/lib/format";
 // this is the one page whose title must match the spec's exact string
 // (a plain hyphen, not the layout's em dash), so it needs its own
 // unconditional `metadata` export instead of the layout's `title.template`
-// merging in. Visible content (the H1 at line ~245: "Buy what's already
-// working.") is unchanged — this only affects the <head> tag and the
-// browser tab / link-preview text.
+// merging in. Visible content (the H1, Sep 16 2026: "Buy what's next. Sell
+// what you've built.") is unchanged here — this only affects the <head>
+// tag and the browser tab / link-preview text.
 export const metadata: Metadata = {
   title: "Durqo - Buy and Sell Digital Businesses",
   description:
@@ -368,9 +368,9 @@ export default async function Home() {
               <DashEyebrow>The marketplace for digital businesses</DashEyebrow>
 
               <h1 className="text-4xl leading-[1.1] sm:text-5xl">
-                Buy what&rsquo;s
+                Buy what&rsquo;s next.
                 <br />
-                <span className="text-brand">already working.</span>
+                <span className="text-brand">Sell what you&rsquo;ve built.</span>
               </h1>
 
               <p className="mt-5 max-w-[50ch] text-lg leading-relaxed text-ink-soft">
