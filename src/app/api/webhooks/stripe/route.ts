@@ -97,7 +97,9 @@ export async function POST(request: Request) {
           // else happens to revalidate these paths — a buyer who completes
           // checkout and lands back on the listing page (or the homepage/
           // marketplace) could still see it as buyable.
-          for (const id of listingIds) revalidatePath(`/listing/${id}`);
+          // Sep 16, 2026 slug-URL change: one dynamic-route revalidation
+          // covers every listing page regardless of which ids were just sold.
+          revalidatePath("/listing/[slug]", "page");
           revalidatePath("/");
           revalidatePath("/buy");
 
@@ -111,7 +113,7 @@ export async function POST(request: Request) {
           try {
             const { data: purchasedListings } = await admin
               .from("listings")
-              .select("id, title, price, seller_id")
+              .select("id, slug, title, price, seller_id")
               .in("id", listingIds);
 
             const sellerIds = Array.from(new Set((purchasedListings ?? []).map((l) => l.seller_id as string)));
@@ -120,7 +122,7 @@ export async function POST(request: Request) {
             const buyerEmail = buyerId ? emails[buyerId] : undefined;
 
             const itemsHtml = (purchasedListings ?? [])
-              .map((l) => `<li>${listingLinkHtml(origin, l.id as string, l.title as string)} — $${Number(l.price).toLocaleString()}</li>`)
+              .map((l) => `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)} — $${Number(l.price).toLocaleString()}</li>`)
               .join("");
             const total = (purchasedListings ?? []).reduce((sum, l) => sum + Number(l.price || 0), 0);
 
