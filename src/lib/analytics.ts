@@ -19,6 +19,48 @@ import { sendGAEvent } from "@next/third-parties/google";
 // plain custom events — mark them as "key events" in GA4's Admin ->
 // Events if you want them to show up as conversions.
 
+// Sep 16, 2026: Meta (Facebook) Pixel standard-event calls, fired
+// alongside the matching GA4 event above rather than via a GTM "Custom
+// Event" trigger reading this file's dataLayer pushes — window.fbq is
+// already loaded on every page by GTM's "Meta Pixel - Base Code" tag (see
+// layout.tsx/the GTM container), so calling it directly here is simpler
+// and more reliable than configuring a GTM trigger to translate a gtag-
+// shaped dataLayer push into a Pixel event (an approach this project's own
+// addendum flagged as untested/risky — see
+// claude/meta-pixel-and-gtm-setup-addendum.md). Meta's own base pixel
+// snippet installs a queueing stub for `fbq` before fbevents.js finishes
+// loading, so calling it this early in the page lifecycle (e.g. this
+// module's own top-level import time isn't when these fire, but a fast
+// button click right after page load might be) is safe — the call just
+// queues until the real script is ready.
+//
+// Purchase is the only one of these with a server-side Conversions API
+// counterpart (see src/lib/meta-capi.ts, wired into the Stripe/SSLCommerz/
+// Escrow.com webhooks) — its event_id (`purchase-${orderId}`) is shared
+// with that server call so Meta dedupes the two into one conversion
+// instead of double-counting. The others below have no server-side twin,
+// so they don't need a deliberately-matching event_id; fbq generates one
+// on its own.
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+  }
+}
+
+function sendMetaPixelEvent(eventName: string, params: Record<string, unknown>, eventId?: string) {
+  if (typeof window === "undefined" || typeof window.fbq !== "function") {
+    // Same guarded-optional posture as sendGAEvent(): a no-op, not a
+    // throw, whenever the Pixel hasn't loaded yet (GTM not configured in
+    // this environment, or the base-code tag hasn't executed yet).
+    return;
+  }
+  if (eventId) {
+    window.fbq("track", eventName, params, { eventID: eventId });
+  } else {
+    window.fbq("track", eventName, params);
+  }
+}
+
 export interface GAItem {
   item_id: string;
   item_name: string;
@@ -41,6 +83,13 @@ export function trackBeginCheckout(params: {
     value: params.value,
     payment_channel: params.paymentChannel,
     items: params.items,
+  });
+  sendMetaPixelEvent("InitiateCheckout", {
+    currency: params.currency ?? "USD",
+    value: params.value,
+    content_ids: params.items.map((i) => i.item_id),
+    content_type: "product",
+    num_items: params.items.length,
   });
 }
 
@@ -69,6 +118,20 @@ export function trackPurchase(params: {
     payment_channel: params.paymentChannel,
     items: params.items,
   });
+  // Shared event_id with the server-side CAPI Purchase call in
+  // src/lib/meta-capi.ts (sendMetaPurchaseEvent, wired into the Stripe/
+  // SSLCommerz/Escrow.com webhooks) — same `purchase-${orderId}` format on
+  // both sides so Meta dedupes browser + server into a single conversion.
+  sendMetaPixelEvent(
+    "Purchase",
+    {
+      currency: params.currency ?? "USD",
+      value: params.value,
+      content_ids: params.items.map((i) => i.item_id),
+      content_type: "product",
+    },
+    `purchase-${params.orderId}`
+  );
 }
 
 // Pay Later's equivalent of trackPurchase() above, kept as its own event
@@ -110,6 +173,7 @@ export function markPurchaseTracked(orderId: string): void {
 
 export function trackSignUp(role: "buyer" | "seller") {
   sendGAEvent("event", "sign_up", { method: "email", role });
+  sendMetaPixelEvent("CompleteRegistration", { content_name: role, status: true });
 }
 
 // Fired once a new listing's full insert (listing row + every dependent
@@ -120,6 +184,14 @@ export function trackListingSubmitted(params: { category: string; price: number 
   sendGAEvent("event", "generate_lead", {
     lead_type: "listing_submitted",
     category: params.category,
+    currency: "USD",
+    value: params.price,
+  });
+  // "Lead" is Meta's closest standard event to a seller submitting a new
+  // listing — there's no dedicated "new supply" standard event, and this
+  // mirrors GA4's own generate_lead choice just above for the same reason.
+  sendMetaPixelEvent("Lead", {
+    content_category: params.category,
     currency: "USD",
     value: params.price,
   });
