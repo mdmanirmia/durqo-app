@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/client";
 
 export interface SellerListingRow {
   id: string;
+  slug: string;
   title: string;
   categoryId: string;
   status: string;
@@ -19,13 +20,14 @@ export async function getMyListings(): Promise<SellerListingRow[]> {
 
   const { data, error } = await supabase
     .from("listings")
-    .select("id, title, category_id, status, price, views")
+    .select("id, slug, title, category_id, status, price, views")
     .eq("seller_id", userData.user.id)
     .order("created_at", { ascending: false });
   if (error || !data) return [];
 
   return data.map((l) => ({
     id: l.id,
+    slug: l.slug,
     title: l.title,
     categoryId: l.category_id,
     status: l.status,
