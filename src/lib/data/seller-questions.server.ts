@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/server";
 export interface SellerQuestion {
   id: string;
   listingId: string;
+  listingSlug: string;
   listingTitle: string;
   author: string;
   body: string;
@@ -32,9 +33,10 @@ export async function getSellerQuestions(sellerId: string): Promise<SellerQuesti
   const supabase = await createClient();
   if (!supabase) return [];
 
-  const { data: listings } = await supabase.from("listings").select("id, title").eq("seller_id", sellerId);
+  const { data: listings } = await supabase.from("listings").select("id, slug, title").eq("seller_id", sellerId);
   if (!listings || listings.length === 0) return [];
   const listingTitles = Object.fromEntries(listings.map((l) => [l.id, l.title]));
+  const listingSlugs = Object.fromEntries(listings.map((l) => [l.id, l.slug]));
   const listingIds = listings.map((l) => l.id);
 
   const { data: comments } = await supabase
@@ -69,6 +71,7 @@ export async function getSellerQuestions(sellerId: string): Promise<SellerQuesti
       return {
         id: c.id,
         listingId: c.listing_id,
+        listingSlug: listingSlugs[c.listing_id] ?? c.listing_id,
         listingTitle: listingTitles[c.listing_id] ?? "Listing",
         author: authorNames[c.author_id] ?? "Member",
         body: c.body,
