@@ -46,11 +46,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (supabase) {
       const { data, error } = await supabase
         .from("listings")
-        .select("id, updated_at")
+        .select("slug, updated_at")
         .in("status", ["published", "sold"]);
       if (!error && data) {
-        listingEntries = data.map((row: { id: string; updated_at: string | null }) => ({
-          url: `${BASE_URL}/listing/${row.id}`,
+        listingEntries = data.map((row: { slug: string; updated_at: string | null }) => ({
+          url: `${BASE_URL}/listing/${row.slug}`,
           lastModified: row.updated_at ? new Date(row.updated_at) : undefined,
           changeFrequency: "weekly" as const,
           priority: 0.6,

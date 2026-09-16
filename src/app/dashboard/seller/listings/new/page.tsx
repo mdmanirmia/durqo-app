@@ -13,6 +13,7 @@ import { STARTUP_BUSINESS_MODELS } from "@/lib/startup-business-models";
 import { FUNDING_STAGES } from "@/lib/funding-stages";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
+import { slugify, nextSlugAttempt, POSTGRES_UNIQUE_VIOLATION } from "@/lib/slug";
 import AssetListEditor, { type AssetRow } from "@/components/listings/AssetListEditor";
 import QaListEditor, { type QaRow } from "@/components/listings/QaListEditor";
 import { INDUSTRIES } from "@/lib/industries";
@@ -404,39 +405,58 @@ export default function AddNewBusinessPage() {
       // a separate paragraph duplicating the same information.
       const assetsSummaryText = assetRows.filter((r) => r.name.trim()).map((r) => r.name.trim()).join(", ");
 
-      const { data: listingRow, error: insertError } = await supabase
-        .from("listings")
-        .insert({
-          seller_id: sellerId,
-          category_id: categoryId,
-          title,
-          business_url: businessUrl || null,
-          // Websites and Domains don't collect location (field is hidden
-          // above for both — see the visibility condition below), so never
-          // submit a stale value left over from switching categories. Was
-          // only excluding "websites" until a 2026-09-12 audit caught that
-          // "domains" hides the same field but wasn't in this list, letting
-          // a leftover location value from an earlier category silently save.
-          location: categoryId === "websites" || categoryId === "domains" ? null : location || null,
-          price: Number(price),
-          discounted_price: discountedPrice ? Number(discountedPrice) : null,
-          overview,
-          monthly_expenses: expenses.filter((r) => r.label && r.amount).map((r) => ({ label: r.label, amount: Number(r.amount) })),
-          monetization_type_ids: monetization,
-          sale_includes_assets: assetsSummaryText,
-          sale_includes_support: saleIncludesSupport,
-          status: "pending_review",
-          ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
-          loom_video_url: loomVideoUrl || null,
-          // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
-          // to Design & Development New.pdf) — the Niche/Industry section is
-          // hidden above for this category, so never submit a stale
-          // selection left over from switching categories.
-          niches: categoryId === "ai-apps-tools" ? [] : niches,
-          ...quickStatColumns,
-        })
-        .select()
-        .single();
+      // Sep 16, 2026 ("listing er url business name e hobe"): the public URL
+      // is the business name, generated once here from the title (see
+      // src/lib/slug.ts). Two sellers can title their listing the same
+      // thing, so a plain insert can hit the `listings.slug` unique index —
+      // retry with the next numbered suffix (title-2, title-3, ...) rather
+      // than fail the whole submission over a cosmetic URL collision.
+      const baseSlug = slugify(title);
+      let listingRow: Record<string, unknown> | null = null;
+      let insertError: { message: string; code?: string } | null = null;
+      for (let attempt = 1; attempt <= 20; attempt++) {
+        const { data, error } = await supabase
+          .from("listings")
+          .insert({
+            seller_id: sellerId,
+            slug: nextSlugAttempt(baseSlug, attempt),
+            category_id: categoryId,
+            title,
+            business_url: businessUrl || null,
+            // Websites and Domains don't collect location (field is hidden
+            // above for both — see the visibility condition below), so never
+            // submit a stale value left over from switching categories. Was
+            // only excluding "websites" until a 2026-09-12 audit caught that
+            // "domains" hides the same field but wasn't in this list, letting
+            // a leftover location value from an earlier category silently save.
+            location: categoryId === "websites" || categoryId === "domains" ? null : location || null,
+            price: Number(price),
+            discounted_price: discountedPrice ? Number(discountedPrice) : null,
+            overview,
+            monthly_expenses: expenses.filter((r) => r.label && r.amount).map((r) => ({ label: r.label, amount: Number(r.amount) })),
+            monetization_type_ids: monetization,
+            sale_includes_assets: assetsSummaryText,
+            sale_includes_support: saleIncludesSupport,
+            status: "pending_review",
+            ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
+            loom_video_url: loomVideoUrl || null,
+            // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
+            // to Design & Development New.pdf) — the Niche/Industry section is
+            // hidden above for this category, so never submit a stale
+            // selection left over from switching categories.
+            niches: categoryId === "ai-apps-tools" ? [] : niches,
+            ...quickStatColumns,
+          })
+          .select()
+          .single();
+        if (!error) {
+          listingRow = data;
+          insertError = null;
+          break;
+        }
+        insertError = error;
+        if (error.code !== POSTGRES_UNIQUE_VIOLATION || !error.message?.includes("slug")) break;
+      }
       if (insertError || !listingRow) throw new Error(insertError?.message ?? "Could not create the listing.");
 
       const listingId = listingRow.id as string;

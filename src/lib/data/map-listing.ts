@@ -493,6 +493,7 @@ export function mapListing(
 
   return {
     id: row.id,
+    slug: row.slug,
     categoryId: row.category_id,
     title: row.title,
     businessUrl: row.business_url ?? undefined,

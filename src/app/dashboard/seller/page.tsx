@@ -219,7 +219,7 @@ export default function SellerOverview() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
-                          <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                          <Link href={`/listing/${l.slug}`} className="text-sm font-semibold text-brand-strong">View</Link>
                         </div>
                       </td>
                     </tr>
@@ -257,7 +257,7 @@ export default function SellerOverview() {
                   </div>
                   <div className="flex items-center gap-4 border-t border-rule pt-3">
                     <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
-                    <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                    <Link href={`/listing/${l.slug}`} className="text-sm font-semibold text-brand-strong">View</Link>
                   </div>
                 </div>
               );

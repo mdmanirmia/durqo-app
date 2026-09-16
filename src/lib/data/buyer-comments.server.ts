@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 export interface BuyerComment {
   id: string;
   listingId: string;
+  listingSlug: string;
   listingTitle: string;
   body: string;
   createdAt: string;
@@ -37,7 +38,7 @@ export async function getBuyerComments(buyerId: string): Promise<BuyerComment[]>
   const listingIds = [...new Set(own.map((c) => c.listing_id as string))];
 
   const [{ data: listings }, { data: replies }] = await Promise.all([
-    supabase.from("listings").select("id, title, seller_id").in("id", listingIds),
+    supabase.from("listings").select("id, slug, title, seller_id").in("id", listingIds),
     supabase
       .from("comments")
       .select("id, parent_id, author_id, body, created_at")
@@ -65,6 +66,7 @@ export async function getBuyerComments(buyerId: string): Promise<BuyerComment[]>
     return {
       id: c.id,
       listingId: c.listing_id,
+      listingSlug: listing?.slug ?? (c.listing_id as string),
       listingTitle: listing?.title ?? "Listing",
       body: c.body,
       createdAt: String(c.created_at).slice(0, 10),

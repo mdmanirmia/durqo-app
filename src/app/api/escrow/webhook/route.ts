@@ -88,18 +88,21 @@ export async function POST(request: Request) {
     const origin = new URL(request.url).origin;
 
     await admin.from("listings").update({ status: "sold" }).eq("id", order.listing_id).eq("status", "published");
-    revalidatePath(`/listing/${order.listing_id}`);
+    // Sep 16, 2026 slug-URL change: revalidate by dynamic route pattern
+    // rather than a literal path.
+    revalidatePath("/listing/[slug]", "page");
     revalidatePath("/");
     revalidatePath("/buy");
 
     try {
       const [{ data: listing }, emails] = await Promise.all([
-        admin.from("listings").select("title").eq("id", order.listing_id).maybeSingle(),
+        admin.from("listings").select("title, slug").eq("id", order.listing_id).maybeSingle(),
         getUserEmails(admin, [order.buyer_id, order.seller_id]),
       ]);
       await admin.from("cart_items").delete().eq("user_id", order.buyer_id).eq("listing_id", order.listing_id);
 
       const title = listing?.title ?? "your purchase";
+      const listingSlug = listing?.slug ?? (order.listing_id as string);
       const buyerEmail = emails[order.buyer_id];
       const sellerEmail = emails[order.seller_id];
 
@@ -118,7 +121,7 @@ export async function POST(request: Request) {
       await sendEmail(
         ADMIN_EMAIL,
         `New Escrow.com purchase — ${title}`,
-        `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for ${listingLinkHtml(origin, order.listing_id as string, title)}.</p>
+        `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for ${listingLinkHtml(origin, listingSlug, title)}.</p>
          <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
       );
       // Escrow.com's whole payment flow happens on their own hosted pages,

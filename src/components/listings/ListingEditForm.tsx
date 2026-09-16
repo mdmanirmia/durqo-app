@@ -645,7 +645,7 @@ export default function ListingEditForm({
         <div>
           <h2 className="mb-1 text-xl">Edit Listing</h2>
           <p className="text-sm text-ink-faint">
-            <Link href={`/listing/${listing.id}`} className="text-brand-strong hover:underline">
+            <Link href={`/listing/${listing.slug}`} className="text-brand-strong hover:underline">
               View the full public listing
             </Link>
             .

@@ -109,14 +109,16 @@ export async function POST(request: Request) {
 
     const listingIds = matchingOrders.map((o) => o.listing_id);
     await admin.from("listings").update({ status: "sold" }).in("id", listingIds).eq("status", "published");
-    for (const id of listingIds) revalidatePath(`/listing/${id}`);
+    // Sep 16, 2026 slug-URL change: one dynamic-route revalidation covers
+    // every listing page regardless of which ids were just paid for.
+    revalidatePath("/listing/[slug]", "page");
     revalidatePath("/");
     revalidatePath("/buy");
 
     try {
       const { data: paidListings } = await admin
         .from("listings")
-        .select("id, title, price, seller_id")
+        .select("id, slug, title, price, seller_id")
         .in("id", listingIds);
       const buyerId = matchingOrders[0]?.buyer_id as string | undefined;
 
@@ -143,7 +145,7 @@ export async function POST(request: Request) {
       const itemsHtml = (paidListings ?? [])
         .map((l) => {
           const remainder = remainderByListingId.get(l.id) ?? 0;
-          return `<li>${listingLinkHtml(origin, l.id as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
+          return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
         })
         .join("");
       // Meta Conversions API — one Purchase event per order, using

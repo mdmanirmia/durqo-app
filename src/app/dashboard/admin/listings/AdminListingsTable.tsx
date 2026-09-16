@@ -13,6 +13,7 @@ import { setListingStatus, setListingGaVerified } from "../actions";
 
 export interface AdminListingRow {
   id: string;
+  slug: string;
   title: string;
   categoryId: string;
   status: string;
@@ -199,7 +200,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
               return (
                 <tr key={l.id} className="border-b border-rule align-top last:border-b-0 hover:bg-paper-sunk">
                   <td className="px-4 py-3 font-medium text-ink">
-                    <Link href={`/listing/${l.id}`} className="hover:text-brand-strong">{l.title}</Link>
+                    <Link href={`/listing/${l.slug}`} className="hover:text-brand-strong">{l.title}</Link>
                   </td>
                   <td className="px-4 py-3 text-ink-soft">{l.sellerName}</td>
                   <td className="px-4 py-3 text-ink-soft">{CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}</td>
@@ -230,7 +231,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
             <div key={l.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <Link href={`/listing/${l.id}`} className="block truncate font-medium text-ink hover:text-brand-strong">
+                  <Link href={`/listing/${l.slug}`} className="block truncate font-medium text-ink hover:text-brand-strong">
                     {l.title}
                   </Link>
                   <div className="text-xs text-ink-faint">

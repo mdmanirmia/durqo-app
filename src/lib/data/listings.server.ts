@@ -2,7 +2,7 @@ import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
-import { MOCK_LISTINGS, getListingById as getMockListingById } from "@/lib/mock-data";
+import { MOCK_LISTINGS, getListingById as getMockListingById, getListingBySlug as getMockListingBySlug } from "@/lib/mock-data";
 import type { Listing } from "@/lib/types";
 import { mapListing } from "./map-listing";
 import { MarketplaceFilters, PAGE_SIZE } from "@/lib/marketplace-filters";
@@ -315,6 +315,123 @@ export async function getVerifiedSellerCount(): Promise<number> {
   }
 }
 
+// Shared by getListingById and getListingBySlug (Sep 16, 2026 slug-URL
+// change) — both resolve to the same `listings` row shape by different
+// columns, then need identical hydration (seller profile, stats, SEO data,
+// FAQs, comments, images, GA/YouTube data, structured assets). Pulled out
+// so that logic — and any future change to it — only lives in one place.
+// Row shape is intentionally loose here, matching map-listing.ts's own Row
+// type just below it in the call chain (mapListing's first argument).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function hydrateListingRow(supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>, row: Record<string, any>): Promise<Listing> {
+  const id = row.id as string;
+  const [
+    { data: seller },
+    { data: monthlyStats },
+    { data: seo },
+    { data: socialStats },
+    { data: faqs },
+    { data: comments },
+    { data: images },
+    { data: gaLiveStats },
+    { data: copyrightNotes },
+    { data: topVideos },
+    { data: channelOverview },
+    { data: listingAssets },
+  ] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", row.seller_id).maybeSingle(),
+    supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
+    supabase.from("listing_seo_data").select("*").eq("listing_id", id).maybeSingle(),
+    supabase.from("listing_social_stats").select("*").eq("listing_id", id),
+    supabase.from("listing_faqs").select("*").eq("listing_id", id),
+    supabase.from("comments").select("*").eq("listing_id", id),
+    supabase.from("listing_images").select("*").eq("listing_id", id),
+    // Real, live Google Analytics connection (src/lib/google-analytics.ts)
+    // — a separate table gated by its own RLS (public for published
+    // listings), so a missing/errored query here just means "not
+    // connected," never a reason to fail the whole page.
+    supabase.from("listing_ga_public_stats").select("*").eq("listing_id", id).maybeSingle(),
+    // YouTube Channels category only (Design & Development New.pdf, Sep
+    // 4 2026) — missing rows just mean neither section renders.
+    supabase.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
+    supabase.from("listing_top_videos").select("*").eq("listing_id", id),
+    supabase.from("listing_youtube_channel_overview").select("*").eq("listing_id", id).maybeSingle(),
+    // Asset Transfer System v2's structured asset list (migration 036) —
+    // `listing_assets_select` is public (`using (true)`), same as
+    // listing_images/listing_faqs, so this is safe for any visitor.
+    supabase.from("listing_assets").select("*").eq("listing_id", id).order("position", { ascending: true }),
+  ]);
+
+  let authorNames: Record<string, string> = {};
+  const authorIds = [...new Set((comments ?? []).map((c) => c.author_id))];
+  if (authorIds.length) {
+    const { data: authors } = await supabase.from("profiles").select("id, full_name").in("id", authorIds);
+    authorNames = Object.fromEntries((authors ?? []).map((a) => [a.id, a.full_name ?? "Member"]));
+  }
+
+  // Live, auto-updating seller stats for the Seller panel: email-verified
+  // badge, how many of this seller's listings are currently live, and
+  // their lifetime sales total. This intentionally goes through the
+  // admin/service-role client rather than the RLS-scoped `supabase`
+  // client above: `orders` is private under RLS (orders_select_involved —
+  // only the buyer or seller can select a given order), and whether an
+  // email is confirmed lives on auth.users, which no RLS policy can ever
+  // expose. Only aggregate, non-sensitive values are read here — a count,
+  // a dollar sum, a boolean — never a raw order row, buyer identity, or
+  // the seller's actual email address — so unlike the admin dashboard's
+  // use of this same client, this is safe to compute for any visitor
+  // viewing the listing, not just the seller or an admin. Degrades to
+  // zeros/false (same graceful pattern as every other function in this
+  // file) if the service-role key isn't configured or a query fails.
+  let sellerStats: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number } | undefined;
+  const admin = createAdminClient();
+  if (admin) {
+    try {
+      const [{ count: activeListingsCount }, { data: sellerOrders }, { data: authUserData }] = await Promise.all([
+        admin.from("listings").select("id", { count: "exact", head: true }).eq("seller_id", row.seller_id).eq("status", "published"),
+        // "Completed sales" / lifetime sales $ counts only orders whose
+        // payment has actually been released to the seller (status =
+        // "completed", i.e. the "Payment Released to Seller" label in the
+        // admin dashboard) — NOT "in_escrow" ("Payment Received from
+        // Buyer"), which just means Stripe collected the buyer's payment
+        // but the funds are still held in escrow, not yet a finished sale
+        // from the seller's point of view. Originally this also counted
+        // in_escrow orders, which inflated the count/total with sales that
+        // hadn't actually paid out yet (caught Sep 8, 2026 when a real
+        // seller's panel showed 5 "completed sales" while only 2 orders
+        // had actually reached "Payment Released to Seller").
+        admin.from("orders").select("amount").eq("seller_id", row.seller_id).eq("status", "completed"),
+        admin.auth.admin.getUserById(row.seller_id),
+      ]);
+      sellerStats = {
+        emailVerified: !!authUserData?.user?.email_confirmed_at,
+        activeListingsCount: activeListingsCount ?? 0,
+        completedSalesCount: (sellerOrders ?? []).length,
+        lifetimeSalesAmount: (sellerOrders ?? []).reduce((sum, o) => sum + Number(o.amount), 0),
+      };
+    } catch (err) {
+      console.warn("[listings] hydrateListingRow: seller stats lookup failed, showing zeros:", err);
+    }
+  }
+
+  return mapListing(row, CATEGORY_MAP[row.category_id]?.quickStats ?? [], {
+    seller,
+    sellerStats,
+    monthlyStats: monthlyStats ?? [],
+    seo,
+    socialStats: socialStats ?? [],
+    faqs: faqs ?? [],
+    comments: comments ?? [],
+    authorNames,
+    images: images ?? [],
+    gaLiveStats,
+    copyrightNotes,
+    topVideos: topVideos ?? [],
+    channelOverview,
+    listingAssets: listingAssets ?? [],
+  });
+}
+
 // Sep 8, 2026 technical-SEO pass (Section 23, "avoid duplicate Supabase
 // requests"): wrapped in React's per-request cache() because the listing
 // page's generateMetadata() and the page component itself both need the
@@ -331,113 +448,31 @@ export const getListingById = cache(async function getListingById(id: string): P
       return getMockListingById(id);
     }
 
-    const [
-      { data: seller },
-      { data: monthlyStats },
-      { data: seo },
-      { data: socialStats },
-      { data: faqs },
-      { data: comments },
-      { data: images },
-      { data: gaLiveStats },
-      { data: copyrightNotes },
-      { data: topVideos },
-      { data: channelOverview },
-      { data: listingAssets },
-    ] = await Promise.all([
-      supabase.from("profiles").select("*").eq("id", row.seller_id).maybeSingle(),
-      supabase.from("listing_monthly_stats").select("*").eq("listing_id", id),
-      supabase.from("listing_seo_data").select("*").eq("listing_id", id).maybeSingle(),
-      supabase.from("listing_social_stats").select("*").eq("listing_id", id),
-      supabase.from("listing_faqs").select("*").eq("listing_id", id),
-      supabase.from("comments").select("*").eq("listing_id", id),
-      supabase.from("listing_images").select("*").eq("listing_id", id),
-      // Real, live Google Analytics connection (src/lib/google-analytics.ts)
-      // — a separate table gated by its own RLS (public for published
-      // listings), so a missing/errored query here just means "not
-      // connected," never a reason to fail the whole page.
-      supabase.from("listing_ga_public_stats").select("*").eq("listing_id", id).maybeSingle(),
-      // YouTube Channels category only (Design & Development New.pdf, Sep
-      // 4 2026) — missing rows just mean neither section renders.
-      supabase.from("listing_copyright_notes").select("*").eq("listing_id", id).maybeSingle(),
-      supabase.from("listing_top_videos").select("*").eq("listing_id", id),
-      supabase.from("listing_youtube_channel_overview").select("*").eq("listing_id", id).maybeSingle(),
-      // Asset Transfer System v2's structured asset list (migration 036) —
-      // `listing_assets_select` is public (`using (true)`), same as
-      // listing_images/listing_faqs, so this is safe for any visitor.
-      supabase.from("listing_assets").select("*").eq("listing_id", id).order("position", { ascending: true }),
-    ]);
-
-    let authorNames: Record<string, string> = {};
-    const authorIds = [...new Set((comments ?? []).map((c) => c.author_id))];
-    if (authorIds.length) {
-      const { data: authors } = await supabase.from("profiles").select("id, full_name").in("id", authorIds);
-      authorNames = Object.fromEntries((authors ?? []).map((a) => [a.id, a.full_name ?? "Member"]));
-    }
-
-    // Live, auto-updating seller stats for the Seller panel: email-verified
-    // badge, how many of this seller's listings are currently live, and
-    // their lifetime sales total. This intentionally goes through the
-    // admin/service-role client rather than the RLS-scoped `supabase`
-    // client above: `orders` is private under RLS (orders_select_involved —
-    // only the buyer or seller can select a given order), and whether an
-    // email is confirmed lives on auth.users, which no RLS policy can ever
-    // expose. Only aggregate, non-sensitive values are read here — a count,
-    // a dollar sum, a boolean — never a raw order row, buyer identity, or
-    // the seller's actual email address — so unlike the admin dashboard's
-    // use of this same client, this is safe to compute for any visitor
-    // viewing the listing, not just the seller or an admin. Degrades to
-    // zeros/false (same graceful pattern as every other function in this
-    // file) if the service-role key isn't configured or a query fails.
-    let sellerStats: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number } | undefined;
-    const admin = createAdminClient();
-    if (admin) {
-      try {
-        const [{ count: activeListingsCount }, { data: sellerOrders }, { data: authUserData }] = await Promise.all([
-          admin.from("listings").select("id", { count: "exact", head: true }).eq("seller_id", row.seller_id).eq("status", "published"),
-          // "Completed sales" / lifetime sales $ counts only orders whose
-          // payment has actually been released to the seller (status =
-          // "completed", i.e. the "Payment Released to Seller" label in the
-          // admin dashboard) — NOT "in_escrow" ("Payment Received from
-          // Buyer"), which just means Stripe collected the buyer's payment
-          // but the funds are still held in escrow, not yet a finished sale
-          // from the seller's point of view. Originally this also counted
-          // in_escrow orders, which inflated the count/total with sales that
-          // hadn't actually paid out yet (caught Sep 8, 2026 when a real
-          // seller's panel showed 5 "completed sales" while only 2 orders
-          // had actually reached "Payment Released to Seller").
-          admin.from("orders").select("amount").eq("seller_id", row.seller_id).eq("status", "completed"),
-          admin.auth.admin.getUserById(row.seller_id),
-        ]);
-        sellerStats = {
-          emailVerified: !!authUserData?.user?.email_confirmed_at,
-          activeListingsCount: activeListingsCount ?? 0,
-          completedSalesCount: (sellerOrders ?? []).length,
-          lifetimeSalesAmount: (sellerOrders ?? []).reduce((sum, o) => sum + Number(o.amount), 0),
-        };
-      } catch (err) {
-        console.warn("[listings] getListingById: seller stats lookup failed, showing zeros:", err);
-      }
-    }
-
-    return mapListing(row, CATEGORY_MAP[row.category_id]?.quickStats ?? [], {
-      seller,
-      sellerStats,
-      monthlyStats: monthlyStats ?? [],
-      seo,
-      socialStats: socialStats ?? [],
-      faqs: faqs ?? [],
-      comments: comments ?? [],
-      authorNames,
-      images: images ?? [],
-      gaLiveStats,
-      copyrightNotes,
-      topVideos: topVideos ?? [],
-      channelOverview,
-      listingAssets: listingAssets ?? [],
-    });
+    return await hydrateListingRow(supabase, row);
   } catch (err) {
     console.warn("[listings] getListingById falling back to mock data (unexpected error):", err);
     return getMockListingById(id);
+  }
+});
+
+// Sep 16, 2026 ("listing er url business name e hobe"): the public listing
+// page now resolves by this human-readable slug instead of the raw UUID —
+// see src/app/listing/[slug]/page.tsx, which falls back to getListingById()
+// (and a redirect to the canonical slug URL) for an old bare-UUID link.
+export const getListingBySlug = cache(async function getListingBySlug(slug: string): Promise<Listing | undefined> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return getMockListingBySlug(slug);
+
+    const { data: row, error } = await supabase.from("listings").select("*").eq("slug", slug).maybeSingle();
+    if (error || !row) {
+      if (error) console.warn("[listings] getListingBySlug falling back to mock data:", error.message);
+      return getMockListingBySlug(slug);
+    }
+
+    return await hydrateListingRow(supabase, row);
+  } catch (err) {
+    console.warn("[listings] getListingBySlug falling back to mock data (unexpected error):", err);
+    return getMockListingBySlug(slug);
   }
 });

@@ -108,8 +108,9 @@ export async function cancelOrder(orderId: string) {
   try {
     const admin = createAdminClient();
     if (admin) {
-      const { data: listing } = await admin.from("listings").select("title").eq("id", order.listing_id).maybeSingle();
+      const { data: listing } = await admin.from("listings").select("title, slug").eq("id", order.listing_id).maybeSingle();
       const title = listing?.title ?? "your listing";
+      const listingSlug = listing?.slug ?? (order.listing_id as string);
       const emails = await getUserEmails(admin, [order.seller_id as string]);
       const sellerEmail = emails[order.seller_id as string];
       if (sellerEmail) {
@@ -120,7 +121,7 @@ export async function cancelOrder(orderId: string) {
           sellerEmail,
           `An order for "${title}" was cancelled`,
           `<p>The buyer cancelled their order for "${title}" before paying — no action needed on your end.</p>
-           <p><a href="${origin}/listing/${order.listing_id}">View your listing</a></p>`
+           <p><a href="${origin}/listing/${listingSlug}">View your listing</a></p>`
         );
       }
     }

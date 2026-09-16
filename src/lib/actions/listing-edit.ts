@@ -127,7 +127,13 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
     throw new Error("Add at least one asset in Sale Includes before saving — listings can't be updated without at least one asset listed.");
   }
 
-  const { error: listingError } = await admin
+  // Sep 16, 2026 slug-URL change: `slug` is deliberately absent from this
+  // update payload — it's generated once at creation (src/lib/slug.ts) and
+  // never regenerated here, so a listing's public URL stays stable even
+  // when its title changes. `.select("slug")` just reads back that
+  // unchanged value for the notification emails below, at no extra
+  // round-trip cost.
+  const { data: updatedListing, error: listingError } = await admin
     .from("listings")
     .update({
       title: fields.title,
@@ -146,7 +152,9 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
       ...(fields.gaAccessConfirmed !== null ? { ga_access_confirmed: fields.gaAccessConfirmed } : {}),
       ...fields.quickStatColumns,
     })
-    .eq("id", listingId);
+    .eq("id", listingId)
+    .select("slug")
+    .single();
   if (listingError) throw new Error(listingError.message);
 
   // Structured asset list (listing_assets): full replace, but ONLY when the
@@ -320,7 +328,7 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
     if (error) throw new Error(`Saving Channel Overview failed: ${error.message}`);
   }
 
-  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/listing/[slug]", "page");
   revalidatePath("/dashboard/admin/listings");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/seller");
@@ -338,7 +346,7 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
     const hdrs = await headers();
     const host = hdrs.get("host");
     const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
-    const listingUrl = `${origin}/listing/${listingId}`;
+    const listingUrl = `${origin}/listing/${updatedListing?.slug ?? listingId}`;
 
     if (!isAdmin) {
       const [{ data: sellerProfile }, emails] = await Promise.all([
@@ -397,7 +405,7 @@ export async function addListingImages(listingId: string, kind: string, formData
     if (imgErr) throw new Error(`Saving ${kind} image record failed: ${imgErr.message}`);
   }
 
-  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/listing/[slug]", "page");
 }
 
 export async function deleteListingImage(listingId: string, imageId: string) {
@@ -406,5 +414,5 @@ export async function deleteListingImage(listingId: string, imageId: string) {
   const { error } = await admin.from("listing_images").delete().eq("id", imageId).eq("listing_id", listingId);
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/listing/[slug]", "page");
 }

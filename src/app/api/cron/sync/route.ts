@@ -122,7 +122,10 @@ export async function GET(request: Request) {
         );
         if (overviewError) throw new Error(overviewError.message);
 
-        revalidatePath(`/listing/${listing.id}`);
+        // Sep 16, 2026 slug-URL change: revalidate by dynamic route pattern
+        // rather than a literal path — see the pay-later/init route's
+        // comment on this same pattern.
+        revalidatePath("/listing/[slug]", "page");
         ytResults.push({ listingId: listing.id, ok: true });
       } catch (err) {
         ytResults.push({ listingId: listing.id, ok: false, error: err instanceof Error ? err.message : "Sync failed." });

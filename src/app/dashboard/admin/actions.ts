@@ -46,7 +46,7 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
   // Fetched before the update purely to know what the seller's pending
   // listing just turned into (see the notification block below) — not used
   // to gate the update itself.
-  const { data: beforeRow } = await admin.from("listings").select("status, title, seller_id").eq("id", listingId).maybeSingle();
+  const { data: beforeRow } = await admin.from("listings").select("status, title, slug, seller_id").eq("id", listingId).maybeSingle();
 
   const { error } = await admin.from("listings").update({ status }).eq("id", listingId);
   if (error) throw new Error(error.message);
@@ -57,9 +57,11 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
   // page and the homepage/marketplace should show for this listing — unlike
   // updateListing() and setListingGaVerified() above, this action was only
   // ever revalidating the admin views, so a status flip (e.g. Unpublish)
-  // kept showing the old state on /listing/[id] until something else
-  // happened to revalidate it.
-  revalidatePath(`/listing/${listingId}`);
+  // kept showing the old state on /listing/[slug] until something else
+  // happened to revalidate it. Revalidated by dynamic route pattern (Sep
+  // 16, 2026 slug-URL change) rather than a literal path, since this
+  // function only has the listing's id in scope, not its slug.
+  revalidatePath("/listing/[slug]", "page");
   revalidatePath("/");
   revalidatePath("/buy");
 
@@ -86,7 +88,7 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
             sellerEmail,
             `Your listing "${title}" is now live on Durqo`,
             `<p>Good news — your listing "${title}" was approved and is now live on the marketplace.</p>
-             <p><a href="${origin}/listing/${listingId}">View your listing</a></p>`
+             <p><a href="${origin}/listing/${beforeRow.slug}">View your listing</a></p>`
           );
         } else {
           await sendEmail(
@@ -318,12 +320,12 @@ export async function updateListing(
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/admin/listings");
-  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/listing/[slug]", "page");
   revalidatePath("/dashboard/admin");
 
   // Best-effort: let the seller know an admin changed their listing.
   try {
-    const { data: listingRow } = await supabaseAdmin.from("listings").select("seller_id").eq("id", listingId).maybeSingle();
+    const { data: listingRow } = await supabaseAdmin.from("listings").select("seller_id, slug").eq("id", listingId).maybeSingle();
     if (listingRow?.seller_id) {
       const emails = await getUserEmails(supabaseAdmin, [listingRow.seller_id as string]);
       const sellerEmail = emails[listingRow.seller_id as string];
@@ -333,7 +335,7 @@ export async function updateListing(
           sellerEmail,
           `Your listing "${fields.title}" was updated by Durqo`,
           `<p>An admin made changes to your listing "${fields.title}". Please review it to make sure everything looks right.</p>
-           <p><a href="${origin}/listing/${listingId}">View your listing</a></p>`
+           <p><a href="${origin}/listing/${listingRow.slug}">View your listing</a></p>`
         );
       }
     }
@@ -360,7 +362,7 @@ export async function setListingGaVerified(listingId: string, verified: boolean)
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/admin/listings");
-  revalidatePath(`/listing/${listingId}`);
+  revalidatePath("/listing/[slug]", "page");
   revalidatePath("/dashboard/admin");
 }
 

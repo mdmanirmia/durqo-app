@@ -152,6 +152,10 @@ export interface SellerInfo {
 
 export interface Listing {
   id: string;
+  // Human-readable permalink (durqo.com/listing/<slug>) — see src/lib/slug.ts.
+  // Set once at creation from the title and never regenerated, so it stays
+  // stable even after the title is edited later.
+  slug: string;
   categoryId: string;
   title: string;
   businessUrl?: string;

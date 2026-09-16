@@ -34,7 +34,7 @@ export default function ListingsTable({ listings }: { listings: Listing[] }) {
               <tr key={l.id} className="border-b border-rule last:border-0 hover:bg-paper-sunk">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <Link href={`/listing/${l.id}`} className="font-semibold text-ink hover:text-brand-strong hover:underline">
+                    <Link href={`/listing/${l.slug}`} className="font-semibold text-ink hover:text-brand-strong hover:underline">
                       {l.title}
                     </Link>
                     {l.isVerified && <BadgeCheck size={14} className="shrink-0 text-brand" aria-label="Listing verified by Durqo" />}
@@ -51,7 +51,7 @@ export default function ListingsTable({ listings }: { listings: Listing[] }) {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <Link href={`/listing/${l.id}`} className="text-sm font-semibold text-brand-hover hover:underline">
+                  <Link href={`/listing/${l.slug}`} className="text-sm font-semibold text-brand-hover hover:underline">
                     View listing
                   </Link>
                 </td>

@@ -49,7 +49,7 @@ export default async function SellerQuestionsPage() {
           {unanswered.map((q) => (
             <div key={q.id} className="rounded-xl border border-rule bg-paper-raised p-5">
               <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                <Link href={`/listing/${q.listingId}`} className="text-sm font-semibold text-brand-hover hover:underline">
+                <Link href={`/listing/${q.listingSlug}`} className="text-sm font-semibold text-brand-hover hover:underline">
                   {q.listingTitle}
                 </Link>
                 <span className="text-xs text-ink-faint">{q.createdAt}</span>
@@ -79,7 +79,7 @@ export default async function SellerQuestionsPage() {
               {answered.map((q) => (
                 <div key={q.id} className="rounded-xl border border-rule bg-paper-raised p-5 opacity-80">
                   <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                    <Link href={`/listing/${q.listingId}`} className="text-sm font-semibold text-brand-hover hover:underline">
+                    <Link href={`/listing/${q.listingSlug}`} className="text-sm font-semibold text-brand-hover hover:underline">
                       {q.listingTitle}
                     </Link>
                     <span className="text-xs text-ink-faint">{q.createdAt}</span>
