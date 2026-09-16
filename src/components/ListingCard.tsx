@@ -103,7 +103,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             <span className="text-lg font-bold text-ink">{fmtUSD(listing.discountedPrice ?? listing.price)}</span>
           </div>
           <Link
-            href={`/listing/${listing.id}`}
+            href={`/listing/${listing.slug}`}
             className="rounded-lg bg-brand-strong px-3.5 py-2 text-sm font-semibold text-white hover:bg-navy-secondary"
           >
             View Listing
