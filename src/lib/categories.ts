@@ -111,7 +111,7 @@ export const CATEGORIES: CategoryConfig[] = [
     description: "Instagram, TikTok and X accounts with real followings.",
     // Design & Development New.pdf (Sep 5, 2026 revision): this category's
     // fields were reworked to talk about "the account" rather than "the
-    // business" (see the label overrides in src/app/listing/[id]/page.tsx
+    // business" (see the label overrides in src/app/listing/[slug]/page.tsx
     // and the form field labels), and its Quick Statistics were replaced
     // wholesale with Account Type/Account Location/Avg. Monthly
     // Income/Total Followers/Account Age (plus the always-shown
