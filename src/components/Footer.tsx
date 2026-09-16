@@ -138,7 +138,7 @@ export default function Footer() {
               durqo<span className="text-brand">.</span>
             </Link>
             <p className="mt-3 max-w-[30ch] text-sm leading-relaxed text-white/55">
-              A trusted marketplace for buying and selling digital businesses.
+              A Marketplace Where Digital Businesses Find New Owners
             </p>
             <a href="mailto:support@durqo.com" className="mt-5 inline-flex items-center gap-2 text-sm text-white/65 hover:text-white">
               <Mail size={15} className="text-brand" />
