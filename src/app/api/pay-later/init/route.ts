@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
   const { data: listing, error: listingError } = await admin
     .from("listings")
-    .select("id, title, price, discounted_price, seller_id, assets_confirmed_at")
+    .select("id, slug, title, price, discounted_price, seller_id, assets_confirmed_at")
     .eq("id", listingId)
     .eq("status", "published")
     .maybeSingle();
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
     await sendEmail(
       ADMIN_EMAIL,
       `New Pay Later "purchase" — ${listing.title}`,
-      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy ${listingLinkHtml(origin, listing.id as string, listing.title as string)} for $${price.toLocaleString()} — no payment was actually collected.</p>
+      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy ${listingLinkHtml(origin, listing.slug as string, listing.title as string)} for $${price.toLocaleString()} — no payment was actually collected.</p>
        <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
     );
 
@@ -183,7 +183,11 @@ export async function POST(request: Request) {
     console.error("[pay-later-init] notification emails failed:", err);
   }
 
-  revalidatePath(`/listing/${listing.id}`);
+  // Sep 16, 2026 slug-URL change: the listing detail route is now keyed by
+  // slug, not id — revalidating by dynamic route pattern instead of a
+  // literal path means every call site here can stay a one-liner without
+  // needing to know (or fetch) the listing's slug just to invalidate its cache.
+  revalidatePath("/listing/[slug]", "page");
   revalidatePath("/");
   revalidatePath("/buy");
   revalidatePath("/dashboard/buyer/orders");
