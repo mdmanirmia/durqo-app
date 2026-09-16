@@ -273,19 +273,32 @@ export default async function Home() {
       ? { value: String(verifiedSellerCount), label: verifiedSellerCount === 1 ? "Verified seller" : "Verified sellers" }
       : { value: String(activeCategoryCount), label: "Categories with live listings" };
 
-  // Featured opportunity (hero spotlight): prefer the highest-priced listing
-  // that actually has real computed monthly income, so the homepage's own
-  // showcase never ends up being a listing with no revenue data at all
-  // (e.g. a bare Domains listing) — falls back to "just the newest" only
-  // when nothing in the catalog has income data yet.
-  const withRevenue = listings.filter((l) => {
+  // Featured opportunity (hero spotlight): Sep 16 2026 change ("emon list
+  // dekhabe jeitar revenue growth sob theke beshi but not sold, or income
+  // sob theke beshi but not sold" — never spotlight a listing that's
+  // already sold; among the live ones, prefer whichever is growing
+  // fastest, using the same real percentage from a listing's own recorded
+  // monthly income history that the trend badge below computes). Falls
+  // back to highest recorded income when no live listing has enough
+  // monthly history yet to compute a growth trend, and to price only as a
+  // last tiebreak so the pick stays deterministic.
+  const liveListings = listings.filter((l) => l.status !== "sold");
+  const spotlightGrowth = (l: (typeof listings)[number]) => {
+    const series = l.monthlyStats.map((m) => m.income).filter((v): v is number => typeof v === "number");
+    return series.length >= 2 && series[0] > 0 ? (series[series.length - 1] - series[0]) / series[0] : undefined;
+  };
+  const spotlightIncome = (l: (typeof listings)[number]) => {
     const income = l.quickStats.monthly_income;
-    return typeof income === "number" && income > 0;
-  });
-  const spotlightPool = withRevenue.length > 0 ? withRevenue : listings;
-  const spotlight = [...spotlightPool].sort(
-    (a, b) => (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price)
-  )[0];
+    return typeof income === "number" && income > 0 ? income : undefined;
+  };
+  const spotlightPool = liveListings.length > 0 ? liveListings : listings;
+  const spotlight = [...spotlightPool].sort((a, b) => {
+    const growthDiff = (spotlightGrowth(b) ?? -Infinity) - (spotlightGrowth(a) ?? -Infinity);
+    if (growthDiff !== 0) return growthDiff;
+    const incomeDiff = (spotlightIncome(b) ?? -Infinity) - (spotlightIncome(a) ?? -Infinity);
+    if (incomeDiff !== 0) return incomeDiff;
+    return (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price);
+  })[0];
 
   const spotlightRevenue = (spotlight?.quickStats.monthly_income as number | undefined) ?? 0;
   const spotlightExpenseTotal = spotlight
