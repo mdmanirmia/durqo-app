@@ -35,7 +35,9 @@ export async function POST(request: Request) {
   await admin.from("listing_ga_connections").delete().eq("listing_id", listingId);
   await admin.from("listing_ga_public_stats").delete().eq("listing_id", listingId);
 
-  revalidatePath(`/listing/${listingId}`);
+  // Sep 16, 2026 slug-URL change: revalidate by dynamic route pattern
+  // rather than a literal path.
+  revalidatePath("/listing/[slug]", "page");
 
   return NextResponse.json({ ok: true });
 }
