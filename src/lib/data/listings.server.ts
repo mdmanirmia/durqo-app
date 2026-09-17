@@ -315,6 +315,33 @@ export async function getVerifiedSellerCount(): Promise<number> {
   }
 }
 
+// Platform-wide count of every registered seller (profiles.role = "seller"),
+// verified or not — used by the homepage stats bar's "Active Sellers" tile
+// (Sep 17 2026: "eitar value hobe marketplace e total seller er soman" —
+// this stat's value should equal the marketplace's total seller count).
+// Deliberately not scoped to whether that seller currently has a live
+// listing, same reasoning as getVerifiedSellerCount above — a seller who
+// just registered should count immediately, not only once their first
+// listing goes live.
+export async function getSellerCount(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return 0;
+    const { count, error } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "seller");
+    if (error) {
+      console.warn("[listings] getSellerCount failed:", error.message);
+      return 0;
+    }
+    return count ?? 0;
+  } catch (err) {
+    console.warn("[listings] getSellerCount unexpected error:", err);
+    return 0;
+  }
+}
+
 // Shared by getListingById and getListingBySlug (Sep 16, 2026 slug-URL
 // change) — both resolve to the same `listings` row shape by different
 // columns, then need identical hydration (seller profile, stats, SEO data,
