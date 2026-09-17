@@ -157,19 +157,16 @@ export default function Footer() {
           <div>
             <ColumnHeading>Resources</ColumnHeading>
             <ul className="flex flex-col gap-2.5 text-sm text-white/65">
-              <li><Link href="/how-to-buy" className="hover:text-white">How to buy</Link></li>
-              <li><Link href="/how-to-sell" className="hover:text-white">How to sell</Link></li>
-              <li><Link href="/transfer-room" className="hover:text-white">The Transfer Room</Link></li>
-              <li><Link href="/listing-review" className="hover:text-white">How Listings Are Reviewed</Link></li>
-              <li><Link href="/verify-before-buying" className="hover:text-white">Verify Before You Buy</Link></li>
-              <li><Link href="/after-you-pay" className="hover:text-white">After You Pay</Link></li>
-              <li><Link href="/report-an-issue" className="hover:text-white">Report an Issue</Link></li>
-              <li><Link href="/whats-included" className="hover:text-white">What&apos;s Included</Link></li>
-              <li><Link href="/seller-payouts" className="hover:text-white">How Seller Payouts Work</Link></li>
-              <li><Link href="/buyer-faq" className="hover:text-white">Buyer FAQ</Link></li>
-              <li><Link href="/seller-faq" className="hover:text-white">Seller FAQ</Link></li>
+              <li><Link href="/how-to-buy" className="hover:text-white">How to Buy</Link></li>
+              <li><Link href="/how-to-sell" className="hover:text-white">How to Sell</Link></li>
+              <li><Link href="/buyer-faq" className="hover:text-white">Buyer&apos;s FAQ</Link></li>
+              <li><Link href="/seller-faq" className="hover:text-white">Seller&apos;s FAQ</Link></li>
               <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
-              <li><Link href="/buy-and-sell-digital-businesses-in-bdt" className="hover:text-white">Buy &amp; Sell in BDT</Link></li>
+              <li><Link href="/buy-and-sell-digital-businesses-in-bdt" className="hover:text-white">Buy &amp; Sell BDT</Link></li>
+              <li><Link href="/transfer-room" className="hover:text-white">The Transfer Room</Link></li>
+              <li><Link href="/report-an-issue" className="hover:text-white">Report an Issue</Link></li>
+              <li><Link href="/listing-review" className="hover:text-white">How Listings Are Reviewed</Link></li>
+              <li><Link href="/seller-payouts" className="hover:text-white">How Seller Payouts Work</Link></li>
             </ul>
           </div>
 
