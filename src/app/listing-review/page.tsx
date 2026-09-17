@@ -55,6 +55,11 @@ import Button from "@/components/ui/Button";
 //   (the buy-page-redesign-addendum's documented decision — listings.
 //   is_verified exists but is never set true by any code path, so the
 //   admin-approval-to-publish gate is the real verification signal today).
+// - Sep 17, 2026: confirmed directly by the Durqo team that the manual
+//   check isn't GA-only — Search Console, SEMrush, and Ahrefs data
+//   submitted by the seller are each manually checked by the review team
+//   too, and a listing only goes live once everything submitted has been
+//   checked this way (step 03/04 updated to say so explicitly).
 export const metadata: Metadata = {
   title: "How Durqo Reviews a Digital Business Before It Goes Live | Durqo",
   description:
@@ -146,12 +151,12 @@ const REVIEW_STEPS = [
   {
     n: "03",
     title: "Durqo's team checks the numbers",
-    body: "Where analytics access was granted, an admin signs in to the real Google Analytics property and compares it against what was submitted, rather than trusting the screenshot alone.",
+    body: "Where analytics access was granted, an admin signs in to the real Google Analytics property and compares it against what was submitted. Search Console, SEMrush, and Ahrefs data is checked by the team the same way — every figure is manually reviewed, not just glanced at.",
   },
   {
     n: "04",
     title: "Approved and live, or sent back",
-    body: "An admin either approves the listing — it publishes immediately and the seller is emailed — or rejects it, which archives the listing and emails the seller so it can be corrected and resubmitted.",
+    body: "Only once everything has been manually checked does an admin make the call: approve — the listing publishes immediately and the seller is emailed — or reject, which archives the listing and emails the seller so it can be corrected and resubmitted.",
   },
 ] as const;
 
