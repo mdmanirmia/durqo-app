@@ -49,10 +49,14 @@ import Button from "@/components/ui/Button";
 //   escrow_com channel which releases through Escrow.com itself) matches
 //   migration 039 per claude/asset-transfer-post-purchase-redirect-and-
 //   payout-release-addendum.md.
-// - Rooms opening automatically across all four payment channels (Stripe,
-//   SSLCommerz, Escrow.com, Pay Later), the buyer being redirected straight
-//   in for single-item Stripe/SSLCommerz purchases, and the email-CTA path
-//   for Escrow.com/multi-item orders, all match that same addendum.
+// - Rooms opening automatically across every real payment channel (Stripe,
+//   SSLCommerz, Escrow.com), the buyer being redirected straight in for
+//   single-item Stripe/SSLCommerz purchases, and the email-CTA path for
+//   Escrow.com/multi-item orders, all match that same addendum. ("Buy Now —
+//   Pay Later" is a separate, no-payment internal test tool — see its own
+//   code comments in BuyNowButton.tsx — and is deliberately left out of
+//   buyer-facing copy on this page, same as it's deliberately left out of
+//   /terms.)
 // - "Asset Transfers" is the real buyer/seller dashboard nav entry (see
 //   lib/dashboard-nav.ts) linking to the list of a user's own rooms.
 // - Stripe/SSLCommerz are never called "escrow" here, matching /terms and
@@ -231,8 +235,8 @@ export default function TransferRoomPage() {
             <DashEyebrow center>What it is</DashEyebrow>
             <h2 className="mb-5 text-center text-2xl sm:text-3xl">A shared workspace, not just a payment screen.</h2>
             <p className="text-center text-[0.95rem] leading-relaxed text-ink-soft">
-              The moment a payment is confirmed &mdash; by card, bKash/Rocket/Nagad/bank, Escrow.com, or Pay Later
-              &mdash; Durqo opens a private Transfer Room for that order. It&rsquo;s where the seller hands over the
+              The moment a payment is confirmed &mdash; by card, bKash/Rocket/Nagad/bank, or Escrow.com &mdash;
+              Durqo opens a private Transfer Room for that order. It&rsquo;s where the seller hands over the
               domain, code, accounts, customer lists or whatever else the listing included, and where the buyer
               decides, item by item, whether the sale is actually done. For most single-item card and mobile-banking
               purchases, the buyer lands there automatically right after paying; for Escrow.com and multi-item
