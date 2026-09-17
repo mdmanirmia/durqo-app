@@ -164,6 +164,7 @@ export default function Footer() {
               <li><Link href="/after-you-pay" className="hover:text-white">After You Pay</Link></li>
               <li><Link href="/report-an-issue" className="hover:text-white">Report an Issue</Link></li>
               <li><Link href="/whats-included" className="hover:text-white">What&apos;s Included</Link></li>
+              <li><Link href="/seller-payouts" className="hover:text-white">How Seller Payouts Work</Link></li>
               <li><Link href="/buyer-faq" className="hover:text-white">Buyer FAQ</Link></li>
               <li><Link href="/seller-faq" className="hover:text-white">Seller FAQ</Link></li>
               <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
