@@ -161,6 +161,7 @@ export default function Footer() {
               <li><Link href="/how-to-sell" className="hover:text-white">How to sell</Link></li>
               <li><Link href="/transfer-room" className="hover:text-white">The Transfer Room</Link></li>
               <li><Link href="/listing-review" className="hover:text-white">How Listings Are Reviewed</Link></li>
+              <li><Link href="/verify-before-buying" className="hover:text-white">Verify Before You Buy</Link></li>
               <li><Link href="/after-you-pay" className="hover:text-white">After You Pay</Link></li>
               <li><Link href="/report-an-issue" className="hover:text-white">Report an Issue</Link></li>
               <li><Link href="/whats-included" className="hover:text-white">What&apos;s Included</Link></li>
