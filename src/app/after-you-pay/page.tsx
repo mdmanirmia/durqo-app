@@ -8,7 +8,6 @@ import {
   Wallet,
   CreditCard,
   Landmark,
-  Banknote,
   ShieldCheck,
   Send,
   Eye,
@@ -41,8 +40,6 @@ import Button from "@/components/ui/Button";
 //   success/route.ts looks the order up by `sslcommerz_tran_id` and 303-
 //   redirects straight to the Transfer Room when exactly one order matches,
 //   same fallback rule for multi-item carts.
-// - Pay Later: BuyNowButton.tsx calls router.push(`/dashboard/transfer/
-//   ${data.orderId}`) directly after /api/pay-later/init succeeds.
 // - Escrow.com: EscrowConfirmModal.tsx's own "success" state tells the
 //   buyer Escrow.com just emailed them a "Please agree to the transaction"
 //   message — Click to Agree, review terms, pay, all on Escrow.com's own
@@ -55,8 +52,13 @@ import Button from "@/components/ui/Button";
 //   includes "in_escrow" and "in_durqo" as two distinct states (migration
 //   038) — Badge.tsx labels them "Held by Escrow.com" and "Payment
 //   Received" respectively. Only the escrow_com channel actually sits with
-//   a third party; Stripe/SSLCommerz/Pay Later funds are held by Durqo
-//   itself until release (migration 039's transfer_approve()).
+//   a third party; Stripe/SSLCommerz funds are held by Durqo itself until
+//   release (migration 039's transfer_approve()).
+// - "Buy Now — Pay Later" (BuyNowButton.tsx / api/pay-later/init/route.ts)
+//   is a separate, no-payment internal test tool, not a real buyer payment
+//   method — it creates a real order with zero money collected. It's
+//   deliberately left out of this page's buyer-facing copy, matching how
+//   /terms's own top-of-file comment deliberately excludes it too.
 // - NoRoomState in TransferRoomView.tsx: a buyer who lands on the room a
 //   beat before the creation RPC finishes now auto-polls every 4s (up to 8
 //   tries) instead of hitting a dead end — mentioned here as "give it a
@@ -132,11 +134,6 @@ const REDIRECT_METHODS = [
     body: "Paid through Stripe or SSLCommerz for a single listing? You're redirected straight into your Transfer Room the moment payment is confirmed — no confirmation page to click through first.",
   },
   {
-    icon: Banknote,
-    title: "Pay Later",
-    body: "Once your Pay Later purchase goes through, you're sent straight into the Transfer Room the same way as a card payment.",
-  },
-  {
     icon: Landmark,
     title: "Escrow.com",
     body: "Escrow.com runs its own hosted checkout: after you confirm on Durqo, Escrow.com emails you to \"Click to Agree,\" review the terms, and pay there. Durqo can't redirect you back automatically from their site, so once that payment clears, you (and the seller) get an email with a direct link into the Transfer Room instead.",
@@ -155,9 +152,9 @@ const MONEY_HOLDING = [
     body: "Your order status shows \"Held by Escrow.com\" — the funds sit with Escrow.com itself, a neutral third party, until the transfer is approved.",
   },
   {
-    title: "Paid via Stripe, SSLCommerz, or Pay Later",
+    title: "Paid via Stripe or SSLCommerz",
     status: "Payment Received",
-    body: "Your order status shows \"Payment Received\" — Durqo is holding the funds directly. It isn't a third-party escrow service for these three channels, but the same rule applies: nothing moves to the seller until you approve.",
+    body: "Your order status shows \"Payment Received\" — Durqo is holding the funds directly. It isn't a third-party escrow service for these channels, but the same rule applies: nothing moves to the seller until you approve.",
   },
 ] as const;
 
@@ -236,7 +233,7 @@ export default function AfterYouPayPage() {
                 you get there differs slightly by payment method.
               </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {REDIRECT_METHODS.map(({ icon: Icon, title, body }) => (
                 <div key={title} data-reveal className="rounded-xl border border-rule bg-paper-raised p-6">
                   <span className="mb-3 grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
