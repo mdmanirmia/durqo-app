@@ -160,6 +160,7 @@ export default function Footer() {
               <li><Link href="/how-to-buy" className="hover:text-white">How to buy</Link></li>
               <li><Link href="/how-to-sell" className="hover:text-white">How to sell</Link></li>
               <li><Link href="/transfer-room" className="hover:text-white">The Transfer Room</Link></li>
+              <li><Link href="/listing-review" className="hover:text-white">How Listings Are Reviewed</Link></li>
               <li><Link href="/buyer-faq" className="hover:text-white">Buyer FAQ</Link></li>
               <li><Link href="/seller-faq" className="hover:text-white">Seller FAQ</Link></li>
               <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
