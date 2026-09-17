@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Heart, ShoppingCart, Menu, X, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Heart, ShoppingCart, Menu, X, User, ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { createClient } from "@/lib/supabase/client";
 import { getWishlistCount } from "@/lib/data/wishlist.client";
@@ -24,6 +24,12 @@ export default function Header() {
   const [name, setName] = useState<string | null | undefined>(undefined); // undefined = still checking, null = logged out
   const [wishlistCount, setWishlistCount] = useState(0);
   const [cartCount, setCartCount] = useState(0);
+  // Sep 16, 2026 ("Drowpdown e Seller Dashboard and Buyer Dashboard diba"):
+  // the "Hi, {name}" pill now opens a small dropdown so a seller who's also
+  // browsing as a buyer (or vice versa) can jump straight to either
+  // dashboard from any page, instead of only ever linking to /dashboard/buyer.
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Wishlist/cart badge counts. Refetched on mount, on auth changes, and
   // whenever any component reports a wishlist/cart mutation via the shared
@@ -103,6 +109,29 @@ export default function Header() {
     };
   }, []);
 
+  // Close the user-menu dropdown on outside click, Escape, or navigation —
+  // same pattern DashboardShell's mobile section-switcher already uses.
+  useEffect(() => {
+    if (!userMenuOpen) return;
+    function handlePointerDown(e: MouseEvent) {
+      if (userMenuRef.current && userMenuRef.current.contains(e.target as Node)) return;
+      setUserMenuOpen(false);
+    }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setUserMenuOpen(false);
+    }
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [userMenuOpen]);
+
+  useEffect(() => {
+    setUserMenuOpen(false);
+  }, [pathname]);
+
   async function handleLogOut() {
     const supabase = createClient();
     if (!supabase) return;
@@ -140,10 +169,42 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-2 md:ml-0">
           {name ? (
             <>
-              <Link href="/dashboard/buyer" className="hidden items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink sm:flex">
-                <User size={15} />
-                Hi, {name}
-              </Link>
+              <div className="relative hidden sm:block" ref={userMenuRef}>
+                <button
+                  type="button"
+                  onClick={() => setUserMenuOpen((v) => !v)}
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="menu"
+                  className="flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium text-ink-soft hover:text-ink"
+                >
+                  <User size={15} />
+                  Hi, {name}
+                  <ChevronDown size={14} className={clsx("transition-transform", userMenuOpen && "rotate-180")} />
+                </button>
+                {userMenuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-rule bg-paper-raised py-1.5 shadow-lg"
+                  >
+                    <Link
+                      href="/dashboard/buyer"
+                      role="menuitem"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-ink-soft hover:bg-paper-sunk hover:text-ink"
+                    >
+                      Buyer Dashboard
+                    </Link>
+                    <Link
+                      href="/dashboard/seller"
+                      role="menuitem"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="block px-4 py-2 text-sm text-ink-soft hover:bg-paper-sunk hover:text-ink"
+                    >
+                      Seller Dashboard
+                    </Link>
+                  </div>
+                )}
+              </div>
               <button type="button" onClick={handleLogOut} className="hidden rounded-md border border-rule-strong px-4 py-2 text-sm font-semibold text-ink hover:border-brand-strong sm:inline-block">
                 Log out
               </button>
@@ -193,8 +254,12 @@ export default function Header() {
           ))}
           {name ? (
             <div className="mt-2 flex flex-col gap-2">
+              <p className="px-2 text-sm font-semibold text-ink">Hi, {name}</p>
               <Link href="/dashboard/buyer" className="rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold" onClick={() => setOpen(false)}>
-                Hi, {name}
+                Buyer Dashboard
+              </Link>
+              <Link href="/dashboard/seller" className="rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold" onClick={() => setOpen(false)}>
+                Seller Dashboard
               </Link>
               <button type="button" onClick={handleLogOut} className="rounded-full bg-brand px-4 py-2 text-center text-sm font-semibold text-white">
                 Log out
