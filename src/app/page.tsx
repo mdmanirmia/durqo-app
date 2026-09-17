@@ -11,10 +11,11 @@ import {
   Package,
   Coins,
   LayoutGrid,
+  Users,
 } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
-import { getPublishedListings, getVerifiedSellerCount } from "@/lib/data/listings.server";
+import { getPublishedListings, getSellerCount } from "@/lib/data/listings.server";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import ListingCard from "@/components/ListingCard";
 import WishlistButton from "@/components/WishlistButton";
@@ -185,7 +186,7 @@ const CONFIDENCE = [
 // on the marketplace already carries a Verified badge.
 const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Data checked"];
 
-// Sep 2026: the stats bar (Active listings / Listed value / Verified sellers)
+// Sep 2026: the stats bar (Active listings / Listed value / Active Sellers)
 // and the featured spotlight below were silently going stale — `next build`
 // was prerendering "/" as a fully static route (no `searchParams`/other
 // dynamic API forced it dynamic the way `/buy` and `/listing/[slug]` already
@@ -198,7 +199,7 @@ const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Dat
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [listings, verifiedSellerCount] = await Promise.all([getPublishedListings(), getVerifiedSellerCount()]);
+  const [listings, sellerCount] = await Promise.all([getPublishedListings(), getSellerCount()]);
 
   // "Businesses gaining attention" — Sep 16 2026 change ("jei gulor price or
   // profit sob theke beshi": show the listings whose price or profit is
@@ -252,26 +253,20 @@ export default async function Home() {
   const topCategories = categoriesByActivity.slice(0, 6);
   const activeCategoryCount = categoriesByActivity.filter((c) => (categoryCounts.get(c.id) ?? 0) > 0).length;
 
-  // Stats-bar 4th slot: a real, non-zero stat instead of a "0 Verified
-  // seller profiles" trust stat (verification is still opt-in sitewide, so
-  // that count is genuinely 0 today for most catalogs) — swaps to the real
-  // verified count automatically once sellers start verifying.
-  //
-  // Sep 7 2026: `verifiedSellerCount` (fetched above via
-  // `getVerifiedSellerCount()`) is a platform-wide count of every profile
-  // with `is_verified = true`, not scoped to whether that seller currently
-  // has any active listings. A user reported seeing "2 verified sellers" on
-  // the platform when this stat showed "1" — the DB genuinely has 2 verified
-  // profiles, but the old logic only counted a verified seller if they also
-  // had at least one non-sold listing, and one of the two (a verified seller
-  // with zero listings so far) was invisible under that rule. Confirmed with
-  // the user directly: this stat should count every verified seller
-  // platform-wide, so verification shows up immediately rather than being
-  // gated on inventory.
-  const verifiedStat =
-    verifiedSellerCount > 0
-      ? { value: String(verifiedSellerCount), label: verifiedSellerCount === 1 ? "Verified seller" : "Verified sellers" }
-      : { value: String(activeCategoryCount), label: "Categories with live listings" };
+  // Stats-bar 4th slot: Sep 17 2026 change ("Eita hobe Active Sellers and
+  // eitar value hobe marketplace e total seller er soman" — this tile
+  // should read "Active Sellers" and its value should equal the
+  // marketplace's total seller count). Replaced the old "Verified
+  // sellers" tile (which only counted `is_verified = true` profiles, often
+  // 0 since verification is opt-in) with `sellerCount` (fetched above via
+  // `getSellerCount()`), a platform-wide count of every registered seller
+  // regardless of verification status or whether they have a live listing
+  // yet — shown as-is, with no zero-count fallback, since it's now an
+  // honest headline number rather than a rare-to-be-zero trust stat.
+  const activeSellersStat = {
+    value: String(sellerCount),
+    label: sellerCount === 1 ? "Active Seller" : "Active Sellers",
+  };
 
   // Featured opportunity (hero spotlight): Sep 16 2026 change ("emon list
   // dekhabe jeitar revenue growth sob theke beshi but not sold, or income
@@ -337,7 +332,7 @@ export default async function Home() {
     { icon: Package, value: String(activeListings.length), label: "Active listings" },
     { icon: Coins, value: fmtCompactUSD(totalListedValue), label: "Listed value" },
     { icon: LayoutGrid, value: String(activeCategoryCount), label: "Business types" },
-    { icon: ShieldCheck, value: verifiedStat.value, label: verifiedStat.label },
+    { icon: Users, value: activeSellersStat.value, label: activeSellersStat.label },
   ];
 
   const spotlightDescription = spotlight
