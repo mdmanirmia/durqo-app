@@ -55,7 +55,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "nic
     status: "published",
     views: 812,
     createdAt: "2026-06-01",
-    quickStats: { monthly_income: 6800, monthly_visitors: 14200, age: 5, domain_authority: 38, income_multiple: 33.0, articles_posted: 12 },
+    quickStats: { monthly_income: 6800, monthly_visitors: 14200, age: 5, domain_authority: 38, articles_posted: 12 },
     monthlyStats: months("2025-09", 12).map((month, i) => ({
       month, income: [4200,4400,4600,5100,5300,5600,5900,6100,6300,6500,6650,6800][i],
       gaTotalUsers: [8200,8400,8700,9100,9500,9900,10400,10900,11500,12100,12800,14200][i],
@@ -133,7 +133,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "nic
     status: "published",
     views: 990,
     createdAt: "2026-07-02",
-    quickStats: { location: "Remote", monthly_income: 3050, monthly_views: 1800000, subscribers: 210000, total_videos: 340, channel_age: 4, income_multiple: 30.0 },
+    quickStats: { location: "Remote", monthly_income: 3050, monthly_views: 1800000, subscribers: 210000, total_videos: 340, channel_age: 4 },
     monthlyStats: months("2025-09", 12).map((month, i) => ({
       month, income: [2100,2200,2350,2500,2650,2750,2850,2900,2950,3000,3020,3050][i],
     })),
@@ -160,7 +160,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "nic
     status: "published",
     views: 455,
     createdAt: "2026-04-11",
-    quickStats: { monthly_income: 1890, monthly_visitors: 38000, age: 6, domain_authority: 29, income_multiple: 27.5, articles_posted: 210 },
+    quickStats: { monthly_income: 1890, monthly_visitors: 38000, age: 6, domain_authority: 29, articles_posted: 210 },
     monthlyStats: months("2025-09", 12).map((month, i) => ({
       month, income: [2200,2100,2050,1980,1950,1920,1900,1895,1900,1888,1890,1890][i],
       gaTotalUsers: [42000,41000,40200,39500,39000,38700,38400,38200,38100,38000,38000,38000][i],
@@ -241,7 +241,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "nic
     status: "published",
     views: 210,
     createdAt: "2026-06-28",
-    quickStats: { location: "Remote", monthly_income: 940, followers: 180000, age: 3, total_posts: 1120, likes_per_post: 2400, views_per_post: 18000, income_multiple: 24.0 },
+    quickStats: { location: "Remote", monthly_income: 940, followers: 180000, age: 3, total_posts: 1120, likes_per_post: 2400, views_per_post: 18000 },
     monthlyStats: months("2025-09", 12).map((month, i) => ({ month, income: [700,720,760,800,830,860,880,900,910,925,935,940][i] })),
     socialStats: [{ platform: "Instagram", followers: 180000 }],
     faqs: [],
@@ -264,7 +264,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "nic
     status: "published",
     views: 388,
     createdAt: "2026-05-30",
-    quickStats: { monthly_income: 4400, age: 2, total_downloads: 64000, total_reviews: 1900, rating: 4.7, income_multiple: 30.0 },
+    quickStats: { monthly_income: 4400, age: 2, total_downloads: 64000, total_reviews: 1900, rating: 4.7 },
     monthlyStats: months("2025-09", 12).map((month, i) => ({ month, income: [3100,3250,3400,3600,3750,3900,4000,4100,4200,4300,4350,4400][i] })),
     seo: {
       semrushAuthorityScore: 33, semrushTotalTraffic: 8200, semrushTotalKeywords: 1400, semrushTop10Keywords: 38, semrushTotalBacklinks: 900,
@@ -292,7 +292,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "nic
     status: "published",
     views: 176,
     createdAt: "2026-02-18",
-    quickStats: { location: "St. John's, Canada", monthly_income: 2700, active_clients: 6, monthly_visitors: 4200, age: 8, domain_authority: 24, income_multiple: 32.0 },
+    quickStats: { location: "St. John's, Canada", monthly_income: 2700, active_clients: 6, monthly_visitors: 4200, age: 8, domain_authority: 24 },
     monthlyStats: months("2025-09", 12).map((month, i) => ({ month, income: [2500,2520,2550,2580,2600,2620,2640,2660,2670,2680,2690,2700][i] })),
     seo: {
       semrushAuthorityScore: 24, semrushTotalTraffic: 3100, semrushTotalKeywords: 520, semrushTop10Keywords: 11, semrushTotalBacklinks: 410,

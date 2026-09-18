@@ -112,7 +112,6 @@ export function monthLabel(ym: string): string {
 }
 
 const QUICK_STAT_MONEY = new Set(["monthly_income"]);
-const QUICK_STAT_MULTIPLE = new Set(["income_multiple"]);
 const QUICK_STAT_YEARS = new Set(["age", "channel_age"]);
 const QUICK_STAT_PERCENT = new Set(["open_rate", "click_through_rate", "unsubscribe_rate"]);
 const QUICK_STAT_COUNT = new Set([
@@ -172,12 +171,11 @@ export function extractYoutubeChannelIdentifier(
 
 // Formats a listing.quickStats value the same way regardless of which
 // category it belongs to — money as $, counts abbreviated (12.4K), rates as
-// %, multiples with an ×, ages in years, everything else (ratings, domain
-// registrar/expiry strings, etc.) shown as-is.
+// %, ages in years, everything else (ratings, domain registrar/expiry
+// strings, etc.) shown as-is.
 export function formatQuickStat(key: string, value: number | string | undefined): string {
   if (value === undefined || value === null || value === "") return "—";
   if (QUICK_STAT_MONEY.has(key)) return fmtUSD(Number(value));
-  if (QUICK_STAT_MULTIPLE.has(key)) return `${value}×`;
   if (QUICK_STAT_YEARS.has(key)) return `${value} yrs`;
   if (QUICK_STAT_PERCENT.has(key)) return `${value}%`;
   if (QUICK_STAT_COUNT.has(key)) return fmtNumber(Number(value));

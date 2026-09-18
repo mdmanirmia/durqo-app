@@ -7,7 +7,6 @@ export type QuickStatKey =
   | "monthly_income"
   | "monthly_visitors"
   | "domain_authority"
-  | "income_multiple"
   | "articles_posted"
   | "authority_score"
   | "subscribers"
@@ -275,7 +274,7 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "plugins-themes-extensions",
     name: "Plugins, Themes & Extensions",
     description: "WordPress plugins, themes and browser extensions.",
-    quickStats: ["monthly_income", "age", "total_downloads", "total_reviews", "rating", "income_multiple"],
+    quickStats: ["monthly_income", "age", "total_downloads", "total_reviews", "rating"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -293,7 +292,7 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "amazon-stores-kdp",
     name: "Amazon Stores & KDP",
     description: "Amazon storefronts and Kindle Direct Publishing catalogs.",
-    quickStats: ["location", "monthly_income", "income_multiple"],
+    quickStats: ["location", "monthly_income"],
     hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: true,
@@ -302,7 +301,7 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "service-business",
     name: "Service Business",
     description: "Client-service businesses with recurring engagements.",
-    quickStats: ["location", "monthly_income", "active_clients", "monthly_visitors", "age", "domain_authority", "income_multiple"],
+    quickStats: ["location", "monthly_income", "active_clients", "monthly_visitors", "age", "domain_authority"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -311,7 +310,7 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "digital-agencies",
     name: "Digital Agencies",
     description: "Service agencies with active client rosters.",
-    quickStats: ["location", "monthly_income", "active_clients", "monthly_visitors", "age", "domain_authority", "income_multiple"],
+    quickStats: ["location", "monthly_income", "active_clients", "monthly_visitors", "age", "domain_authority"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -320,7 +319,7 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "games",
     name: "Games",
     description: "Mobile, web and desktop games.",
-    quickStats: ["monthly_income", "age", "total_downloads", "total_reviews", "rating", "income_multiple"],
+    quickStats: ["monthly_income", "age", "total_downloads", "total_reviews", "rating"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -338,7 +337,7 @@ export const CATEGORIES: CategoryConfig[] = [
     id: "crypto-blockchain",
     name: "Crypto & Blockchain",
     description: "Crypto platforms, NFT projects and blockchain tools.",
-    quickStats: ["monthly_income", "monthly_visitors", "age", "domain_authority", "income_multiple"],
+    quickStats: ["monthly_income", "monthly_visitors", "age", "domain_authority"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -373,7 +372,6 @@ export const QUICK_STAT_LABELS: Record<QuickStatKey, string> = {
   monthly_income: "Monthly Income",
   monthly_visitors: "Monthly Visitors",
   domain_authority: "Domain Authority",
-  income_multiple: "Income Multiple",
   articles_posted: "Articles Posted",
   subscribers: "Subscribers",
   monthly_views: "Monthly Views",
