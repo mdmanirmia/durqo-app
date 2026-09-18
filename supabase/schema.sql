@@ -58,7 +58,6 @@ create table if not exists public.listings (
   monthly_visitors int,
   domain_authority int,
   articles_posted int,
-  income_multiple numeric(5,2),
   subscribers int,
   open_rate numeric(5,2),
   click_through_rate numeric(5,2),
