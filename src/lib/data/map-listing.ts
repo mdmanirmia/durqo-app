@@ -25,7 +25,6 @@ export const QUICK_STAT_COLUMNS: Record<QuickStatKey, string> = {
   monthly_income: "monthly_income",
   monthly_visitors: "monthly_visitors",
   domain_authority: "domain_authority",
-  income_multiple: "income_multiple",
   articles_posted: "articles_posted",
   subscribers: "subscribers",
   monthly_views: "monthly_views",
@@ -356,8 +355,7 @@ const NO_AUTO_QUICK_STAT_CATEGORIES = new Set(["domains"]);
 // (Sep 1, 2026 revision, extended to every category) — instead each stat is
 // computed from data already collected elsewhere on the same form: the
 // 12-month Proof of Income entries, the Google Analytics / SEMrush / Ahrefs
-// snapshot, the Social Stats rows, and a straightforward price/income
-// formula for Income Multiple. "location" and "age" mirror the top-level
+// snapshot, and the Social Stats rows. "location" and "age" mirror the top-level
 // Business Location / Business Age fields (same flat columns as before —
 // only *where* they're entered in the form changed, not the column). A key
 // with no viable source here (e.g. Channel Age, Total Downloads, Rating —
@@ -416,17 +414,14 @@ function computeAutoQuickStats(
     else delete quickStats.indexed_pages;
   }
 
-  // Income Multiple = asking price ÷ annualized average monthly income —
-  // a straightforward formula, not sourced from any additional seller
-  // input. Rounded to one decimal (e.g. "3.2").
-  if (has("income_multiple")) {
-    const price = Number(row.price);
-    if (avgMonthlyIncome !== undefined && avgMonthlyIncome > 0 && Number.isFinite(price)) {
-      quickStats.income_multiple = Math.round((price / (avgMonthlyIncome * 12)) * 10) / 10;
-    } else {
-      delete quickStats.income_multiple;
-    }
-  }
+  // Sep 18, 2026: "Income Multiple" (asking price ÷ annualized average
+  // monthly income) was removed sitewide per the site owner's request
+  // ("Listing e kono income multiple thakbena" — no listing should show an
+  // income multiple) — it had already been dropped from every category that
+  // used to compute/display it except the six below (Plugins/Themes,
+  // Amazon & KDP, Service Business, Digital Agencies, Games, Crypto &
+  // Blockchain); this removes it from those last six too, so the
+  // `income_multiple` QuickStatKey/column/formatter no longer exist at all.
 
   // Followers (Social Media Accounts) / Subscribers (Newsletters) — the
   // total across every platform/entry the seller logged in Social Stats.
