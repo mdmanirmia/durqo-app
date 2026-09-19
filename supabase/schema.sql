@@ -77,6 +77,11 @@ create table if not exists public.listings (
   -- mirrors the pre-existing ga_access_confirmed checkbox from migration
   -- 011) so Durqo can verify GSC data before publishing.
   gsc_access_confirmed boolean not null default false,
+  -- Websites/E-commerce only: which platform the business is built on
+  -- (WordPress, Shopify, etc — see migration 051). Distinct from the
+  -- unrelated `platform` column added by migration 020/021 for Android &
+  -- iOS Apps' multi-select quick stat (not reflected in this snapshot file).
+  business_platform text,
   views int not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
