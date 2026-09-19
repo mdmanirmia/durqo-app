@@ -195,6 +195,7 @@ export default function AddNewBusinessPage() {
   const [monetization, setMonetization] = useState<string[]>([]);
 
   const [gaAccessConfirmed, setGaAccessConfirmed] = useState(false);
+  const [gscAccessConfirmed, setGscAccessConfirmed] = useState(false);
   const [gaTotalUsers, setGaTotalUsers] = useState("");
   const [gaNewUsers, setGaNewUsers] = useState("");
   const [gaPageViews, setGaPageViews] = useState("");
@@ -448,6 +449,7 @@ export default function AddNewBusinessPage() {
             sale_includes_support: saleIncludesSupport,
             status: "pending_review",
             ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
+            gsc_access_confirmed: category.hasSeoData ? gscAccessConfirmed : false,
             loom_video_url: loomVideoUrl || null,
             // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
             // to Design & Development New.pdf) — the Niche/Industry section is
@@ -1232,6 +1234,17 @@ export default function AddNewBusinessPage() {
                 files={gscImages}
                 setFiles={setGscImages}
               />
+              <label className="mt-4 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
+                <input
+                  type="checkbox"
+                  checked={gscAccessConfirmed}
+                  onChange={(e) => setGscAccessConfirmed(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+                />
+                <span>
+                  I&rsquo;ve added <span className="mono text-ink">support@durqo.com</span> with Restricted access on this site&rsquo;s Google Search Console property (Settings &rarr; Users and permissions &rarr; Add user). Our team will check it before publishing — access can be removed once your listing is live.
+                </span>
+              </label>
             </Section>
 
             <Section title="SEMrush Data">
