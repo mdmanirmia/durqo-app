@@ -69,6 +69,11 @@ export type ListingFullEditFields = {
   monthlyIncome: { month: string; income: number | null }[];
   gaAccessConfirmed: boolean | null;
   gscAccessConfirmed: boolean | null;
+  // Websites/E-commerce only (Sep 19, 2026) — which platform the business
+  // is built on (see src/lib/business-platforms.ts). Always sent (like
+  // `location` above), so switching away from Websites/E-commerce clears a
+  // stale value rather than leaving it silently saved.
+  businessPlatform: string | null;
   // Undefined = this category has no SEO section, skip listing_seo_data
   // entirely. Present = upsert every key below (null clears a field the
   // seller had filled in before and just erased).
@@ -153,6 +158,7 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
       loom_video_url: fields.loomVideoUrl,
       ...(fields.gaAccessConfirmed !== null ? { ga_access_confirmed: fields.gaAccessConfirmed } : {}),
       ...(fields.gscAccessConfirmed !== null ? { gsc_access_confirmed: fields.gscAccessConfirmed } : {}),
+      business_platform: fields.businessPlatform,
       ...fields.quickStatColumns,
     })
     .eq("id", listingId)
