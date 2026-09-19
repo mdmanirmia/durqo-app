@@ -190,6 +190,9 @@ export interface Listing {
   gaAccessConfirmed: boolean;
   loomVideoUrl?: string;
   gaVerified: boolean;
+  // Same self-declared trust layer as gaAccessConfirmed above, but for
+  // Google Search Console's "Restricted access" user grant (Sep 19, 2026).
+  gscAccessConfirmed: boolean;
   // Seller-picked niche tags (src/lib/niches.ts) — shown as an extra tile in
   // the published listing's Quick Statistics grid when non-empty.
   niches: string[];
