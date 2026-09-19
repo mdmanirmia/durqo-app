@@ -10,6 +10,7 @@ import { BUSINESS_TYPES } from "@/lib/business-types";
 import { AI_BUSINESS_TYPES } from "@/lib/ai-business-types";
 import { STARTUP_BUSINESS_MODELS } from "@/lib/startup-business-models";
 import { FUNDING_STAGES } from "@/lib/funding-stages";
+import { WEBSITE_PLATFORMS, ECOMMERCE_PLATFORMS } from "@/lib/business-platforms";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import { INDUSTRIES } from "@/lib/industries";
@@ -279,6 +280,8 @@ export default function ListingEditForm({
 
   const [gaAccessConfirmed, setGaAccessConfirmed] = useState(!!listing.ga_access_confirmed);
   const [gscAccessConfirmed, setGscAccessConfirmed] = useState(!!listing.gsc_access_confirmed);
+  // Websites/E-commerce only (Sep 19, 2026) — see src/lib/business-platforms.ts.
+  const [businessPlatform, setBusinessPlatform] = useState(listing.business_platform ?? "");
   const [gaTotalUsers, setGaTotalUsers] = useState(seo?.ga_total_users != null ? String(seo.ga_total_users) : "");
   const [gaNewUsers, setGaNewUsers] = useState(seo?.ga_new_users != null ? String(seo.ga_new_users) : "");
   const [gaPageViews, setGaPageViews] = useState(seo?.ga_total_page_views != null ? String(seo.ga_total_page_views) : "");
@@ -448,6 +451,10 @@ export default function ListingEditForm({
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats(initialQuickStats(id));
+    // Websites and E-commerce have different (though partly overlapping)
+    // Platform option lists — always reset on any category change, same
+    // reasoning as the matching reset in the seller "new listing" form.
+    setBusinessPlatform("");
     // See the matching comment in the seller "new listing" form: SaaS has
     // its own "Industry" option list that doesn't overlap with the shared
     // NICHES list every other category uses, so a selection has to be
@@ -579,6 +586,7 @@ export default function ListingEditForm({
         monthlyIncome: MONTH_KEYS.map((key, i) => ({ month: key, income: monthlyIncome[i] === "" ? null : Number(monthlyIncome[i]) })),
         gaAccessConfirmed: category.hasSeoData ? gaAccessConfirmed : null,
         gscAccessConfirmed: category.hasSeoData ? gscAccessConfirmed : null,
+        businessPlatform: categoryId === "websites" || categoryId === "e-commerce" ? businessPlatform || null : null,
         seo: seoFields,
         socialStats: socialStatRows.filter((r) => r.name && r.value).map((r) => ({ platform: r.name, followers: Number(r.value), url: r.url || undefined })),
         copyrightNotes: categoryId === "youtube-channels" ? copyrightNotesText : undefined,
@@ -697,6 +705,22 @@ export default function ListingEditForm({
           </Field>
         )}
       </div>
+
+      {/* Platform — Websites/E-commerce only (Sep 19, 2026 request), mirrors
+          the seller "new listing" form — see src/lib/business-platforms.ts. */}
+      {(categoryId === "websites" || categoryId === "e-commerce") && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Platform">
+            <select value={businessPlatform} onChange={(e) => setBusinessPlatform(e.target.value)} className={inputCls}>
+              <option value="">Select a platform</option>
+              {(categoryId === "websites" ? WEBSITE_PLATFORMS : ECOMMERCE_PLATFORMS).map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <p className="mt-1.5 text-xs text-ink-faint">Select the platform this business is built on.</p>
+          </Field>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Asking price (USD)">
