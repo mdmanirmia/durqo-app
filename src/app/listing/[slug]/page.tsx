@@ -932,12 +932,19 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 Rendered as boxed tiles via LabelGrid — same "individually
                 boxed tile" treatment as Monetization Methods below, per
                 follow-up feedback (a plain comma-separated sentence read as
-                too flat once there could be more than one value). Own
-                SectionCard, immediately after Sale Includes, rather than
-                folded into Quick Statistics — distinct from the unrelated
-                "Platform" quick-stat tile Android & iOS Apps listings show. */}
+                too flat once there could be more than one value). Subtitle
+                added same day (a second follow-up) so it reads clearly on
+                its own without relying on the reader already knowing what
+                "Platform" refers to here. Own SectionCard, immediately
+                after Sale Includes, rather than folded into Quick
+                Statistics — distinct from the unrelated "Platform"
+                quick-stat tile Android & iOS Apps listings show. */}
             {(listing.categoryId === "websites" || listing.categoryId === "e-commerce") && listing.businessPlatform && (
-              <SectionCard title="Platform" icon={Blocks}>
+              <SectionCard
+                title="Platform"
+                icon={Blocks}
+                subtitle={listing.categoryId === "e-commerce" ? "This store is built on:" : "This website is built on:"}
+              >
                 <LabelGrid
                   labels={listing.businessPlatform
                     .split(",")
