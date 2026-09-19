@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/safe-redirect";
 
 // Where the email "Confirm your signup" link (and, later, password-reset
 // links) point. Supabase redirects here with either a PKCE `code` or a
@@ -40,8 +41,14 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=confirmation_failed`);
   }
 
-  if (explicitNext) {
-    return NextResponse.redirect(`${origin}${explicitNext}`);
+  // 2026-09-19: explicitNext came straight off the URL (originally set by
+  // LoginForm.tsx/RegisterForm.tsx from their own `?next=`), so it's
+  // re-validated here before ever reaching NextResponse.redirect() — this
+  // route is the one place an unchecked value would actually cause an
+  // open redirect.
+  const safeNext = safeNextPath(explicitNext);
+  if (safeNext) {
+    return NextResponse.redirect(`${origin}${safeNext}`);
   }
 
   const {
