@@ -625,8 +625,8 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
             <GatedContent
               locked={locked}
               next={nextPath}
-              heading="Sign up to see full business details"
-              body="Create a free account to view channel analytics, financial proof, traffic sources, and everything else included in this listing."
+              heading="Sign up to see the full listing"
+              body="Create a free account to view channel analytics, financial proof, traffic sources, buyer questions, and everything else included in this listing."
             >
             {/* Channel Analytics (formerly "YouTube Channel Overview") —
                 YouTube Channels only, auto-filled from the Channel URL (Sep
@@ -1212,14 +1212,20 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               server-side, not just hidden in the UI. A new top-level
               question still emails the seller and shows up on their
               /dashboard/seller/questions page — see dashboard-nav.ts and
-              that page. */}
+              that page.
+
+              2026-09-19 follow-up ("questioins & answers ta diye arekta
+              korar dorkar nei" — no need to make another [gate] for
+              Questions & Answers): this block used to be its own
+              `<GatedContent>` with a second "sign up to see questions &
+              answers" CTA card, so a signed-out visitor saw two separate
+              overlay cards on one page (one after Overview, one down here).
+              `showOverlay={false}` keeps this section blurred — the page
+              still reads as one continuous locked section all the way down
+              — without repeating the CTA; the one overlay from the gate
+              above (MAIN CONTENT TOP) already covers the whole listing. */}
           <div className="min-w-0 flex flex-col gap-6">
-            <GatedContent
-              locked={locked}
-              next={nextPath}
-              heading="Sign up to see questions & answers"
-              body="Create a free account to read buyer questions, the seller's answers, and to ask your own."
-            >
+            <GatedContent locked={locked} next={nextPath} showOverlay={false}>
             {listing.faqs.length > 0 && (
               <SectionCard title="Questions & Answers" icon={HelpCircle} bodyClassName="p-0">
                 <div className="px-5 sm:px-6">
