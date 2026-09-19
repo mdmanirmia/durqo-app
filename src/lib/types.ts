@@ -231,6 +231,6 @@ export interface GaLiveStats {
   // these are optional on Ga4ReportSummary in src/lib/google-analytics.ts).
   sessionSources?: { source: string; sessions: number }[];
   trafficByCountry?: { country: string; sessions: number }[];
-  topPages?: { path: string; views: number }[];
+  topPages?: { path: string; views: number; visitors?: number }[];
   lastSyncedAt: string;
 }

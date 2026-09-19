@@ -162,7 +162,7 @@ export interface Ga4ReportSummary {
   // exact risk was first hit on.
   sessionSources?: { source: string; sessions: number }[];
   trafficByCountry?: { country: string; sessions: number }[];
-  topPages?: { path: string; views: number }[];
+  topPages?: { path: string; views: number; visitors?: number }[];
 }
 
 export interface Ga4DateRange {
@@ -242,7 +242,7 @@ export async function runGa4Report(
     runReport({
       dateRanges: [dateRange],
       dimensions: [{ name: "pagePath" }],
-      metrics: [{ name: "screenPageViews" }],
+      metrics: [{ name: "screenPageViews" }, { name: "totalUsers" }],
       orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
       limit: "10",
     }),
@@ -276,6 +276,7 @@ export async function runGa4Report(
   const topPages = (pages.rows ?? []).map((r: { dimensionValues: { value: string }[]; metricValues: { value: string }[] }) => ({
     path: r.dimensionValues[0].value,
     views: Number(r.metricValues[0].value) || 0,
+    visitors: Number(r.metricValues[1]?.value) || 0,
   }));
 
   return {
