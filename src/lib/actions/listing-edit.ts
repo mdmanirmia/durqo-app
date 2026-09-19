@@ -358,10 +358,16 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
       const sellerName = sellerProfile?.full_name || "A seller";
       const sellerEmail = emails[sellerId];
 
+      // 2026-09-19 request ("kono seller listing update korle, sell korle o
+      // seller details include koiro"): seller name/email called out as
+      // their own labeled lines — same convention as the "listing
+      // submitted" admin email in listing-notifications.ts — instead of
+      // folded into the lead sentence.
       await sendEmail(
         ADMIN_EMAIL,
         `Listing updated — ${fields.title}`,
-        `<p>${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""} updated their listing "${fields.title}".</p>
+        `<p>The listing "${fields.title}" was updated.</p>
+         <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
          <p><a href="${origin}/dashboard/admin/listings">Review it in the admin dashboard</a>.</p>`
       );
       if (sellerEmail) {
