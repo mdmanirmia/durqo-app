@@ -927,21 +927,24 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 changed to multi-select same day): which platform(s) the
                 business is built on (WordPress, Shopify, etc — see
                 src/lib/business-platforms.ts), stored as a comma-separated
-                string of ids and joined into display names here, same
+                string of ids and turned into display names here, same
                 convention as the "platform" quick stat in map-listing.ts.
-                Own SectionCard, immediately after Sale Includes, rather than
+                Rendered as boxed tiles via LabelGrid — same "individually
+                boxed tile" treatment as Monetization Methods below, per
+                follow-up feedback (a plain comma-separated sentence read as
+                too flat once there could be more than one value). Own
+                SectionCard, immediately after Sale Includes, rather than
                 folded into Quick Statistics — distinct from the unrelated
                 "Platform" quick-stat tile Android & iOS Apps listings show. */}
             {(listing.categoryId === "websites" || listing.categoryId === "e-commerce") && listing.businessPlatform && (
               <SectionCard title="Platform" icon={Blocks}>
-                <p className="text-sm text-ink-soft">
-                  {listing.businessPlatform
+                <LabelGrid
+                  labels={listing.businessPlatform
                     .split(",")
                     .map((id) => id.trim())
                     .filter(Boolean)
-                    .map((id) => BUSINESS_PLATFORM_MAP[id] ?? id)
-                    .join(", ")}
-                </p>
+                    .map((id) => BUSINESS_PLATFORM_MAP[id] ?? id)}
+                />
               </SectionCard>
             )}
 
