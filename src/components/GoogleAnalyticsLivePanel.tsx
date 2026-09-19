@@ -227,7 +227,7 @@ export default function GoogleAnalyticsLivePanel({
           <div className="mb-1.5 flex items-center gap-3">
             <span className="w-32 shrink-0" />
             <span className="flex-1" />
-            <span className="mono w-10 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Share</span>
+            <span className="mono w-20 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">% of Total</span>
             <span className="mono w-14 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Sessions</span>
           </div>
           <div className="space-y-2">
@@ -239,7 +239,7 @@ export default function GoogleAnalyticsLivePanel({
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
                     <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="mono w-10 shrink-0 text-right text-xs text-ink-faint">{pct}%</span>
+                  <span className="mono w-20 shrink-0 text-right text-xs text-ink-faint">{pct}%</span>
                   <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(c.sessions)}</span>
                 </div>
               );
@@ -254,7 +254,7 @@ export default function GoogleAnalyticsLivePanel({
           <div className="mb-1.5 flex items-center gap-3">
             <span className="w-32 shrink-0" />
             <span className="flex-1" />
-            <span className="mono w-10 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Share</span>
+            <span className="mono w-20 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">% of Total</span>
             <span className="mono w-14 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Sessions</span>
           </div>
           <div className="space-y-2">
@@ -266,7 +266,7 @@ export default function GoogleAnalyticsLivePanel({
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
                     <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="mono w-10 shrink-0 text-right text-xs text-ink-faint">{pct}%</span>
+                  <span className="mono w-20 shrink-0 text-right text-xs text-ink-faint">{pct}%</span>
                   <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(c.sessions)}</span>
                 </div>
               );
@@ -281,7 +281,7 @@ export default function GoogleAnalyticsLivePanel({
           <div className="mb-1.5 flex items-center gap-3">
             <span className="w-32 shrink-0" />
             <span className="flex-1" />
-            <span className="mono w-10 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Share</span>
+            <span className="mono w-20 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">% of Total</span>
             <span className="mono w-14 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Sessions</span>
           </div>
           <div className="space-y-2">
@@ -293,7 +293,7 @@ export default function GoogleAnalyticsLivePanel({
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
                     <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="mono w-10 shrink-0 text-right text-xs text-ink-faint">{pct}%</span>
+                  <span className="mono w-20 shrink-0 text-right text-xs text-ink-faint">{pct}%</span>
                   <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(c.sessions)}</span>
                 </div>
               );
