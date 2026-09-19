@@ -95,8 +95,9 @@ export async function POST(request: Request) {
     revalidatePath("/buy");
 
     try {
-      const [{ data: listing }, emails] = await Promise.all([
+      const [{ data: listing }, { data: sellerProfile }, emails] = await Promise.all([
         admin.from("listings").select("title, slug").eq("id", order.listing_id).maybeSingle(),
+        admin.from("profiles").select("full_name").eq("id", order.seller_id).single(),
         getUserEmails(admin, [order.buyer_id, order.seller_id]),
       ]);
       await admin.from("cart_items").delete().eq("user_id", order.buyer_id).eq("listing_id", order.listing_id);
@@ -105,6 +106,10 @@ export async function POST(request: Request) {
       const listingSlug = listing?.slug ?? (order.listing_id as string);
       const buyerEmail = emails[order.buyer_id];
       const sellerEmail = emails[order.seller_id];
+      // 2026-09-19 request ("sell korle o seller details include koiro"):
+      // labeled seller name/email line, same convention as the other
+      // "sold"/"listing updated" admin emails.
+      const sellerName = sellerProfile?.full_name || "A seller";
 
       // Meta Conversions API — same Purchase event trackPurchase() fires
       // client-side once the buyer lands on this order's Transfer Room
@@ -122,6 +127,7 @@ export async function POST(request: Request) {
         ADMIN_EMAIL,
         `New Escrow.com purchase — ${title}`,
         `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for ${listingLinkHtml(origin, listingSlug, title)}.</p>
+         <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
          <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
       );
       // Escrow.com's whole payment flow happens on their own hosted pages,
