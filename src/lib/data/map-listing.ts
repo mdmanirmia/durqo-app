@@ -250,7 +250,7 @@ export function mapSeo(row: Row | null | undefined): SeoData | undefined {
 }
 
 export function mapSocialStats(rows: Row[]): SocialStat[] {
-  return rows.map((r) => ({ platform: r.platform, followers: r.followers ?? 0 }));
+  return rows.map((r) => ({ platform: r.platform, followers: r.followers ?? 0, url: r.url ?? undefined }));
 }
 
 // YouTube Channels category only (Design & Development New.pdf, Sep 4
