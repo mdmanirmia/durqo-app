@@ -193,6 +193,11 @@ export interface Listing {
   // Same self-declared trust layer as gaAccessConfirmed above, but for
   // Google Search Console's "Restricted access" user grant (Sep 19, 2026).
   gscAccessConfirmed: boolean;
+  // Websites/E-commerce only: which platform the business is built on
+  // (WordPress, Shopify, etc — see src/lib/business-platforms.ts). Stored
+  // as a plain-text option id; optional/null when unset or not applicable
+  // to this listing's category.
+  businessPlatform?: string | null;
   // Seller-picked niche tags (src/lib/niches.ts) — shown as an extra tile in
   // the published listing's Quick Statistics grid when non-empty.
   niches: string[];
