@@ -223,7 +223,7 @@ export default function GoogleAnalyticsLivePanel({
 
       {stats.trafficAcquisition.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
-          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Traffic Acquisition</p>
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink">Traffic Acquisition</p>
           <div className="space-y-2">
             {stats.trafficAcquisition.map((c) => {
               const pct = totalAcquisition ? Math.round((c.sessions / totalAcquisition) * 100) : 0;
@@ -243,7 +243,7 @@ export default function GoogleAnalyticsLivePanel({
 
       {sessionSources.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
-          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Session Sources</p>
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink">Session Sources</p>
           <div className="space-y-2">
             {sessionSources.map((c) => {
               const pct = totalSources ? Math.round((c.sessions / totalSources) * 100) : 0;
@@ -263,7 +263,7 @@ export default function GoogleAnalyticsLivePanel({
 
       {trafficByCountry.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
-          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Traffic by Country</p>
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink">Traffic by Country</p>
           <div className="space-y-2">
             {trafficByCountry.map((c) => {
               const pct = totalCountries ? Math.round((c.sessions / totalCountries) * 100) : 0;
@@ -283,7 +283,7 @@ export default function GoogleAnalyticsLivePanel({
 
       {topPages.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
-          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Top Pages</p>
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink">Top Pages</p>
           <div className="space-y-2">
             {topPages.map((p, i) => {
               const maxViews = topPages[0]?.views || 1;
