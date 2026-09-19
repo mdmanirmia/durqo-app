@@ -309,7 +309,7 @@ export default function GoogleAnalyticsLivePanel({
             <span className="mono w-44 shrink-0" />
             <span className="flex-1" />
             <span className="mono w-16 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Views</span>
-            <span className="mono w-16 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Visitors</span>
+            <span className="mono w-16 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Users</span>
           </div>
           <div className="space-y-2">
             {topPages.map((p, i) => {
