@@ -165,7 +165,13 @@ export default function SellerOverview() {
             </div>
           </div>
         </div>
-        <Button href="/dashboard/seller/listings/new" className="w-full justify-center sm:w-auto">
+        {/* Sep 19, 2026 request: hover color for this specific CTA picked from
+            the site owner's reference screenshot (#55B685) — kept scoped to
+            this one button via `!` (rather than changing Button.tsx's shared
+            "primary" hover:bg-brand-hover) so every other primary CTA
+            site-wide (homepage hero, Sell a Business, checkout, etc.) keeps
+            its existing darker hover shade. */}
+        <Button href="/dashboard/seller/listings/new" className="w-full justify-center hover:!bg-[#55B685] sm:w-auto">
           <Plus size={15} /> Add New Business
         </Button>
       </div>
