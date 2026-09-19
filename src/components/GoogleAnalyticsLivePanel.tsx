@@ -107,6 +107,15 @@ export default function GoogleAnalyticsLivePanel({
 
   const chartData = stats.dailyPageViews.map((d) => ({ month: d.date, views: d.value }));
   const totalAcquisition = stats.trafficAcquisition.reduce((sum, c) => sum + c.sessions, 0);
+  // sessionSources/trafficByCountry/topPages are optional on GaLiveStats (so
+  // each affected file's GitHub-web-upload commit can land independently —
+  // see the comment on GaLiveStats in src/lib/types.ts), so default to []
+  // wherever they're read rather than assuming they're present.
+  const sessionSources = stats.sessionSources ?? [];
+  const trafficByCountry = stats.trafficByCountry ?? [];
+  const topPages = stats.topPages ?? [];
+  const totalSources = sessionSources.reduce((sum, c) => sum + c.sessions, 0);
+  const totalCountries = trafficByCountry.reduce((sum, c) => sum + c.sessions, 0);
 
   const statCells: { label: string; value: string }[] = [
     { label: "Page Views", value: fmtNumber(stats.pageViews) },
@@ -225,6 +234,69 @@ export default function GoogleAnalyticsLivePanel({
                     <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
                   </div>
                   <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(c.sessions)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {sessionSources.length > 0 && (
+        <div className="border-t border-rule px-5 py-5 sm:px-6">
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Session Sources</p>
+          <div className="space-y-2">
+            {sessionSources.map((c) => {
+              const pct = totalSources ? Math.round((c.sessions / totalSources) * 100) : 0;
+              return (
+                <div key={c.source} className="flex items-center gap-3">
+                  <span className="w-32 shrink-0 truncate text-sm text-ink-soft">{c.source}</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
+                    <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(c.sessions)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {trafficByCountry.length > 0 && (
+        <div className="border-t border-rule px-5 py-5 sm:px-6">
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Traffic by Country</p>
+          <div className="space-y-2">
+            {trafficByCountry.map((c) => {
+              const pct = totalCountries ? Math.round((c.sessions / totalCountries) * 100) : 0;
+              return (
+                <div key={c.country} className="flex items-center gap-3">
+                  <span className="w-32 shrink-0 truncate text-sm text-ink-soft">{c.country}</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
+                    <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(c.sessions)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {topPages.length > 0 && (
+        <div className="border-t border-rule px-5 py-5 sm:px-6">
+          <p className="mono mb-3 text-xs uppercase tracking-wide text-ink-faint">Top Pages</p>
+          <div className="space-y-2">
+            {topPages.map((p, i) => {
+              const maxViews = topPages[0]?.views || 1;
+              const pct = Math.round((p.views / maxViews) * 100);
+              return (
+                <div key={`${p.path}-${i}`} className="flex items-center gap-3">
+                  <span className="mono w-44 shrink-0 truncate text-sm text-ink-soft" title={p.path}>
+                    {p.path}
+                  </span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
+                    <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
+                  </div>
+                  <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(p.views)}</span>
                 </div>
               );
             })}
