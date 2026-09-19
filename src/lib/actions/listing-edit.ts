@@ -67,6 +67,7 @@ export type ListingFullEditFields = {
   // stale value behind.
   monthlyIncome: { month: string; income: number | null }[];
   gaAccessConfirmed: boolean | null;
+  gscAccessConfirmed: boolean | null;
   // Undefined = this category has no SEO section, skip listing_seo_data
   // entirely. Present = upsert every key below (null clears a field the
   // seller had filled in before and just erased).
@@ -150,6 +151,7 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
       niches: fields.niches,
       loom_video_url: fields.loomVideoUrl,
       ...(fields.gaAccessConfirmed !== null ? { ga_access_confirmed: fields.gaAccessConfirmed } : {}),
+      ...(fields.gscAccessConfirmed !== null ? { gsc_access_confirmed: fields.gscAccessConfirmed } : {}),
       ...fields.quickStatColumns,
     })
     .eq("id", listingId)
