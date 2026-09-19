@@ -559,6 +559,7 @@ export function mapListing(
     gaAccessConfirmed: !!row.ga_access_confirmed,
     loomVideoUrl: row.loom_video_url ?? undefined,
     gaVerified: !!row.ga_verified,
+    gscAccessConfirmed: !!row.gsc_access_confirmed,
     niches: Array.isArray(row.niches) ? row.niches : [],
 
     quickStats,
