@@ -62,7 +62,7 @@ export default function AssetListEditor({
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-xs text-ink-faint">
+      <p className="rounded-md border border-green-200 bg-green-50 p-3 text-xs text-green-700">
         Add each asset the buyer is getting. This exact list is what buyers see on the listing, confirms the moment you save, and freezes into their Transfer Room when they pay — nothing auto-generated, only what you enter here.
       </p>
 
