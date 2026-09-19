@@ -88,6 +88,16 @@ h1, h2, h3, h4 {
   text-wrap: balance;
 }
 
+/* Sep 19, 2026 request: native <button> elements get the plain arrow cursor
+   in every browser by default — only <a href> links get the hand/pointer
+   cursor automatically. This makes every clickable button on the site (Buy
+   Now, Add New Business, Chat with Seller, etc.) show that same pointer
+   cursor on hover, so buttons feel exactly as clickable as links do. */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 /* 2026-09-12 dashboard audit: a CSS-only "there's more to the left/right"
    hint for any horizontally-scrollable container (first applied to the
    Admin Orders table, whose 7 columns can still need a scroll on a normal
