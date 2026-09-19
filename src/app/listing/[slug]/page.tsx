@@ -594,7 +594,14 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               }
               icon={Info}
             >
-              <p className="max-w-[70ch] leading-relaxed text-ink-soft">{listing.overview}</p>
+              {/* Sep 19, 2026 fix: the seller's Overview textarea is
+                  multi-line (paragraph breaks the seller types in), but a
+                  plain <p> collapses all of that into one run-on paragraph
+                  (default CSS white-space: normal treats \n as a space) —
+                  whitespace-pre-line keeps each line break the seller typed
+                  as a real line break here, without needing to guess at a
+                  single/double-newline paragraph convention. */}
+              <p className="max-w-[70ch] whitespace-pre-line leading-relaxed text-ink-soft">{listing.overview}</p>
               {category?.note && (
                 <p className="mt-4 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">{category.note}</p>
               )}
