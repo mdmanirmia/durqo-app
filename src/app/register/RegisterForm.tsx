@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { safeNextPath } from "@/lib/safe-redirect";
 import Container from "@/components/ui/Container";
 import { notifySellerAccountCreated } from "./actions";
 import { trackSignUp } from "@/lib/analytics";
@@ -26,6 +27,14 @@ function RegisterForm() {
 
   const [loading, setLoading] = useState(false);
 
+  // 2026-09-19 (listing-page login gate): carries a visitor back to
+  // whatever they were trying to view (e.g. a gated listing) once they've
+  // registered, instead of dropping them on their role dashboard. Threaded
+  // into emailRedirectTo so it survives the email round-trip too (picked
+  // back up by /auth/callback's own `next` param).
+  const next = safeNextPath(params.get("next"));
+  const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : "/login";
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -40,7 +49,7 @@ function RegisterForm() {
       password,
       options: {
         data: { full_name: fullName, role },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
       },
     });
     setLoading(false);
@@ -60,7 +69,7 @@ function RegisterForm() {
     // confirmation link was emailed; clicking it lands on /auth/callback,
     // which finishes sign-in and redirects to the dashboard.
     if (data.session) {
-      router.push(role === "seller" ? "/dashboard/seller" : "/dashboard/buyer");
+      router.push(next || (role === "seller" ? "/dashboard/seller" : "/dashboard/buyer"));
       return;
     }
     setStep("sent");
@@ -150,7 +159,7 @@ function RegisterForm() {
 
       <p className="mt-4 text-center text-sm text-ink-soft">
         Already have an account?{" "}
-        <Link href="/login" className="font-semibold text-brand-hover">Log in</Link>
+        <Link href={loginHref} className="font-semibold text-brand-hover">Log in</Link>
       </p>
     </div>
   );
