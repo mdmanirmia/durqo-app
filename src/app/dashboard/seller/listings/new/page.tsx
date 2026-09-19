@@ -11,6 +11,7 @@ import { BUSINESS_TYPES } from "@/lib/business-types";
 import { AI_BUSINESS_TYPES } from "@/lib/ai-business-types";
 import { STARTUP_BUSINESS_MODELS } from "@/lib/startup-business-models";
 import { FUNDING_STAGES } from "@/lib/funding-stages";
+import { WEBSITE_PLATFORMS, ECOMMERCE_PLATFORMS } from "@/lib/business-platforms";
 import { ACCOUNT_TYPES } from "@/lib/account-types";
 import { NICHES } from "@/lib/niches";
 import { slugify, nextSlugAttempt, POSTGRES_UNIQUE_VIOLATION } from "@/lib/slug";
@@ -204,6 +205,8 @@ export default function AddNewBusinessPage() {
 
   const [gaAccessConfirmed, setGaAccessConfirmed] = useState(false);
   const [gscAccessConfirmed, setGscAccessConfirmed] = useState(false);
+  // Websites/E-commerce only (Sep 19, 2026) — see src/lib/business-platforms.ts.
+  const [businessPlatform, setBusinessPlatform] = useState("");
   const [gaTotalUsers, setGaTotalUsers] = useState("");
   const [gaNewUsers, setGaNewUsers] = useState("");
   const [gaPageViews, setGaPageViews] = useState("");
@@ -343,6 +346,12 @@ export default function AddNewBusinessPage() {
   function handleCategoryChange(id: string) {
     setCategoryId(id);
     setQuickStats({});
+    // Websites and E-commerce have different (though partly overlapping)
+    // Platform option lists — always reset on any category change so a
+    // value picked under one never silently carries over as a mismatched
+    // option under the other (or under a category with no Platform field
+    // at all).
+    setBusinessPlatform("");
     // SaaS has its own "Industry" option list (src/lib/industries.ts)
     // rather than the shared NICHES list every other category draws from
     // (Design & Development New 1.pdf, Sep 5, 2026) — the two id spaces
@@ -481,6 +490,7 @@ export default function AddNewBusinessPage() {
             status: "pending_review",
             ga_access_confirmed: category.hasSeoData ? gaAccessConfirmed : false,
             gsc_access_confirmed: category.hasSeoData ? gscAccessConfirmed : false,
+            business_platform: categoryId === "websites" || categoryId === "e-commerce" ? businessPlatform || null : null,
             loom_video_url: loomVideoUrl || null,
             // AI Apps & Tools dropped Industry entirely (Sep 5, 2026 follow-up
             // to Design & Development New.pdf) — the Niche/Industry section is
@@ -753,6 +763,25 @@ export default function AddNewBusinessPage() {
             </Field>
           )}
         </div>
+
+        {/* Platform — Websites/E-commerce only (Sep 19, 2026 request): a
+            single-select dropdown, not the checkbox-grid multi-select
+            mechanism the Android & iOS Apps "Platform" quick stat uses (see
+            src/lib/business-platforms.ts for why this is a separate field
+            entirely, not that one). */}
+        {(categoryId === "websites" || categoryId === "e-commerce") && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Platform">
+              <select value={businessPlatform} onChange={(e) => setBusinessPlatform(e.target.value)} className={inputCls}>
+                <option value="">Select a platform</option>
+                {(categoryId === "websites" ? WEBSITE_PLATFORMS : ECOMMERCE_PLATFORMS).map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              <p className="mt-1.5 text-xs text-ink-faint">Select the platform this business is built on.</p>
+            </Field>
+          </div>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Asking price (USD)">
