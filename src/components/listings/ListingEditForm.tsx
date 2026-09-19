@@ -1125,7 +1125,10 @@ export default function ListingEditForm({
               newFiles={gaImages}
               setNewFiles={setGaImages}
             />
-            <label className="mt-4 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
+            <p className="mt-4 text-sm text-ink-soft">
+              Add <span className="mono text-ink">support@durqo.com</span> as a Viewer on this site&rsquo;s Google Analytics 4 property so we can verify your data before publishing your business.
+            </p>
+            <label className="mt-2 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
               <input
                 type="checkbox"
                 checked={gaAccessConfirmed}
@@ -1133,7 +1136,7 @@ export default function ListingEditForm({
                 className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
               />
               <span>
-                Add <span className="mono text-ink">support@durqo.com</span> as a Viewer on this site&rsquo;s Google Analytics 4 property so we can verify your data before publishing your business.
+                <span className="mono text-ink">support@durqo.com</span> has been added as a Viewer on this site&rsquo;s Google Analytics 4 property.
               </span>
             </label>
           </Section>
@@ -1155,7 +1158,10 @@ export default function ListingEditForm({
               newFiles={gscImages}
               setNewFiles={setGscImages}
             />
-            <label className="mt-4 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
+            <p className="mt-4 text-sm text-ink-soft">
+              Add <span className="mono text-ink">support@durqo.com</span> with Restricted Access on this site&rsquo;s Google Search Console property so we can verify your data before publishing your business.
+            </p>
+            <label className="mt-2 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
               <input
                 type="checkbox"
                 checked={gscAccessConfirmed}
@@ -1163,7 +1169,7 @@ export default function ListingEditForm({
                 className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
               />
               <span>
-                Add <span className="mono text-ink">support@durqo.com</span> with Restricted Access on this site&rsquo;s Google Search Console property so we can verify your data before publishing your business.
+                <span className="mono text-ink">support@durqo.com</span> has been added with Restricted access on this site&rsquo;s Google Search Console property.
               </span>
             </label>
           </Section>
