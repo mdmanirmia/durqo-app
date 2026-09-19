@@ -133,6 +133,9 @@ export async function GET(request: Request) {
       avgSessionSeconds: report.avgSessionSeconds,
       dailyPageViews: report.dailyPageViews,
       trafficAcquisition: report.trafficAcquisition,
+      sessionSources: report.sessionSources,
+      trafficByCountry: report.trafficByCountry,
+      topPages: report.topPages,
       lastSyncedAt: new Date().toISOString(),
     });
   } catch (err) {
