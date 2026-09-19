@@ -44,6 +44,10 @@ export interface Expense {
 export interface SocialStat {
   platform: string;
   followers: number;
+  // Link to the platform page itself (e.g. the actual Instagram profile
+  // URL) — optional so rows saved before this field existed still work;
+  // the public listing page simply doesn't render a link for those.
+  url?: string;
 }
 
 export interface FaqItem {
