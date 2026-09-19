@@ -25,6 +25,7 @@ import {
   Link2,
   Users,
   Package,
+  Blocks,
   CreditCard,
   HelpCircle,
   MessageCircle,
@@ -42,6 +43,7 @@ import { APP_NICHE_MAP } from "@/lib/app-niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
 import { ONLINE_DEPOSIT_CAP } from "@/lib/payment-terms";
+import { BUSINESS_PLATFORM_MAP } from "@/lib/business-platforms";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -920,6 +922,18 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 </div>
               )}
             </SectionCard>
+
+            {/* Platform — Websites/E-commerce only (Sep 19, 2026 request):
+                which platform the business is built on (WordPress, Shopify,
+                etc — see src/lib/business-platforms.ts). Own SectionCard,
+                immediately after Sale Includes, rather than folded into
+                Quick Statistics — distinct from the unrelated "Platform"
+                quick-stat tile Android & iOS Apps listings show. */}
+            {(listing.categoryId === "websites" || listing.categoryId === "e-commerce") && listing.businessPlatform && (
+              <SectionCard title="Platform" icon={Blocks}>
+                <p className="text-sm text-ink-soft">{BUSINESS_PLATFORM_MAP[listing.businessPlatform] ?? listing.businessPlatform}</p>
+              </SectionCard>
+            )}
 
             {/* Payment Terms — BDT-specific terms only, for Bangladesh-based
                 buyers paying via SSLCommerz. Branched on the listing's
