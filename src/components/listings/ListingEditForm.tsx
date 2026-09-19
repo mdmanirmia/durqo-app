@@ -278,6 +278,7 @@ export default function ListingEditForm({
   );
 
   const [gaAccessConfirmed, setGaAccessConfirmed] = useState(!!listing.ga_access_confirmed);
+  const [gscAccessConfirmed, setGscAccessConfirmed] = useState(!!listing.gsc_access_confirmed);
   const [gaTotalUsers, setGaTotalUsers] = useState(seo?.ga_total_users != null ? String(seo.ga_total_users) : "");
   const [gaNewUsers, setGaNewUsers] = useState(seo?.ga_new_users != null ? String(seo.ga_new_users) : "");
   const [gaPageViews, setGaPageViews] = useState(seo?.ga_total_page_views != null ? String(seo.ga_total_page_views) : "");
@@ -577,6 +578,7 @@ export default function ListingEditForm({
         monthlyExpenses: expenses.filter((r) => r.label && r.amount).map((r) => ({ label: r.label, amount: Number(r.amount) })),
         monthlyIncome: MONTH_KEYS.map((key, i) => ({ month: key, income: monthlyIncome[i] === "" ? null : Number(monthlyIncome[i]) })),
         gaAccessConfirmed: category.hasSeoData ? gaAccessConfirmed : null,
+        gscAccessConfirmed: category.hasSeoData ? gscAccessConfirmed : null,
         seo: seoFields,
         socialStats: socialStatRows.filter((r) => r.name && r.value).map((r) => ({ platform: r.name, followers: Number(r.value), url: r.url || undefined })),
         copyrightNotes: categoryId === "youtube-channels" ? copyrightNotesText : undefined,
@@ -1146,12 +1148,24 @@ export default function ListingEditForm({
             </div>
             <EditableImageGallery
               label="Google Search Console Images"
+              hint="support@durqo.com should have Restricted access on the Search Console account."
               existing={existingImages.search_console}
               onDeleteExisting={(id) => handleDeleteExistingImage("search_console", id)}
               deletingId={deletingImageId}
               newFiles={gscImages}
               setNewFiles={setGscImages}
             />
+            <label className="mt-4 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
+              <input
+                type="checkbox"
+                checked={gscAccessConfirmed}
+                onChange={(e) => setGscAccessConfirmed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
+              />
+              <span>
+                <span className="mono text-ink">support@durqo.com</span> has been added with Restricted access on this site&rsquo;s Google Search Console property.
+              </span>
+            </label>
           </Section>
 
           <Section title="SEMrush Data">
