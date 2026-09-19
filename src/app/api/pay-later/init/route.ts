@@ -138,14 +138,22 @@ export async function POST(request: Request) {
   // Best-effort, same as the other three — never blocks the response.
   try {
     const origin = new URL(request.url).origin;
-    const emails = await getUserEmails(admin, [buyerId, listing.seller_id]);
+    const [{ data: sellerProfile }, emails] = await Promise.all([
+      admin.from("profiles").select("full_name").eq("id", listing.seller_id).single(),
+      getUserEmails(admin, [buyerId, listing.seller_id]),
+    ]);
     const buyerEmail = emails[buyerId];
     const sellerEmail = emails[listing.seller_id];
+    // 2026-09-19 request ("sell korle o seller details include koiro"):
+    // labeled seller name/email line, same convention as the other
+    // "sold"/"listing updated" admin emails.
+    const sellerName = sellerProfile?.full_name || "A seller";
 
     await sendEmail(
       ADMIN_EMAIL,
       `New Pay Later "purchase" — ${listing.title}`,
       `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy ${listingLinkHtml(origin, listing.slug as string, listing.title as string)} for $${price.toLocaleString()} — no payment was actually collected.</p>
+       <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
        <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
     );
 
