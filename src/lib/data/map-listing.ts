@@ -560,6 +560,7 @@ export function mapListing(
     loomVideoUrl: row.loom_video_url ?? undefined,
     gaVerified: !!row.ga_verified,
     gscAccessConfirmed: !!row.gsc_access_confirmed,
+    businessPlatform: row.business_platform ?? null,
     niches: Array.isArray(row.niches) ? row.niches : [],
 
     quickStats,
