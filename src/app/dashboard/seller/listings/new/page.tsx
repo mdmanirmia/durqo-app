@@ -764,23 +764,36 @@ export default function AddNewBusinessPage() {
           )}
         </div>
 
-        {/* Platform — Websites/E-commerce only (Sep 19, 2026 request): a
-            single-select dropdown, not the checkbox-grid multi-select
-            mechanism the Android & iOS Apps "Platform" quick stat uses (see
-            src/lib/business-platforms.ts for why this is a separate field
-            entirely, not that one). */}
+        {/* Platform — Websites/E-commerce only (Sep 19, 2026 request, changed
+            to multi-select same day — a business can be built on more than
+            one platform, e.g. a storefront plus a separate blog): same
+            checkbox-grid multi-select mechanism as Android & iOS Apps'
+            "Platform" quick stat below, storing a comma-separated string of
+            ids in businessPlatform (see src/lib/business-platforms.ts for
+            why this is a separate field entirely, not that one — the ids
+            aren't from the same list). */}
         {(categoryId === "websites" || categoryId === "e-commerce") && (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Platform">
-              <select value={businessPlatform} onChange={(e) => setBusinessPlatform(e.target.value)} className={inputCls}>
-                <option value="">Select a platform</option>
-                {(categoryId === "websites" ? WEBSITE_PLATFORMS : ECOMMERCE_PLATFORMS).map((p) => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-              <p className="mt-1.5 text-xs text-ink-faint">Select the platform this business is built on.</p>
-            </Field>
-          </div>
+          <Section title="Platform" hint="Select every platform this business is built on.">
+            <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+              {(categoryId === "websites" ? WEBSITE_PLATFORMS : ECOMMERCE_PLATFORMS).map((p) => {
+                const selected = businessPlatform.split(",").filter(Boolean);
+                return (
+                  <label key={p.id} className="flex items-center gap-2 py-1 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={selected.includes(p.id)}
+                      onChange={() => {
+                        const next = selected.includes(p.id) ? selected.filter((id) => id !== p.id) : [...selected, p.id];
+                        setBusinessPlatform(next.join(","));
+                      }}
+                      className="accent-brand-strong"
+                    />
+                    {p.name}
+                  </label>
+                );
+              })}
+            </div>
+          </Section>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
