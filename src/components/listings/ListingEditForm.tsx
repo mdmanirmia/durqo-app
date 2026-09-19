@@ -81,7 +81,7 @@ function SocialStatRows({
           </div>
           <div className="flex gap-2">
             <input
-              placeholder="Page link (optional, e.g. https://instagram.com/yourpage)"
+              placeholder="Account link (optional, e.g. https://instagram.com/yourpage)"
               value={r.url}
               onChange={(e) => update(i, "url", e.target.value)}
               className={`${inputCls} flex-grow`}
