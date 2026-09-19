@@ -302,7 +302,7 @@ export default function BuyNowButton({
         type="button"
         onClick={handleStripe}
         disabled={stripeBusy || sslStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
+        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
       >
         {stripeBusy ? "Starting checkout…" : "Buy Now — Card (Stripe)"}
       </button>
@@ -310,7 +310,7 @@ export default function BuyNowButton({
         type="button"
         onClick={openEscrowModal}
         disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
+        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
       >
         Buy Now — Escrow.com
       </button>
@@ -318,7 +318,7 @@ export default function BuyNowButton({
         type="button"
         onClick={openSslModal}
         disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
+        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
       >
         Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)
       </button>
