@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarChart3, CheckCircle2, Plus, Trash2, Upload } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
@@ -24,6 +24,12 @@ import { confirmListingAssets } from "@/lib/actions/listing-assets";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds } from "@/lib/format";
 import { trackListingSubmitted } from "@/lib/analytics";
+
+// How long the post-submit "Connect Google Analytics now?" screen waits
+// before auto-redirecting to the seller dashboard on its own (see the
+// createdListingId screen below) — long enough to read the two options,
+// short enough that a seller who ignores it still lands on the dashboard.
+const GA_SCREEN_AUTOREDIRECT_SECONDS = 12;
 
 const MONTHS = ["Sep 2025","Oct 2025","Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026"];
 const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01-01","2026-02-01","2026-03-01","2026-04-01","2026-05-01","2026-06-01","2026-07-01","2026-08-01"];
@@ -313,6 +319,24 @@ export default function AddNewBusinessPage() {
   // OAuth connect needs a real listing id that only exists post-insert.
   const [createdListingId, setCreatedListingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Sep 19, 2026 ("listing dashboard e niye jabe" — should land on the
+  // dashboard after creating a listing): this GA-connect screen used to
+  // require a manual "Skip, do it later" click to ever reach the seller
+  // dashboard, unlike the non-SEO submit path a few lines down which
+  // redirects itself. Auto-redirect here too, on a visible countdown long
+  // enough to read the screen and decide, without removing the option to
+  // connect GA immediately or skip right away.
+  const [gaScreenSecondsLeft, setGaScreenSecondsLeft] = useState(GA_SCREEN_AUTOREDIRECT_SECONDS);
+
+  useEffect(() => {
+    if (!createdListingId) return;
+    if (gaScreenSecondsLeft <= 0) {
+      router.push("/dashboard/seller");
+      return;
+    }
+    const timer = setTimeout(() => setGaScreenSecondsLeft((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [createdListingId, gaScreenSecondsLeft, router]);
 
   function handleCategoryChange(id: string) {
     setCategoryId(id);
@@ -662,6 +686,9 @@ export default function AddNewBusinessPage() {
               Skip, do it later
             </button>
           </div>
+          <p className="mt-5 text-xs text-ink-faint">
+            Taking you to your dashboard in {gaScreenSecondsLeft}s&hellip;
+          </p>
         </div>
       </DashboardShell>
     );
