@@ -1118,7 +1118,7 @@ export default function ListingEditForm({
             </div>
             <EditableImageGallery
               label="Google Analytics Images"
-              hint="support@durqo.com should have Viewer access on the GA account."
+              hint="support@durqo.com should have Viewer access on the GA account — attach screenshots here so we can verify the data."
               existing={existingImages.google_analytics}
               onDeleteExisting={(id) => handleDeleteExistingImage("google_analytics", id)}
               deletingId={deletingImageId}
@@ -1133,7 +1133,7 @@ export default function ListingEditForm({
                 className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
               />
               <span>
-                <span className="mono text-ink">support@durqo.com</span> has been added as a Viewer on this site&rsquo;s Google Analytics 4 property.
+                <span className="mono text-ink">support@durqo.com</span> has been added as a Viewer on this site&rsquo;s Google Analytics 4 property (Admin &rarr; Property Access Management &rarr; Add users). Our team will verify this before publishing — access can be removed once your listing is live.
               </span>
             </label>
           </Section>
@@ -1148,7 +1148,7 @@ export default function ListingEditForm({
             </div>
             <EditableImageGallery
               label="Google Search Console Images"
-              hint="support@durqo.com should have Restricted access on the Search Console account."
+              hint="support@durqo.com should have Restricted access on the Search Console account — attach screenshots here so we can verify the data."
               existing={existingImages.search_console}
               onDeleteExisting={(id) => handleDeleteExistingImage("search_console", id)}
               deletingId={deletingImageId}
@@ -1163,7 +1163,7 @@ export default function ListingEditForm({
                 className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
               />
               <span>
-                <span className="mono text-ink">support@durqo.com</span> has been added with Restricted access on this site&rsquo;s Google Search Console property.
+                <span className="mono text-ink">support@durqo.com</span> has been added with Restricted access on this site&rsquo;s Google Search Console property (Settings &rarr; Users and permissions &rarr; Add user). Our team will verify this before publishing — access can be removed once your listing is live.
               </span>
             </label>
           </Section>
