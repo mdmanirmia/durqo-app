@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
+import { sanitizeFileName } from "@/lib/sanitize-filename";
 
 const STORAGE_BUCKET = "seller-verification";
 
@@ -57,7 +58,12 @@ export async function uploadVerificationDocuments(files: File[]): Promise<string
 
   const paths: string[] = [];
   for (const file of files) {
-    const path = `${user.id}/${Date.now()}-${file.name}`;
+    // 2026-09-19: same filename-sanitization fix applied to the
+    // listing-proofs uploads (sanitize-filename.ts) — a raw original
+    // filename with URL-reserved characters can break how this path later
+    // gets resolved, so it's sanitized here too for consistency even though
+    // this bucket serves signed URLs rather than public ones.
+    const path = `${user.id}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file);
     if (error) throw new Error(`Upload failed: ${error.message}`);
     paths.push(path);
