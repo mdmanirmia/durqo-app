@@ -166,12 +166,17 @@ export function buildChips(filters: MarketplaceFilters): FilterChip[] {
     chips.push({ key: "price", label, remove: (f) => ({ ...f, priceMin: null, priceMax: null, page: 1 }) });
   }
   if (filters.ageMin !== null || filters.ageMax !== null) {
+    // Singular "Year" only when the chip is describing a single year (an
+    // exact 0–1 or 1 bound) — matches the "1 or under -> Year, over 1 ->
+    // Years" rule used for the actual age quick-stat displays elsewhere
+    // (format.ts's formatQuickStat, the listing detail page, the homepage
+    // spotlight tile).
     const label =
       filters.ageMin !== null && filters.ageMax !== null
-        ? `Age: ${filters.ageMin}–${filters.ageMax} Years`
+        ? `Age: ${filters.ageMin}–${filters.ageMax} ${filters.ageMax <= 1 ? "Year" : "Years"}`
         : filters.ageMin !== null
-          ? `Age: ${filters.ageMin}+ Years`
-          : `Age: up to ${filters.ageMax} Years`;
+          ? `Age: ${filters.ageMin}+ ${filters.ageMin <= 1 ? "Year" : "Years"}`
+          : `Age: up to ${filters.ageMax} ${filters.ageMax! <= 1 ? "Year" : "Years"}`;
     chips.push({ key: "age", label, remove: (f) => ({ ...f, ageMin: null, ageMax: null, page: 1 }) });
   }
   // "Available" is the permanent default — per Section 8, only surface a

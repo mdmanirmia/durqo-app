@@ -176,7 +176,7 @@ export function extractYoutubeChannelIdentifier(
 export function formatQuickStat(key: string, value: number | string | undefined): string {
   if (value === undefined || value === null || value === "") return "—";
   if (QUICK_STAT_MONEY.has(key)) return fmtUSD(Number(value));
-  if (QUICK_STAT_YEARS.has(key)) return `${value} Years`;
+  if (QUICK_STAT_YEARS.has(key)) return `${value} ${Number(value) <= 1 ? "Year" : "Years"}`;
   if (QUICK_STAT_PERCENT.has(key)) return `${value}%`;
   if (QUICK_STAT_COUNT.has(key)) return fmtNumber(Number(value));
   return String(value);
