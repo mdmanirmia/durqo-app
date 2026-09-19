@@ -539,18 +539,17 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                     // Account Age, Website Age) are plain numbers of years
                     // in the DB, shown bare here ("2") unlike the
                     // marketplace grid/homepage spotlight, which already
-                    // append " Years" (see src/lib/format.ts's
+                    // append " Year(s)" (see src/lib/format.ts's
                     // QUICK_STAT_YEARS / formatQuickStat — not used on this
                     // page). Sep 5, 2026 request ("Age Years e dekhabe" —
-                    // show Age in years): append the same " Years" suffix
-                    // here too, only when a value is actually set, so this
-                    // stays consistent site-wide without disturbing the
-                    // "skip this tile" behavior for undefined/"". Sep 19,
-                    // 2026: spelled out "yrs" -> "Years" everywhere this
-                    // suffix is appended, so it's never abbreviated,
-                    // singular or plural.
+                    // show Age in years): append the same suffix here too,
+                    // only when a value is actually set, so this stays
+                    // consistent site-wide without disturbing the "skip
+                    // this tile" behavior for undefined/"". Sep 19, 2026:
+                    // spelled out "yrs" -> "Year"/"Years" (never
+                    // abbreviated), singular for 1-or-under, plural above 1.
                     const raw = listing.quickStats[key];
-                    const value = (key === "age" || key === "channel_age") && raw !== undefined && raw !== "" ? `${raw} Years` : raw;
+                    const value = (key === "age" || key === "channel_age") && raw !== undefined && raw !== "" ? `${raw} ${Number(raw) <= 1 ? "Year" : "Years"}` : raw;
                     return { label: quickStatLabelOverrides[key] ?? QUICK_STAT_LABELS[key], value };
                   }),
                   // SaaS and AI Apps & Tools call this same field "Industry"
