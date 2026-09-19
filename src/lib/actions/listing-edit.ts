@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { sanitizeFileName } from "@/lib/sanitize-filename";
 
 // Shared by BOTH the admin edit form (dashboard/admin/listings/[id]/edit)
 // and the seller edit form (dashboard/seller/listings/[id]/edit) — one
@@ -402,7 +403,14 @@ export async function addListingImages(listingId: string, kind: string, formData
 
   const files = formData.getAll("files").filter((f): f is File => f instanceof File);
   for (const file of files) {
-    const path = `${sellerId}/${listingId}/${kind}/${Date.now()}-${file.name}`;
+    // 2026-09-19 fix ("GA/GSC/Proof of Income images not always visible
+    // after publishing"): sanitize the original filename before it becomes
+    // part of the public Storage URL — see sanitize-filename.ts. An
+    // un-sanitized name containing "#", "?", or similar reserved URL
+    // characters (e.g. a screenshot named "Report #2.png") silently broke
+    // the resulting getPublicUrl() link, so a screenshot loaded or not
+    // purely depending on what the seller happened to name the file.
+    const path = `${sellerId}/${listingId}/${kind}/${Date.now()}-${sanitizeFileName(file.name)}`;
     const bytes = new Uint8Array(await file.arrayBuffer());
     const { error: upErr } = await admin.storage.from(STORAGE_BUCKET).upload(path, bytes, {
       contentType: file.type || undefined,
