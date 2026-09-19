@@ -52,6 +52,9 @@ export async function syncListingGaStats(listingId: string): Promise<void> {
       avg_session_seconds: report.avgSessionSeconds,
       daily_page_views: report.dailyPageViews,
       traffic_acquisition: report.trafficAcquisition,
+      session_sources: report.sessionSources,
+      traffic_by_country: report.trafficByCountry,
+      top_pages: report.topPages,
       last_synced_at: new Date().toISOString(),
     });
 

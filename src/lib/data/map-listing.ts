@@ -587,6 +587,9 @@ function mapGaLiveStats(row?: Row | null): Listing["gaLiveStats"] {
     avgSessionSeconds: row.avg_session_seconds ?? 0,
     dailyPageViews: Array.isArray(row.daily_page_views) ? row.daily_page_views : [],
     trafficAcquisition: Array.isArray(row.traffic_acquisition) ? row.traffic_acquisition : [],
+    sessionSources: Array.isArray(row.session_sources) ? row.session_sources : [],
+    trafficByCountry: Array.isArray(row.traffic_by_country) ? row.traffic_by_country : [],
+    topPages: Array.isArray(row.top_pages) ? row.top_pages : [],
     lastSyncedAt: row.last_synced_at ?? "",
   };
 }
