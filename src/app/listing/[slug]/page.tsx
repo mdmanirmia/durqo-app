@@ -923,15 +923,25 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               )}
             </SectionCard>
 
-            {/* Platform — Websites/E-commerce only (Sep 19, 2026 request):
-                which platform the business is built on (WordPress, Shopify,
-                etc — see src/lib/business-platforms.ts). Own SectionCard,
-                immediately after Sale Includes, rather than folded into
-                Quick Statistics — distinct from the unrelated "Platform"
-                quick-stat tile Android & iOS Apps listings show. */}
+            {/* Platform — Websites/E-commerce only (Sep 19, 2026 request,
+                changed to multi-select same day): which platform(s) the
+                business is built on (WordPress, Shopify, etc — see
+                src/lib/business-platforms.ts), stored as a comma-separated
+                string of ids and joined into display names here, same
+                convention as the "platform" quick stat in map-listing.ts.
+                Own SectionCard, immediately after Sale Includes, rather than
+                folded into Quick Statistics — distinct from the unrelated
+                "Platform" quick-stat tile Android & iOS Apps listings show. */}
             {(listing.categoryId === "websites" || listing.categoryId === "e-commerce") && listing.businessPlatform && (
               <SectionCard title="Platform" icon={Blocks}>
-                <p className="text-sm text-ink-soft">{BUSINESS_PLATFORM_MAP[listing.businessPlatform] ?? listing.businessPlatform}</p>
+                <p className="text-sm text-ink-soft">
+                  {listing.businessPlatform
+                    .split(",")
+                    .map((id) => id.trim())
+                    .filter(Boolean)
+                    .map((id) => BUSINESS_PLATFORM_MAP[id] ?? id)
+                    .join(", ")}
+                </p>
               </SectionCard>
             )}
 
