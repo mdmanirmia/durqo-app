@@ -168,10 +168,10 @@ export function buildChips(filters: MarketplaceFilters): FilterChip[] {
   if (filters.ageMin !== null || filters.ageMax !== null) {
     const label =
       filters.ageMin !== null && filters.ageMax !== null
-        ? `Age: ${filters.ageMin}–${filters.ageMax} yrs`
+        ? `Age: ${filters.ageMin}–${filters.ageMax} Years`
         : filters.ageMin !== null
-          ? `Age: ${filters.ageMin}+ yrs`
-          : `Age: up to ${filters.ageMax} yrs`;
+          ? `Age: ${filters.ageMin}+ Years`
+          : `Age: up to ${filters.ageMax} Years`;
     chips.push({ key: "age", label, remove: (f) => ({ ...f, ageMin: null, ageMax: null, page: 1 }) });
   }
   // "Available" is the permanent default — per Section 8, only surface a
