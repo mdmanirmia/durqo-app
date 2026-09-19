@@ -73,6 +73,10 @@ create table if not exists public.listings (
 
   status text not null default 'draft' check (status in ('draft','pending_review','published','sold','archived')),
   is_verified boolean not null default false,
+  -- Seller self-declared Search Console access confirmation (Sep 19, 2026,
+  -- mirrors the pre-existing ga_access_confirmed checkbox from migration
+  -- 011) so Durqo can verify GSC data before publishing.
+  gsc_access_confirmed boolean not null default false,
   views int not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
