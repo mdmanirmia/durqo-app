@@ -308,19 +308,19 @@ export default function BuyNowButton({
       </button>
       <button
         type="button"
+        onClick={openEscrowModal}
+        disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
+        className="rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-colors hover:bg-brand disabled:opacity-60"
+      >
+        Buy Now — Escrow.com
+      </button>
+      <button
+        type="button"
         onClick={openSslModal}
         disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
         className="rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-colors hover:bg-brand disabled:opacity-60"
       >
         Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)
-      </button>
-      <button
-        type="button"
-        onClick={openEscrowModal}
-        disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-paper-sunk disabled:opacity-60"
-      >
-        Buy Now — Escrow.com
       </button>
       {/* Sep 13, 2026: hidden from every buyer per the site owner's explicit
           decision, made right after a content audit surfaced that this
