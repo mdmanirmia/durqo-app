@@ -442,7 +442,9 @@ export default async function Home() {
                       </div>
                       <div>
                         <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Age</span>
-                        {spotlight.businessAgeYears ? `${spotlight.businessAgeYears} Years` : "New"}
+                        {spotlight.businessAgeYears
+                          ? `${spotlight.businessAgeYears} ${spotlight.businessAgeYears <= 1 ? "Year" : "Years"}`
+                          : "New"}
                       </div>
                     </div>
 
