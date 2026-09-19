@@ -36,10 +36,16 @@ export async function notifyListingSubmitted(listingId: string) {
     const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
     const adminReviewUrl = `${origin}/dashboard/admin/listings/${listingId}/edit`;
 
+    // 2026-09-19 follow-up ("seller er email and name o diba email body
+    // te"): the seller's name/email used to be folded into the first
+    // sentence (e.g. "Jane Doe (jane@x.com) just submitted...") — called out
+    // as its own labeled line instead, so admin can see it at a glance
+    // rather than parsing it out of prose.
     await sendEmail(
       ADMIN_EMAIL,
       `New listing submitted for review — ${listing.title}`,
-      `<p>${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""} just submitted a new business listing, "${listing.title}", for review.</p>
+      `<p>A new business listing has been submitted for review: <strong>${listing.title}</strong>.</p>
+       <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
        <p><a href="${adminReviewUrl}">Review the listing</a>.</p>`
     );
 
