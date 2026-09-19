@@ -1125,13 +1125,7 @@ export default function ListingEditForm({
               newFiles={gaImages}
               setNewFiles={setGaImages}
             />
-            <p
-              className={`mt-4 rounded-md border p-3 text-sm ${
-                gaAccessConfirmed
-                  ? "border-green-200 bg-green-50 text-green-700"
-                  : "border-red-200 bg-red-50 text-red-700"
-              }`}
-            >
+            <p className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
               Add <span className="mono">support@durqo.com</span> as a Viewer on this site&rsquo;s Google Analytics 4 property so we can verify your data before publishing your business.
             </p>
             <label className="mt-2 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
@@ -1164,13 +1158,7 @@ export default function ListingEditForm({
               newFiles={gscImages}
               setNewFiles={setGscImages}
             />
-            <p
-              className={`mt-4 rounded-md border p-3 text-sm ${
-                gscAccessConfirmed
-                  ? "border-green-200 bg-green-50 text-green-700"
-                  : "border-red-200 bg-red-50 text-red-700"
-              }`}
-            >
+            <p className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
               Add <span className="mono">support@durqo.com</span> with Restricted Access on this site&rsquo;s Google Search Console property so we can verify your data before publishing your business.
             </p>
             <label className="mt-2 flex items-start gap-2.5 rounded-md border border-rule-strong bg-paper p-3 text-sm text-ink-soft">
