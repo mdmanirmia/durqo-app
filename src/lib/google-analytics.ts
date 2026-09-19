@@ -154,6 +154,15 @@ export interface Ga4ReportSummary {
   avgSessionSeconds: number;
   dailyPageViews: { date: string; value: number }[];
   trafficAcquisition: { channel: string; sessions: number }[];
+  // Optional (rather than joining the required fields above) so this file's
+  // GitHub-web-upload commit and its consumers' commits (route.ts,
+  // ga-sync.server.ts, types.ts/map-listing.ts, the panel component) can
+  // each land independently without a transient inconsistent-commit build
+  // failure — see the Sep 18 2026 income_multiple removal incident this
+  // exact risk was first hit on.
+  sessionSources?: { source: string; sessions: number }[];
+  trafficByCountry?: { country: string; sessions: number }[];
+  topPages?: { path: string; views: number }[];
 }
 
 export interface Ga4DateRange {
@@ -188,7 +197,7 @@ export async function runGa4Report(
     return res.json();
   }
 
-  const [totals, daily, channels] = await Promise.all([
+  const [totals, daily, channels, sources, countries, pages] = await Promise.all([
     runReport({
       dateRanges: [dateRange],
       metrics: [
@@ -212,6 +221,31 @@ export async function runGa4Report(
       orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
       limit: "8",
     }),
+    // Raw session source (google, facebook.com, (direct), ...) — a finer
+    // breakdown than the channel-group buckets above, requested separately
+    // as "Session Sources" alongside Traffic Acquisition, not a replacement
+    // for it.
+    runReport({
+      dateRanges: [dateRange],
+      dimensions: [{ name: "sessionSource" }],
+      metrics: [{ name: "sessions" }],
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+      limit: "8",
+    }),
+    runReport({
+      dateRanges: [dateRange],
+      dimensions: [{ name: "country" }],
+      metrics: [{ name: "sessions" }],
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+      limit: "8",
+    }),
+    runReport({
+      dateRanges: [dateRange],
+      dimensions: [{ name: "pagePath" }],
+      metrics: [{ name: "screenPageViews" }],
+      orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
+      limit: "10",
+    }),
   ]);
 
   const totalRow = totals.rows?.[0]?.metricValues ?? [];
@@ -229,6 +263,21 @@ export async function runGa4Report(
     sessions: Number(r.metricValues[0].value) || 0,
   }));
 
+  const sessionSources = (sources.rows ?? []).map((r: { dimensionValues: { value: string }[]; metricValues: { value: string }[] }) => ({
+    source: r.dimensionValues[0].value,
+    sessions: Number(r.metricValues[0].value) || 0,
+  }));
+
+  const trafficByCountry = (countries.rows ?? []).map((r: { dimensionValues: { value: string }[]; metricValues: { value: string }[] }) => ({
+    country: r.dimensionValues[0].value,
+    sessions: Number(r.metricValues[0].value) || 0,
+  }));
+
+  const topPages = (pages.rows ?? []).map((r: { dimensionValues: { value: string }[]; metricValues: { value: string }[] }) => ({
+    path: r.dimensionValues[0].value,
+    views: Number(r.metricValues[0].value) || 0,
+  }));
+
   return {
     pageViews,
     uniqueVisitors,
@@ -237,6 +286,9 @@ export async function runGa4Report(
     avgSessionSeconds: Math.round(avgSession),
     dailyPageViews,
     trafficAcquisition,
+    sessionSources,
+    trafficByCountry,
+    topPages,
   };
 }
 

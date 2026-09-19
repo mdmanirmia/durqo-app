@@ -225,5 +225,12 @@ export interface GaLiveStats {
   avgSessionSeconds: number;
   dailyPageViews: { date: string; value: number }[];
   trafficAcquisition: { channel: string; sessions: number }[];
+  // Optional so this file's GitHub-web-upload commit can land independently
+  // from google-analytics.ts, map-listing.ts, and the panel component in any
+  // order without a transient inconsistent-commit build failure (same reason
+  // these are optional on Ga4ReportSummary in src/lib/google-analytics.ts).
+  sessionSources?: { source: string; sessions: number }[];
+  trafficByCountry?: { country: string; sessions: number }[];
+  topPages?: { path: string; views: number }[];
   lastSyncedAt: string;
 }
