@@ -1093,13 +1093,14 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               `<aside>`'s own box, not the viewport, so it just needs
               `<aside>` itself positioned below the header. */}
           <aside className="sidebar-scroll min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-24 lg:row-span-2 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pb-4">
-            <GatedContent
-              locked={locked}
-              next={nextPath}
-              heading="Sign up to buy or message the seller"
-              body="Create a free account to contact the seller, save this listing, or start a purchase."
-              gapClassName="gap-4"
-            >
+            {/* 2026-09-19 follow-up: the price/Buy Now/Chat/Wishlist card and
+                the Seller card are NOT gated — a signed-out visitor can see
+                and compare pricing and seller details without an account.
+                Only Buy Now / Chat actually require login, and that's
+                already enforced by those buttons themselves. Login is gated
+                on Channel Analytics/financials (main content) and Q&A/
+                Comments (bottom block) instead — see those GatedContent
+                wraps below. */}
             <div className="z-10 shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)] lg:sticky lg:top-0">
               <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
@@ -1155,7 +1156,6 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 </div>
               </div>
             </div>
-            </GatedContent>
           </aside>
 
           {/* MAIN CONTENT — BOTTOM (Questions & Answers, then Comments).
