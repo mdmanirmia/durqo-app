@@ -1,0 +1,13 @@
+-- Sep 18, 2026 site owner request: "Listing e kono income multiple thakbena"
+-- — no listing should show an income multiple. Income Multiple (asking
+-- price ÷ annualized average monthly income) had already been dropped from
+-- most categories' Quick Statistics over past revisions (Websites,
+-- E-commerce, Social Media Accounts, SaaS) and from the homepage/ListingCard
+-- "(Nx)" display entirely — this finishes the removal for the last six
+-- categories that still computed/showed it (Plugins/Themes & Extensions,
+-- Amazon Stores & KDP, Service Business, Digital Agencies, Games, Crypto &
+-- Blockchain — see src/lib/categories.ts) and drops the now-unused column,
+-- since nothing reads or writes it anymore (src/lib/data/map-listing.ts no
+-- longer computes it, and the `income_multiple` QuickStatKey no longer
+-- exists at all).
+alter table public.listings drop column if exists income_multiple;
