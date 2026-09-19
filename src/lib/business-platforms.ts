@@ -1,9 +1,11 @@
-// Websites and E-commerce categories only (Sep 19, 2026 request): "which
-// platform is this business built on" — a single-select dropdown (a
-// business only runs on one platform at a time), stored as a single
-// plain-text id in the `business_platform` column (migration 051) and
-// turned into a display name at render time via BUSINESS_PLATFORM_MAP —
-// same convention as FUNDING_STAGES/FUNDING_STAGE_MAP in funding-stages.ts.
+// Websites and E-commerce categories only (Sep 19, 2026 request, changed to
+// multi-select same day — a business can be built on more than one
+// platform, e.g. a storefront plus a separate blog): "which platform(s) is
+// this business built on" — a checkbox-grid multi-select, stored as a
+// comma-separated string of ids in the `business_platform` column
+// (migration 051) and turned into display names at render time via
+// BUSINESS_PLATFORM_MAP — same convention as the Android & iOS Apps
+// "platform" quick stat (see src/lib/app-platforms.ts).
 //
 // Two different option lists (Websites vs. E-commerce) share a few ids —
 // "wix", "custom-built", "other" — with identical display names, so one
