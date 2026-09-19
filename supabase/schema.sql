@@ -139,7 +139,8 @@ create table if not exists public.listing_social_stats (
   id uuid primary key default uuid_generate_v4(),
   listing_id uuid not null references public.listings(id) on delete cascade,
   platform text not null,      -- 'instagram','youtube','tiktok','x','email'
-  followers int
+  followers int,
+  url text                     -- optional link to the platform page (Sep 19, 2026)
 );
 
 -- ---------- WISHLIST ----------
