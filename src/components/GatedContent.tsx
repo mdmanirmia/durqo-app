@@ -58,7 +58,7 @@ export default function GatedContent({
             href={`/register?next=${nextParam}`}
             className="mb-2 block rounded-md bg-brand py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
           >
-            Sign Up Free
+            Register Free
           </Link>
           <Link href={`/login?next=${nextParam}`} className="text-xs font-medium text-ink-faint hover:text-ink">
             Already have an account? Log in
