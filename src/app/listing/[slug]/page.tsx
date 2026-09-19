@@ -50,6 +50,7 @@ import ProofGalleryButton from "@/components/ProofGalleryButton";
 import BuyNowButton from "@/components/BuyNowButton";
 import WishlistButton from "@/components/WishlistButton";
 import ChatWithSellerButton from "@/components/ChatWithSellerButton";
+import GatedContent from "@/components/GatedContent";
 import Container from "@/components/ui/Container";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
 
@@ -267,6 +268,18 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
     data: { user: viewer },
   } = supabase ? await supabase.auth.getUser() : { data: { user: null } };
   const isListingSeller = !!viewer && viewer.id === listing.seller.id;
+
+  // 2026-09-19 request ("Business Overview porjonto login chara dekha
+  // jabe... Full listing dekhte hole log in korte hobe"): a signed-out
+  // visitor sees the header/Quick Statistics/Overview and nothing past
+  // that — every remaining section is blurred behind a "sign up to see
+  // this" card (GatedContent) to drive marketplace registrations. `locked`
+  // is computed once here since it's the same condition (no `viewer`) for
+  // every gated block below; `next` is where the visitor lands right back
+  // on this same listing, fully unlocked, once they've logged in or
+  // registered (see /auth/callback, LoginForm.tsx, RegisterForm.tsx).
+  const locked = !viewer;
+  const nextPath = `/listing/${listing.slug}`;
 
   const category = CATEGORY_MAP[listing.categoryId];
   const price = listing.discountedPrice ?? listing.price;
@@ -607,6 +620,12 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               )}
             </SectionCard>
 
+            <GatedContent
+              locked={locked}
+              next={nextPath}
+              heading="Sign up to see full business details"
+              body="Create a free account to view channel analytics, financial proof, traffic sources, and everything else included in this listing."
+            >
             {/* Channel Analytics (formerly "YouTube Channel Overview") —
                 YouTube Channels only, auto-filled from the Channel URL (Sep
                 4 2026). Moved to right after "Overview of the Channel" and
@@ -939,6 +958,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                   : "Bangladesh-based buyers who choose to pay in BDT must pay the full purchase price through SSLCommerz at checkout. The applicable exchange rate and exact BDT amount will be shown before payment is confirmed. The purchase will be completed after the full payment has been received and verified."}
               </p>
             </SectionCard>
+            </GatedContent>
           </div>
 
           {/* SIDEBAR — acquisition panel + seller details, sticky. Placed here
@@ -1073,6 +1093,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               `<aside>`'s own box, not the viewport, so it just needs
               `<aside>` itself positioned below the header. */}
           <aside className="sidebar-scroll min-w-0 flex h-max flex-col gap-4 lg:sticky lg:top-24 lg:row-span-2 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pb-4">
+            <GatedContent
+              locked={locked}
+              next={nextPath}
+              heading="Sign up to buy or message the seller"
+              body="Create a free account to contact the seller, save this listing, or start a purchase."
+              gapClassName="gap-4"
+            >
             <div className="z-10 shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)] lg:sticky lg:top-0">
               <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
@@ -1128,6 +1155,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 </div>
               </div>
             </div>
+            </GatedContent>
           </aside>
 
           {/* MAIN CONTENT — BOTTOM (Questions & Answers, then Comments).
@@ -1152,6 +1180,12 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               /dashboard/seller/questions page — see dashboard-nav.ts and
               that page. */}
           <div className="min-w-0 flex flex-col gap-6">
+            <GatedContent
+              locked={locked}
+              next={nextPath}
+              heading="Sign up to see questions & answers"
+              body="Create a free account to read buyer questions, the seller's answers, and to ask your own."
+            >
             {listing.faqs.length > 0 && (
               <SectionCard title="Questions & Answers" icon={HelpCircle} bodyClassName="p-0">
                 <div className="px-5 sm:px-6">
@@ -1168,6 +1202,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 viewerId={viewer?.id}
               />
             </SectionCard>
+            </GatedContent>
           </div>
         </div>
       </Container>
