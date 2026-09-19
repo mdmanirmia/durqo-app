@@ -73,32 +73,41 @@ function Field({ label, children, className }: { label: string; children: React.
 
 const inputCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
 
-function NamedValueRows({
+// Sep 19, 2026 seller request: Social Media Accounts rows gained a third
+// field — a link to the platform page itself — shown on the published
+// listing next to the platform name.
+function SocialStatRows({
   rows,
   setRows,
-  nameLabel,
-  valueLabel,
 }: {
-  rows: { name: string; value: string }[];
-  setRows: (rows: { name: string; value: string }[]) => void;
-  nameLabel: string;
-  valueLabel: string;
+  rows: { name: string; value: string; url: string }[];
+  setRows: (rows: { name: string; value: string; url: string }[]) => void;
 }) {
-  function update(i: number, key: "name" | "value", v: string) {
+  function update(i: number, key: "name" | "value" | "url", v: string) {
     setRows(rows.map((r, idx) => (idx === i ? { ...r, [key]: v } : r)));
   }
   return (
     <div className="flex flex-col gap-2">
       {rows.map((r, i) => (
-        <div key={i} className="flex gap-2">
-          <input placeholder={nameLabel} value={r.name} onChange={(e) => update(i, "name", e.target.value)} className={`${inputCls} flex-grow`} />
-          <input placeholder={valueLabel} value={r.value} onChange={(e) => update(i, "value", e.target.value)} className={`${inputCls} w-32`} />
-          <button type="button" onClick={() => setRows(rows.filter((_, idx) => idx !== i))} className="grid w-9 shrink-0 place-items-center rounded-md border border-rule-strong text-ink-faint hover:border-danger hover:text-danger">
-            <Trash2 size={14} />
-          </button>
+        <div key={i} className="flex flex-col gap-2 rounded-md border border-rule-strong p-2.5 sm:flex-row sm:items-center sm:border-none sm:p-0">
+          <div className="flex gap-2">
+            <input placeholder="Platform (e.g. Instagram)" value={r.name} onChange={(e) => update(i, "name", e.target.value)} className={`${inputCls} flex-grow sm:w-40 sm:flex-none`} />
+            <input placeholder="Followers" value={r.value} onChange={(e) => update(i, "value", e.target.value)} className={`${inputCls} w-28 shrink-0`} />
+          </div>
+          <div className="flex gap-2">
+            <input
+              placeholder="Page link (optional, e.g. https://instagram.com/yourpage)"
+              value={r.url}
+              onChange={(e) => update(i, "url", e.target.value)}
+              className={`${inputCls} flex-grow`}
+            />
+            <button type="button" onClick={() => setRows(rows.filter((_, idx) => idx !== i))} className="grid w-9 shrink-0 place-items-center rounded-md border border-rule-strong text-ink-faint hover:border-danger hover:text-danger">
+              <Trash2 size={14} />
+            </button>
+          </div>
         </div>
       ))}
-      <button type="button" onClick={() => setRows([...rows, { name: "", value: "" }])} className="flex w-fit items-center gap-1.5 text-sm font-semibold text-brand-strong">
+      <button type="button" onClick={() => setRows([...rows, { name: "", value: "", url: "" }])} className="flex w-fit items-center gap-1.5 text-sm font-semibold text-brand-strong">
         <Plus size={14} /> Add row
       </button>
     </div>
@@ -200,7 +209,7 @@ export default function AddNewBusinessPage() {
   const [semrush, setSemrush] = useState({ authority: "", traffic: "", keywords: "", top10: "", backlinks: "" });
   const [ahrefs, setAhrefs] = useState({ dr: "", ur: "", refDomains: "", keywords: "", backlinks: "" });
 
-  const [socialStats, setSocialStats] = useState([{ name: "", value: "" }]);
+  const [socialStats, setSocialStats] = useState([{ name: "", value: "", url: "" }]);
 
   // YouTube Channels category only (Design & Development New.pdf, Sep 4
   // 2026) — Copyright Notes (free text + proof screenshots) and up to 5
@@ -537,7 +546,7 @@ export default function AddNewBusinessPage() {
       if (category.hasSocialStats) {
         const rows = socialStats
           .filter((r) => r.name && r.value)
-          .map((r) => ({ listing_id: listingId, platform: r.name, followers: Number(r.value) }));
+          .map((r) => ({ listing_id: listingId, platform: r.name, followers: Number(r.value), url: r.url || null }));
         if (rows.length) {
           const { error } = await supabase.from("listing_social_stats").insert(rows);
           if (error) throw new Error(`Saving social stats failed: ${error.message}`);
@@ -1312,7 +1321,7 @@ export default function AddNewBusinessPage() {
 
         {category.hasSocialStats && (
           <Section title="Social Media Accounts">
-            <NamedValueRows rows={socialStats} setRows={setSocialStats} nameLabel="Platform (e.g. Instagram)" valueLabel="Followers" />
+            <SocialStatRows rows={socialStats} setRows={setSocialStats} />
           </Section>
         )}
 
