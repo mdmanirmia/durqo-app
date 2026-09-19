@@ -281,7 +281,7 @@ export default function ListingEditForm({
   const [gaAccessConfirmed, setGaAccessConfirmed] = useState(!!listing.ga_access_confirmed);
   const [gscAccessConfirmed, setGscAccessConfirmed] = useState(!!listing.gsc_access_confirmed);
   // Websites/E-commerce only (Sep 19, 2026) — see src/lib/business-platforms.ts.
-  const [businessPlatform, setBusinessPlatform] = useState(listing.business_platform ?? "");
+  const [businessPlatform, setBusinessPlatform] = useState<string>(listing.business_platform ?? "");
   const [gaTotalUsers, setGaTotalUsers] = useState(seo?.ga_total_users != null ? String(seo.ga_total_users) : "");
   const [gaNewUsers, setGaNewUsers] = useState(seo?.ga_new_users != null ? String(seo.ga_new_users) : "");
   const [gaPageViews, setGaPageViews] = useState(seo?.ga_total_page_views != null ? String(seo.ga_total_page_views) : "");
@@ -706,20 +706,33 @@ export default function ListingEditForm({
         )}
       </div>
 
-      {/* Platform — Websites/E-commerce only (Sep 19, 2026 request), mirrors
-          the seller "new listing" form — see src/lib/business-platforms.ts. */}
+      {/* Platform — Websites/E-commerce only (Sep 19, 2026 request, changed
+          to multi-select same day — a business can be built on more than
+          one platform, e.g. a storefront plus a separate blog), mirrors the
+          seller "new listing" form and the Android & iOS Apps "Platform"
+          quick-stat checkbox grid below — see src/lib/business-platforms.ts. */}
       {(categoryId === "websites" || categoryId === "e-commerce") && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Platform">
-            <select value={businessPlatform} onChange={(e) => setBusinessPlatform(e.target.value)} className={inputCls}>
-              <option value="">Select a platform</option>
-              {(categoryId === "websites" ? WEBSITE_PLATFORMS : ECOMMERCE_PLATFORMS).map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
-            <p className="mt-1.5 text-xs text-ink-faint">Select the platform this business is built on.</p>
-          </Field>
-        </div>
+        <Section title="Platform" hint="Select every platform this business is built on.">
+          <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
+            {(categoryId === "websites" ? WEBSITE_PLATFORMS : ECOMMERCE_PLATFORMS).map((p) => {
+              const selected = businessPlatform.split(",").filter(Boolean);
+              return (
+                <label key={p.id} className="flex items-center gap-2 py-1 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(p.id)}
+                    onChange={() => {
+                      const next = selected.includes(p.id) ? selected.filter((id) => id !== p.id) : [...selected, p.id];
+                      setBusinessPlatform(next.join(","));
+                    }}
+                    className="accent-brand-strong"
+                  />
+                  {p.name}
+                </label>
+              );
+            })}
+          </div>
+        </Section>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
