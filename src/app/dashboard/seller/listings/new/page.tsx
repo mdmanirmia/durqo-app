@@ -25,6 +25,7 @@ import { notifyListingSubmitted } from "@/lib/actions/listing-notifications";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds } from "@/lib/format";
 import { trackListingSubmitted } from "@/lib/analytics";
+import { sanitizeFileName } from "@/lib/sanitize-filename";
 
 // How long the post-submit "Connect Google Analytics now?" screen waits
 // before auto-redirecting to the seller dashboard on its own (see the
@@ -366,7 +367,12 @@ export default function AddNewBusinessPage() {
 
   async function uploadGallery(supabase: NonNullable<ReturnType<typeof createClient>>, sellerId: string, listingId: string, files: File[], kind: string) {
     for (const file of files) {
-      const path = `${sellerId}/${listingId}/${kind}/${Date.now()}-${file.name}`;
+      // 2026-09-19 fix: sanitize the original filename before it becomes
+      // part of the public Storage URL — see sanitize-filename.ts for why an
+      // un-sanitized name (e.g. a screenshot named "Report #2.png") made
+      // these images visible or not depending entirely on what the seller
+      // happened to name the file.
+      const path = `${sellerId}/${listingId}/${kind}/${Date.now()}-${sanitizeFileName(file.name)}`;
       const { error: upErr } = await supabase.storage.from(STORAGE_BUCKET).upload(path, file);
       if (upErr) throw new Error(`${kind} image upload failed: ${upErr.message}`);
       const { data: pub } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(path);
