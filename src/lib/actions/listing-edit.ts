@@ -71,7 +71,7 @@ export type ListingFullEditFields = {
   // entirely. Present = upsert every key below (null clears a field the
   // seller had filled in before and just erased).
   seo?: Record<string, number | null>;
-  socialStats: { platform: string; followers: number }[];
+  socialStats: { platform: string; followers: number; url?: string }[];
   // YouTube Channels category only (Design & Development New.pdf, Sep 4
   // 2026). Undefined = category has neither section, skip both tables
   // entirely — same "undefined vs. present" convention as `seo` above.
@@ -243,7 +243,7 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
   if (deleteSocialError) throw new Error(deleteSocialError.message);
   const socialRows = fields.socialStats
     .filter((r) => r.platform)
-    .map((r) => ({ listing_id: listingId, platform: r.platform, followers: r.followers }));
+    .map((r) => ({ listing_id: listingId, platform: r.platform, followers: r.followers, url: r.url || null }));
   if (socialRows.length) {
     const { error } = await admin.from("listing_social_stats").insert(socialRows);
     if (error) throw new Error(`Saving social stats failed: ${error.message}`);
