@@ -188,7 +188,10 @@ function ConnectedIndicator() {
   );
 }
 
-type StatItem = { label: string; value: string | number | undefined };
+// `href` is optional (Sep 19, 2026: Social Media Accounts tiles can link out
+// to the platform page itself) — every other StatGrid caller simply omits
+// it and gets the original plain, non-clickable tile.
+type StatItem = { label: string; value: string | number | undefined; href?: string };
 
 /** The core "all this section's data in one place" primitive: a gapped grid
  *  of individually-boxed stat tiles (value on top, label below) — per user
@@ -201,19 +204,29 @@ function StatGrid({ items, colsDesktop = 4 }: { items: StatItem[]; colsDesktop?:
   const desktopColsClass = colsDesktop === 3 ? "sm:grid-cols-3" : colsDesktop === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4";
   return (
     <div className={`grid grid-cols-2 gap-3 ${desktopColsClass}`}>
-      {visible.map((item) => (
-        <div key={item.label} className="rounded-xl border border-brand/10 bg-brand-soft/25 p-4">
-          {/* Sep 16 2026 (site owner request): was text-lg/sm:text-xl font-bold —
-              read as oversized once a tile's value is a wrapped two-line phrase
-              ("Austin, USA (Remote team)", "AI & Automation, Business") rather
-              than a short number. Sized down and dropped to font-semibold so
-              long values sit comfortably at two lines without dominating the
-              tile; short numeric values (450K, 6, $180,000) still read fine
-              at this size. */}
-          <div className="mono text-sm font-semibold leading-snug tracking-tight text-brand-strong sm:text-base">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
-          <div className="mono mt-1.5 text-[0.7rem] font-medium uppercase tracking-wider text-brand-hover/60">{item.label}</div>
-        </div>
-      ))}
+      {visible.map((item) => {
+        const Tile = item.href ? "a" : "div";
+        return (
+          <Tile
+            key={item.label}
+            {...(item.href ? { href: item.href, target: "_blank", rel: "noreferrer" } : {})}
+            className={`rounded-xl border border-brand/10 bg-brand-soft/25 p-4 ${item.href ? "transition-colors hover:border-brand/30 hover:bg-brand-soft/50" : ""}`}
+          >
+            {/* Sep 16 2026 (site owner request): was text-lg/sm:text-xl font-bold —
+                read as oversized once a tile's value is a wrapped two-line phrase
+                ("Austin, USA (Remote team)", "AI & Automation, Business") rather
+                than a short number. Sized down and dropped to font-semibold so
+                long values sit comfortably at two lines without dominating the
+                tile; short numeric values (450K, 6, $180,000) still read fine
+                at this size. */}
+            <div className="mono text-sm font-semibold leading-snug tracking-tight text-brand-strong sm:text-base">{typeof item.value === "number" ? fmtNumber(item.value) : item.value}</div>
+            <div className="mono mt-1.5 flex items-center gap-1 text-[0.7rem] font-medium uppercase tracking-wider text-brand-hover/60">
+              {item.label}
+              {item.href && <ExternalLink size={10} className="shrink-0" />}
+            </div>
+          </Tile>
+        );
+      })}
     </div>
   );
 }
@@ -841,7 +854,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
             {/* Social Media */}
             {listing.socialStats.length > 0 && (
               <SectionCard title="Social Media Accounts" icon={Users}>
-                <StatGrid colsDesktop={3} items={listing.socialStats.map((s) => ({ label: s.platform, value: s.followers }))} />
+                <StatGrid colsDesktop={3} items={listing.socialStats.map((s) => ({ label: s.platform, value: s.followers, href: s.url }))} />
               </SectionCard>
             )}
 
