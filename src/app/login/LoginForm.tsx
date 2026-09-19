@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { safeNextPath } from "@/lib/safe-redirect";
 import Container from "@/components/ui/Container";
 
 const CALLBACK_ERRORS: Record<string, string> = {
@@ -43,6 +44,14 @@ function LoginForm() {
   const [resending, setResending] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // 2026-09-19 (listing-page login gate): carries a visitor back to
+  // whatever they were trying to view — e.g. a gated listing — instead of
+  // their role dashboard, once they log in. Re-validated here even though
+  // GatedContent only ever generates safe values, since this is a plain
+  // URL param anyone could edit.
+  const next = safeNextPath(params.get("next"));
+  const registerHref = next ? `/register?next=${encodeURIComponent(next)}` : "/register";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,12 +89,12 @@ function LoginForm() {
         return;
       }
       setLoading(false);
-      router.push(profile?.role === "seller" ? "/dashboard/seller" : profile?.role === "admin" ? "/dashboard/admin" : "/dashboard/buyer");
+      router.push(next || (profile?.role === "seller" ? "/dashboard/seller" : profile?.role === "admin" ? "/dashboard/admin" : "/dashboard/buyer"));
       return;
     }
 
     setLoading(false);
-    router.push("/dashboard/buyer");
+    router.push(next || "/dashboard/buyer");
   }
 
   // Mirrors the same resend call used on the register page's "Check your
@@ -151,7 +160,7 @@ function LoginForm() {
 
       <p className="mt-4 text-center text-sm text-ink-soft">
         No account yet?{" "}
-        <Link href="/register" className="font-semibold text-brand-hover">Register</Link>
+        <Link href={registerHref} className="font-semibold text-brand-hover">Register</Link>
       </p>
     </div>
   );
