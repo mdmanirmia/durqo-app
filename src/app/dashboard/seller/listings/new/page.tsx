@@ -21,6 +21,7 @@ import { APP_NICHES } from "@/lib/app-niches";
 import { APP_PLATFORMS } from "@/lib/app-platforms";
 import { createClient } from "@/lib/supabase/client";
 import { confirmListingAssets } from "@/lib/actions/listing-assets";
+import { notifyListingSubmitted } from "@/lib/actions/listing-notifications";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds } from "@/lib/format";
 import { trackListingSubmitted } from "@/lib/analytics";
@@ -629,6 +630,12 @@ export default function AddNewBusinessPage() {
       }
 
       trackListingSubmitted({ category: categoryId, price: Number(price) });
+      // 2026-09-19 request: seller gets a "submitted, now under review"
+      // confirmation, admin gets notified with a direct review link — fire
+      // and forget, same as notifySellerAccountCreated() on the register
+      // flow, since notifyListingSubmitted() already swallows its own
+      // errors and shouldn't delay or block the success screen below.
+      notifyListingSubmitted(listingId);
       setSubmitted(true);
       if (category.hasSeoData) {
         setCreatedListingId(listingId);
