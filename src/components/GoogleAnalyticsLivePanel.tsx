@@ -224,6 +224,12 @@ export default function GoogleAnalyticsLivePanel({
       {stats.trafficAcquisition.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
           <p className="mono mb-3 text-xs font-semibold uppercase tracking-wide text-ink">Traffic Acquisition</p>
+          <div className="mb-1.5 flex items-center gap-3">
+            <span className="w-32 shrink-0" />
+            <span className="flex-1" />
+            <span className="mono w-10 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Share</span>
+            <span className="mono w-14 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Sessions</span>
+          </div>
           <div className="space-y-2">
             {stats.trafficAcquisition.map((c) => {
               const pct = totalAcquisition ? Math.round((c.sessions / totalAcquisition) * 100) : 0;
@@ -245,6 +251,12 @@ export default function GoogleAnalyticsLivePanel({
       {sessionSources.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
           <p className="mono mb-3 text-xs font-semibold uppercase tracking-wide text-ink">Session Sources</p>
+          <div className="mb-1.5 flex items-center gap-3">
+            <span className="w-32 shrink-0" />
+            <span className="flex-1" />
+            <span className="mono w-10 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Share</span>
+            <span className="mono w-14 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Sessions</span>
+          </div>
           <div className="space-y-2">
             {sessionSources.map((c) => {
               const pct = totalSources ? Math.round((c.sessions / totalSources) * 100) : 0;
@@ -266,6 +278,12 @@ export default function GoogleAnalyticsLivePanel({
       {trafficByCountry.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
           <p className="mono mb-3 text-xs font-semibold uppercase tracking-wide text-ink">Traffic by Country</p>
+          <div className="mb-1.5 flex items-center gap-3">
+            <span className="w-32 shrink-0" />
+            <span className="flex-1" />
+            <span className="mono w-10 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Share</span>
+            <span className="mono w-14 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Sessions</span>
+          </div>
           <div className="space-y-2">
             {trafficByCountry.map((c) => {
               const pct = totalCountries ? Math.round((c.sessions / totalCountries) * 100) : 0;
@@ -287,6 +305,12 @@ export default function GoogleAnalyticsLivePanel({
       {topPages.length > 0 && (
         <div className="border-t border-rule px-5 py-5 sm:px-6">
           <p className="mono mb-3 text-xs font-semibold uppercase tracking-wide text-ink">Top Pages</p>
+          <div className="mb-1.5 flex items-center gap-3">
+            <span className="mono w-44 shrink-0" />
+            <span className="flex-1" />
+            <span className="mono w-16 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Views</span>
+            <span className="mono w-16 shrink-0 text-right text-[0.65rem] uppercase tracking-wide text-ink-faint">Visitors</span>
+          </div>
           <div className="space-y-2">
             {topPages.map((p, i) => {
               const maxViews = topPages[0]?.views || 1;
@@ -299,7 +323,10 @@ export default function GoogleAnalyticsLivePanel({
                   <div className="h-2 flex-1 overflow-hidden rounded-full bg-paper-sunk">
                     <div className="h-full rounded-full bg-brand" style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="mono w-14 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(p.views)}</span>
+                  <span className="mono w-16 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(p.views)}</span>
+                  <span className="mono w-16 shrink-0 text-right text-xs text-ink-faint">
+                    {p.visitors !== undefined ? fmtNumber(p.visitors) : "—"}
+                  </span>
                 </div>
               );
             })}
