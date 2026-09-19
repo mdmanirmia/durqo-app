@@ -127,6 +127,13 @@ export async function POST(request: Request) {
       const emails = lookupIds.length ? await getUserEmails(admin, lookupIds) : {};
       const buyerEmail = buyerId ? emails[buyerId] : undefined;
 
+      // 2026-09-19 request ("sell korle o seller details include koiro"):
+      // admin's "sold" email also names which seller sold each item.
+      const { data: sellerProfiles } = sellerIds.length
+        ? await admin.from("profiles").select("id, full_name").in("id", sellerIds)
+        : { data: [] as { id: string; full_name: string | null }[] };
+      const sellerNameById = new Map((sellerProfiles ?? []).map((p) => [p.id, p.full_name]));
+
       if (buyerId) {
         await admin.from("cart_items").delete().eq("user_id", buyerId).in("listing_id", listingIds);
       }
@@ -146,6 +153,14 @@ export async function POST(request: Request) {
         .map((l) => {
           const remainder = remainderByListingId.get(l.id) ?? 0;
           return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
+        })
+        .join("");
+      const adminItemsHtml = (paidListings ?? [])
+        .map((l) => {
+          const remainder = remainderByListingId.get(l.id) ?? 0;
+          const sellerName = sellerNameById.get(l.seller_id as string) || "Unknown seller";
+          const sellerEmail = emails[l.seller_id as string];
+          return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}<br>Seller: ${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""}</li>`;
         })
         .join("");
       // Meta Conversions API — one Purchase event per order, using
@@ -176,7 +191,7 @@ export async function POST(request: Request) {
         ADMIN_EMAIL,
         `New SSLCommerz purchase — ${paidListings?.length ?? 0} listing(s)${isRisky ? " [RISK FLAG]" : ""}${hasRemainder ? " [BALANCE DUE]" : ""}`,
         `<p>${buyerEmail ?? "A buyer"} completed checkout via SSLCommerz for:</p>
-         <ul>${itemsHtml}</ul>
+         <ul>${adminItemsHtml}</ul>
          <p>Amount: ${validation.amount ?? "?"} ${validation.currency ?? "BDT"} (tran_id ${tranId})</p>
          ${riskNote}
          ${balanceOpsNote}
