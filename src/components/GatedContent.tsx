@@ -17,12 +17,27 @@ import { Lock } from "lucide-react";
 // unwrapped — no extra DOM, no risk of disturbing the sidebar's already
 // carefully-tuned sticky/overflow layout (see the listing page's own
 // comments on that) for the common case.
+//
+// 2026-09-19 follow-up ("blurr er jnno Full listing deite first er ta
+// diyeo full blurr koro. questioins & answers ta diye arekta korar dorkar
+// nei" — for blur, use the first gate to blur the full listing too; no
+// need to make another one for Questions & Answers): the listing page used
+// to wrap Channel Analytics/Payment Terms (top) and Questions & Answers/
+// Comments (bottom) in two SEPARATE `<GatedContent>` instances, each with
+// its own floating "sign up to see this" card — a signed-out visitor saw
+// the CTA card twice on one page. `showOverlay` lets a second (or later)
+// gate on the same page still blur its children — so the page reads as one
+// continuous locked section end to end — without rendering a duplicate
+// CTA card; the one shown by the first gate already covers the whole
+// listing. `heading`/`body` are optional now since a `showOverlay={false}`
+// instance never renders them.
 export default function GatedContent({
   locked,
   next,
   heading,
   body,
   gapClassName = "gap-6",
+  showOverlay = true,
   children,
 }: {
   locked: boolean;
@@ -30,12 +45,16 @@ export default function GatedContent({
    *  — a root-relative path only (e.g. `/listing/some-business`), validated
    *  again on the receiving end (see src/lib/safe-redirect.ts). */
   next: string;
-  heading: string;
-  body: string;
+  heading?: string;
+  body?: string;
   /** Matches the vertical gap of whichever flex column this gate sits
    *  inside, so the blurred stack of cards keeps the same rhythm as the
    *  unlocked layout (main content uses `gap-6`, the sidebar `gap-4`). */
   gapClassName?: string;
+  /** false blurs `children` same as always but skips the floating "sign up
+   *  to see this" card — for a second/later gate further down the same
+   *  page that shouldn't repeat the CTA the first gate already showed. */
+  showOverlay?: boolean;
   children: React.ReactNode;
 }) {
   if (!locked) return <>{children}</>;
@@ -47,24 +66,26 @@ export default function GatedContent({
       <div aria-hidden className={`pointer-events-none flex select-none flex-col ${gapClassName} blur-sm`}>
         {children}
       </div>
-      <div className="absolute inset-0 flex justify-center px-4 pt-6 sm:pt-10">
-        <div className="h-max w-full max-w-sm rounded-2xl border border-rule-strong bg-paper-raised p-6 text-center shadow-[0_16px_32px_-8px_rgba(15,23,42,0.18)]">
-          <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-brand-hover">
-            <Lock size={18} />
-          </span>
-          <h3 className="mb-1.5 text-base font-semibold text-ink">{heading}</h3>
-          <p className="mb-4 text-sm leading-relaxed text-ink-soft">{body}</p>
-          <Link
-            href={`/register?next=${nextParam}`}
-            className="mb-2 block rounded-md bg-brand py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
-          >
-            Register Free
-          </Link>
-          <Link href={`/login?next=${nextParam}`} className="text-xs font-medium text-ink-faint hover:text-ink">
-            Already have an account? Log in
-          </Link>
+      {showOverlay && heading && body && (
+        <div className="absolute inset-0 flex justify-center px-4 pt-6 sm:pt-10">
+          <div className="h-max w-full max-w-sm rounded-2xl border border-rule-strong bg-paper-raised p-6 text-center shadow-[0_16px_32px_-8px_rgba(15,23,42,0.18)]">
+            <span className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-brand-hover">
+              <Lock size={18} />
+            </span>
+            <h3 className="mb-1.5 text-base font-semibold text-ink">{heading}</h3>
+            <p className="mb-4 text-sm leading-relaxed text-ink-soft">{body}</p>
+            <Link
+              href={`/register?next=${nextParam}`}
+              className="mb-2 block rounded-md bg-brand py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+            >
+              Register Free
+            </Link>
+            <Link href={`/login?next=${nextParam}`} className="text-xs font-medium text-ink-faint hover:text-ink">
+              Already have an account? Log in
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
