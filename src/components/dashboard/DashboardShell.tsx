@@ -131,12 +131,20 @@ export default function DashboardShell({
   switchHref,
   switchLabel,
   children,
+  wide,
 }: {
   title: string;
   nav: DashboardNavItem[];
   switchHref: string;
   switchLabel: string;
   children: React.ReactNode;
+  // Widens the page's outer Container from its default 1280px cap to
+  // 1600px (see Container.tsx's `maxWidth` prop) — for a page whose table
+  // has more columns than the default width comfortably fits alongside
+  // the 220px sidebar. Opt-in per page rather than a blanket change, so
+  // every other dashboard page (buyer/seller, and admin pages with
+  // simpler tables) keeps its current width.
+  wide?: boolean;
 }) {
   const pathname = usePathname();
   const hasSellerCommentsNav = nav.some((item) => item.href === SELLER_COMMENTS_HREF);
@@ -456,7 +464,7 @@ export default function DashboardShell({
 
   return (
     <main className="py-6 pb-24 md:py-10 md:pb-10">
-      <Container>
+      <Container maxWidth={wide ? 1600 : undefined}>
         <p className="mono mb-1 text-xs uppercase tracking-wider text-ink-faint">Dashboard</p>
         <h1 className="mb-4 text-3xl md:mb-8">{title}</h1>
 
