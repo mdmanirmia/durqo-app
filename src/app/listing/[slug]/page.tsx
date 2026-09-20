@@ -1134,14 +1134,21 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                 on Channel Analytics/financials (main content) and Q&A/
                 Comments (bottom block) instead — see those GatedContent
                 wraps below. */}
+            {/* 2026-09-20 follow-up: tightened this card's own padding
+                (py-3 -> py-2.5) alongside BuyNowButton/ChatWithSellerButton's
+                own height trims — same "button gulor height or othe height
+                gulo ki fix kora jai jeno seller crad er sob details fully
+                dekha jai" request. Every pixel this sticky card doesn't need
+                is a pixel the Seller card below gets to stay visible for,
+                given the sidebar's sticky-scroll behavior (see below). */}
             <div className="z-10 shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)] lg:sticky lg:top-0">
-              <div className="border-b border-rule px-5 py-3 text-center sm:px-6">
+              <div className="border-b border-rule px-5 py-2.5 text-center sm:px-6">
                 {listing.discountedPrice != null && listing.discountedPrice < listing.price && (
                   <div className="mono text-sm text-ink-faint line-through">{fmtUSD(listing.price)}</div>
                 )}
                 <div className="mono text-3xl font-bold text-ink">{fmtUSD(price)}</div>
               </div>
-              <div className="flex flex-col gap-1.5 px-5 py-3 sm:px-6">
+              <div className="flex flex-col gap-1.5 px-5 py-2.5 sm:px-6">
                 <BuyNowButton listingId={listing.id} title={listing.title} price={price} sold={listing.status === "sold"} />
                 <ChatWithSellerButton sellerId={listing.seller.id} listingId={listing.id} />
                 <WishlistButton listingId={listing.id} variant="full" />
