@@ -34,10 +34,24 @@ export async function requireEditAccess(listingId: string) {
   if (!admin) throw new Error("Admin client unavailable.");
 
   const [{ data: profile }, { data: listing }] = await Promise.all([
-    admin.from("profiles").select("role").eq("id", user.id).single(),
+    admin.from("profiles").select("role, is_active").eq("id", user.id).single(),
     admin.from("listings").select("id, seller_id").eq("id", listingId).single(),
   ]);
   if (!listing) throw new Error("Listing not found.");
+
+  // Admin "Block" (profiles.is_active, migration 008) enforcement — this
+  // action goes through the service-role client below, which bypasses the
+  // listings_update_own RLS policy entirely, so a blocked seller's edit has
+  // to be caught here in application code rather than at the database
+  // layer (unlike listing creation/messages, which are hardened directly
+  // in the database — see migration 052). Checked against the ACTING
+  // user's own status, not the listing's owner, so this never gets in an
+  // admin's way editing someone else's listing (an admin can't deactivate
+  // their own account either — see setUserActive() — so this is always a
+  // no-op for a real admin).
+  if (profile && profile.is_active === false) {
+    throw new Error("Your account has been blocked. Contact Durqo support for help.");
+  }
 
   const isAdmin = profile?.role === "admin";
   if (!isAdmin && listing.seller_id !== user.id) {
