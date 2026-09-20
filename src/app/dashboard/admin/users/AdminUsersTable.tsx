@@ -12,6 +12,12 @@ export interface AdminUserRow {
   email: string;
   fullName: string;
   role: string;
+  // What the user picked at signup ("Buy a business" / "Sell a business" on
+  // the register form) — null for accounts created via the admin "Add
+  // User" invite flow, which never records a self-selected signup role.
+  // Kept separate from `role` (above), which is admin-editable and can
+  // drift from this over time.
+  joinedAs: "buyer" | "seller" | null;
   isVerified: boolean;
   isActive: boolean;
   totalPurchases: number;
@@ -128,6 +134,18 @@ function roleSelect(
   );
 }
 
+// Shared between the desktop table cell and the mobile card layout, same
+// reasoning as roleSelect()/statusControl() above.
+function joinedAsBadge(u: AdminUserRow) {
+  if (u.joinedAs === "seller") return <Badge tone="brand">Seller</Badge>;
+  if (u.joinedAs === "buyer") return <Badge tone="neutral">Buyer</Badge>;
+  return (
+    <span className="text-xs text-ink-faint" title="Created via admin invite — no self-selected signup role">
+      Invited
+    </span>
+  );
+}
+
 function statusControl(u: AdminUserRow, busy: boolean, isSelf: boolean, requestBlock: (id: string, name: string) => void, toggleActive: (id: string, active: boolean) => void) {
   return u.isActive ? (
     <button
@@ -202,12 +220,13 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
           <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
-            <table className="w-full min-w-[860px] border-collapse text-sm">
+            <table className="w-full min-w-[980px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Email</th>
                   <th className="px-4 py-3 font-medium">Role</th>
+                  <th className="px-4 py-3 font-medium">Joined As</th>
                   <th className="px-4 py-3 font-medium">Verified</th>
                   <th className="px-4 py-3 font-medium">Purchases / Sales</th>
                   <th className="px-4 py-3 font-medium">Joined</th>
@@ -223,6 +242,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                       <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
                       <td className="px-4 py-3 text-ink-soft">{u.email}</td>
                       <td className="px-4 py-3">{roleSelect(u, busy, isSelf, errorId, changeRole)}</td>
+                      <td className="px-4 py-3">{joinedAsBadge(u)}</td>
                       <td className="px-4 py-3 text-ink-soft">{u.isVerified ? "Yes" : "No"}</td>
                       <td className="mono px-4 py-3 text-ink-soft">{u.totalPurchases} / {u.totalSales}</td>
                       <td className="mono px-4 py-3 text-ink-faint">{u.createdAt}</td>
@@ -249,6 +269,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                     <div>
                       <div className="mb-1 text-xs text-ink-faint">Role</div>
                       {roleSelect(u, busy, isSelf, errorId, changeRole)}
+                    </div>
+                    <div>
+                      <div className="mb-1 text-xs text-ink-faint">Joined As</div>
+                      {joinedAsBadge(u)}
                     </div>
                     <div>
                       <div className="text-xs text-ink-faint">Verified</div>

@@ -22,12 +22,32 @@ export default async function AdminUsers() {
 
     const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? "—"]));
 
+    // "Joined As" — what the user picked on the register form ("Buy a
+    // business" / "Sell a business"), read straight from the immutable
+    // auth.users signup metadata (options.data.role in RegisterForm.tsx)
+    // rather than profiles.role. Kept deliberately separate from the Role
+    // column: profiles.role is admin-editable (setUserRole) and is also
+    // what a fresh row starts at (handle_new_user(), migration 023) — once
+    // an admin changes it, the original self-selected signup choice would
+    // otherwise be lost. An account created via the admin "Add User" invite
+    // flow (inviteUser()) never carries a role in its signup metadata (only
+    // full_name), so it has no self-selected signup intent — those show as
+    // "Invited" rather than guessing Buyer/Seller.
+    const joinedAsById = new Map(
+      authUsers.map((u) => {
+        const metaRole = (u.user_metadata as { role?: string } | null)?.role;
+        const joinedAs = metaRole === "seller" ? "seller" : metaRole === "buyer" ? "buyer" : null;
+        return [u.id, joinedAs] as const;
+      })
+    );
+
     rows = (profiles ?? [])
       .map((p) => ({
         id: p.id,
         email: emailById.get(p.id) ?? "—",
         fullName: p.full_name ?? "—",
         role: p.role,
+        joinedAs: joinedAsById.get(p.id) ?? null,
         isVerified: p.is_verified,
         isActive: p.is_active ?? true,
         totalPurchases: p.total_purchases,
