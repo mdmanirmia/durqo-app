@@ -379,7 +379,7 @@ export default function BuyNowButton({
         <PaymentOptionRow
           icon={Landmark}
           label="Pay in BDT"
-          description="bKash, Nagad, Rocket or bank via SSLCommerz"
+          description="bKash, Nagad, Rocket, Card or bank via SSLCommerz"
           highlighted
           onClick={openSslModal}
           disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
