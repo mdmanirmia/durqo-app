@@ -1179,7 +1179,8 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                   </div>
                 </div>
                 {listing.seller.isVerified && (
-                  <span className="shrink-0 rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand-hover">
+                  <span className="flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand-hover">
+                    <ShieldCheck size={12} />
                     Verified Seller
                   </span>
                 )}
@@ -1210,11 +1211,11 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                   )}
                 </div>
                 <div className="mt-3 grid grid-cols-2 gap-3 border-t border-rule pt-3">
-                  <div>
+                  <div className="text-center">
                     <div className="mono text-lg font-bold text-ink">{listing.seller.activeListingsCount}</div>
                     <div className="text-xs text-ink-faint">Active listing{listing.seller.activeListingsCount === 1 ? "" : "s"}</div>
                   </div>
-                  <div>
+                  <div className="text-center">
                     <div className="mono text-lg font-bold text-ink">{listing.seller.totalSales}</div>
                     <div className="text-xs text-ink-faint">Completed sale{listing.seller.totalSales === 1 ? "" : "s"}</div>
                   </div>
