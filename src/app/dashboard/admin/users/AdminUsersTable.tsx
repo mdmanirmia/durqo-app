@@ -298,7 +298,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
       <ConfirmDialog
         open={blockTarget !== null}
         title={`Block ${blockTarget?.name}?`}
-        body="They'll be signed out and won't be able to log back in until you unblock them. Their listings, orders, and history are untouched and this can be reversed at any time."
+        body="They'll be signed out and won't be able to log back in, create or edit listings, send messages (including in an active deal), or request a payout withdrawal until you unblock them. Their existing listings, orders, and history are untouched and this can be reversed at any time."
         confirmLabel="Block user"
         danger
         busy={isPending && pendingId === blockTarget?.id}
