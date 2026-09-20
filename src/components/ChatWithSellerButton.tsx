@@ -48,7 +48,7 @@ export default function ChatWithSellerButton({ sellerId, listingId }: { sellerId
       type="button"
       onClick={handleClick}
       disabled={busy}
-      className="flex items-center justify-center gap-2 rounded-xl bg-brand-strong py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+      className="flex items-center justify-center gap-2 rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
     >
       <MessageCircle size={15} /> Chat with Seller
     </button>

@@ -20,16 +20,6 @@ import { trackBeginCheckout } from "@/lib/analytics";
 // (it's the option most Bangladeshi buyers actually want, so it's the one
 // that visually stands out) — every other visual/behavioral detail
 // (disabled states, click handlers, modals below) is unchanged.
-//
-// 2026-09-20 follow-up ("button gulor height or othe height gulo ki fix kora
-// jai jeno seller crad er sob details fully dekha jai" — can the button/
-// other heights be tightened so the Seller card's details show fully): the
-// BDT row's description grew to two lines once "Card" was added to it,
-// which made this whole price/payment card taller and, with the sidebar's
-// own sticky-scroll behavior (see the listing page's comments on that),
-// pushed more of the Seller card below out of view. Trimmed the row's
-// padding/icon size/line-height to claw back that height without losing the
-// icon-row look.
 function PaymentOptionRow({
   icon: Icon,
   label,
@@ -51,7 +41,7 @@ function PaymentOptionRow({
       onClick={onClick}
       disabled={disabled}
       className={clsx(
-        "group flex w-full items-center gap-2.5 rounded-xl border px-3.5 py-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+        "group flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
         highlighted
           ? "border-brand/30 bg-brand-soft/70 hover:border-brand"
           : "border-rule-strong bg-transparent hover:border-brand/50 hover:bg-brand-soft/30"
@@ -59,22 +49,20 @@ function PaymentOptionRow({
     >
       <span
         className={clsx(
-          "grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-paper-raised",
+          "grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-paper-raised",
           highlighted ? "text-brand-hover" : "text-ink-soft group-hover:text-brand-hover"
         )}
       >
-        <Icon size={16} />
+        <Icon size={18} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-ink">{label}</span>
         {/* Not truncated (unlike the label above) — at the sidebar's actual
             width the longer descriptions ("Complete the transaction
-            through Escrow.com", "bKash, Nagad, Rocket, Card or Bank via
+            through Escrow.com", "bKash, Nagad, Rocket or bank via
             SSLCommerz") don't fit on one line, and an ellipsis mid-sentence
-            reads worse than just wrapping to a second line. leading-tight
-            (rather than leading-snug) keeps that second line from adding
-            much height. */}
-        <span className="block text-xs leading-tight text-ink-faint">{description}</span>
+            reads worse than just wrapping to a second line. */}
+        <span className="block text-xs leading-snug text-ink-faint">{description}</span>
       </span>
       <ChevronRight size={16} className="shrink-0 text-ink-faint" />
     </button>
@@ -371,9 +359,9 @@ export default function BuyNowButton({
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-2">
       <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Choose how to pay</div>
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <PaymentOptionRow
           icon={CreditCard}
           label={stripeBusy ? "Starting checkout…" : "Pay by Card"}
