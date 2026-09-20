@@ -9,6 +9,16 @@ import { createClient } from "@/lib/supabase/client";
 // pre-selected (see MessagesPanel's ?with=&listing= handling). Checks auth
 // client-side rather than linking straight to /login, matching CartButton
 // and WishlistButton's pattern.
+//
+// 2026-09-20 redesign: solid dark fill (bg-brand-strong) instead of the
+// outlined style every other sidebar control uses — the reference
+// screenshot gives this one the single strongest visual weight on the
+// card, since it's the action a buyer takes right after picking a payment
+// method above. `text-white` is hardcoded (not `text-paper-raised`, which
+// flips dark in dark mode) because `brand-strong` itself stays a constant
+// dark navy across both themes — same reasoning already used for the
+// disabled "Sold" BuyNowButton state and GatedContent's "Register Free"
+// button.
 export default function ChatWithSellerButton({ sellerId, listingId }: { sellerId: string; listingId: string }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -38,7 +48,7 @@ export default function ChatWithSellerButton({ sellerId, listingId }: { sellerId
       type="button"
       onClick={handleClick}
       disabled={busy}
-      className="flex items-center justify-center gap-2 rounded-xl border border-rule-strong py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
+      className="flex items-center justify-center gap-2 rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
     >
       <MessageCircle size={15} /> Chat with Seller
     </button>

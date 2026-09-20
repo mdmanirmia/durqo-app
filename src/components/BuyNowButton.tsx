@@ -2,10 +2,67 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import clsx from "clsx";
+import { CreditCard, ShieldCheck, Landmark, ChevronRight, type LucideIcon } from "lucide-react";
 import { isRealListingId } from "@/lib/is-demo-listing";
 import SslcommerzConfirmModal, { type SslcommerzQuote } from "@/components/SslcommerzConfirmModal";
 import EscrowConfirmModal, { type EscrowQuote } from "@/components/EscrowConfirmModal";
 import { trackBeginCheckout } from "@/lib/analytics";
+
+// 2026-09-20 redesign ("price and seller card ta ei rokom sundor kore color
+// and design kora jai kina dekho" — a reference screenshot of a "Choose how
+// to pay" list: icon + label + one-line description + chevron, with the
+// local-currency option visually highlighted): each payment method used to
+// be a plain full-width outlined button reading "Buy Now — X". Replaced with
+// this icon-row treatment so the three options read as a single considered
+// list instead of three near-identical buttons. `highlighted` gives the
+// SSLCommerz/BDT row the light brand-tinted background from the reference
+// (it's the option most Bangladeshi buyers actually want, so it's the one
+// that visually stands out) — every other visual/behavioral detail
+// (disabled states, click handlers, modals below) is unchanged.
+function PaymentOptionRow({
+  icon: Icon,
+  label,
+  description,
+  highlighted,
+  onClick,
+  disabled,
+}: {
+  icon: LucideIcon;
+  label: string;
+  description: string;
+  highlighted?: boolean;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={clsx(
+        "group flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+        highlighted
+          ? "border-brand/30 bg-brand-soft/70 hover:border-brand"
+          : "border-rule-strong bg-transparent hover:border-brand/50 hover:bg-brand-soft/30"
+      )}
+    >
+      <span
+        className={clsx(
+          "grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-paper-raised",
+          highlighted ? "text-brand-hover" : "text-ink-soft group-hover:text-brand-hover"
+        )}
+      >
+        <Icon size={18} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-ink">{label}</span>
+        <span className="block truncate text-xs text-ink-faint">{description}</span>
+      </span>
+      <ChevronRight size={16} className="shrink-0 text-ink-faint" />
+    </button>
+  );
+}
 
 // "Buy Now" — skips the cart entirely and starts a checkout session for
 // just this one listing, via Stripe (/api/checkout), SSLCommerz's
@@ -297,31 +354,32 @@ export default function BuyNowButton({
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <button
-        type="button"
-        onClick={handleStripe}
-        disabled={stripeBusy || sslStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
-      >
-        {stripeBusy ? "Starting checkout…" : "Buy Now — Card (Stripe)"}
-      </button>
-      <button
-        type="button"
-        onClick={openEscrowModal}
-        disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
-      >
-        Buy Now — Escrow.com
-      </button>
-      <button
-        type="button"
-        onClick={openSslModal}
-        disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
-        className="rounded-xl border border-rule-strong bg-transparent py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
-      >
-        Buy Now — SSLCommerz (bKash/Rocket/Nagad/Bank)
-      </button>
+    <div className="flex flex-col gap-2">
+      <div className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">Choose how to pay</div>
+      <div className="flex flex-col gap-2">
+        <PaymentOptionRow
+          icon={CreditCard}
+          label={stripeBusy ? "Starting checkout…" : "Pay by Card"}
+          description="Secure payment through Stripe"
+          onClick={handleStripe}
+          disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
+        />
+        <PaymentOptionRow
+          icon={ShieldCheck}
+          label="Pay with Escrow.com"
+          description="Complete the transaction through Escrow.com"
+          onClick={openEscrowModal}
+          disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
+        />
+        <PaymentOptionRow
+          icon={Landmark}
+          label="Pay in BDT"
+          description="bKash, Nagad, Rocket or bank via SSLCommerz"
+          highlighted
+          onClick={openSslModal}
+          disabled={stripeBusy || sslStatus !== "closed" || escrowStatus !== "closed"}
+        />
+      </div>
       {/* Sep 13, 2026: hidden from every buyer per the site owner's explicit
           decision, made right after a content audit surfaced that this
           button was live for any signed-in user with zero payment enforced

@@ -64,17 +64,22 @@ export default function WishlistButton({
   const title = isDemo ? "This is a sample listing — wishlist opens up once real listings are live." : undefined;
 
   if (variant === "full") {
+    // 2026-09-20 redesign: dropped the bordered-button look for a plain
+    // centered text link (no box) sitting under the solid "Chat with
+    // Seller" button, matching the reference screenshot — wishlisting reads
+    // as a lighter, secondary action next to it now instead of a third
+    // equally-weighted button.
     return (
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col items-center gap-1">
         <button
           type="button"
           onClick={handleClick}
           disabled={busy || isDemo}
           title={title}
-          className="flex items-center justify-center gap-2 rounded-xl border border-rule-strong py-2.5 text-sm font-semibold text-ink transition-colors hover:bg-brand disabled:opacity-60"
+          className="flex items-center justify-center gap-1.5 py-1 text-sm font-medium text-ink-soft transition-colors hover:text-brand-hover disabled:opacity-60"
         >
           <Heart size={15} className={saved ? "fill-brand text-brand" : ""} />
-          {isDemo ? "Sample listing" : saved ? "Saved to wishlist" : "Add to wishlist"}
+          {isDemo ? "Sample listing" : saved ? "Saved to wishlist" : "Add to Wishlist"}
         </button>
         {error && <span className="text-xs text-red-600">Couldn&apos;t save — please try again.</span>}
       </div>
