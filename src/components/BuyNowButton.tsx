@@ -57,7 +57,12 @@ function PaymentOptionRow({
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-semibold text-ink">{label}</span>
-        <span className="block truncate text-xs text-ink-faint">{description}</span>
+        {/* Not truncated (unlike the label above) — at the sidebar's actual
+            width the longer descriptions ("Complete the transaction
+            through Escrow.com", "bKash, Nagad, Rocket or bank via
+            SSLCommerz") don't fit on one line, and an ellipsis mid-sentence
+            reads worse than just wrapping to a second line. */}
+        <span className="block text-xs leading-snug text-ink-faint">{description}</span>
       </span>
       <ChevronRight size={16} className="shrink-0 text-ink-faint" />
     </button>
