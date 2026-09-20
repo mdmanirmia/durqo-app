@@ -11,7 +11,6 @@ import {
   Clock,
   Calendar,
   MailCheck,
-  Store,
   BarChart3,
   Info,
   LineChart,
@@ -1149,21 +1148,54 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               </div>
             </div>
 
+            {/* 2026-09-20 redesign ("price and seller card ta ei rokom sundor
+                kore color and design kora jai kina dekho"): swapped the old
+                icon-badge + "Seller" heading for a circular initials avatar
+                (no photo upload exists yet, so initials are the only
+                identity art available) plus a "Verified Seller" pill in the
+                header row itself — matching the reference screenshot's
+                layout. The two verification lines and the stats below are
+                the exact same underlying data as before, just restyled:
+                active listings/completed sales move from stacked lines to a
+                two-column stat block, and lifetime sales (not in the
+                reference, but real data — dropping it would be a silent
+                regression) gets its own small line rather than being folded
+                into the completed-sales line like it used to be. */}
             <div className="shrink-0 overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-              <div className="flex items-center gap-2 border-b border-rule px-5 py-3 sm:px-6">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
-                  <Store size={17} />
-                </span>
-                <h2 className="text-base font-semibold text-ink">Seller</h2>
+              <div className="flex items-start justify-between gap-3 border-b border-rule px-5 py-4 sm:px-6">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="mono grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-hover">
+                    {listing.seller.name
+                      .split(" ")
+                      .filter(Boolean)
+                      .map((w) => w[0])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase()}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="truncate font-semibold text-ink">{listing.seller.name}</div>
+                    {listing.seller.location && <div className="truncate text-sm text-ink-soft">{listing.seller.location}</div>}
+                  </div>
+                </div>
+                {listing.seller.isVerified && (
+                  <span className="shrink-0 rounded-full bg-brand-soft px-2.5 py-1 text-[11px] font-semibold text-brand-hover">
+                    Verified Seller
+                  </span>
+                )}
               </div>
               <div className="px-5 py-3 sm:px-6">
-                <div className="mb-1 font-semibold text-ink">{listing.seller.name}</div>
-                {listing.seller.location && <div className="mb-3 text-sm text-ink-soft">{listing.seller.location}</div>}
                 <div className="flex flex-col gap-1.5">
                   {listing.seller.isVerified ? (
                     <div className="flex items-center gap-1.5 text-sm text-brand-hover">
                       <ShieldCheck size={15} />
-                      Verified {listing.seller.verificationMethod?.replace("_", " ")}
+                      {listing.seller.verificationMethod === "passport"
+                        ? "Passport verified"
+                        : listing.seller.verificationMethod === "national_id"
+                          ? "National ID verified"
+                          : listing.seller.verificationMethod === "driving_license"
+                            ? "Driving license verified"
+                            : "Identity verified"}
                     </div>
                   ) : (
                     <div className="text-sm text-ink-faint">Identity not yet verified</div>
@@ -1177,16 +1209,22 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                     <div className="text-sm text-ink-faint">Email not yet verified</div>
                   )}
                 </div>
-                <div className="mt-3 border-t border-rule pt-3">
-                  <div className="mb-1 flex items-center gap-1.5 text-sm text-ink-soft">
-                    <Store size={14} className="shrink-0 text-ink-faint" />
-                    {listing.seller.activeListingsCount} active listing{listing.seller.activeListingsCount === 1 ? "" : "s"}
+                <div className="mt-3 grid grid-cols-2 gap-3 border-t border-rule pt-3">
+                  <div>
+                    <div className="mono text-lg font-bold text-ink">{listing.seller.activeListingsCount}</div>
+                    <div className="text-xs text-ink-faint">Active listing{listing.seller.activeListingsCount === 1 ? "" : "s"}</div>
                   </div>
-                  <div className="mono text-sm text-ink-soft">
-                    {listing.seller.totalSales} completed sale{listing.seller.totalSales === 1 ? "" : "s"}
-                    {listing.seller.lifetimeSalesAmount > 0 && <> &middot; {fmtUSD(listing.seller.lifetimeSalesAmount)} lifetime</>}
+                  <div>
+                    <div className="mono text-lg font-bold text-ink">{listing.seller.totalSales}</div>
+                    <div className="text-xs text-ink-faint">Completed sale{listing.seller.totalSales === 1 ? "" : "s"}</div>
                   </div>
-                  <div className="text-xs text-ink-faint">Member since {listing.seller.memberSince}</div>
+                </div>
+                {listing.seller.lifetimeSalesAmount > 0 && (
+                  <div className="mono mt-2 text-xs text-ink-soft">{fmtUSD(listing.seller.lifetimeSalesAmount)} lifetime sales</div>
+                )}
+                <div className="mt-3 flex items-center gap-1.5 border-t border-rule pt-3 text-xs text-ink-faint">
+                  <Calendar size={13} className="shrink-0" />
+                  Member since {listing.seller.memberSince}
                 </div>
               </div>
             </div>
