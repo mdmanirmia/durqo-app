@@ -22,6 +22,19 @@ export default async function AdminUsers() {
 
     const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? "—"]));
 
+    // Sep 21 2026: "fake registration korse onekei eita kivabe off kora
+    // jai. jara email verified korbe only tarai buyer and seller hobe eita
+    // chara portal e tader data dekhabena" — a wave of bot signups (random
+    // full_name strings, never-opened inboxes) was cluttering this table
+    // and inflating the homepage's "Sellers & Buyers" count even though
+    // they can't log in at all (this app requires email confirmation to
+    // sign in — see email-verification-flow-addendum) and so can never
+    // actually act as a buyer or seller. AdminUsersTable hides any row
+    // where this is false by default, behind a "Show unverified" toggle,
+    // rather than deleting them outright — an admin may still want to spot
+    // a genuine signup stuck on a flaky confirmation email versus a bot.
+    const emailVerifiedById = new Map(authUsers.map((u) => [u.id, !!u.email_confirmed_at]));
+
     // "Joined As" — what the user picked on the register form ("Buy a
     // business" / "Sell a business"), read straight from the immutable
     // auth.users signup metadata (options.data.role in RegisterForm.tsx)
@@ -48,6 +61,7 @@ export default async function AdminUsers() {
         fullName: p.full_name ?? "—",
         role: p.role,
         joinedAs: joinedAsById.get(p.id) ?? null,
+        emailVerified: emailVerifiedById.get(p.id) ?? false,
         isVerified: p.is_verified,
         isActive: p.is_active ?? true,
         totalPurchases: p.total_purchases,

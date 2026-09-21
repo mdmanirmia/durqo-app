@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { UserPlus, Users } from "lucide-react";
+import { useMemo, useState, useTransition } from "react";
+import { Eye, EyeOff, UserPlus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
@@ -18,6 +18,14 @@ export interface AdminUserRow {
   // Kept separate from `role` (above), which is admin-editable and can
   // drift from this over time.
   joinedAs: "buyer" | "seller" | null;
+  // Whether this account has clicked its email confirmation link
+  // (auth.users.email_confirmed_at). Sep 21 2026: a wave of bot signups
+  // that never confirm — full_name is a random string, the inbox is never
+  // opened — was cluttering this table. Since the app requires a confirmed
+  // email to log in at all, an unconfirmed row can't actually act as a
+  // buyer or seller yet, so these are hidden from the table by default
+  // (see `showUnverified` below) rather than treated as real accounts.
+  emailVerified: boolean;
   isVerified: boolean;
   isActive: boolean;
   totalPurchases: number;
@@ -146,6 +154,19 @@ function joinedAsBadge(u: AdminUserRow) {
   );
 }
 
+// Shown next to the email whenever a row is visible despite an unconfirmed
+// email — i.e. only when `showUnverified` is on, since otherwise these rows
+// are filtered out entirely. Kept as its own small tag (not folded into the
+// existing `isVerified` "Verified" column, which tracks admin-run identity
+// verification, a completely separate thing).
+function unverifiedEmailTag() {
+  return (
+    <span className="mt-1 inline-block w-fit rounded-full bg-danger-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-danger">
+      Email unverified
+    </span>
+  );
+}
+
 function statusControl(u: AdminUserRow, busy: boolean, isSelf: boolean, requestBlock: (id: string, name: string) => void, toggleActive: (id: string, active: boolean) => void) {
   return u.isActive ? (
     <button
@@ -177,6 +198,15 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
   const [errorId, setErrorId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [blockTarget, setBlockTarget] = useState<{ id: string; name: string } | null>(null);
+
+  // Sep 21 2026: hide unconfirmed-email accounts by default (see
+  // AdminUserRow.emailVerified's comment) — a toggle brings them back for
+  // an admin who wants to eyeball the spam wave or catch a genuine signup
+  // stuck on a flaky confirmation email, without them cluttering the
+  // default view or getting mistaken for real buyers/sellers.
+  const [showUnverified, setShowUnverified] = useState(false);
+  const hiddenCount = useMemo(() => rows.filter((u) => !u.emailVerified).length, [rows]);
+  const visibleRows = useMemo(() => (showUnverified ? rows : rows.filter((u) => u.emailVerified)), [rows, showUnverified]);
 
   function changeRole(id: string, role: string) {
     setPendingId(id);
@@ -214,8 +244,25 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
     <div>
       <AddUserForm />
 
-      {rows.length === 0 ? (
-        <EmptyState icon={Users} title="No users found" body="Everyone who signs up on Durqo will show up here." />
+      {hiddenCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowUnverified((v) => !v)}
+          className="mb-4 flex items-center gap-1.5 rounded-lg border border-rule-strong bg-paper-raised px-3 py-2 text-xs font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+        >
+          {showUnverified ? <EyeOff size={14} /> : <Eye size={14} />}
+          {showUnverified
+            ? "Hide unverified accounts"
+            : `${hiddenCount} unverified account${hiddenCount === 1 ? "" : "s"} hidden — Show them`}
+        </button>
+      )}
+
+      {visibleRows.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No users found"
+          body={rows.length === 0 ? "Everyone who signs up on Durqo will show up here." : "Every account here is still unverified — use the button above to see them."}
+        />
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
@@ -234,13 +281,16 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                 </tr>
               </thead>
               <tbody>
-                {rows.map((u) => {
+                {visibleRows.map((u) => {
                   const busy = isPending && pendingId === u.id;
                   const isSelf = u.id === selfId;
                   return (
                     <tr key={u.id} className={`border-b border-rule align-top last:border-b-0 ${!u.isActive ? "opacity-60" : ""}`}>
                       <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
-                      <td className="px-4 py-3 text-ink-soft">{u.email}</td>
+                      <td className="px-4 py-3 text-ink-soft">
+                        <div>{u.email}</div>
+                        {!u.emailVerified && unverifiedEmailTag()}
+                      </td>
                       <td className="px-4 py-3">{roleSelect(u, busy, isSelf, errorId, changeRole)}</td>
                       <td className="px-4 py-3">{joinedAsBadge(u)}</td>
                       <td className="px-4 py-3 text-ink-soft">{u.isVerified ? "Yes" : "No"}</td>
@@ -256,7 +306,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
 
           {/* Mobile: same data as a stacked card list. */}
           <div className="grid gap-3 md:hidden">
-            {rows.map((u) => {
+            {visibleRows.map((u) => {
               const busy = isPending && pendingId === u.id;
               const isSelf = u.id === selfId;
               return (
@@ -264,6 +314,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   <div className="mb-3 min-w-0">
                     <div className="truncate font-medium text-ink">{u.fullName}</div>
                     <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                    {!u.emailVerified && unverifiedEmailTag()}
                   </div>
                   <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                     <div>
