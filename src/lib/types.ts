@@ -181,6 +181,16 @@ export interface Listing {
   assetsConfirmedAt?: string;
   isVerified: boolean;
   status: "published" | "sold";
+  // Sep 21, 2026 (preview system): `status` above is deliberately narrowed
+  // to just "published" | "sold" everywhere (see mapListing's comment on it)
+  // so every public-facing surface that reads it — marketplace cards, the
+  // Sold badge on this exact listing page, etc. — never has to special-case
+  // draft/pending_review/archived. `rawStatus` is the actual, unfiltered
+  // `listings.status` column value, kept alongside it purely so the listing
+  // detail page can show a "Preview mode" banner for the one case that
+  // needs the real value: a seller or admin looking at their own
+  // not-yet-public listing.
+  rawStatus: string;
   views: number;
   createdAt: string;
   // Google Analytics verification (Motion Invest / Flippa style — manual GA
