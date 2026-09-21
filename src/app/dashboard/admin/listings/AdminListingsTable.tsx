@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { PlaySquare } from "lucide-react";
+import { Eye, PlaySquare } from "lucide-react";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { fmtUSD } from "@/lib/format";
 import { Badge, StatusBadge } from "@/components/ui/Badge";
@@ -84,6 +84,15 @@ function actionButtons(
 ) {
   return (
     <>
+      {/* Sep 21, 2026 ("listing publish korar age, pore, admin theke ...
+          preview dekhar system" — an all-status preview system): works for
+          every status, not just Live — getListingBySlug (listings.server.ts)
+          now lets a confirmed admin load any listing regardless of its own
+          RLS-scoped visibility rules. Opens in a new tab so reviewing a
+          pending listing doesn't lose this filtered table view. */}
+      <Link href={`/listing/${l.slug}`} target="_blank" rel="noreferrer" className={`${BTN_NEUTRAL} flex items-center gap-1`}>
+        <Eye size={13} /> Preview
+      </Link>
       <Link href={`/dashboard/admin/listings/${l.id}/edit`} className={BTN_NEUTRAL}>
         Edit
       </Link>
