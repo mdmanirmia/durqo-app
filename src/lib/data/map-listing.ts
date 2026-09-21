@@ -554,6 +554,7 @@ export function mapListing(
     // a false "Verified" claim.
     isVerified: row.status === "published" || row.status === "sold",
     status: row.status === "sold" ? "sold" : "published",
+    rawStatus: row.status ?? "published",
     views: row.views ?? 0,
     createdAt: row.created_at ? String(row.created_at).slice(0, 10) : "",
     gaAccessConfirmed: !!row.ga_access_confirmed,
