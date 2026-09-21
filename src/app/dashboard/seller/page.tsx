@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle, Wallet, Tag } from "lucide-react";
+import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle, Wallet, Tag, Eye } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORY_MAP } from "@/lib/categories";
@@ -225,7 +225,16 @@ export default function SellerOverview() {
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-3">
                           <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
-                          <Link href={`/listing/${l.slug}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                          {/* Sep 21, 2026 ("... seller theke o [preview]"):
+                              already worked for a seller's own draft/pending
+                              listing thanks to RLS (seller_id = auth.uid()),
+                              regardless of status — just relabeled to make
+                              that "works at every stage" behavior explicit,
+                              and opened in a new tab so it reads as a
+                              preview rather than a navigate-away. */}
+                          <Link href={`/listing/${l.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-semibold text-brand-strong">
+                            <Eye size={13} /> Preview
+                          </Link>
                         </div>
                       </td>
                     </tr>
@@ -263,7 +272,9 @@ export default function SellerOverview() {
                   </div>
                   <div className="flex items-center gap-4 border-t border-rule pt-3">
                     <Link href={`/dashboard/seller/listings/${l.id}/edit`} className="text-sm font-semibold text-ink-soft hover:text-brand-strong">Edit</Link>
-                    <Link href={`/listing/${l.slug}`} className="text-sm font-semibold text-brand-strong">View</Link>
+                    <Link href={`/listing/${l.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-sm font-semibold text-brand-strong">
+                      <Eye size={13} /> Preview
+                    </Link>
                   </div>
                 </div>
               );
