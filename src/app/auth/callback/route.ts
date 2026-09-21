@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/safe-redirect";
+import { notifyAdminSellerVerified } from "@/app/register/actions";
 
 // Where the email "Confirm your signup" link (and, later, password-reset
 // links) point. Supabase redirects here with either a PKCE `code` or a
@@ -41,6 +42,31 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?error=confirmation_failed`);
   }
 
+  // Fetched up front (rather than only in the no-`next` branch below, as
+  // this used to) because the seller admin-notification below needs it
+  // regardless of where the visitor ends up going next.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const profile = user
+    ? (await supabase.from("profiles").select("role, full_name").eq("id", user.id).single()).data
+    : null;
+
+  // Sep 21 2026 ("ei sob user der kono email notification o admin pabena
+  // registration er somoi" — see register/actions.ts's notifyAdminSellerVerified
+  // comment for the full story): this is the one route a signup
+  // confirmation link ever lands on, and a confirmation code/token is
+  // single-use, so this fires exactly once per account, right when its
+  // email is proven real. Best-effort — a notification failure here must
+  // never block the confirmed user from reaching their dashboard.
+  if (user?.email && profile?.role === "seller") {
+    try {
+      await notifyAdminSellerVerified(profile.full_name ?? "", user.email);
+    } catch (err) {
+      console.error("[auth/callback] notifyAdminSellerVerified failed:", err);
+    }
+  }
+
   // 2026-09-19: explicitNext came straight off the URL (originally set by
   // LoginForm.tsx/RegisterForm.tsx from their own `?next=`), so it's
   // re-validated here before ever reaching NextResponse.redirect() — this
@@ -51,14 +77,8 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}${safeNext}`);
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
   let dashboard = "/dashboard/buyer";
-  if (user) {
-    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-    if (profile?.role === "seller") dashboard = "/dashboard/seller";
-    else if (profile?.role === "admin") dashboard = "/dashboard/admin";
-  }
+  if (profile?.role === "seller") dashboard = "/dashboard/seller";
+  else if (profile?.role === "admin") dashboard = "/dashboard/admin";
   return NextResponse.redirect(`${origin}${dashboard}`);
 }
