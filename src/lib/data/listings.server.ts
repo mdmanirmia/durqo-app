@@ -498,6 +498,52 @@ async function hydrateListingRow(supabase: NonNullable<Awaited<ReturnType<typeof
   });
 }
 
+// Sep 21, 2026 ("listing publish korar age, pore, admin theke and seller
+// theke o [preview dekhar system]" — an all-status preview system, usable
+// both before and after a listing goes live, from both the admin dashboard
+// and the seller dashboard): listings_select_published (schema.sql) only
+// ever returns a row here for a published/sold listing or the listing's own
+// seller (seller_id = auth.uid()) — by design, so a random visitor can never
+// browse someone else's draft. That already lets a seller preview their own
+// unpublished listing (the seller dashboard's "Preview" link already goes
+// straight to /listing/[slug]), but it blocks an ADMIN from previewing a
+// listing — e.g. to check it over before Approve/Reject — since the admin
+// isn't its seller.
+//
+// Rather than loosen the RLS policy itself (which would make every draft
+// listing readable by any authenticated client, not just this
+// server-rendered page), this re-checks with the service-role client ONLY
+// after confirming server-side that the signed-in visitor is actually an
+// admin — the same "never trust the caller, re-verify in the database"
+// posture as requireAdmin() and every admin Server Action in this codebase.
+// It only ever runs as a fallback once the RLS-scoped query above has
+// already come back empty, so normal traffic (public buyers viewing live
+// listings) never pays for the extra auth/profile lookup.
+async function getAdminBypassRow(
+  supabase: NonNullable<Awaited<ReturnType<typeof createClient>>>,
+  column: "id" | "slug",
+  value: string
+): Promise<Record<string, unknown> | undefined> {
+  try {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return undefined;
+
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+    if (profile?.role !== "admin") return undefined;
+
+    const admin = createAdminClient();
+    if (!admin) return undefined;
+
+    const { data: row } = await admin.from("listings").select("*").eq(column, value).maybeSingle();
+    return row ?? undefined;
+  } catch (err) {
+    console.warn("[listings] getAdminBypassRow lookup failed:", err);
+    return undefined;
+  }
+}
+
 // Sep 8, 2026 technical-SEO pass (Section 23, "avoid duplicate Supabase
 // requests"): wrapped in React's per-request cache() because the listing
 // page's generateMetadata() and the page component itself both need the
@@ -509,12 +555,13 @@ export const getListingById = cache(async function getListingById(id: string): P
     if (!supabase) return getMockListingById(id);
 
     const { data: row, error } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
-    if (error || !row) {
-      if (error) console.warn("[listings] getListingById falling back to mock data:", error.message);
-      return getMockListingById(id);
-    }
+    if (row) return await hydrateListingRow(supabase, row);
+    if (error) console.warn("[listings] getListingById falling back to mock data:", error.message);
 
-    return await hydrateListingRow(supabase, row);
+    const adminRow = await getAdminBypassRow(supabase, "id", id);
+    if (adminRow) return await hydrateListingRow(supabase, adminRow);
+
+    return getMockListingById(id);
   } catch (err) {
     console.warn("[listings] getListingById falling back to mock data (unexpected error):", err);
     return getMockListingById(id);
@@ -531,12 +578,13 @@ export const getListingBySlug = cache(async function getListingBySlug(slug: stri
     if (!supabase) return getMockListingBySlug(slug);
 
     const { data: row, error } = await supabase.from("listings").select("*").eq("slug", slug).maybeSingle();
-    if (error || !row) {
-      if (error) console.warn("[listings] getListingBySlug falling back to mock data:", error.message);
-      return getMockListingBySlug(slug);
-    }
+    if (row) return await hydrateListingRow(supabase, row);
+    if (error) console.warn("[listings] getListingBySlug falling back to mock data:", error.message);
 
-    return await hydrateListingRow(supabase, row);
+    const adminRow = await getAdminBypassRow(supabase, "slug", slug);
+    if (adminRow) return await hydrateListingRow(supabase, adminRow);
+
+    return getMockListingBySlug(slug);
   } catch (err) {
     console.warn("[listings] getListingBySlug falling back to mock data (unexpected error):", err);
     return getMockListingBySlug(slug);
