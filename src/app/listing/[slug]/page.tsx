@@ -53,7 +53,7 @@ import WishlistButton from "@/components/WishlistButton";
 import ChatWithSellerButton from "@/components/ChatWithSellerButton";
 import GatedContent from "@/components/GatedContent";
 import Container from "@/components/ui/Container";
-import { Badge, StatusBadge } from "@/components/ui/Badge";
+import { Badge, StatusBadge, statusLabel } from "@/components/ui/Badge";
 
 // Listings are now real, changing data from Supabase (with a mock-data
 // fallback baked into getListingById) rather than a fixed set known at
@@ -282,6 +282,22 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
   const locked = !viewer;
   const nextPath = `/listing/${listing.slug}`;
 
+  // Sep 21, 2026 ("listing publish korar age, pore, admin theke and seller
+  // theke o [preview]" — an all-status preview system): getListingBySlug/
+  // getListingById (listings.server.ts) only ever resolve a draft/pending/
+  // archived listing's row for its own seller or for a confirmed admin
+  // (everyone else's request 404s, same as before this feature existed) —
+  // so simply being on this page with a non-public status already proves
+  // the viewer is one of those two. No extra role check needed here; this
+  // banner just makes it visually obvious that what they're looking at
+  // isn't live on the marketplace yet.
+  const isPreview = listing.status !== "published" && listing.status !== "sold";
+  const previewStatusPhrase: Record<string, string> = {
+    draft: "in Draft",
+    pending_review: "In Review",
+    archived: "Archived",
+  };
+
   const category = CATEGORY_MAP[listing.categoryId];
   const price = listing.discountedPrice ?? listing.price;
   const incomeSeries = listing.monthlyStats.map((m) => ({ month: m.month, income: m.income }));
@@ -486,6 +502,15 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
           <ChevronRight size={12} />
           <span className="text-ink-soft">{listing.title}</span>
         </nav>
+
+        {isPreview && (
+          <div className="mb-6 flex items-start gap-2.5 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">
+            <Eye size={16} className="mt-0.5 shrink-0 text-ink-faint" />
+            <span>
+              <strong className="text-ink">Preview mode</strong> &mdash; this listing is currently {previewStatusPhrase[listing.status] ?? statusLabel(listing.status)} and isn&rsquo;t visible to buyers on the marketplace yet.
+            </span>
+          </div>
+        )}
 
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <Badge tone="neutral">{category?.name ?? listing.categoryId}</Badge>
