@@ -115,7 +115,18 @@ function LoginForm() {
       setResending(false);
       return;
     }
-    const { error } = await supabase.auth.resend({ type: "signup", email });
+    // Sep 21, 2026 fix ("admin notification not received" bug): without
+    // emailRedirectTo, a resent confirmation link falls back to Supabase's
+    // project-wide Site URL instead of /auth/callback, so our own callback
+    // route (and the admin "new seller verified" email it sends) never runs
+    // for anyone who had to resend from here. Mirrors RegisterForm's fix.
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+      },
+    });
     setResending(false);
     if (error) {
       setError(error.message);
