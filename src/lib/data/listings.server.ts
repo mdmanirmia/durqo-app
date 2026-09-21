@@ -342,6 +342,33 @@ export async function getSellerCount(): Promise<number> {
   }
 }
 
+// Platform-wide count of every registered buyer + seller (profiles.role in
+// ("buyer", "seller")), excluding admin accounts — used by the homepage
+// stats bar's "Sellers & Buyers" tile (Sep 21 2026: "eitar name change kore
+// Sellers & Buyers diba, eita total buyer and seller er soman hobe" — the
+// tile was renamed from "Active Sellers" and its value changed from the
+// seller-only count to the combined buyer+seller count). Same
+// no-live-listing-required reasoning as getSellerCount above: a user counts
+// the moment they register, regardless of activity.
+export async function getSellerAndBuyerCount(): Promise<number> {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return 0;
+    const { count, error } = await supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .in("role", ["buyer", "seller"]);
+    if (error) {
+      console.warn("[listings] getSellerAndBuyerCount failed:", error.message);
+      return 0;
+    }
+    return count ?? 0;
+  } catch (err) {
+    console.warn("[listings] getSellerAndBuyerCount unexpected error:", err);
+    return 0;
+  }
+}
+
 // Shared by getListingById and getListingBySlug (Sep 16, 2026 slug-URL
 // change) — both resolve to the same `listings` row shape by different
 // columns, then need identical hydration (seller profile, stats, SEO data,
