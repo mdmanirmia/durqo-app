@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
-import { getPublishedListings, getSellerCount } from "@/lib/data/listings.server";
+import { getPublishedListings, getSellerAndBuyerCount } from "@/lib/data/listings.server";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import ListingCard from "@/components/ListingCard";
 import WishlistButton from "@/components/WishlistButton";
@@ -186,7 +186,7 @@ const CONFIDENCE = [
 // on the marketplace already carries a Verified badge.
 const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Data checked"];
 
-// Sep 2026: the stats bar (Active listings / Listed value / Active Sellers)
+// Sep 2026: the stats bar (Active listings / Listed value / Sellers & Buyers)
 // and the featured spotlight below were silently going stale — `next build`
 // was prerendering "/" as a fully static route (no `searchParams`/other
 // dynamic API forced it dynamic the way `/buy` and `/listing/[slug]` already
@@ -199,7 +199,7 @@ const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Dat
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [listings, sellerCount] = await Promise.all([getPublishedListings(), getSellerCount()]);
+  const [listings, sellerAndBuyerCount] = await Promise.all([getPublishedListings(), getSellerAndBuyerCount()]);
 
   // "Businesses gaining attention" — Sep 16 2026 change ("jei gulor price or
   // profit sob theke beshi": show the listings whose price or profit is
@@ -258,14 +258,21 @@ export default async function Home() {
   // should read "Active Sellers" and its value should equal the
   // marketplace's total seller count). Replaced the old "Verified
   // sellers" tile (which only counted `is_verified = true` profiles, often
-  // 0 since verification is opt-in) with `sellerCount` (fetched above via
-  // `getSellerCount()`), a platform-wide count of every registered seller
-  // regardless of verification status or whether they have a live listing
-  // yet — shown as-is, with no zero-count fallback, since it's now an
-  // honest headline number rather than a rare-to-be-zero trust stat.
+  // 0 since verification is opt-in) with a platform-wide registered-user
+  // count, regardless of verification status or whether they have a live
+  // listing yet — shown as-is, with no zero-count fallback, since it's now
+  // an honest headline number rather than a rare-to-be-zero trust stat.
+  //
+  // Sep 21 2026 follow-up ("eitar name change kore Sellers & Buyers diba.
+  // eita total buyer and seller er soman hobe" — rename the tile to
+  // "Sellers & Buyers" and its value should equal the combined total of
+  // buyers and sellers): swapped the seller-only count for
+  // `sellerAndBuyerCount` (`getSellerAndBuyerCount()`, profiles.role in
+  // ("buyer","seller")) and dropped the singular "Active Seller" form —
+  // the combined total realistically never lands on exactly 1.
   const activeSellersStat = {
-    value: String(sellerCount),
-    label: sellerCount === 1 ? "Active Seller" : "Active Sellers",
+    value: String(sellerAndBuyerCount),
+    label: "Sellers & Buyers",
   };
 
   // Featured opportunity (hero spotlight): Sep 16 2026 change ("emon list
