@@ -143,6 +143,58 @@ export async function setUserActive(userId: string, active: boolean) {
   revalidatePath("/dashboard/admin");
 }
 
+// Sep 21 2026 ("fake/bot user der bulk vabe select kore delete korar option
+// thakbe" — bulk-select and delete fake/bot accounts): unlike
+// setUserActive() above (which deactivates a real account without touching
+// its history), this actually deletes the auth.users row — appropriate
+// here specifically because these are accounts that never confirmed their
+// email, so (per the "Confirm email" login requirement — see
+// email-verification-flow-addendum) they have never been able to log in,
+// create a listing, send a message, or do anything else that could
+// reference their id elsewhere in the database. `profiles.id` cascades on
+// delete (schema.sql), so removing the auth.users row cleans up the
+// profiles row in the same operation — nothing else to clean up by hand.
+//
+// Re-checks each id's actual confirmation status server-side rather than
+// trusting the client's selection, the same "never trust more than an id
+// from the client" posture as every other action in this file — closes the
+// gap where a stale page (open in another tab, or from before someone else
+// just confirmed) could otherwise delete an account that's since become
+// real. Never deletes the caller's own account. Partial failures don't
+// abort the batch — every id is attempted, and the counts describe what
+// actually happened.
+export async function deleteUnverifiedUsers(userIds: string[]): Promise<{ deleted: number; skipped: number }> {
+  const admin = await requireAdmin();
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  let deleted = 0;
+  let skipped = 0;
+  for (const id of userIds) {
+    if (id === admin.id) {
+      skipped++;
+      continue;
+    }
+    const { data: lookup } = await supabaseAdmin.auth.admin.getUserById(id);
+    const target = lookup?.user;
+    if (!target || target.email_confirmed_at) {
+      skipped++;
+      continue;
+    }
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+    if (error) {
+      skipped++;
+      continue;
+    }
+    deleted++;
+  }
+
+  revalidatePath("/dashboard/admin/users");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/");
+  return { deleted, skipped };
+}
+
 // "Add user" from the admin dashboard invites by email — Supabase sends its
 // own auth invite/magic-link email (a separate mechanism from the Resend
 // integration used elsewhere in this app), so no password ever passes
