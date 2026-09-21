@@ -93,7 +93,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const category = CATEGORY_MAP[listing.categoryId];
   const categoryName = category?.name ?? listing.categoryId;
   const canonical = `https://www.durqo.com/listing/${listing.slug}`;
-  const isPublic = listing.status === "published" || listing.status === "sold";
+  // Sep 21, 2026 fix (found while building the preview system below):
+  // `listing.status` is deliberately narrowed to "published" | "sold" only
+  // (mapListing.ts) — reading it here meant `isPublic` was silently always
+  // true, so a draft/pending/archived listing's page never actually got
+  // marked noindex,nofollow as this comment always intended. `rawStatus`
+  // carries the real, unfiltered status for exactly this kind of check.
+  const isPublic = listing.rawStatus === "published" || listing.rawStatus === "sold";
 
   const longTitle = `${listing.title} - ${categoryName} for Sale | Durqo`;
   const title = longTitle.length > 65 ? `${listing.title} for Sale | Durqo` : longTitle;
@@ -291,7 +297,12 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
   // the viewer is one of those two. No extra role check needed here; this
   // banner just makes it visually obvious that what they're looking at
   // isn't live on the marketplace yet.
-  const isPreview = listing.status !== "published" && listing.status !== "sold";
+  //
+  // Deliberately reads `listing.rawStatus`, not `listing.status` — the
+  // latter is narrowed to just "published" | "sold" everywhere on purpose
+  // (see mapListing's comment on it), so it would never show "draft" here
+  // even though this page is exactly the one place that distinction matters.
+  const isPreview = listing.rawStatus !== "published" && listing.rawStatus !== "sold";
   const previewStatusPhrase: Record<string, string> = {
     draft: "in Draft",
     pending_review: "In Review",
@@ -507,7 +518,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
           <div className="mb-6 flex items-start gap-2.5 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">
             <Eye size={16} className="mt-0.5 shrink-0 text-ink-faint" />
             <span>
-              <strong className="text-ink">Preview mode</strong> &mdash; this listing is currently {previewStatusPhrase[listing.status] ?? statusLabel(listing.status)} and isn&rsquo;t visible to buyers on the marketplace yet.
+              <strong className="text-ink">Preview mode</strong> &mdash; this listing is currently {previewStatusPhrase[listing.rawStatus] ?? statusLabel(listing.rawStatus)} and isn&rsquo;t visible to buyers on the marketplace yet.
             </span>
           </div>
         )}
