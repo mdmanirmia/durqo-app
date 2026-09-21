@@ -6,6 +6,7 @@ import { MOCK_LISTINGS, getListingById as getMockListingById, getListingBySlug a
 import type { Listing } from "@/lib/types";
 import { mapListing } from "./map-listing";
 import { MarketplaceFilters, PAGE_SIZE } from "@/lib/marketplace-filters";
+import { listAllAuthUsers } from "@/lib/notifications";
 
 // Every function here is defensive on purpose: if Supabase isn't
 // configured, or the real query fails for any reason (including this
@@ -347,22 +348,33 @@ export async function getSellerCount(): Promise<number> {
 // stats bar's "Sellers & Buyers" tile (Sep 21 2026: "eitar name change kore
 // Sellers & Buyers diba, eita total buyer and seller er soman hobe" — the
 // tile was renamed from "Active Sellers" and its value changed from the
-// seller-only count to the combined buyer+seller count). Same
-// no-live-listing-required reasoning as getSellerCount above: a user counts
-// the moment they register, regardless of activity.
+// seller-only count to the combined buyer+seller count).
+//
+// Sep 21 2026 follow-up ("fake registration korse onekei eita kivabe off
+// kora jai. jara email verified korbe only tarai buyer and seller hobe" —
+// this stat should only count accounts that have actually verified their
+// email): a spam wave of bot signups was inflating this number with
+// accounts that never clicked their confirmation link and (since "Confirm
+// email" is required to log in — see email-verification-flow-addendum)
+// can't actually do anything on the platform. Cross-references `profiles`
+// against `auth.users.email_confirmed_at` (only available via the admin
+// API, hence `createAdminClient()` + `listAllAuthUsers()` instead of the
+// plain `.from("profiles")` count query this used before) so an unverified
+// signup — real or bot — doesn't count until it's confirmed.
 export async function getSellerAndBuyerCount(): Promise<number> {
   try {
-    const supabase = await createClient();
-    if (!supabase) return 0;
-    const { count, error } = await supabase
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .in("role", ["buyer", "seller"]);
-    if (error) {
-      console.warn("[listings] getSellerAndBuyerCount failed:", error.message);
+    const admin = createAdminClient();
+    if (!admin) return 0;
+    const [{ data: profiles, error }, authUsers] = await Promise.all([
+      admin.from("profiles").select("id, role").in("role", ["buyer", "seller"]),
+      listAllAuthUsers(admin),
+    ]);
+    if (error || !profiles) {
+      console.warn("[listings] getSellerAndBuyerCount failed:", error?.message);
       return 0;
     }
-    return count ?? 0;
+    const confirmedIds = new Set(authUsers.filter((u) => u.email_confirmed_at).map((u) => u.id));
+    return profiles.filter((p) => confirmedIds.has(p.id)).length;
   } catch (err) {
     console.warn("[listings] getSellerAndBuyerCount unexpected error:", err);
     return 0;
