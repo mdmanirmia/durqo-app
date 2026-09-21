@@ -132,6 +132,17 @@ export default function Header() {
     setUserMenuOpen(false);
   }, [pathname]);
 
+  // Sep 21, 2026 (mobile menu polish): the mobile dropdown already closes
+  // itself on every link's own onClick, but that never fires on a browser
+  // back/forward navigation — this catches that case too, same "close on
+  // route change" reasoning as userMenuOpen just above. Kept as its own
+  // effect (rather than folded into the one above) since eslint's
+  // set-state-in-effect rule flags an effect body that calls setState more
+  // than once.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
   async function handleLogOut() {
     const supabase = createClient();
     if (!supabase) return;
@@ -142,8 +153,19 @@ export default function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 h-[72px] border-b border-rule bg-paper-raised/95 backdrop-blur">
-      <div className="mx-auto flex h-full max-w-[1280px] items-center gap-8 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-40 border-b border-rule bg-paper-raised/95 backdrop-blur">
+      {/* Sep 21, 2026 fix ("mobile theke view korle menu er likha gulo
+          dekhaibe jaina" — on mobile, the menu's text overlapped the page
+          below it): the fixed height used to live on <header> itself. That
+          capped the WHOLE header — including the mobile dropdown <nav>
+          below this row, a sibling further down — at exactly 72px, so the
+          dropdown's actual content just overflowed straight past that box
+          and visually sat on top of whatever came right after the header in
+          the page (the hero section), rather than pushing it down. Moving
+          the fixed height onto just this top bar row lets <header> grow to
+          fit the dropdown when it's open, same as it already grows for the
+          desktop-vs-mobile row wrapping at narrower widths. */}
+      <div className="mx-auto flex h-[72px] max-w-[1280px] items-center gap-8 px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-baseline gap-1 font-display text-xl font-bold text-ink shrink-0">
           durqo<span className="text-brand">.</span>
         </Link>
