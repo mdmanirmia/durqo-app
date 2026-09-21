@@ -1,11 +1,11 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Eye, EyeOff, UserPlus, Users } from "lucide-react";
+import { Trash2, UserPlus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
-import { setUserRole, setUserActive, inviteUser } from "../actions";
+import { setUserRole, setUserActive, inviteUser, deleteUnverifiedUsers } from "../actions";
 
 export interface AdminUserRow {
   id: string;
@@ -23,8 +23,9 @@ export interface AdminUserRow {
   // that never confirm — full_name is a random string, the inbox is never
   // opened — was cluttering this table. Since the app requires a confirmed
   // email to log in at all, an unconfirmed row can't actually act as a
-  // buyer or seller yet, so these are hidden from the table by default
-  // (see `showUnverified` below) rather than treated as real accounts.
+  // buyer or seller yet, so these live on their own "Unverified" tab below
+  // (see `view` below) instead of the main list, with their own bulk
+  // delete rather than being treated as real accounts.
   emailVerified: boolean;
   isVerified: boolean;
   isActive: boolean;
@@ -154,19 +155,6 @@ function joinedAsBadge(u: AdminUserRow) {
   );
 }
 
-// Shown next to the email whenever a row is visible despite an unconfirmed
-// email — i.e. only when `showUnverified` is on, since otherwise these rows
-// are filtered out entirely. Kept as its own small tag (not folded into the
-// existing `isVerified` "Verified" column, which tracks admin-run identity
-// verification, a completely separate thing).
-function unverifiedEmailTag() {
-  return (
-    <span className="mt-1 inline-block w-fit rounded-full bg-danger-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-danger">
-      Email unverified
-    </span>
-  );
-}
-
 function statusControl(u: AdminUserRow, busy: boolean, isSelf: boolean, requestBlock: (id: string, name: string) => void, toggleActive: (id: string, active: boolean) => void) {
   return u.isActive ? (
     <button
@@ -199,14 +187,63 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
   const [isPending, startTransition] = useTransition();
   const [blockTarget, setBlockTarget] = useState<{ id: string; name: string } | null>(null);
 
-  // Sep 21 2026: hide unconfirmed-email accounts by default (see
-  // AdminUserRow.emailVerified's comment) — a toggle brings them back for
-  // an admin who wants to eyeball the spam wave or catch a genuine signup
-  // stuck on a flaky confirmation email, without them cluttering the
-  // default view or getting mistaken for real buyers/sellers.
-  const [showUnverified, setShowUnverified] = useState(false);
-  const hiddenCount = useMemo(() => rows.filter((u) => !u.emailVerified).length, [rows]);
-  const visibleRows = useMemo(() => (showUnverified ? rows : rows.filter((u) => u.emailVerified)), [rows, showUnverified]);
+  // Sep 21 2026 ("unverified account gulo alada folder e dekhao jeno bulk
+  // select kore delete korte pari" — show unverified accounts in their own
+  // folder so they can be bulk-selected and deleted): split into two tabs
+  // rather than one filtered list — "Users" (real, email-confirmed
+  // accounts, the only ones that can actually log in and act as a buyer or
+  // seller) and "Unverified" (the bot/spam-signup holding pen, with its own
+  // bulk-select + delete). See AdminUserRow.emailVerified's comment.
+  const [view, setView] = useState<"verified" | "unverified">("verified");
+  const verifiedRows = useMemo(() => rows.filter((u) => u.emailVerified), [rows]);
+  const unverifiedRows = useMemo(() => rows.filter((u) => !u.emailVerified), [rows]);
+  const visibleRows = view === "verified" ? verifiedRows : unverifiedRows;
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isDeleting, startDeleteTransition] = useTransition();
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
+  const selectableIds = useMemo(() => unverifiedRows.map((u) => u.id), [unverifiedRows]);
+  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
+
+  function switchView(next: "verified" | "unverified") {
+    setView(next);
+    setSelectedIds(new Set());
+    setDeleteNotice(null);
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds(allSelected ? new Set() : new Set(selectableIds));
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleDeleteSelected() {
+    const ids = Array.from(selectedIds);
+    setDeleteNotice(null);
+    startDeleteTransition(async () => {
+      try {
+        const result = await deleteUnverifiedUsers(ids);
+        setSelectedIds(new Set());
+        setDeleteConfirmOpen(false);
+        if (result.skipped > 0) {
+          setDeleteNotice(
+            `Deleted ${result.deleted} account${result.deleted === 1 ? "" : "s"}. ${result.skipped} skipped (already verified, no longer found, or your own account).`
+          );
+        }
+      } catch (err) {
+        setDeleteConfirmOpen(false);
+        setDeleteNotice(err instanceof Error ? err.message : "Couldn't delete the selected accounts — try again.");
+      }
+    });
+  }
 
   function changeRole(id: string, role: string) {
     setPendingId(id);
@@ -244,26 +281,57 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
     <div>
       <AddUserForm />
 
-      {hiddenCount > 0 && (
+      <div className="mb-4 flex items-center gap-1 border-b border-rule">
         <button
           type="button"
-          onClick={() => setShowUnverified((v) => !v)}
-          className="mb-4 flex items-center gap-1.5 rounded-lg border border-rule-strong bg-paper-raised px-3 py-2 text-xs font-semibold text-ink-soft hover:border-brand-strong hover:text-brand-strong"
+          onClick={() => switchView("verified")}
+          className={`-mb-px border-b-2 px-3 py-2 text-sm font-semibold ${
+            view === "verified" ? "border-brand-strong text-brand-strong" : "border-transparent text-ink-faint hover:text-ink-soft"
+          }`}
         >
-          {showUnverified ? <EyeOff size={14} /> : <Eye size={14} />}
-          {showUnverified
-            ? "Hide unverified accounts"
-            : `${hiddenCount} unverified account${hiddenCount === 1 ? "" : "s"} hidden — Show them`}
+          Users ({verifiedRows.length})
         </button>
+        <button
+          type="button"
+          onClick={() => switchView("unverified")}
+          className={`-mb-px border-b-2 px-3 py-2 text-sm font-semibold ${
+            view === "unverified" ? "border-brand-strong text-brand-strong" : "border-transparent text-ink-faint hover:text-ink-soft"
+          }`}
+        >
+          Unverified ({unverifiedRows.length})
+        </button>
+      </div>
+
+      {view === "unverified" && unverifiedRows.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rule-strong bg-paper-raised p-3">
+          <label className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
+            <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
+            Select all {selectableIds.length}
+          </label>
+          <button
+            type="button"
+            disabled={selectedIds.size === 0}
+            onClick={() => setDeleteConfirmOpen(true)}
+            className="flex items-center gap-1.5 rounded-md border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 size={14} /> Delete selected{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+          </button>
+        </div>
       )}
+
+      {deleteNotice && <p className="mb-4 rounded-md border border-rule-strong bg-paper-raised px-3 py-2 text-xs text-ink-soft">{deleteNotice}</p>}
 
       {visibleRows.length === 0 ? (
         <EmptyState
           icon={Users}
-          title="No users found"
-          body={rows.length === 0 ? "Everyone who signs up on Durqo will show up here." : "Every account here is still unverified — use the button above to see them."}
+          title={view === "verified" ? "No users found" : "No unverified accounts"}
+          body={
+            view === "verified"
+              ? "Everyone who signs up on Durqo will show up here."
+              : "Every signup here has confirmed their email — nothing to clean up right now."
+          }
         />
-      ) : (
+      ) : view === "verified" ? (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
           <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
@@ -281,16 +349,13 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                 </tr>
               </thead>
               <tbody>
-                {visibleRows.map((u) => {
+                {verifiedRows.map((u) => {
                   const busy = isPending && pendingId === u.id;
                   const isSelf = u.id === selfId;
                   return (
                     <tr key={u.id} className={`border-b border-rule align-top last:border-b-0 ${!u.isActive ? "opacity-60" : ""}`}>
                       <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
-                      <td className="px-4 py-3 text-ink-soft">
-                        <div>{u.email}</div>
-                        {!u.emailVerified && unverifiedEmailTag()}
-                      </td>
+                      <td className="px-4 py-3 text-ink-soft">{u.email}</td>
                       <td className="px-4 py-3">{roleSelect(u, busy, isSelf, errorId, changeRole)}</td>
                       <td className="px-4 py-3">{joinedAsBadge(u)}</td>
                       <td className="px-4 py-3 text-ink-soft">{u.isVerified ? "Yes" : "No"}</td>
@@ -306,7 +371,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
 
           {/* Mobile: same data as a stacked card list. */}
           <div className="grid gap-3 md:hidden">
-            {visibleRows.map((u) => {
+            {verifiedRows.map((u) => {
               const busy = isPending && pendingId === u.id;
               const isSelf = u.id === selfId;
               return (
@@ -314,7 +379,6 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   <div className="mb-3 min-w-0">
                     <div className="truncate font-medium text-ink">{u.fullName}</div>
                     <div className="truncate text-xs text-ink-faint">{u.email}</div>
-                    {!u.emailVerified && unverifiedEmailTag()}
                   </div>
                   <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                     <div>
@@ -344,6 +408,70 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
             })}
           </div>
         </>
+      ) : (
+        <>
+          {/* Unverified tab: a deliberately lean column set — Status/Block,
+              Verified, and Purchases/Sales are all meaningless for an
+              account that has never been able to log in, so they're left
+              out rather than shown as permanent zeroes/No. */}
+          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+            <table className="w-full min-w-[720px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+                  <th className="w-10 px-4 py-3">
+                    <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
+                  </th>
+                  <th className="px-4 py-3 font-medium">Name</th>
+                  <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">Joined As</th>
+                  <th className="px-4 py-3 font-medium">Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                {unverifiedRows.map((u) => (
+                  <tr key={u.id} className="border-b border-rule align-top last:border-b-0">
+                    <td className="px-4 py-3">
+                      <input type="checkbox" checked={selectedIds.has(u.id)} onChange={() => toggleSelected(u.id)} className="h-4 w-4 rounded border-rule-strong" />
+                    </td>
+                    <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
+                    <td className="px-4 py-3 text-ink-soft">{u.email}</td>
+                    <td className="px-4 py-3">{joinedAsBadge(u)}</td>
+                    <td className="mono px-4 py-3 text-ink-faint">{u.createdAt}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="grid gap-3 md:hidden">
+            {unverifiedRows.map((u) => (
+              <div key={u.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
+                <div className="mb-3 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium text-ink">{u.fullName}</div>
+                    <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(u.id)}
+                    onChange={() => toggleSelected(u.id)}
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-rule-strong"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  <div>
+                    <div className="mb-1 text-xs text-ink-faint">Joined As</div>
+                    {joinedAsBadge(u)}
+                  </div>
+                  <div>
+                    <div className="text-xs text-ink-faint">Joined</div>
+                    <div className="mono text-ink-faint">{u.createdAt}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       <ConfirmDialog
@@ -358,6 +486,17 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
           setBlockTarget(null);
         }}
         onCancel={() => setBlockTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        title={`Delete ${selectedIds.size} unverified account${selectedIds.size === 1 ? "" : "s"}?`}
+        body="These accounts never confirmed their email, so they've never been able to log in or do anything on Durqo. Deleting them removes the account permanently — this can't be undone. Any account that verifies in the meantime is skipped automatically."
+        confirmLabel="Delete accounts"
+        danger
+        busy={isDeleting}
+        onConfirm={handleDeleteSelected}
+        onCancel={() => setDeleteConfirmOpen(false)}
       />
     </div>
   );
