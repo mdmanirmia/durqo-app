@@ -386,6 +386,11 @@ const FAQ_GROUPS: FaqGroup[] = [
         answer:
           "No. Revenue, traffic and operating data describe historical performance only. Durqo does not guarantee that a website will maintain the same income, traffic, rankings or profitability after the sale.",
       },
+      {
+        question: "Could I be asked to verify my identity as a buyer?",
+        answer:
+          "Sometimes. Durqo may ask a buyer to complete identity or funds verification when it's required by the selected payment provider, the transaction value, or Durqo's own risk review. If this applies to your order, you'll see a request on your Orders page with instructions to upload documents, and the seller's payout is held until it's reviewed.",
+      },
     ],
   },
 ];
@@ -408,6 +413,7 @@ const FAQ_JSON_LD = {
     { q: "What if the website doesn't match what was described?", a: "Report the issue instead of approving the transfer. Your payment stays held while Durqo reviews it." },
     { q: "How do I actually take over the website after I've paid?", a: "The seller transfers the domain, hosting access, content and any other agreed assets. See What Exactly Will Be Transferred for the full checklist." },
     { q: "Does Durqo guarantee the website's future income?", a: "No. Revenue, traffic and operating data describe historical performance only. Durqo does not guarantee that a website will maintain the same income, traffic, rankings or profitability after the sale." },
+    { q: "Could I be asked to verify my identity as a buyer?", a: "Sometimes. Durqo may ask a buyer to complete identity or funds verification when it's required by the selected payment provider, the transaction value, or Durqo's own risk review. If this applies to your order, you'll see a request on your Orders page with instructions to upload documents, and the seller's payout is held until it's reviewed." },
   ].map(({ q, a }) => ({
     "@type": "Question",
     name: q,
