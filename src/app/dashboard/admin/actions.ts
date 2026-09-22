@@ -883,3 +883,122 @@ export async function resolveTransferDispute(
   // another resolution type ever gains its own orders.status effect.
   revalidatePath("/dashboard/seller/earnings");
 }
+
+// ============================================================
+// Buyer identity/funds verification (KYC policy, Sep 2026): "Buyers may
+// be asked to complete identity or funds verification when required by
+// the selected payment provider, transaction value, or Durqo's risk
+// review." Site owner's explicit decision: admin-flagged manual hold —
+// an admin flags a specific order, the buyer uploads documents from
+// their Orders page, an admin reviews and clears it. No automatic
+// checkout block; the only enforcement is that a flagged order's
+// balance is excluded from create_withdrawal_request()'s claimable set
+// until resolved (053_kyc_name_match_and_buyer_verification.sql), the
+// same way an escrow_com order is already permanently excluded (035).
+// Same manual-review shape as setVerificationStatus()/setWithdrawalStatus()
+// above: every write here uses the service-role client after
+// requireAdmin(), never a client-writable RLS policy.
+// ============================================================
+
+export async function requestBuyerVerification(orderId: string, reason: string) {
+  await requireAdmin();
+  const trimmedReason = reason.trim();
+  if (!trimmedReason) throw new Error("A reason is required so the buyer knows what's being asked.");
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const { data: order } = await admin.from("orders").select("id, buyer_id, listing_id").eq("id", orderId).single();
+  if (!order) throw new Error("Order not found");
+
+  const {
+    data: { user: adminUser },
+  } = await admin.auth.getUser();
+
+  // Upsert on order_id (unique) — re-flagging an already-resolved (or
+  // still-open) request just resets it back to "requested" with the new
+  // reason, rather than accumulating duplicate rows for the same order.
+  const { error } = await admin.from("order_verifications").upsert(
+    {
+      order_id: orderId,
+      buyer_id: order.buyer_id,
+      status: "requested",
+      reason: trimmedReason,
+      requested_by: adminUser?.id ?? null,
+      requested_at: new Date().toISOString(),
+      document_paths: [],
+      submitted_at: null,
+      reviewed_by: null,
+      reviewed_at: null,
+      admin_note: null,
+    },
+    { onConflict: "order_id" }
+  );
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/orders");
+  revalidatePath("/dashboard/buyer/orders");
+  revalidatePath("/dashboard/seller/orders");
+  revalidatePath("/dashboard/seller/earnings");
+
+  const { data: listing } = await admin.from("listings").select("title").eq("id", order.listing_id).maybeSingle();
+  const title = listing?.title ?? "your order";
+  const emails = await getUserEmails(admin, [order.buyer_id as string]);
+  const buyerEmail = emails[order.buyer_id as string];
+  if (buyerEmail) {
+    const origin = await resolveOrigin();
+    await sendEmail(
+      buyerEmail,
+      `Verification needed for your order — "${title}"`,
+      `<p>Hi,</p>
+       <p>To continue with your order for "${title}", we need you to complete identity or funds verification. Reason: ${trimmedReason}</p>
+       <p>Please upload the requested documents from your <a href="${origin}/dashboard/buyer/orders">Orders page</a>.</p>
+       <p>— Durqo</p>`
+    );
+  }
+}
+
+export async function reviewBuyerVerification(orderId: string, decision: "verified" | "rejected", note?: string) {
+  await requireAdmin();
+  if (decision !== "verified" && decision !== "rejected") throw new Error("Invalid decision");
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const { data: existing } = await admin.from("order_verifications").select("id, buyer_id, order_id").eq("order_id", orderId).single();
+  if (!existing) throw new Error("No verification request found for this order");
+
+  const {
+    data: { user: adminUser },
+  } = await admin.auth.getUser();
+
+  const trimmedNote = note?.trim() || null;
+  const { error } = await admin
+    .from("order_verifications")
+    .update({
+      status: decision,
+      reviewed_by: adminUser?.id ?? null,
+      reviewed_at: new Date().toISOString(),
+      admin_note: trimmedNote,
+    })
+    .eq("order_id", orderId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/orders");
+  revalidatePath("/dashboard/buyer/orders");
+  revalidatePath("/dashboard/seller/orders");
+  revalidatePath("/dashboard/seller/earnings");
+
+  const emails = await getUserEmails(admin, [existing.buyer_id as string]);
+  const buyerEmail = emails[existing.buyer_id as string];
+  if (buyerEmail) {
+    const subject = decision === "verified" ? "Your verification was approved" : "We need more from your verification";
+    const html =
+      decision === "verified"
+        ? `<p>Your identity/funds verification has been approved — your order can now proceed normally.</p><p>— Durqo</p>`
+        : `<p>We weren't able to accept your verification submission.${
+            trimmedNote ? ` Reason: ${trimmedNote}` : ""
+          } Please check your Orders page to resubmit.</p><p>— Durqo</p>`;
+    await sendEmail(buyerEmail, subject, html);
+  }
+}
