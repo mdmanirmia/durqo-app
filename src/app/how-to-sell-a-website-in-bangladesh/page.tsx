@@ -14,6 +14,8 @@ import {
   Clock,
   PenLine,
   Search,
+  Sparkles,
+  Percent,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -207,7 +209,11 @@ const BUYER_CHECKS = [
   },
 ];
 
-const FEE_ROWS = SUCCESS_FEE_TIERS.map((tier) => ({ label: tier.label, rate: fmtRate(tier.rate) }));
+const FEE_ROWS = SUCCESS_FEE_TIERS.map((tier) => ({
+  label: tier.label,
+  rate: fmtRate(tier.rate),
+  highlight: tier.id === "50k-250k",
+}));
 
 const PAYOUT_METHODS = [
   { icon: Landmark, name: "Bank Transfer", cap: "No daily or monthly cap" },
@@ -321,6 +327,14 @@ export default function HowToSellAWebsiteInBangladeshPage() {
                   Turn your website into a completed sale. This guide walks through building a listing buyers trust,
                   what Durqo charges, and how to get paid in BDT once your sale is done.
                 </p>
+                <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-rule bg-brand-soft/40 px-4 py-3">
+                  <Sparkles size={15} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
+                  <p className="text-sm leading-relaxed text-ink">
+                    <span className="font-semibold">Quick answer:</span> Listing is free. Durqo charges a flat 10%-5%
+                    Success Fee only once your sale completes, and you can withdraw in BDT through bKash, Rocket,
+                    Nagad, Bank Transfer, PayPal or Wise.
+                  </p>
+                </div>
                 <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
                   Reviewed by the Durqo Marketplace Team · Updated September 2026
                 </p>
@@ -490,7 +504,20 @@ export default function HowToSellAWebsiteInBangladeshPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-3">
               {FEE_ROWS.map((row) => (
-                <div key={row.label} className="rounded-xl border border-rule bg-paper-raised p-6 text-center">
+                <div
+                  key={row.label}
+                  className={`relative rounded-xl border p-6 text-center ${
+                    row.highlight ? "border-2 border-brand-strong bg-brand-soft/30" : "border-rule bg-paper-raised"
+                  }`}
+                >
+                  {row.highlight && (
+                    <span className="mono absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-strong px-2.5 py-1 text-[0.6rem] font-semibold uppercase tracking-wide text-white">
+                      Most sellers
+                    </span>
+                  )}
+                  <span className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Percent size={18} />
+                  </span>
                   <p className="mono text-4xl font-bold tabular-nums text-brand-strong">{row.rate}</p>
                   <p className="mt-2 text-sm font-medium text-ink-soft">{row.label}</p>
                 </div>
