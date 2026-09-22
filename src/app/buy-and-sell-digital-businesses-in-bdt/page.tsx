@@ -443,7 +443,7 @@ export default function BuyAndSellInBdtPage() {
       <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
         <Container>
           <Inner>
-            <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:gap-16">
+            <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:items-start lg:gap-16">
               <div className="min-w-0">
                 <DashEyebrow>BDT payments for Bangladesh</DashEyebrow>
                 <h1 className="text-4xl leading-[1.1] sm:text-5xl lg:text-[3.4rem]">
