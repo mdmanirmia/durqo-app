@@ -21,9 +21,21 @@ const METHOD_LABEL: Record<Method, string> = {
 // NEVER set status to "verified" itself: that only ever happens from
 // setVerificationStatus() in dashboard/admin/actions.ts, using the
 // service-role client, after a human reviews the uploaded documents.
-export async function submitVerification(method: Method, documentPaths: string[]) {
+// legalName (KYC policy, Sep 2026): the name exactly as printed on the
+// uploaded ID document — deliberately captured here rather than reused
+// from profiles.full_name, since a seller can freely retype full_name
+// from Account Settings at any time and it's never itself verified
+// against anything. This is what an admin compares against a
+// withdrawal request's payout_account_holder_name (side-by-side in
+// AdminWithdrawalsTable.tsx — a manual review flag, never an automatic
+// block) before approving a payout, per the site owner's explicit
+// "seller-er verified name and payout account holder name match korte
+// hobe" requirement.
+export async function submitVerification(method: Method, documentPaths: string[], legalName: string) {
   if (!METHODS.includes(method)) throw new Error("Invalid verification method");
   if (documentPaths.length === 0) throw new Error("At least one document is required");
+  const trimmedLegalName = legalName.trim();
+  if (!trimmedLegalName) throw new Error("Your legal name (as shown on the ID) is required");
 
   const supabase = await createClient();
   if (!supabase) throw new Error("Backend not connected");
@@ -42,6 +54,7 @@ export async function submitVerification(method: Method, documentPaths: string[]
       verification_method: method,
       verification_document_paths: documentPaths,
       verification_submitted_at: new Date().toISOString(),
+      legal_name: trimmedLegalName,
     })
     .eq("id", user.id);
   if (error) throw new Error(error.message);

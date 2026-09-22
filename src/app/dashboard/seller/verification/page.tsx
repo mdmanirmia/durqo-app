@@ -20,6 +20,7 @@ export default function VerificationPage() {
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
   const [methodId, setMethodId] = useState<(typeof METHODS)[number]["id"] | null>(null);
   const [files, setFiles] = useState<File[]>([]);
+  const [legalName, setLegalName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,11 +40,12 @@ export default function VerificationPage() {
   async function handleSubmit() {
     if (!methodId) return setError("Choose a document type first.");
     if (files.length === 0) return setError("Upload at least one document.");
+    if (!legalName.trim()) return setError("Enter your legal name exactly as it appears on the ID.");
     setError(null);
     setSubmitting(true);
     try {
       const paths = await uploadVerificationDocuments(files);
-      await submitVerification(methodId, paths);
+      await submitVerification(methodId, paths, legalName);
       trackVerificationSubmitted(methodId);
       setStatus("pending");
       setFiles([]);
@@ -57,8 +59,11 @@ export default function VerificationPage() {
   return (
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <h2 className="mb-2 text-xl">Identity verification</h2>
-      <p className="mb-6 max-w-[60ch] text-sm text-ink-soft">
+      <p className="mb-2 max-w-[60ch] text-sm text-ink-soft">
         Verified sellers get a badge on every listing and rank higher in search. Choose one document to verify — this only needs to be done once.
+      </p>
+      <p className="mb-6 max-w-[60ch] text-sm text-ink-soft">
+        Identity verification (KYC) is also required before your first withdrawal. When you request a payout, the account holder name you enter must match the legal name below — our team checks this by hand before approving a withdrawal.
       </p>
 
       {status === null && <p className="text-sm text-ink-faint">Loading&hellip;</p>}
@@ -101,7 +106,16 @@ export default function VerificationPage() {
             </div>
           )}
 
-          <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">1. Choose a document</p>
+          <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">1. Your legal name</p>
+          <input
+            type="text"
+            value={legalName}
+            onChange={(e) => setLegalName(e.target.value)}
+            placeholder="Full name exactly as printed on the ID"
+            className="mb-5 w-full rounded-xl border border-rule-strong bg-paper-raised px-4 py-3 text-sm text-ink placeholder:text-ink-faint focus:border-brand-strong focus:outline-none"
+          />
+
+          <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">2. Choose a document</p>
           <div className="mb-5 flex flex-col gap-3">
             {METHODS.map((m) => (
               <button
@@ -125,7 +139,7 @@ export default function VerificationPage() {
             ))}
           </div>
 
-          <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">2. Upload document photos</p>
+          <p className="mono mb-2 text-[0.68rem] uppercase tracking-wide text-ink-faint">3. Upload document photos</p>
           <label className="mb-1 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule-strong bg-paper-raised px-4 py-8 text-center hover:border-brand-strong">
             <Upload size={20} className="text-ink-faint" />
             <span className="text-sm font-medium text-ink">Click to upload one or more photos</span>
