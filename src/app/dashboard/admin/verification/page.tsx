@@ -32,7 +32,7 @@ export default async function AdminVerification({
     let query = admin
       .from("profiles")
       .select(
-        "id, full_name, verification_status, verification_method, verification_document_paths, verification_submitted_at, verification_rejection_reason, payout_verified"
+        "id, full_name, legal_name, verification_status, verification_method, verification_document_paths, verification_submitted_at, verification_rejection_reason, payout_verified"
       )
       .not("verification_status", "eq", "unverified")
       .order("verification_submitted_at", { ascending: false, nullsFirst: false });
@@ -56,6 +56,7 @@ export default async function AdminVerification({
         return {
           id: p.id,
           sellerName: p.full_name || "—",
+          legalName: (p.legal_name as string | null) ?? null,
           sellerEmail: emailById.get(p.id) ?? null,
           method: p.verification_method,
           status: p.verification_status,

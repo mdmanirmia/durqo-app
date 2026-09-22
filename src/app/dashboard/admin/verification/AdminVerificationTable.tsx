@@ -9,6 +9,12 @@ import { setVerificationStatus, setPayoutVerified } from "../actions";
 export interface AdminVerificationRow {
   id: string;
   sellerName: string;
+  // KYC policy (Sep 2026) — the name typed at submission time, exactly as
+  // it appears on the uploaded ID (see legal_name, 053_kyc_name_match_and_
+  // buyer_verification.sql). Shown here so an admin can compare it against
+  // the ID photos, and it's what AdminWithdrawalsTable.tsx later compares
+  // against a payout request's account holder name.
+  legalName: string | null;
   sellerEmail: string | null;
   method: string | null;
   status: string;
@@ -112,6 +118,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink">{r.sellerName}</div>
                     {r.sellerEmail && <div className="text-xs text-ink-faint">{r.sellerEmail}</div>}
+                    {r.legalName && <div className="mt-1 text-xs text-ink-faint">Legal name: {r.legalName}</div>}
                   </td>
                   <td className="px-4 py-3 text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "—"}</td>
                   <td className="px-4 py-3">
@@ -199,6 +206,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                 <div className="min-w-0">
                   <div className="truncate font-medium text-ink">{r.sellerName}</div>
                   {r.sellerEmail && <div className="truncate text-xs text-ink-faint">{r.sellerEmail}</div>}
+                  {r.legalName && <div className="truncate text-xs text-ink-faint">Legal name: {r.legalName}</div>}
                 </div>
                 <span
                   className={`shrink-0 inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${
