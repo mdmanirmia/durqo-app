@@ -75,9 +75,11 @@ const TRUST_BAR = [
 // businesses-in-bdt (the page that replaced /pay-in-taka — see that page's
 // own top-of-file comment). One more line doesn't overcrowd the column.
 //
-// Sep 22, 2026: added a 7th Resources link to /how-to-buy-a-website-in-
-// bangladesh, the new Websites-category + Bangladesh-specific buyer guide
-// (see that page's own top-of-file comment).
+// Sep 22, 2026: /how-to-buy-a-website-in-bangladesh (a new Websites-category
+// + Bangladesh-specific buyer guide) intentionally has no footer link — the
+// merchant asked to keep it out of this column. It's still indexable (see
+// its own metadata/robots and its sitemap.ts entry) and reachable from
+// search and internal links elsewhere on the site.
 export default function Footer() {
   // Sep 2026 About-page redesign: the About page's own Final CTA already
   // closes with the same "browse marketplace / sell a business" pair this
@@ -167,7 +169,6 @@ export default function Footer() {
               <li><Link href="/seller-faq" className="hover:text-white">Seller&apos;s FAQ</Link></li>
               <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
               <li><Link href="/buy-and-sell-digital-businesses-in-bdt" className="hover:text-white">Buy &amp; Sell BDT</Link></li>
-              <li><Link href="/how-to-buy-a-website-in-bangladesh" className="hover:text-white">Buy a Website in Bangladesh</Link></li>
               <li><Link href="/transfer-room" className="hover:text-white">The Transfer Room</Link></li>
               <li><Link href="/report-an-issue" className="hover:text-white">Report an Issue</Link></li>
               <li><Link href="/listing-review" className="hover:text-white">How Listings Are Reviewed</Link></li>
