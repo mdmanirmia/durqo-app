@@ -161,6 +161,11 @@ const FAQ_GROUPS = [
         ),
       },
       {
+        question: "Will I ever be asked to verify my identity as a buyer?",
+        answer:
+          "Sometimes. Durqo may ask a buyer to complete identity or funds verification when it's required by the selected payment provider, the size of the transaction, or Durqo's own risk review. If this applies to your order, you'll see a request on your Orders page with instructions to upload documents, and the order's payout is held until it's reviewed.",
+      },
+      {
         question: "What happens right after I pay?",
         answer: (
           <>
