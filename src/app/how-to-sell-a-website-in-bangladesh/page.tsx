@@ -272,7 +272,7 @@ const FAQ_GROUPS: FaqGroup[] = [
     items: [
       {
         question: "Is seller identity verification required?",
-        answer: "The public Verified Seller badge is optional, but the same identity check is required before your very first payout, so most sellers complete it early.",
+        answer: "The public Verified Seller badge is optional, but the same identity check (KYC) is required before your very first payout, so most sellers complete it early. When you request a withdrawal, the account holder name you enter must also match your verified legal name, which Durqo checks by hand before approving the payout.",
       },
       {
         question: "Does connecting Google Analytics help my listing?",
@@ -301,7 +301,7 @@ const FAQ_JSON_LD = {
     { q: "Can I get paid in BDT through bKash, Rocket or Nagad?", a: "Yes. Once your sale is complete and eligible for payout, you can withdraw to bKash, Rocket or Nagad, each capped at ৳50,000 per day and ৳300,000 per month independently, or to Bank Transfer, PayPal or Wise with no daily or monthly cap." },
     { q: "How long does a payout take?", a: "Eligible payout requests are normally reviewed and processed within an estimated 3-5 business days. The Available to Withdraw balance shown in your dashboard is already net of Durqo's Success Fee." },
     { q: "What if my buyer paid through Escrow.com?", a: "Escrow.com sales are paid out to you directly by Escrow.com under its own terms, not through Durqo's own withdrawal system." },
-    { q: "Is seller identity verification required?", a: "The public Verified Seller badge is optional, but the same identity check is required before your very first payout, so most sellers complete it early." },
+    { q: "Is seller identity verification required?", a: "The public Verified Seller badge is optional, but the same identity check (KYC) is required before your very first payout, so most sellers complete it early. When you request a withdrawal, the account holder name you enter must also match your verified legal name, which Durqo checks by hand before approving the payout." },
     { q: "Does connecting Google Analytics help my listing?", a: "Yes. A connected GA property shows buyers a live, auto-updating panel and earns a GA Verified badge, an extra credibility signal." },
   ].map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
 };
