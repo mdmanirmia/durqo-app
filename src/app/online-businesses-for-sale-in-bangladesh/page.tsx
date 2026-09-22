@@ -10,6 +10,23 @@ import {
   CreditCard,
   FileSearch,
   Percent,
+  Sparkles,
+  ShoppingBag,
+  Video,
+  Share2,
+  Cloud,
+  Bot,
+  Smartphone,
+  Rocket,
+  Puzzle,
+  Link2,
+  Package,
+  Briefcase,
+  Users,
+  Gamepad2,
+  Mail,
+  Bitcoin,
+  type LucideIcon,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -97,6 +114,30 @@ function DashEyebrow({ children }: { children: React.ReactNode }) {
 function Inner({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`mx-auto max-w-[1200px] ${className}`}>{children}</div>;
 }
+
+// Purely visual: one icon per category id, matched by look/theme (not part
+// of CATEGORIES itself in src/lib/categories.ts) so the category grid below
+// reads as icon cards rather than plain text links. Falls back to Layers
+// for any category id not listed here, so a future category addition never
+// breaks this page.
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  websites: Globe2,
+  "e-commerce": ShoppingBag,
+  "youtube-channels": Video,
+  "social-media-accounts": Share2,
+  saas: Cloud,
+  "ai-apps-tools": Bot,
+  "apps-tools": Smartphone,
+  "startup-business": Rocket,
+  "plugins-themes-extensions": Puzzle,
+  domains: Link2,
+  "amazon-stores-kdp": Package,
+  "service-business": Briefcase,
+  "digital-agencies": Users,
+  games: Gamepad2,
+  newsletters: Mail,
+  "crypto-blockchain": Bitcoin,
+};
 
 const WHY_CARDS = [
   {
@@ -216,6 +257,13 @@ export default function OnlineBusinessesForSaleInBangladeshPage() {
                   products, apps and domains, all reviewed before they go live and all payable in BDT, by card, or
                   through Escrow.com.
                 </p>
+                <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-rule bg-brand-soft/40 px-4 py-3">
+                  <Sparkles size={15} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
+                  <p className="text-sm leading-relaxed text-ink">
+                    <span className="font-semibold">Quick answer:</span> Browse any of 15+ categories, pay in BDT,
+                    card or through Escrow.com, and Durqo charges buyers no marketplace fee at all.
+                  </p>
+                </div>
                 <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
                   Reviewed by the Durqo Marketplace Team · Updated September 2026
                 </p>
@@ -298,20 +346,26 @@ export default function OnlineBusinessesForSaleInBangladeshPage() {
               <h2 className="text-2xl sm:text-3xl">Every category currently listed on Durqo.</h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {CATEGORIES.map((category) => (
-                <Link
-                  key={category.id}
-                  href={`/buy/${category.id}`}
-                  className="group flex flex-col rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong"
-                >
-                  <h3 className="text-sm font-semibold text-ink">{category.name}</h3>
-                  <p className="mt-1.5 flex-1 text-xs leading-relaxed text-ink-soft">{category.description}</p>
-                  <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-strong">
-                    Browse {category.name}
-                    <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
-                  </span>
-                </Link>
-              ))}
+              {CATEGORIES.map((category) => {
+                const Icon = CATEGORY_ICONS[category.id] ?? Layers;
+                return (
+                  <Link
+                    key={category.id}
+                    href={`/buy/${category.id}`}
+                    className="group flex flex-col rounded-xl border border-rule bg-paper-raised p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-strong hover:shadow-md"
+                  >
+                    <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-brand-soft text-brand-strong transition group-hover:bg-brand-strong group-hover:text-white">
+                      <Icon size={18} />
+                    </span>
+                    <h3 className="text-sm font-semibold text-ink">{category.name}</h3>
+                    <p className="mt-1.5 flex-1 text-xs leading-relaxed text-ink-soft">{category.description}</p>
+                    <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-brand-strong">
+                      Browse {category.name}
+                      <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
           </Inner>
         </Container>
