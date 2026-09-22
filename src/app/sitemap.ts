@@ -28,6 +28,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    {
+      url: `${BASE_URL}/how-to-buy-a-website-in-bangladesh`,
+      // Sep 22, 2026: real publish/last-revision date, not a placeholder —
+      // matches this page's own Article JSON-LD dateModified.
+      lastModified: new Date("2026-09-22"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     { url: `${BASE_URL}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.3 },
