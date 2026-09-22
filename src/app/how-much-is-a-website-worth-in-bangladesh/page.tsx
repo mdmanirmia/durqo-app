@@ -242,6 +242,18 @@ export default function HowMuchIsAWebsiteWorthInBangladeshPage() {
                     Compare Listed Websites
                   </Button>
                 </div>
+                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
+                  {[
+                    { icon: TrendingUp, label: "Profit multiple, adjusted for risk" },
+                    { icon: ShieldCheck, label: "Verified evidence supports a higher price" },
+                    { icon: BarChart3, label: "Five factors buyers actually weigh" },
+                  ].map(({ icon: Icon, label }) => (
+                    <span key={label} className="flex items-center gap-2 text-sm text-ink-soft">
+                      <Icon size={15} className="text-brand" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
