@@ -176,6 +176,11 @@ const FAQ_GROUPS = [
           </>
         ),
       },
+      {
+        question: "Could I be asked to verify my identity as a buyer?",
+        answer:
+          "Sometimes. Durqo may ask a buyer to complete identity or funds verification when it's required by the selected payment provider, the size of the transaction, or Durqo's own risk review. If this applies to your order, you'll see a request on your Orders page with instructions to upload documents, and the order's payout to the seller is held until it's reviewed.",
+      },
     ],
   },
   {
@@ -200,6 +205,11 @@ const FAQ_GROUPS = [
         question: "How do I withdraw my earnings?",
         answer:
           "From your seller Earnings dashboard, once a sale is marked complete. Choose a payout method, enter your details, and submit a request, and the Durqo team reviews and processes it.",
+      },
+      {
+        question: "Do I need to verify my identity before I can withdraw?",
+        answer:
+          "Yes. Identity Verification (KYC) is required before your first withdrawal, and the account holder name on your payout details must match your verified identity, which Durqo checks by hand before approving a payout. This is separate from the optional public Verified badge shown on listings.",
       },
       {
         question: "Are bKash, Rocket and Nagad withdrawals limited?",
