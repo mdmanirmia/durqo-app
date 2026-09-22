@@ -66,9 +66,18 @@ const METHOD_FIELDS: Record<PayoutMethodId, PayoutField[]> = {
     { key: "number", label: "Nagad Number", placeholder: "01XXXXXXXXX" },
     { key: "accountName", label: "Account Holder Name", placeholder: "Name on the Nagad account" },
   ],
-  paypal: [{ key: "email", label: "PayPal Email", placeholder: "you@example.com" }],
+  // accountName added to PayPal/Wise (KYC policy, Sep 2026) — every method
+  // now has one, so buildAccountHolderName() below can read the same key
+  // regardless of which method is selected. Previously PayPal/Wise never
+  // asked for a name at all, which also meant Durqo had no way to check
+  // whose account a payout was actually going to for these two methods.
+  paypal: [
+    { key: "email", label: "PayPal Email", placeholder: "you@example.com" },
+    { key: "accountName", label: "Account Holder Name", placeholder: "Name on the PayPal account" },
+  ],
   wise: [
     { key: "email", label: "Wise Email", placeholder: "you@example.com" },
+    { key: "accountName", label: "Account Holder Name", placeholder: "Name on the Wise account" },
     { key: "details", label: "Additional Account Details", placeholder: "Any extra details Wise needs", optional: true },
   ],
 };
@@ -196,6 +205,16 @@ export default function SellerEarningsPage() {
   function buildPayoutDetails(): string {
     return currentFields.map((f) => `${f.label}: ${fieldValue(f.key).trim()}`).join(", ");
   }
+  // KYC policy (Sep 2026): every method's fields now include "accountName"
+  // (see METHOD_FIELDS above), extracted here so it can be sent to
+  // create_withdrawal_request() as its own column
+  // (withdrawal_requests.payout_account_holder_name) rather than only
+  // living inside the combined payoutDetails string — that's what lets an
+  // admin see it next to the seller's verified legal_name without parsing
+  // free text.
+  function buildAccountHolderName(): string {
+    return fieldValue("accountName").trim();
+  }
   function hasMissingRequiredField(): boolean {
     return currentFields.some((f) => !f.optional && !fieldValue(f.key).trim());
   }
@@ -206,7 +225,7 @@ export default function SellerEarningsPage() {
     setNotice(null);
     setSubmitting(true);
     try {
-      const result = await requestWithdrawal(methodId, buildPayoutDetails());
+      const result = await requestWithdrawal(methodId, buildPayoutDetails(), buildAccountHolderName());
       // requestWithdrawal() returns { ok: false, message } for every
       // expected failure (bad input, no session, or one of
       // create_withdrawal_request()'s own validation messages — e.g. the
@@ -279,7 +298,7 @@ export default function SellerEarningsPage() {
         <div className="mb-6 flex items-start gap-3 rounded-xl border border-gold/30 bg-gold-soft px-5 py-4">
           <Info size={18} className="mt-0.5 shrink-0 text-gold" />
           <p className="text-sm text-ink-soft">
-            Payout verification is required before your first withdrawal — this is separate from the optional public Verified badge. Submit your
+            Identity verification (KYC) is required before your first withdrawal — this is separate from the optional public Verified badge. Submit your
             identity documents from the{" "}
             <a href="/dashboard/seller/verification" className="font-semibold text-brand-strong hover:underline">
               Verification page
@@ -287,6 +306,13 @@ export default function SellerEarningsPage() {
             and our team will review them.
           </p>
         </div>
+      )}
+
+      {hasBalance && (
+        <p className="mb-4 max-w-[65ch] text-xs text-ink-faint">
+          The account holder name you enter below must match the legal name on your identity verification — our team checks this before approving a
+          payout.
+        </p>
       )}
 
       <div className="mb-10 rounded-xl border border-rule bg-paper-raised p-5">

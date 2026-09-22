@@ -64,9 +64,14 @@ export async function getMfsWithdrawalRate() {
 // setWithdrawalStatus() in dashboard/admin/actions.ts, using the
 // service-role client, after a human reviews it. Same shape as
 // submitVerification() in dashboard/seller/verification/actions.ts.
-export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetails: string): Promise<RequestWithdrawalResult> {
+export async function requestWithdrawal(
+  payoutMethod: PayoutMethod,
+  payoutDetails: string,
+  payoutAccountHolderName: string
+): Promise<RequestWithdrawalResult> {
   if (!PAYOUT_METHODS.includes(payoutMethod)) return { ok: false, message: "Invalid payout method" };
   if (!payoutDetails.trim()) return { ok: false, message: "Payout details are required" };
+  if (!payoutAccountHolderName.trim()) return { ok: false, message: "Account holder name is required" };
 
   const supabase = await createClient();
   if (!supabase) return { ok: false, message: "Backend not connected" };
@@ -86,7 +91,12 @@ export async function requestWithdrawal(payoutMethod: PayoutMethod, payoutDetail
   const bdtRate = MFS_METHODS.includes(payoutMethod) ? (await getUsdToBdtWithdrawalRate()).rate : null;
 
   const { data: request, error } = await supabase
-    .rpc("create_withdrawal_request", { p_payout_method: payoutMethod, p_payout_details: payoutDetails.trim(), p_bdt_rate: bdtRate })
+    .rpc("create_withdrawal_request", {
+      p_payout_method: payoutMethod,
+      p_payout_details: payoutDetails.trim(),
+      p_bdt_rate: bdtRate,
+      p_payout_account_holder_name: payoutAccountHolderName.trim(),
+    })
     .single();
   if (error) return { ok: false, message: error.message };
 
