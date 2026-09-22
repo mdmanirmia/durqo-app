@@ -29,6 +29,13 @@ export interface OrderRow {
   // Most real orders won't have one yet: the payment webhooks aren't wired
   // to create_transfer_room_on_payment as of this pass.
   hasTransferRoom: boolean;
+  // Buyer identity/funds verification (KYC policy, Sep 2026) — null means
+  // no request has ever been made for this order
+  // (053_kyc_name_match_and_buyer_verification.sql). Present on both the
+  // buyer's own orders (where they act on it) and the seller's (read-only,
+  // so a seller understands why a payout might be on hold).
+  verificationStatus: "requested" | "submitted" | "verified" | "rejected" | null;
+  verificationReason: string | null;
 }
 
 // Shared by both dashboards — `side` picks which foreign key identifies "me"
@@ -53,14 +60,19 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
   const listingIds = [...new Set(rows.map((r) => r.listing_id))];
   const counterpartyIds = [...new Set(rows.map((r) => r[counterpartyColumn]))];
   const orderIds = rows.map((r) => r.id);
-  const [{ data: listings }, { data: profiles }, { data: rooms }] = await Promise.all([
+  const [{ data: listings }, { data: profiles }, { data: rooms }, { data: verifications }] = await Promise.all([
     supabase.from("listings").select("id, title").in("id", listingIds),
     supabase.from("profiles").select("id, full_name").in("id", counterpartyIds),
     supabase.from("asset_transfer_rooms").select("order_id").in("order_id", orderIds),
+    // order_verifications_select_involved RLS lets both the buyer and the
+    // seller of an order read its row — see
+    // 053_kyc_name_match_and_buyer_verification.sql.
+    supabase.from("order_verifications").select("order_id, status, reason").in("order_id", orderIds),
   ]);
   const listingById = new Map((listings ?? []).map((l) => [l.id, l]));
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
   const orderIdsWithRoom = new Set((rooms ?? []).map((r) => r.order_id as string));
+  const verificationByOrderId = new Map((verifications ?? []).map((v) => [v.order_id as string, v]));
 
   return rows.map((r) => ({
     id: r.id,
@@ -76,6 +88,8 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
     sslcommerzBdtAmount: r.sslcommerz_bdt_amount === null || r.sslcommerz_bdt_amount === undefined ? undefined : Number(r.sslcommerz_bdt_amount),
     sslcommerzRate: r.sslcommerz_rate === null || r.sslcommerz_rate === undefined ? undefined : Number(r.sslcommerz_rate),
     hasTransferRoom: orderIdsWithRoom.has(r.id),
+    verificationStatus: (verificationByOrderId.get(r.id)?.status as OrderRow["verificationStatus"]) ?? null,
+    verificationReason: verificationByOrderId.get(r.id)?.reason ?? null,
   }));
 }
 

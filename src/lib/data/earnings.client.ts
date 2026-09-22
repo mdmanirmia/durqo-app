@@ -25,6 +25,7 @@ export interface WithdrawalRow {
   orderCount: number;
   payoutMethod: string;
   payoutDetails: string;
+  payoutAccountHolderName: string | null;
   status: WithdrawalStatus;
   adminNote: string | null;
   payoutReference: string | null;
@@ -110,6 +111,7 @@ export async function getMyWithdrawals(): Promise<WithdrawalRow[]> {
     orderCount: w.order_count,
     payoutMethod: w.payout_method,
     payoutDetails: w.payout_details,
+    payoutAccountHolderName: (w.payout_account_holder_name as string | null) ?? null,
     status: w.status as WithdrawalStatus,
     adminNote: w.admin_note,
     payoutReference: w.payout_reference ?? null,
