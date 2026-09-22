@@ -518,8 +518,8 @@ export default function HowToSellAWebsiteInBangladeshPage() {
                   <span className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-lg bg-brand-soft text-brand-strong">
                     <Percent size={18} />
                   </span>
-                  <p className="mono text-4xl font-bold tabular-nums text-brand-strong">{row.rate}</p>
-                  <p className="mt-2 text-sm font-medium text-ink-soft">{row.label}</p>
+                  <p className="mono text-center text-4xl font-bold tabular-nums text-brand-strong">{row.rate}</p>
+                  <p className="mt-2 text-center text-sm font-medium text-ink-soft">{row.label}</p>
                 </div>
               ))}
             </div>
@@ -605,7 +605,7 @@ export default function HowToSellAWebsiteInBangladeshPage() {
         <Container>
           <Inner className="text-center">
             <h2 className="text-2xl sm:text-3xl">Ready to list your website?</h2>
-            <p className="mx-auto mt-3 max-w-[52ch] text-sm text-white/70">
+            <p className="mx-auto mt-3 max-w-[52ch] text-center text-sm text-white/70">
               It&rsquo;s free to publish a listing, and you only pay Durqo&rsquo;s Success Fee once your sale completes.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
