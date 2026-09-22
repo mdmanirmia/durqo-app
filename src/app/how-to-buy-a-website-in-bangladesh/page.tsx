@@ -207,24 +207,24 @@ const WHY_CARDS = [
   {
     icon: TrendingUp,
     title: "Skip the slow start",
-    body: "An established website already has traffic, content and (in many cases) income — you're buying past those first, slowest months of building from zero.",
+    body: "An established website already has traffic, content and, in many cases, income. You're buying past those first, slowest months of building from zero.",
   },
   {
     icon: FileSearch,
     title: "Review the evidence first",
-    body: "Review a listing's income evidence, Google Analytics and Search Console information, where available, before you decide to buy — not after.",
+    body: "Review a listing's income evidence, Google Analytics and Search Console information, where available, before you decide to buy, not after.",
   },
   {
     icon: ShieldCheck,
     title: "A tracked handover, not a handshake",
-    body: "Your payment is held — by Durqo, or by Escrow.com on an Escrow.com purchase — and is only released once the seller has transferred the agreed assets and you've confirmed you received them.",
+    body: "Your payment is held by Durqo, or by Escrow.com on an Escrow.com purchase, and is only released once the seller has transferred the agreed assets and you've confirmed you received them.",
   },
 ];
 
 const BUYER_STEPS = [
   {
     title: "Set Your Budget and Acquisition Goals",
-    body: "Work out how much you can spend and what kind of website you want — a content site, an affiliate property, or something in another category — before you start comparing listings.",
+    body: "Work out how much you can spend and what kind of website you want (a content site, an affiliate property, or something in another category) before you start comparing listings.",
   },
   {
     title: "Browse Websites for Sale",
@@ -240,11 +240,11 @@ const BUYER_STEPS = [
   },
   {
     title: "Choose an Available Payment Method",
-    body: "Pay by card, in BDT through bKash, Rocket, Nagad or a supported bank via SSLCommerz, or through Escrow.com — whichever option is available for that listing and your location.",
+    body: "Pay by card, in BDT through bKash, Rocket, Nagad or a supported bank via SSLCommerz, or through Escrow.com, whichever option is available for that listing and your location.",
   },
   {
     title: "Complete the Transfer and Approve the Assets",
-    body: "Once payment is confirmed, the seller transfers the agreed assets in your order's Transfer Room (or through Escrow.com's own process). Review each item, then approve the transfer — or report an issue if something doesn't match what was agreed.",
+    body: "Once payment is confirmed, the seller transfers the agreed assets in your order's Transfer Room (or through Escrow.com's own process). Review each item, then approve the transfer, or report an issue if something doesn't match what was agreed.",
   },
 ];
 
@@ -252,12 +252,12 @@ const CHECK_ITEMS = [
   {
     icon: FileSearch,
     title: "Revenue evidence, where available",
-    body: "Up to 12 months of revenue evidence and supporting images submitted for review, where available and applicable — not just a typed-in number.",
+    body: "Up to 12 months of revenue evidence and supporting images submitted for review, where available and applicable, not just a typed-in number.",
   },
   {
     icon: Search,
     title: "Google Analytics & Search Console access",
-    body: "Some listings include a GA/GSC access-confirmation badge — an additional review layer on top of the seller's own reported traffic, where applicable.",
+    body: "Some listings include a GA/GSC access-confirmation badge, an additional review layer on top of the seller's own reported traffic, where applicable.",
   },
   {
     icon: BadgeCheck,
@@ -267,12 +267,12 @@ const CHECK_ITEMS = [
   {
     icon: ShieldCheck,
     title: "Seller verification status",
-    body: "A Verified Seller badge means that seller's identity document has been reviewed. Listing review and seller identity verification are separate processes — not every seller carries this badge.",
+    body: "A Verified Seller badge means that seller's identity document has been reviewed. Listing review and seller identity verification are separate processes, and not every seller carries this badge.",
   },
   {
     icon: MessageSquare,
     title: "Questions answered in the open",
-    body: "Read the listing's Comments thread, or ask your own question — a seller's answers stay visible to every future buyer, not just you.",
+    body: "Read the listing's Comments thread, or ask your own question. A seller's answers stay visible to every future buyer, not just you.",
   },
 ];
 
@@ -309,7 +309,7 @@ const PAYMENT_OPTIONS = [
     title: "Escrow.com",
     tint: "text-ink",
     bg: "bg-paper-sunk",
-    body: "As an alternative, Escrow.com independently holds and releases the funds under its own transaction terms — Durqo is not a party to funds it holds and does not control their release.",
+    body: "As an alternative, Escrow.com independently holds and releases the funds under its own transaction terms. Durqo is not a party to funds it holds and does not control their release.",
   },
 ];
 
@@ -332,12 +332,12 @@ const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "Is there a limit on how much I can pay through bKash, Rocket, Nagad or bank?",
         answer:
-          "For a website priced at USD 2,000 or less, you can pay the full BDT amount through SSLCommerz. Above that, the initial payment covers the BDT equivalent of USD 2,000, and Durqo emails instructions for the remaining balance — the asset transfer begins once the full amount has been received and verified.",
+          "For a website priced at USD 2,000 or less, you can pay the full BDT amount through SSLCommerz. Above that, the initial payment covers the BDT equivalent of USD 2,000, and Durqo emails instructions for the remaining balance. The asset transfer begins once the full amount has been received and verified.",
       },
       {
         question: "Can I pay by card if I'm buying from outside Bangladesh, or don't use mobile banking?",
         answer:
-          "Card payments through Stripe, and Escrow.com, are both available independently of BDT/SSLCommerz for eligible transactions — either option lets you pay the full listing price in a single payment with no online deposit cap.",
+          "Card payments through Stripe, and Escrow.com, are both available independently of BDT/SSLCommerz for eligible transactions. Either option lets you pay the full listing price in a single payment with no online deposit cap.",
       },
       {
         question: "Does Durqo charge buyers a marketplace fee?",
@@ -368,7 +368,7 @@ const FAQ_GROUPS: FaqGroup[] = [
         question: "What if the website doesn't match what was described?",
         answer: (
           <>
-            Report the issue instead of approving the transfer. Your payment stays held while Durqo reviews it — see{" "}
+            Report the issue instead of approving the transfer. Your payment stays held while Durqo reviews it. See{" "}
             <Link href="/report-an-issue" className="font-semibold text-brand-strong hover:underline">
               Report an Issue
             </Link>{" "}
@@ -379,7 +379,7 @@ const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "How do I actually take over the website after I've paid?",
         answer:
-          "The seller transfers the domain, hosting access, content and any other agreed assets — see What Exactly Will Be Transferred below for the full checklist.",
+          "The seller transfers the domain, hosting access, content and any other agreed assets. See What Exactly Will Be Transferred below for the full checklist.",
       },
       {
         question: "Does Durqo guarantee the website's future income?",
@@ -399,14 +399,14 @@ const FAQ_JSON_LD = {
   "@type": "FAQPage",
   mainEntity: [
     { q: "Can I pay for a website using bKash, Rocket or Nagad?", a: "On listings that offer BDT checkout through SSLCommerz, eligible payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards." },
-    { q: "Is there a limit on how much I can pay through bKash, Rocket, Nagad or bank?", a: "For a website priced at USD 2,000 or less, you can pay the full BDT amount through SSLCommerz. Above that, the initial payment covers the BDT equivalent of USD 2,000, and Durqo emails instructions for the remaining balance — the asset transfer begins once the full amount has been received and verified." },
-    { q: "Can I pay by card if I'm buying from outside Bangladesh, or don't use mobile banking?", a: "Card payments through Stripe, and Escrow.com, are both available independently of BDT/SSLCommerz for eligible transactions — either option lets you pay the full listing price in a single payment with no online deposit cap." },
+    { q: "Is there a limit on how much I can pay through bKash, Rocket, Nagad or bank?", a: "For a website priced at USD 2,000 or less, you can pay the full BDT amount through SSLCommerz. Above that, the initial payment covers the BDT equivalent of USD 2,000, and Durqo emails instructions for the remaining balance. The asset transfer begins once the full amount has been received and verified." },
+    { q: "Can I pay by card if I'm buying from outside Bangladesh, or don't use mobile banking?", a: "Card payments through Stripe, and Escrow.com, are both available independently of BDT/SSLCommerz for eligible transactions. Either option lets you pay the full listing price in a single payment with no online deposit cap." },
     { q: "Does Durqo charge buyers a marketplace fee?", a: "No. Durqo does not charge buyers a marketplace fee. You pay the agreed purchase price, although disclosed payment-provider, banking or currency-related charges may apply." },
     { q: "Is buying a website through Durqo safe?", a: "Durqo provides a structured listing, payment and transfer process, but no acquisition is completely risk-free. Buyers should review the evidence, ask questions, confirm the included assets and complete their own due diligence before paying." },
     { q: "What should I check before I buy a website?", a: "Review the listing's revenue and traffic evidence, any Google Analytics/Search Console access confirmation, domain authority and indexed-page figures where available, the seller's verification status, and the Comments thread for any open questions." },
     { q: "What happens after I complete payment?", a: "Your order gets its own Transfer Room (or, on an Escrow.com purchase, its own Escrow.com process). The seller transfers the agreed assets, you review them, and payment is released once you approve the transfer." },
     { q: "What if the website doesn't match what was described?", a: "Report the issue instead of approving the transfer. Your payment stays held while Durqo reviews it." },
-    { q: "How do I actually take over the website after I've paid?", a: "The seller transfers the domain, hosting access, content and any other agreed assets — see What Exactly Will Be Transferred for the full checklist." },
+    { q: "How do I actually take over the website after I've paid?", a: "The seller transfers the domain, hosting access, content and any other agreed assets. See What Exactly Will Be Transferred for the full checklist." },
     { q: "Does Durqo guarantee the website's future income?", a: "No. Revenue, traffic and operating data describe historical performance only. Durqo does not guarantee that a website will maintain the same income, traffic, rankings or profitability after the sale." },
   ].map(({ q, a }) => ({
     "@type": "Question",
@@ -499,7 +499,7 @@ export default function HowToBuyAWebsiteInBangladeshPage() {
                     <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">How you pay</p>
                     <h3 className="text-sm font-semibold text-ink">Card, BDT, or Escrow.com</h3>
                     <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      Pay by card, in BDT through bKash, Rocket, Nagad or a supported bank, or through Escrow.com —
+                      Pay by card, in BDT through bKash, Rocket, Nagad or a supported bank, or through Escrow.com,
                       whichever option is available for that listing.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
@@ -515,7 +515,7 @@ export default function HowToBuyAWebsiteInBangladeshPage() {
                 <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-paper-sunk px-3.5 py-3">
                   <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
                   <p className="text-xs leading-relaxed text-ink-faint">
-                    Payment protection depends on the method you choose — Durqo or Escrow.com holds the funds until
+                    Payment protection depends on the method you choose. Durqo or Escrow.com holds the funds until
                     the transfer is confirmed.
                   </p>
                 </div>
