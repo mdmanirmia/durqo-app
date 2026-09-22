@@ -274,10 +274,10 @@ export default function HowMuchIsAWebsiteWorthInBangladeshPage() {
                   <span className="mono text-sm font-semibold tabular-nums text-ink">24x&ndash;40x</span>
                 </div>
                 <div className="mt-4 rounded-lg bg-brand-soft px-3.5 py-3 text-center">
-                  <p className="mono text-sm font-bold tabular-nums text-brand-strong">
+                  <p className="mono text-center text-sm font-bold tabular-nums text-brand-strong">
                     Roughly $24,000&ndash;$40,000
                   </p>
-                  <p className="mt-1 text-[0.7rem] text-brand-strong/80">Illustrative range only</p>
+                  <p className="mt-1 text-center text-[0.7rem] text-brand-strong/80">Illustrative range only</p>
                 </div>
 
                 <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-paper-sunk px-3.5 py-3">
@@ -422,7 +422,7 @@ export default function HowMuchIsAWebsiteWorthInBangladeshPage() {
         <Container>
           <Inner className="text-center">
             <h2 className="text-2xl sm:text-3xl">Ready to find out what buyers will offer?</h2>
-            <p className="mx-auto mt-3 max-w-[52ch] text-sm text-white/70">
+            <p className="mx-auto mt-3 max-w-[52ch] text-center text-sm text-white/70">
               List your website with clear evidence, and set the price you believe reflects its value.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
