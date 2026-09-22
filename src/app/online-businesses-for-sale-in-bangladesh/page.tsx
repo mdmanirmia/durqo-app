@@ -467,7 +467,7 @@ export default function OnlineBusinessesForSaleInBangladeshPage() {
         <Container>
           <Inner className="text-center">
             <h2 className="text-2xl sm:text-3xl">Ready to find your next business?</h2>
-            <p className="mx-auto mt-3 max-w-[52ch] text-sm text-white/70">
+            <p className="mx-auto mt-3 max-w-[52ch] text-center text-sm text-white/70">
               Browse reviewed listings across 15+ categories, or list your own business with no upfront fee.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
