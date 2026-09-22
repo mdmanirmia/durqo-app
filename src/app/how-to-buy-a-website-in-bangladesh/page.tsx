@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
-  ChevronRight,
   Search,
   MessageSquare,
   ShieldCheck,
@@ -427,46 +426,100 @@ export default function HowToBuyAWebsiteInBangladeshPage() {
       <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
         <Container>
           <Inner>
-            <nav aria-label="Breadcrumb" className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-ink-faint">
-              <Link href="/" className="hover:text-ink">Home</Link>
-              <ChevronRight size={12} />
-              <span>Resources</span>
-              <ChevronRight size={12} />
-              <span className="text-ink-soft">{PAGE_TITLE}</span>
-            </nav>
+            <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:gap-16">
+              <div className="min-w-0">
+                <DashEyebrow>Buyer guide · Bangladesh</DashEyebrow>
+                <h1 className="max-w-[26ch] text-4xl leading-[1.1] sm:text-5xl lg:text-[3.4rem]">
+                  How to Buy a Website in <span className="text-brand">Bangladesh</span>
+                </h1>
+                <p className="mt-5 max-w-[62ch] text-lg leading-relaxed text-ink-soft">
+                  Buying an existing website can give you an established domain, content, audience and revenue
+                  history. This guide explains how buyers in Bangladesh can review a listing, verify the business,
+                  choose an available payment method and complete the asset transfer through Durqo.
+                </p>
+                <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
+                  Reviewed by the Durqo Marketplace Team · Updated September 2026
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Button href="/buy/websites" size="lg">
+                    Browse Websites for Sale
+                    <ArrowRight size={16} />
+                  </Button>
+                  <Button href="/payments" variant="secondary" size="lg">
+                    How Payments Are Held
+                  </Button>
+                </div>
+                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
+                  {[
+                    { icon: FileSearch, label: "Income and traffic evidence submitted for review" },
+                    { icon: BkashIcon, label: "Pay in BDT, by card, or through Escrow.com" },
+                    { icon: ShieldCheck, label: "Payment protection based on the selected payment method" },
+                  ].map(({ icon: Icon, label }) => (
+                    <span key={label} className="flex items-center gap-2 text-sm text-ink-soft">
+                      <Icon size={15} className="text-brand" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-            <DashEyebrow>Buyer guide · Bangladesh</DashEyebrow>
-            <h1 className="max-w-[26ch] text-4xl leading-[1.1] sm:text-5xl lg:text-[3.4rem]">
-              How to Buy a Website in <span className="text-brand">Bangladesh</span>
-            </h1>
-            <p className="mt-5 max-w-[68ch] text-lg leading-relaxed text-ink-soft">
-              Buying an existing website can give you an established domain, content, audience and revenue history.
-              This guide explains how buyers in Bangladesh can review a listing, verify the business, choose an
-              available payment method and complete the asset transfer through Durqo.
-            </p>
-            <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
-              Reviewed by the Durqo Marketplace Team · Updated September 2026
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button href="/buy/websites" size="lg">
-                Browse Websites for Sale
-                <ArrowRight size={16} />
-              </Button>
-              <Button href="/payments" variant="secondary" size="lg">
-                How Payments Are Held
-              </Button>
-            </div>
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2">
-              {[
-                { icon: FileSearch, label: "Income and traffic evidence submitted for review" },
-                { icon: BkashIcon, label: "Pay in BDT, by card, or through Escrow.com" },
-                { icon: ShieldCheck, label: "Payment protection based on the selected payment method" },
-              ].map(({ icon: Icon, label }) => (
-                <span key={label} className="flex items-center gap-2 text-sm text-ink-soft">
-                  <Icon size={15} className="text-brand" />
-                  {label}
-                </span>
-              ))}
+              <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
+                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                  Buying Overview
+                </p>
+
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Search size={16} />
+                  </span>
+                  <div>
+                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">Before you buy</p>
+                    <h3 className="text-sm font-semibold text-ink">Review the listing&rsquo;s evidence</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                      Compare revenue evidence, traffic information and Google Analytics/Search Console access, where
+                      available, before you decide.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {["Revenue evidence", "GA/GSC access", "Domain authority"].map((label) => (
+                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="my-5 h-px bg-rule" aria-hidden />
+
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
+                    <CreditCard size={16} />
+                  </span>
+                  <div>
+                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">How you pay</p>
+                    <h3 className="text-sm font-semibold text-ink">Card, BDT, or Escrow.com</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                      Pay by card, in BDT through bKash, Rocket, Nagad or a supported bank, or through Escrow.com —
+                      whichever option is available for that listing.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {["Card", "bKash", "Rocket", "Nagad", "Bank", "Escrow.com"].map((label) => (
+                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-paper-sunk px-3.5 py-3">
+                  <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
+                  <p className="text-xs leading-relaxed text-ink-faint">
+                    Payment protection depends on the method you choose — Durqo or Escrow.com holds the funds until
+                    the transfer is confirmed.
+                  </p>
+                </div>
+              </div>
             </div>
           </Inner>
         </Container>
