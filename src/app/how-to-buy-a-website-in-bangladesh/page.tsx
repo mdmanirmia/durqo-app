@@ -734,7 +734,7 @@ export default function HowToBuyAWebsiteInBangladeshPage() {
         <Container>
           <Inner className="text-center">
             <h2 className="text-2xl sm:text-3xl">Ready to find your next website?</h2>
-            <p className="mx-auto mt-3 max-w-[52ch] text-sm text-white/70">
+            <p className="mx-auto mt-3 max-w-[52ch] text-center text-sm text-white/70">
               Browse Website listings with income and traffic evidence submitted for review, and pay the way that
               works for you.
             </p>
