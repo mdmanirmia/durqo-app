@@ -54,6 +54,16 @@ import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 //     a Websites listing and a Bangladeshi seller's payout options.
 // No visible breadcrumb nav, matching the same choice already made on this
 // page's sibling guides for consistency.
+//
+// Sep 22, 2026, same-day follow-up: per direct owner request to make the
+// KYC-before-first-withdrawal and payout-name-matching requirements
+// especially clear on this page specifically, split the single buried FAQ
+// answer that covered both into two separate, plainly-titled FAQs, added
+// an explicit KYC/name-match callout box above the payout methods grid,
+// and named both requirements directly in steps 3 and 6 of the seller
+// flow rather than only in the FAQ section. See claude/kyc-identity-
+// verification-and-buyer-verification-addendum.md for the underlying
+// system these describe.
 const META_TITLE = "How to Sell a Website in Bangladesh: Step-by-Step Guide | Durqo";
 const META_DESCRIPTION =
   "Learn how to list, price and sell a website in Bangladesh: what buyers check, Durqo's seller fee tiers, and how to get paid in BDT through bKash, Rocket, Nagad or bank.";
@@ -170,7 +180,7 @@ const SELLER_STEPS = [
   },
   {
     title: "Verify What You Can",
-    body: "Connect Google Analytics for a GA Verified badge, and submit revenue evidence and Search Console, SEMrush or Ahrefs data where available. Verifying your identity adds a Verified Seller badge too.",
+    body: "Connect Google Analytics for a GA Verified badge, and submit revenue evidence and Search Console, SEMrush or Ahrefs data where available. Verifying your identity adds a public Verified Seller badge, and this same identity check (KYC) is required before your very first withdrawal, so it's worth doing early.",
   },
   {
     title: "Submit for Listing Review",
@@ -182,7 +192,7 @@ const SELLER_STEPS = [
   },
   {
     title: "Transfer the Assets and Get Paid",
-    body: "Once a buyer pays, hand over the agreed assets in your order's Transfer Room. After the buyer approves the transfer, request your payout in BDT or another available method.",
+    body: "Once a buyer pays, hand over the agreed assets in your order's Transfer Room. After the buyer approves the transfer, request your payout in BDT or another available method. Identity verification (KYC) is required before your first request, and the account holder name you enter must match your verified identity.",
   },
 ];
 
@@ -272,7 +282,11 @@ const FAQ_GROUPS: FaqGroup[] = [
     items: [
       {
         question: "Is seller identity verification required?",
-        answer: "The public Verified Seller badge is optional, but the same identity check (KYC) is required before your very first payout, so most sellers complete it early. When you request a withdrawal, the account holder name you enter must also match your verified legal name, which Durqo checks by hand before approving the payout.",
+        answer: "The public Verified Seller badge is optional, but identity verification (KYC) itself is required before your very first payout, so most sellers complete it early from their dashboard's Verification page.",
+      },
+      {
+        question: "Does my payout account name need to match my verified identity?",
+        answer: "Yes. When you request a withdrawal, the account holder name you enter for your payout method must match the legal name on your identity verification. Durqo's team checks this by hand as part of reviewing every payout request.",
       },
       {
         question: "Does connecting Google Analytics help my listing?",
@@ -301,7 +315,8 @@ const FAQ_JSON_LD = {
     { q: "Can I get paid in BDT through bKash, Rocket or Nagad?", a: "Yes. Once your sale is complete and eligible for payout, you can withdraw to bKash, Rocket or Nagad, each capped at ৳50,000 per day and ৳300,000 per month independently, or to Bank Transfer, PayPal or Wise with no daily or monthly cap." },
     { q: "How long does a payout take?", a: "Eligible payout requests are normally reviewed and processed within an estimated 3-5 business days. The Available to Withdraw balance shown in your dashboard is already net of Durqo's Success Fee." },
     { q: "What if my buyer paid through Escrow.com?", a: "Escrow.com sales are paid out to you directly by Escrow.com under its own terms, not through Durqo's own withdrawal system." },
-    { q: "Is seller identity verification required?", a: "The public Verified Seller badge is optional, but the same identity check (KYC) is required before your very first payout, so most sellers complete it early. When you request a withdrawal, the account holder name you enter must also match your verified legal name, which Durqo checks by hand before approving the payout." },
+    { q: "Is seller identity verification required?", a: "The public Verified Seller badge is optional, but identity verification (KYC) itself is required before your very first payout, so most sellers complete it early from their dashboard's Verification page." },
+    { q: "Does my payout account name need to match my verified identity?", a: "Yes. When you request a withdrawal, the account holder name you enter for your payout method must match the legal name on your identity verification. Durqo's team checks this by hand as part of reviewing every payout request." },
     { q: "Does connecting Google Analytics help my listing?", a: "Yes. A connected GA property shows buyers a live, auto-updating panel and earns a GA Verified badge, an extra credibility signal." },
   ].map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
 };
@@ -536,6 +551,15 @@ export default function HowToSellAWebsiteInBangladeshPage() {
               <h2 className="text-2xl sm:text-3xl">Payout methods for sellers in Bangladesh.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Once your sale is complete and your payout is eligible, request a withdrawal to any available method.
+              </p>
+            </div>
+            <div className="mb-6 flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
+              <ShieldCheck size={15} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
+              <p className="text-sm leading-relaxed text-ink">
+                Two checks apply before money moves: <span className="font-semibold">identity verification (KYC)</span>{" "}
+                is required before your very first withdrawal, and the <span className="font-semibold">account
+                holder name</span> you enter for your payout method must match the legal name on that verification.
+                Durqo checks this by hand before approving each payout.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
