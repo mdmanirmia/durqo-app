@@ -151,6 +151,11 @@ const FAQ_GROUPS = [
           </>
         ),
       },
+      {
+        question: "Does my payout account name need to match my verified identity?",
+        answer:
+          "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification. Durqo's team checks this by hand as part of reviewing every payout request.",
+      },
     ],
   },
   {
