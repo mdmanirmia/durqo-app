@@ -549,7 +549,7 @@ export default function BuyAndSellInBdtPage() {
             <div className="mb-10 text-center">
               <DashEyebrow center>Choose the information relevant to you</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Buying and Selling Follow Different BDT Processes</h2>
-              <p className="mx-auto mt-3 max-w-[52ch] text-sm text-ink-soft">
+              <p className="mx-auto mt-3 max-w-[52ch] text-center text-sm text-ink-soft">
                 Choose the information that applies to your role in the transaction.
               </p>
             </div>
@@ -774,7 +774,7 @@ export default function BuyAndSellInBdtPage() {
             <div className="mb-10 text-center">
               <DashEyebrow center>After full payment</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Complete the Handover in the Transfer Room</h2>
-              <p className="mx-auto mt-3 max-w-[64ch] text-[0.95rem] leading-relaxed text-ink-soft">
+              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
                 After the complete purchase price has been received and verified, the buyer and seller use a private
                 Transfer Room for the order. The seller submits each asset included in the sale, and the buyer
                 reviews and confirms each item before approving the completed transfer or reporting an issue.
@@ -896,7 +896,7 @@ export default function BuyAndSellInBdtPage() {
             <div className="mb-10 max-w-[70ch] text-center sm:mx-auto">
               <DashEyebrow center>Built for Bangladesh</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Why Buy and Sell Digital Businesses Through Durqo?</h2>
-              <p className="mx-auto mt-3 max-w-[60ch] text-[0.95rem] leading-relaxed text-ink-soft">
+              <p className="mx-auto mt-3 max-w-[60ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
                 Durqo combines Bangladesh-focused payment accessibility with a structured marketplace and
                 asset-transfer process.
               </p>
@@ -930,7 +930,7 @@ export default function BuyAndSellInBdtPage() {
         <Container>
           <Inner>
             <h2 className="text-2xl text-white sm:text-3xl">Ready to Buy or Sell a Digital Business?</h2>
-            <p className="mx-auto mt-3 max-w-[54ch] text-[0.95rem] leading-relaxed text-white/65">
+            <p className="mx-auto mt-3 max-w-[54ch] text-center text-[0.95rem] leading-relaxed text-white/65">
               Explore income-generating digital businesses or create a listing and connect with interested buyers
               through Durqo.
             </p>
