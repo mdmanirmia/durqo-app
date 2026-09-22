@@ -44,6 +44,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    {
+      url: `${BASE_URL}/how-to-sell-a-website-in-bangladesh`,
+      // Sep 22, 2026: new keyword-targeted guide page, seller-side
+      // counterpart to /how-to-buy-a-website-in-bangladesh. lastModified
+      // matches this page's own Article JSON-LD dateModified.
+      lastModified: new Date("2026-09-22"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/online-businesses-for-sale-in-bangladesh`,
+      // Sep 22, 2026: new keyword-targeted category-hub page for
+      // Bangladeshi buyers browsing across all 15+ categories.
+      lastModified: new Date("2026-09-22"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${BASE_URL}/how-much-is-a-website-worth-in-bangladesh`,
+      // Sep 22, 2026: new keyword-targeted valuation guide page.
+      lastModified: new Date("2026-09-22"),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${BASE_URL}/website-due-diligence-checklist-for-buyers`,
+      // Sep 22, 2026: new keyword-targeted due-diligence checklist page.
+      lastModified: new Date("2026-09-22"),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
     { url: `${BASE_URL}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.3 },
