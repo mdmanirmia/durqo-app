@@ -426,11 +426,21 @@ export default function DurqoVsMotionInvestPage() {
                     </p>
                     <p className="flex items-start gap-2 text-sm leading-relaxed text-ink-soft">
                       <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
-                      {row.durqo}
+                      <span>
+                        <span className="mono mr-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-brand-strong sm:hidden">
+                          Durqo:
+                        </span>
+                        {row.durqo}
+                      </span>
                     </p>
                     <p className="flex items-start gap-2 text-sm leading-relaxed text-ink-soft">
                       <Circle size={15} className="mt-0.5 shrink-0 text-ink-faint" aria-hidden />
-                      {row.motionInvest}
+                      <span>
+                        <span className="mono mr-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">
+                          Motion Invest:
+                        </span>
+                        {row.motionInvest}
+                      </span>
                     </p>
                   </div>
                 ))}
