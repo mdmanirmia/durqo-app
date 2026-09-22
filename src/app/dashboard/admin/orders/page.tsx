@@ -31,10 +31,18 @@ export default async function AdminOrders() {
     // Transfer Room, so the table can show "Start Asset Transfer" only
     // where there's actually nothing yet (see AdminOrderRow.hasTransferRoom).
     const orderIds = (orders ?? []).map((o) => o.id);
-    const { data: rooms } = orderIds.length
-      ? await admin.from("asset_transfer_rooms").select("order_id").in("order_id", orderIds)
-      : { data: [] as { order_id: string }[] };
+    const [{ data: rooms }, { data: verifications }] = await Promise.all([
+      orderIds.length
+        ? admin.from("asset_transfer_rooms").select("order_id").in("order_id", orderIds)
+        : Promise.resolve({ data: [] as { order_id: string }[] }),
+      // KYC policy (Sep 2026) — one row per order at most (order_id is
+      // unique, 053_kyc_name_match_and_buyer_verification.sql).
+      orderIds.length
+        ? admin.from("order_verifications").select("order_id, status, reason").in("order_id", orderIds)
+        : Promise.resolve({ data: [] as { order_id: string; status: string; reason: string | null }[] }),
+    ]);
     const orderIdsWithRoom = new Set((rooms ?? []).map((r) => r.order_id));
+    const verificationByOrderId = new Map((verifications ?? []).map((v) => [v.order_id as string, v]));
 
     rows = (orders ?? []).map((o) => ({
       id: o.id,
@@ -51,6 +59,8 @@ export default async function AdminOrders() {
         o.sslcommerz_bdt_amount === null || o.sslcommerz_bdt_amount === undefined ? undefined : Number(o.sslcommerz_bdt_amount),
       sslcommerzRate: o.sslcommerz_rate === null || o.sslcommerz_rate === undefined ? undefined : Number(o.sslcommerz_rate),
       hasTransferRoom: orderIdsWithRoom.has(o.id),
+      verificationStatus: (verificationByOrderId.get(o.id)?.status as AdminOrderRow["verificationStatus"]) ?? null,
+      verificationReason: verificationByOrderId.get(o.id)?.reason ?? null,
     }));
   }
 

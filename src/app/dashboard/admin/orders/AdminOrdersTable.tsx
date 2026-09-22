@@ -4,9 +4,30 @@ import { useState, useTransition } from "react";
 import { ClipboardList } from "lucide-react";
 import { StatusBadge, statusLabel } from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { fmtUSD } from "@/lib/format";
-import { setOrderStatus, setOrderPaymentChannel, startAssetTransfer } from "../actions";
+import { setOrderStatus, setOrderPaymentChannel, startAssetTransfer, requestBuyerVerification, reviewBuyerVerification } from "../actions";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
+
+// KYC policy (Sep 2026) — "Buyers may be asked to complete identity or
+// funds verification when required by the selected payment provider,
+// transaction value, or Durqo's risk review." null means no request has
+// ever been made for this order (053_kyc_name_match_and_buyer_verification.sql).
+export type BuyerVerificationStatus = "requested" | "submitted" | "verified" | "rejected" | null;
+
+const VERIFICATION_LABEL: Record<Exclude<BuyerVerificationStatus, null>, string> = {
+  requested: "Requested",
+  submitted: "Submitted — review",
+  verified: "Verified",
+  rejected: "Rejected",
+};
+
+const VERIFICATION_STYLE: Record<Exclude<BuyerVerificationStatus, null>, string> = {
+  requested: "border border-gold/30 bg-gold-soft text-[#92730F]",
+  submitted: "border border-brand/30 bg-brand-soft text-brand-strong",
+  verified: "border border-brand-strong/30 bg-brand-strong/10 text-brand-strong",
+  rejected: "border border-danger/30 bg-danger-soft text-danger",
+};
 
 export interface AdminOrderRow {
   id: string;
@@ -31,6 +52,8 @@ export interface AdminOrderRow {
   // recovery path for any order whose webhook-triggered auto-create ever
   // failed silently.
   hasTransferRoom: boolean;
+  verificationStatus: BuyerVerificationStatus;
+  verificationReason: string | null;
 }
 
 const STATUSES = ["requested", "awaiting_payment", "in_escrow", "in_durqo", "completed", "cancelled"] as const;
@@ -81,6 +104,67 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
   const [startedTransferIds, setStartedTransferIds] = useState<string[]>([]);
   const [isTransferPending, startTransferTransition] = useTransition();
 
+  // Buyer identity/funds verification (KYC policy, Sep 2026).
+  const [verificationOverrides, setVerificationOverrides] = useState<Record<string, BuyerVerificationStatus>>({});
+  const [pendingVerificationId, setPendingVerificationId] = useState<string | null>(null);
+  const [errorVerificationId, setErrorVerificationId] = useState<string | null>(null);
+  const [isVerificationPending, startVerificationTransition] = useTransition();
+  const [requestDialogTarget, setRequestDialogTarget] = useState<{ id: string; listingTitle: string } | null>(null);
+  const [requestReason, setRequestReason] = useState("");
+  const [rejectDialogTarget, setRejectDialogTarget] = useState<{ id: string; listingTitle: string } | null>(null);
+  const [rejectNote, setRejectNote] = useState("");
+
+  function submitVerificationRequest() {
+    if (!requestDialogTarget) return;
+    const target = requestDialogTarget;
+    setPendingVerificationId(target.id);
+    setErrorVerificationId(null);
+    startVerificationTransition(async () => {
+      try {
+        await requestBuyerVerification(target.id, requestReason);
+        setVerificationOverrides((prev) => ({ ...prev, [target.id]: "requested" }));
+      } catch {
+        setErrorVerificationId(target.id);
+      } finally {
+        setPendingVerificationId(null);
+        setRequestDialogTarget(null);
+      }
+    });
+  }
+
+  function approveVerification(id: string) {
+    setPendingVerificationId(id);
+    setErrorVerificationId(null);
+    startVerificationTransition(async () => {
+      try {
+        await reviewBuyerVerification(id, "verified");
+        setVerificationOverrides((prev) => ({ ...prev, [id]: "verified" }));
+      } catch {
+        setErrorVerificationId(id);
+      } finally {
+        setPendingVerificationId(null);
+      }
+    });
+  }
+
+  function submitVerificationRejection() {
+    if (!rejectDialogTarget) return;
+    const target = rejectDialogTarget;
+    setPendingVerificationId(target.id);
+    setErrorVerificationId(null);
+    startVerificationTransition(async () => {
+      try {
+        await reviewBuyerVerification(target.id, "rejected", rejectNote);
+        setVerificationOverrides((prev) => ({ ...prev, [target.id]: "rejected" }));
+      } catch {
+        setErrorVerificationId(target.id);
+      } finally {
+        setPendingVerificationId(null);
+        setRejectDialogTarget(null);
+      }
+    });
+  }
+
   function startTransfer(id: string) {
     setPendingTransferId(id);
     setErrorTransferId(null);
@@ -128,6 +212,59 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
     return <EmptyState icon={ClipboardList} title="No orders yet" body="Orders will show up here as soon as a buyer checks out on the marketplace." />;
   }
 
+  function renderVerification(o: AdminOrderRow) {
+    const status = verificationOverrides[o.id] ?? o.verificationStatus;
+    const busy = isVerificationPending && pendingVerificationId === o.id;
+    return (
+      <div>
+        {status ? (
+          <span className={`inline-flex rounded-md px-2 py-1 text-xs font-semibold ${VERIFICATION_STYLE[status]}`}>{VERIFICATION_LABEL[status]}</span>
+        ) : (
+          <span className="text-xs text-ink-faint">Not required</span>
+        )}
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {(status === null || status === "verified" || status === "rejected") && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setRequestReason("");
+                setRequestDialogTarget({ id: o.id, listingTitle: o.listingTitle });
+              }}
+              className="rounded-md border border-rule-strong px-2 py-1 text-xs font-medium text-ink-soft hover:border-brand-strong disabled:opacity-60"
+            >
+              Request verification
+            </button>
+          )}
+          {status === "submitted" && (
+            <>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => approveVerification(o.id)}
+                className="rounded-md bg-brand px-2 py-1 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
+              >
+                Verify
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => {
+                  setRejectNote("");
+                  setRejectDialogTarget({ id: o.id, listingTitle: o.listingTitle });
+                }}
+                className="rounded-md border border-rule-strong px-2 py-1 text-xs font-medium text-ink-soft hover:border-danger/40 hover:text-danger disabled:opacity-60"
+              >
+                Reject
+              </button>
+            </>
+          )}
+        </div>
+        {errorVerificationId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Desktop table. 2026-09-12 fix: this used to be 8 columns with two
@@ -149,6 +286,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                 <th className="px-3 py-3 font-medium">Amount</th>
                 <th className="px-3 py-3 font-medium">Status</th>
                 <th className="px-3 py-3 font-medium">Payment Channel</th>
+                <th className="px-3 py-3 font-medium">Buyer Verification</th>
                 <th className="px-3 py-3 font-medium">Asset Transfer</th>
                 <th className="px-3 py-3 font-medium">Date</th>
               </tr>
@@ -213,6 +351,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                       </select>
                       {errorChannelId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
                     </td>
+                    <td className="px-3 py-3">{renderVerification(o)}</td>
                     <td className="px-3 py-3">
                       {hasRoom ? (
                         <span className="text-xs text-ink-faint">Room open</span>
@@ -300,6 +439,10 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                 </select>
                 {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
               </div>
+              <div className="mt-3">
+                <label className="mb-1 block text-xs text-ink-faint">Buyer Verification</label>
+                {renderVerification(o)}
+              </div>
               {(hasRoom || paymentLanded) && (
                 <div className="mt-3">
                   <label className="mb-1 block text-xs text-ink-faint">Asset Transfer</label>
@@ -324,6 +467,51 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={requestDialogTarget !== null}
+        title={`Request verification for "${requestDialogTarget?.listingTitle}"?`}
+        body={
+          <>
+            <p className="mb-2">The buyer will get an email and a prompt on their Orders page asking them to upload identity or funds documents. Their payout to the seller is held until this is resolved.</p>
+            <textarea
+              rows={3}
+              autoFocus
+              placeholder="e.g. Order value over $50,000 — identity verification required"
+              value={requestReason}
+              onChange={(e) => setRequestReason(e.target.value)}
+              className="w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm text-ink focus:border-brand-strong focus:outline-none"
+            />
+          </>
+        }
+        confirmLabel="Request verification"
+        busy={isVerificationPending && pendingVerificationId === requestDialogTarget?.id}
+        onConfirm={submitVerificationRequest}
+        onCancel={() => setRequestDialogTarget(null)}
+      />
+
+      <ConfirmDialog
+        open={rejectDialogTarget !== null}
+        title={`Reject verification for "${rejectDialogTarget?.listingTitle}"?`}
+        body={
+          <>
+            <p className="mb-2">The buyer will get an email with this note and can resubmit once you request verification again.</p>
+            <textarea
+              rows={3}
+              autoFocus
+              placeholder="e.g. Document photo is unreadable"
+              value={rejectNote}
+              onChange={(e) => setRejectNote(e.target.value)}
+              className="w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm text-ink focus:border-brand-strong focus:outline-none"
+            />
+          </>
+        }
+        confirmLabel="Reject"
+        danger
+        busy={isVerificationPending && pendingVerificationId === rejectDialogTarget?.id}
+        onConfirm={submitVerificationRejection}
+        onCancel={() => setRejectDialogTarget(null)}
+      />
     </>
   );
 }
