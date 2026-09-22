@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FileText, ArrowLeftRight, ClipboardList } from "lucide-react";
+import { FileText, ArrowLeftRight, ClipboardList, ShieldAlert } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { StatusBadge } from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
@@ -10,6 +10,22 @@ import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD } from "@/lib/format";
 import { getSellerOrders, type OrderRow } from "@/lib/data/orders.client";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
+
+// Read-only reminder for the seller when a buyer's identity/funds
+// verification is still outstanding (KYC policy, Sep 2026) — the seller
+// can't act on it (only the buyer uploads, only an admin reviews), but
+// this is why that order's balance isn't claimable yet on the Earnings
+// page (create_withdrawal_request() excludes it — see
+// 053_kyc_name_match_and_buyer_verification.sql).
+function VerificationNote({ status }: { status: OrderRow["verificationStatus"] }) {
+  if (!status || status === "verified") return null;
+  const label = status === "submitted" ? "Buyer verification under review" : status === "rejected" ? "Buyer verification not accepted" : "Buyer verification pending";
+  return (
+    <div className="mt-2 flex items-center gap-1.5 text-xs text-gold">
+      <ShieldAlert size={12} /> {label}
+    </div>
+  );
+}
 
 export default function SellerOrdersPage() {
   const [orders, setOrders] = useState<OrderRow[] | null>(null);
@@ -69,6 +85,7 @@ export default function SellerOrdersPage() {
                     </td>
                     <td className="mono px-4 py-3 text-ink-faint">{o.date}</td>
                     <td className="px-4 py-3 text-right">
+                      <VerificationNote status={o.verificationStatus} />
                       <div className="flex flex-col items-end gap-1.5">
                         {o.hasTransferRoom && (
                           <Link href={`/dashboard/transfer/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
@@ -125,6 +142,7 @@ export default function SellerOrdersPage() {
                     <FileText size={13} /> Receipt
                   </Link>
                 </div>
+                <VerificationNote status={o.verificationStatus} />
               </div>
             ))}
           </div>
