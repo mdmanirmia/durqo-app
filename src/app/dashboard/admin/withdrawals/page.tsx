@@ -29,7 +29,9 @@ export default async function AdminWithdrawals({
     const allProfileIds = [...new Set([...sellerIds, ...reviewerIds])];
 
     const [{ data: profiles }, usersList, { data: ledgerRows }] = await Promise.all([
-      allProfileIds.length ? admin.from("profiles").select("id, full_name").in("id", allProfileIds) : Promise.resolve({ data: [] }),
+      allProfileIds.length
+        ? admin.from("profiles").select("id, full_name, legal_name").in("id", allProfileIds)
+        : Promise.resolve({ data: [] }),
       // 2026-09-12 fix: unpaginated listUsers() defaults to a single
       // ~50-user page, silently dropping the email for any seller outside
       // it. listAllAuthUsers() (src/lib/notifications.ts) pages through
@@ -42,6 +44,11 @@ export default async function AdminWithdrawals({
       requestIds.length ? admin.from("withdrawal_request_orders").select("withdrawal_id, order_id").in("withdrawal_id", requestIds) : Promise.resolve({ data: [] }),
     ]);
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name as string | null]));
+    // KYC policy (Sep 2026) — the seller's verified legal name (see
+    // legal_name, 053_kyc_name_match_and_buyer_verification.sql), shown
+    // next to each request's own payout_account_holder_name so an admin
+    // can manually check the two match before approving.
+    const legalNameById = new Map((profiles ?? []).map((p) => [p.id, (p.legal_name as string | null) ?? null]));
     const emailById = new Map(usersList.map((u) => [u.id, u.email ?? null]));
 
     const claimedOrderIds = [...new Set((ledgerRows ?? []).map((l) => l.order_id as string))];
@@ -65,6 +72,7 @@ export default async function AdminWithdrawals({
     rows = (requests ?? []).map((r) => ({
       id: r.id,
       sellerName: nameById.get(r.seller_id) || "—",
+      sellerLegalName: legalNameById.get(r.seller_id) ?? null,
       sellerEmail: emailById.get(r.seller_id) ?? null,
       grossAmount: Number(r.gross_amount),
       successFeeAmount: Number(r.success_fee_amount),
@@ -73,6 +81,7 @@ export default async function AdminWithdrawals({
       escrowComOrderCount: escrowComCountByRequest.get(r.id) ?? 0,
       payoutMethod: r.payout_method,
       payoutDetails: r.payout_details,
+      payoutAccountHolderName: (r.payout_account_holder_name as string | null) ?? null,
       status: r.status,
       adminNote: r.admin_note,
       payoutReference: r.payout_reference ?? null,

@@ -11,6 +11,15 @@ import { setWithdrawalStatus } from "../actions";
 export interface AdminWithdrawalRow {
   id: string;
   sellerName: string;
+  // KYC policy (Sep 2026) — the seller's verified legal name and this
+  // request's own typed account-holder name, shown side by side so an
+  // admin can manually check they match before approving. Deliberately
+  // not enforced automatically here (a real name can have harmless
+  // spelling/format differences — "Md." vs "Mohammad", a missing middle
+  // name) — see nameMismatchLikely() below, which only ever produces a
+  // soft warning badge, never blocks an action.
+  sellerLegalName: string | null;
+  payoutAccountHolderName: string | null;
   sellerEmail: string | null;
   grossAmount: number;
   successFeeAmount: number;
@@ -104,6 +113,34 @@ const ACTION_STYLE: Record<Decision, string> = {
 // for paid, an optional provider reference) is shown instead of firing
 // immediately — matches the sensitivity of each transition.
 const NEEDS_DIALOG: ReadonlySet<Decision> = new Set(["rejected", "on_hold", "action_required", "paid"]);
+
+// Soft, informational-only heuristic (KYC policy, Sep 2026) — normalizes
+// both names (lowercase, strip punctuation/titles, collapse whitespace)
+// and flags a likely mismatch only when neither name contains the other's
+// normalized form. Deliberately loose (a substring match, not an exact
+// one) so "Md. Rahman Ahmed" vs "Rahman Ahmed" or "MOHAMMAD KARIM" vs
+// "Mohammad Karim" don't false-positive — the goal is to catch a genuinely
+// different name (a friend/relative's payout account, a typo like a
+// different last name), not to police formatting. Never blocks anything;
+// it only shows a warning badge for the admin's own manual judgment call,
+// per the site owner's explicit "admin manual review" decision.
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\b(md|mohammad|mohammed|mohd|shaikh|sheikh|mr|mrs|ms|miss)\b\.?/g, "")
+    .replace(/[^a-z\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function namesLikelyMismatch(legalName: string | null, accountHolderName: string | null): boolean {
+  if (!legalName || !accountHolderName) return false;
+  const a = normalizeName(legalName);
+  const b = normalizeName(accountHolderName);
+  if (!a || !b) return false;
+  if (a === b) return false;
+  return !a.includes(b) && !b.includes(a);
+}
 
 export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalRow[] }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -207,6 +244,21 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                       <div className="font-medium text-ink-soft">{METHOD_LABEL[r.payoutMethod] ?? r.payoutMethod}</div>
                     </div>
                     <div className="mt-1 max-w-[220px] whitespace-pre-wrap text-xs text-ink-faint">{r.payoutDetails}</div>
+                    {(r.sellerLegalName || r.payoutAccountHolderName) && (
+                      <div className="mt-2 max-w-[220px] rounded-md border border-rule bg-paper px-2 py-1.5 text-xs">
+                        <div className="text-ink-faint">
+                          Legal name: <span className="text-ink-soft">{r.sellerLegalName ?? "—"}</span>
+                        </div>
+                        <div className="text-ink-faint">
+                          Account holder: <span className="text-ink-soft">{r.payoutAccountHolderName ?? "—"}</span>
+                        </div>
+                        {namesLikelyMismatch(r.sellerLegalName, r.payoutAccountHolderName) && (
+                          <div className="mt-1 flex items-center gap-1 font-semibold text-gold">
+                            <AlertTriangle size={11} /> Name may not match
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${STATUS_STYLE[r.status] ?? "border border-rule bg-paper-sunk text-ink-soft"}`}>
@@ -280,6 +332,21 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                   <div className="mt-1 whitespace-pre-wrap text-xs text-ink-faint">{r.payoutDetails}</div>
                 </div>
               </div>
+              {(r.sellerLegalName || r.payoutAccountHolderName) && (
+                <div className="mb-3 rounded-md border border-rule bg-paper px-2.5 py-2 text-xs">
+                  <div className="text-ink-faint">
+                    Legal name: <span className="text-ink-soft">{r.sellerLegalName ?? "—"}</span>
+                  </div>
+                  <div className="text-ink-faint">
+                    Account holder: <span className="text-ink-soft">{r.payoutAccountHolderName ?? "—"}</span>
+                  </div>
+                  {namesLikelyMismatch(r.sellerLegalName, r.payoutAccountHolderName) && (
+                    <div className="mt-1 flex items-center gap-1 font-semibold text-gold">
+                      <AlertTriangle size={11} /> Name may not match
+                    </div>
+                  )}
+                </div>
+              )}
               {r.adminNote && <div className="mb-3 text-xs text-ink-faint">{r.adminNote}</div>}
               {r.status === "paid" && r.payoutReference && <div className="mb-3 text-xs text-ink-faint">Ref: {r.payoutReference}</div>}
               {r.reviewedByName && <div className="mb-3 text-xs text-ink-faint">By {r.reviewedByName}</div>}
