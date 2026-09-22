@@ -1,0 +1,12 @@
+-- 053 added p_payout_account_holder_name as a 4th parameter to
+-- create_withdrawal_request(). In Postgres, CREATE OR REPLACE FUNCTION
+-- with a different parameter list creates a new overload rather than
+-- replacing the existing one — the old 3-parameter signature was left
+-- behind, still callable directly via /rest/v1/rpc/create_withdrawal_request
+-- and still bypassing the new account-holder-name requirement (confirmed by
+-- the security advisor listing both signatures as authenticated-callable).
+-- Nothing in the app calls the 3-parameter form any more (only
+-- src/app/dashboard/seller/earnings/actions.ts calls this RPC, already
+-- updated to pass all 4 args) — drop the stale overload so the name
+-- requirement can't be bypassed by a direct API call.
+drop function if exists public.create_withdrawal_request(text, text, numeric);
