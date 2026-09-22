@@ -105,11 +105,15 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 const CHECKLIST_GROUPS: {
   heading: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
+  bg: string;
+  tint: string;
   items: string[];
 }[] = [
   {
     heading: "Financial and traffic evidence",
     icon: FileSearch,
+    bg: "bg-brand-soft",
+    tint: "text-brand-strong",
     items: [
       "Up to 12 months of revenue evidence, ideally with supporting screenshots rather than one typed-in number",
       "Whether Google Analytics is a live, auto-updating panel or self-reported numbers with proof screenshots",
@@ -121,6 +125,8 @@ const CHECKLIST_GROUPS: {
   {
     heading: "Listing and seller trust signals",
     icon: BadgeCheck,
+    bg: "bg-gold-soft",
+    tint: "text-[#92730F]",
     items: [
       "A \"Google Analytics Verified\" badge, meaning Durqo checked a connected property against the listing's claims",
       "A \"Reviewed by Durqo\" tag on individual data cards, a separate signal from general listing review",
@@ -132,6 +138,8 @@ const CHECKLIST_GROUPS: {
   {
     heading: "Operational and legal readiness",
     icon: Search,
+    bg: "bg-sky-soft",
+    tint: "text-sky",
     items: [
       "A clear description of how the business actually runs day to day, not just its numbers",
       "Which assets are explicitly included: domain, hosting, source code, content, social accounts, SOPs",
@@ -143,6 +151,8 @@ const CHECKLIST_GROUPS: {
   {
     heading: "Payment and handover protection",
     icon: ShieldCheck,
+    bg: "bg-paper-sunk",
+    tint: "text-ink",
     items: [
       "Which payment method applies to this listing: card via Stripe, BDT via SSLCommerz, or Escrow.com",
       "That your payment is held (by Durqo, or independently by Escrow.com) until you approve the transfer",
@@ -259,18 +269,13 @@ export default function WebsiteDueDiligenceChecklistPage() {
                   Four Areas to Check
                 </p>
 
-                {[
-                  { icon: FileSearch, label: "Financial and traffic evidence" },
-                  { icon: BadgeCheck, label: "Listing and seller trust signals" },
-                  { icon: Search, label: "Operational and legal readiness" },
-                  { icon: ShieldCheck, label: "Payment and handover protection" },
-                ].map(({ icon: Icon, label }, i, arr) => (
-                  <div key={label}>
+                {CHECKLIST_GROUPS.map(({ heading, icon: Icon, bg, tint }, i, arr) => (
+                  <div key={heading}>
                     <div className="flex items-center gap-3">
-                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                      <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${bg} ${tint}`}>
                         <Icon size={16} />
                       </span>
-                      <h3 className="text-sm font-semibold text-ink">{label}</h3>
+                      <h3 className="text-sm font-semibold text-ink">{heading}</h3>
                     </div>
                     {i < arr.length - 1 && <div className="my-4 h-px bg-rule" aria-hidden />}
                   </div>
@@ -297,10 +302,10 @@ export default function WebsiteDueDiligenceChecklistPage() {
               <h2 className="text-2xl sm:text-3xl">Work through each group before you pay.</h2>
             </div>
             <div className="grid gap-6 lg:grid-cols-2">
-              {CHECKLIST_GROUPS.map(({ heading, icon: Icon, items }) => (
+              {CHECKLIST_GROUPS.map(({ heading, icon: Icon, bg, tint, items }) => (
                 <div key={heading} className="rounded-xl border border-rule bg-paper-raised p-6">
                   <div className="mb-4 flex items-center gap-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-lg ${bg} ${tint}`}>
                       <Icon size={18} />
                     </span>
                     <h3 className="text-base font-semibold text-ink">{heading}</h3>
