@@ -9,7 +9,8 @@ import {
   ShieldCheck,
   Info,
   CheckCircle2,
-  XCircle,
+  Circle,
+  Sparkles,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -54,24 +55,25 @@ import GroupedFaq, { type FaqGroup } from "@/components/GroupedFaq";
 // the owner asked to drop the visible breadcrumb from the Bangladesh buyer
 // guide's hero for the same reason; kept the BreadcrumbList JSON-LD only,
 // same choice applied here from the start for consistency).
+const META_TITLE = "Durqo vs Motion Invest (2026): Fees, Categories & Payments Compared | Durqo";
+const META_DESCRIPTION =
+  "Durqo vs Motion Invest compared: seller fees, buyer costs, categories accepted, BDT and card payment options, and how each marketplace protects a sale.";
+
 export const metadata: Metadata = {
-  title: "Durqo vs Motion Invest: Compare Fees & Categories | Durqo",
-  description:
-    "Compare Durqo and Motion Invest side by side: seller fees, buyer costs, supported categories, payment methods and how each platform protects a sale.",
+  title: META_TITLE,
+  description: META_DESCRIPTION,
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     siteName: "Durqo",
-    title: "Durqo vs Motion Invest: Compare Fees & Categories | Durqo",
-    description:
-      "Compare Durqo and Motion Invest side by side: seller fees, buyer costs, supported categories, payment methods and how each platform protects a sale.",
+    title: META_TITLE,
+    description: META_DESCRIPTION,
     url: "https://www.durqo.com/durqo-vs-motion-invest",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Durqo vs Motion Invest: Compare Fees & Categories | Durqo",
-    description:
-      "Compare Durqo and Motion Invest side by side: seller fees, buyer costs, supported categories, payment methods and how each platform protects a sale.",
+    title: META_TITLE,
+    description: META_DESCRIPTION,
   },
   alternates: { canonical: "https://www.durqo.com/durqo-vs-motion-invest" },
 };
@@ -96,8 +98,7 @@ const ARTICLE_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Article",
   headline: PAGE_TITLE,
-  description:
-    "Compare Durqo and Motion Invest side by side: seller fees, buyer costs, supported categories, payment methods and how each platform protects a sale.",
+  description: META_DESCRIPTION,
   author: DURQO_ORG,
   publisher: DURQO_ORG,
   datePublished: PUBLISHED_DATE,
@@ -131,52 +132,76 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
   return <div className={`mx-auto max-w-[1200px] ${className}`}>{children}</div>;
 }
 
-const COMPARISON_ROWS = [
+const COMPARISON_ROWS: {
+  feature: string;
+  durqo: string;
+  motionInvest: string;
+  winner: "durqo" | "tie";
+}[] = [
   {
     feature: "Categories accepted",
     durqo: "15+ categories: websites, e-commerce, SaaS, apps, domains, startups and more",
     motionInvest: "Content websites and YouTube channels only",
+    winner: "durqo",
   },
   {
     feature: "Seller fee",
     durqo: "Flat tiered fee on the whole sale price: 10% under $50k, 7% from $50k-$250k, 5% over $250k",
     motionInvest: "Reported to range from around 20% on sales under $20k to around 5% on sales over $500k",
+    winner: "durqo",
   },
   {
     feature: "Buyer fee",
     durqo: "No marketplace fee for buyers",
     motionInvest: "No additional fee for buyers",
+    winner: "tie",
   },
   {
     feature: "Upfront listing fee",
     durqo: "None",
     motionInvest: "None",
+    winner: "tie",
   },
   {
     feature: "Payment methods",
     durqo: "Card (Stripe), BDT via bKash, Rocket, Nagad or bank (SSLCommerz), or Escrow.com",
     motionInvest: "USD bank wire transfer",
+    winner: "durqo",
   },
   {
     feature: "BDT / mobile banking support",
     durqo: "Yes, BDT checkout and BDT seller payouts",
     motionInvest: "Not published on their site",
+    winner: "durqo",
   },
   {
     feature: "Where funds are held",
     durqo: "Held by Durqo directly, or independently by Escrow.com if you choose that option",
     motionInvest: "Held in Motion Invest's own bank account until the transfer completes",
+    winner: "durqo",
   },
   {
     feature: "Listing verification",
     durqo: "Listing review plus optional seller identity verification",
     motionInvest: "Seller-submitted income screenshots, Loom walkthroughs and a traffic cross-check",
+    winner: "tie",
   },
   {
     feature: "Asset handover",
     durqo: "Transfer Room checklist; buyer approves before payment is released",
     motionInvest: "Migration assistance included with the sale",
+    winner: "tie",
   },
+];
+
+// Illustrative only: computed from Durqo's published SUCCESS_FEE_TIERS
+// (src/lib/fees.ts) and Motion Invest's reported fee tiers (see this file's
+// top-of-file accuracy note). Not a calculator, not tied to any real
+// listing, hedged again in the section's own footnote.
+const FEE_EXAMPLES = [
+  { price: "$30,000", durqoRate: "10%", durqoFee: "$3,000", miRate: "15%", miFee: "$4,500", savings: "$1,500" },
+  { price: "$80,000", durqoRate: "7%", durqoFee: "$5,600", miRate: "10%", miFee: "$8,000", savings: "$2,400" },
+  { price: "$300,000", durqoRate: "5%", durqoFee: "$15,000", miRate: "7%", miFee: "$21,000", savings: "$6,000" },
 ];
 
 const FAQ_GROUPS: FaqGroup[] = [
@@ -279,6 +304,14 @@ export default function DurqoVsMotionInvestPage() {
                   accepts, how much each one charges, which payment methods are available, and how a sale is
                   protected, so you can decide which fits what you&rsquo;re buying or selling.
                 </p>
+                <div className="mt-5 flex items-start gap-2.5 rounded-lg border border-rule bg-brand-soft/40 px-4 py-3">
+                  <Sparkles size={15} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
+                  <p className="text-sm leading-relaxed text-ink">
+                    <span className="font-semibold">Quick answer:</span> Durqo covers 15+ categories with a lower
+                    starting seller fee and BDT payment support; Motion Invest specializes in content sites and
+                    YouTube channels paid by USD wire. The comparison below covers both in full.
+                  </p>
+                </div>
                 <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
                   Reviewed by the Durqo Marketplace Team · Updated September 2026
                 </p>
@@ -383,13 +416,20 @@ export default function DurqoVsMotionInvestPage() {
               <div className="divide-y divide-rule">
                 {COMPARISON_ROWS.map((row) => (
                   <div key={row.feature} className="grid grid-cols-1 gap-x-6 gap-y-2 px-5 py-4 sm:grid-cols-[1fr_1.4fr_1.4fr]">
-                    <p className="text-sm font-semibold text-ink">{row.feature}</p>
+                    <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink">
+                      {row.feature}
+                      {row.winner === "durqo" && (
+                        <span className="mono rounded-full bg-brand-soft px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide text-brand-strong">
+                          Durqo edge
+                        </span>
+                      )}
+                    </p>
                     <p className="flex items-start gap-2 text-sm leading-relaxed text-ink-soft">
                       <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
                       {row.durqo}
                     </p>
                     <p className="flex items-start gap-2 text-sm leading-relaxed text-ink-soft">
-                      <XCircle size={15} className="mt-0.5 shrink-0 text-ink-faint" aria-hidden />
+                      <Circle size={15} className="mt-0.5 shrink-0 text-ink-faint" aria-hidden />
                       {row.motionInvest}
                     </p>
                   </div>
@@ -397,11 +437,52 @@ export default function DurqoVsMotionInvestPage() {
               </div>
             </div>
             <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-ink-faint">
-              Motion Invest information above is based on their publicly published fee page and independent
-              reviews as of September 2026, and may change. Durqo information reflects live product features and
-              published fees on durqo.com. The check and cross icons above separate each row&rsquo;s two columns
-              and don&rsquo;t imply one platform lacks the feature entirely.
+              &ldquo;Durqo edge&rdquo; marks rows where the two platforms genuinely differ. Rows without that label
+              are a close match on that specific point. Motion Invest information above is based on their
+              publicly published fee page and independent reviews as of September 2026, and may change. Durqo
+              information reflects live product features and published fees on durqo.com.
             </p>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* FEE EXAMPLES */}
+      <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
+        <Container>
+          <Inner>
+            <div className="mb-10 max-w-[70ch]">
+              <DashEyebrow>Fees in practice</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">See the seller fee difference at three sale prices.</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Examples only, based on Durqo&rsquo;s published fee tiers and Motion Invest&rsquo;s reported fee
+                tiers. Your actual fee depends on your listing&rsquo;s final sale price.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-3">
+              {FEE_EXAMPLES.map((ex) => (
+                <div key={ex.price} className="rounded-xl border border-rule bg-paper-raised p-6">
+                  <p className="mono text-xs font-semibold uppercase tracking-wider text-ink-faint">Sale price</p>
+                  <p className="mono text-3xl font-bold tabular-nums text-ink">{ex.price}</p>
+                  <div className="mt-5 flex items-center justify-between border-t border-rule pt-4">
+                    <span className="text-sm font-semibold text-brand-strong">Durqo</span>
+                    <span className="mono text-sm tabular-nums text-ink">
+                      {ex.durqoFee} <span className="text-ink-faint">({ex.durqoRate})</span>
+                    </span>
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-ink-faint">Motion Invest</span>
+                    <span className="mono text-sm tabular-nums text-ink-soft">
+                      {ex.miFee} <span className="text-ink-faint">({ex.miRate})</span>
+                    </span>
+                  </div>
+                  <div className="mt-4 rounded-lg bg-brand-soft px-3.5 py-2.5 text-center">
+                    <p className="mono text-sm font-bold tabular-nums text-brand-strong">
+                      {ex.savings} more for the seller on Durqo
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </Inner>
         </Container>
       </section>
@@ -481,6 +562,55 @@ export default function DurqoVsMotionInvestPage() {
         </Container>
       </section>
 
+      {/* WHICH SHOULD YOU CHOOSE */}
+      <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
+        <Container>
+          <Inner>
+            <div className="mb-10 max-w-[70ch]">
+              <DashEyebrow>The verdict</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Which one should you choose?</h2>
+            </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="rounded-2xl border-2 border-brand-strong bg-paper-raised p-7 shadow-sm">
+                <p className="mono mb-3 text-xs font-semibold uppercase tracking-wider text-brand-strong">Choose Durqo if</p>
+                <ul className="flex flex-col gap-3">
+                  {[
+                    "You're buying or selling something other than a content site or YouTube channel, such as e-commerce, SaaS, an app, a domain or a startup",
+                    "You want to pay or get paid in Bangladeshi Taka through bKash, Rocket, Nagad or a bank",
+                    "You want the option of an independent, licensed Escrow.com transaction",
+                    "Your sale price is on the smaller side, where Durqo's 10% starting tier is lower than Motion Invest's reported ~15-20%",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
+                      <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Button href="/sell" size="lg" className="mt-6">
+                  Sell on Durqo
+                  <ArrowRight size={16} />
+                </Button>
+              </div>
+              <div className="rounded-2xl border border-rule bg-paper-raised p-7">
+                <p className="mono mb-3 text-xs font-semibold uppercase tracking-wider text-ink-faint">Choose Motion Invest if</p>
+                <ul className="flex flex-col gap-3">
+                  {[
+                    "You're specifically selling a content website or YouTube channel",
+                    "You're comfortable paying or receiving funds by USD bank wire only",
+                    "You want a specialist review process built around income screenshots and Loom walkthroughs",
+                  ].map((item) => (
+                    <li key={item} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
+                      <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-ink-faint" aria-hidden />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
       {/* FAQ */}
       <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
         <Container>
@@ -490,6 +620,31 @@ export default function DurqoVsMotionInvestPage() {
               <h2 className="text-2xl sm:text-3xl">Frequently asked questions.</h2>
             </div>
             <GroupedFaq groups={FAQ_GROUPS} />
+          </Inner>
+        </Container>
+      </section>
+
+      {/* RELATED READING */}
+      <section className="border-b border-rule bg-paper-sunk py-10">
+        <Container>
+          <Inner>
+            <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Keep exploring</p>
+            <div className="flex flex-wrap gap-x-8 gap-y-3">
+              {[
+                { href: "/how-to-sell", label: "How to Sell a Business on Durqo" },
+                { href: "/buy-and-sell-digital-businesses-in-bdt", label: "Buy & Sell Digital Businesses in BDT" },
+                { href: "/whats-included", label: "What's Included in a Typical Sale" },
+              ].map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline"
+                >
+                  {label}
+                  <ArrowRight size={14} />
+                </Link>
+              ))}
+            </div>
           </Inner>
         </Container>
       </section>
