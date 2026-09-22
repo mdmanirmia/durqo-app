@@ -64,6 +64,16 @@ import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 // and text-[#92730F] for amber text — the app's existing convention for
 // that exact situation) rather than hardcoded hex, preserving sitewide
 // dark-mode support and staying inside the real design system.
+//
+// Sep 22, 2026: this page's "Selling & payouts" FAQ group and seller-payout
+// section previously only said payouts were "subject to seller eligibility,
+// verification" — vague enough that it never actually named identity
+// verification (KYC) or the payout-name-matching requirement (site owner's
+// KYC policy, same day — see claude/kyc-identity-verification-and-buyer-
+// verification-addendum.md). Added an explicit FAQ (mirrored in the
+// FAQPage JSON-LD) and a callout box in the seller-payout section naming
+// both requirements directly, matching how every other payout-related page
+// now states them.
 export const metadata: Metadata = {
   title: "Buy and Sell Digital Businesses in BDT | Durqo",
   description:
@@ -329,6 +339,11 @@ const FAQ_GROUPS: FaqGroup[] = [
           "Supported local payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller eligibility, verification and applicable withdrawal limits.",
       },
       {
+        question: "Does a seller need to verify their identity before withdrawing?",
+        answer:
+          "Yes. Identity verification (KYC) is required before a seller's very first withdrawal, regardless of payout method. In addition, the account holder name entered on the withdrawal request must match the seller's verified legal name, which Durqo checks by hand before approving the payout.",
+      },
+      {
         question: "How long does a seller payout take?",
         answer:
           "Durqo normally reviews and processes a payout request within 3–5 business days. The receiving bank or payment provider may require additional time to credit the seller's account.",
@@ -418,6 +433,7 @@ const FAQ_JSON_LD = {
     { q: "When does the Transfer Room become available?", a: "The Transfer Room becomes available after the complete purchase price has been received and verified. An initial partial payment does not make the order fully funded." },
     { q: "When can a seller request a payout?", a: "A seller can request a payout after the sale and agreed asset transfer are completed, any required review has finished and the eligible earnings appear as available in the Seller Dashboard." },
     { q: "Which BDT payout methods does Durqo support?", a: "Supported local payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller eligibility, verification and applicable withdrawal limits." },
+    { q: "Does a seller need to verify their identity before withdrawing?", a: "Yes. Identity verification (KYC) is required before a seller's very first withdrawal, regardless of payout method. In addition, the account holder name entered on the withdrawal request must match the seller's verified legal name, which Durqo checks by hand before approving the payout." },
     { q: "How long does a seller payout take?", a: "Durqo normally reviews and processes a payout request within 3-5 business days. The receiving bank or payment provider may require additional time to credit the seller's account." },
     { q: "Does Durqo charge buyers a marketplace fee?", a: "No. Durqo does not charge buyers a marketplace fee. The buyer pays the agreed purchase price, although disclosed payment-provider, banking or currency-related charges may apply." },
     { q: "How much does Durqo charge sellers?", a: `Durqo deducts a tiered success fee based on the final sale price: ${SUCCESS_FEE_TIERS.map((t) => `${t.label} → ${fmtRate(t.rate)}`).join(", ")}. The success fee is deducted only after a successful sale.` },
@@ -697,6 +713,15 @@ export default function BuyAndSellInBdtPage() {
               Withdrawals, select a supported payout method, provide the required account details and submit a
               withdrawal request.
             </p>
+
+            <div className="mt-5 flex max-w-[72ch] items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
+              <ShieldCheck size={15} className="mt-0.5 shrink-0 text-brand-strong" aria-hidden />
+              <p className="text-sm leading-relaxed text-ink">
+                Identity verification (KYC) is required before a seller&rsquo;s very first withdrawal, and the
+                account holder name entered for the payout method must match the seller&rsquo;s verified legal
+                name. Durqo checks this by hand before approving each payout.
+              </p>
+            </div>
 
             <div className="mt-5 max-w-[72ch] rounded-xl border border-rule bg-paper-raised p-5">
               <p className="text-sm font-semibold text-ink">Each withdrawal limit applies independently to the selected method:</p>
