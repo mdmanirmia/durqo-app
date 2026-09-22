@@ -503,7 +503,7 @@ export default function HowToBuyAWebsiteInBangladeshPage() {
                       whichever option is available for that listing.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {["Card", "bKash", "Rocket", "Nagad", "Bank", "Escrow.com"].map((label) => (
+                      {["Stripe", "bKash", "Rocket", "Nagad", "Bank", "Escrow.com"].map((label) => (
                         <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
                           {label}
                         </span>
