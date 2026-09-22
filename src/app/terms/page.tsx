@@ -602,6 +602,18 @@ export default function TermsPage() {
                 </p>
 
                 <div className="mt-2 flex items-center gap-2">
+                  <SubHeading>Identity Verification (KYC)</SubHeading>
+                  <StatusBadge tone="live">Currently operational</StatusBadge>
+                </div>
+                <List
+                  items={[
+                    "Identity Verification (KYC) is required before a Seller's first withdrawal, in addition to the optional public Verified badge shown on listings.",
+                    "Buyers may be asked to complete identity or funds verification when required by the selected payment provider, transaction value, or Durqo's risk review; a flagged order's payout is held until this is resolved.",
+                    "A Seller's verified name must match their payout account holder name; Durqo reviews this manually as part of every payout approval.",
+                  ]}
+                />
+
+                <div className="mt-2 flex items-center gap-2">
                   <SubHeading>Bangladeshi Buyers and Sellers</SubHeading>
                   <StatusBadge tone="live">Currently operational</StatusBadge>
                 </div>
