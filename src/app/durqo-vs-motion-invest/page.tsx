@@ -486,7 +486,7 @@ export default function DurqoVsMotionInvestPage() {
                     </span>
                   </div>
                   <div className="mt-4 rounded-lg bg-brand-soft px-3.5 py-2.5 text-center">
-                    <p className="mono text-sm font-bold tabular-nums text-brand-strong">
+                    <p className="mono text-center text-sm font-bold tabular-nums text-brand-strong">
                       {ex.savings} more for the seller on Durqo
                     </p>
                   </div>
@@ -664,7 +664,7 @@ export default function DurqoVsMotionInvestPage() {
         <Container>
           <Inner className="text-center">
             <h2 className="text-2xl sm:text-3xl">Ready to buy or sell across any category?</h2>
-            <p className="mx-auto mt-3 max-w-[52ch] text-sm text-white/70">
+            <p className="mx-auto mt-3 max-w-[52ch] text-center text-sm text-white/70">
               Browse reviewed listings across 15+ categories, or list your business with no upfront fee.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
