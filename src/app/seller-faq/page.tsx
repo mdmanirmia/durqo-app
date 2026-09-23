@@ -136,7 +136,7 @@ const FAQ_GROUPS = [
       {
         question: "When can I withdraw my earnings?",
         answer:
-          "Once the buyer approves the transfer, any required review is complete and your payout becomes eligible, you can request a withdrawal from your Earnings dashboard. Durqo normally reviews and processes eligible payout requests within 3–5 business days. Your bank or payout provider may require additional time to credit the funds.",
+          "Once the buyer approves the transfer, any required review is complete and your payout becomes eligible, you can request a withdrawal from your Earnings dashboard. Before your very first withdrawal specifically, you'll also need to have completed identity verification (KYC) from the Verification page. After that, every future withdrawal draws on the same approved verification. Durqo normally reviews and processes eligible payout requests within 3–5 business days. Your bank or payout provider may require additional time to credit the funds.",
       },
       {
         question: "What withdrawal methods can I use?",
