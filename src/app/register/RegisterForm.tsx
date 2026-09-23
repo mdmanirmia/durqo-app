@@ -6,7 +6,6 @@
 import { useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { safeNextPath } from "@/lib/safe-redirect";
 import Container from "@/components/ui/Container";
@@ -182,10 +181,6 @@ function RegisterForm() {
           {loading ? "Creating account…" : "Create account"}
         </button>
       </form>
-
-      <p className="mt-6 flex items-center justify-center gap-1.5 text-xs text-ink-faint">
-        <ShieldCheck size={12} className="text-brand" /> Identity verification happens after signup
-      </p>
 
       <p className="mt-4 text-center text-sm text-ink-soft">
         Already have an account?{" "}

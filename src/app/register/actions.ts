@@ -23,12 +23,20 @@ import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 // Best-effort, same as every other notification in this codebase: sendEmail
 // swallows its own errors, so a Resend outage never blocks or errors out
 // the signup flow that already succeeded.
+// 2026-09-23 fix ("register korar por identity verification e niye jabe ei
+// text ta delete korte hobe" — identity verification (KYC) is only required
+// before a seller's FIRST WITHDRAWAL, never to create a listing; pointing a
+// brand-new signup at verification before they've even made a listing was
+// misleading about what's actually required next): this used to also tell
+// the seller to "submit identity verification" in the same breath as
+// creating their first listing. Trimmed to just what's actually needed
+// right after signing up.
 export async function notifySellerAccountCreated(fullName: string, email: string) {
   await sendEmail(
     email,
     "Welcome to Durqo",
     `<p>Hi ${fullName.trim() || "there"},</p>
-     <p>Your Durqo seller account has been created. Once you've verified your email, you can head to your seller dashboard to submit identity verification and create your first listing.</p>
+     <p>Your Durqo seller account has been created. Once you've verified your email, you can head to your seller dashboard to create your first listing.</p>
      <p>— Durqo</p>`
   );
 
