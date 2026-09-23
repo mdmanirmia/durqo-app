@@ -36,6 +36,7 @@ const METHOD_LABEL: Record<string, string> = {
   passport: "Passport",
   national_id: "National ID",
   driving_license: "Driving License",
+  birth_certificate: "Birth Certificate",
 };
 
 const STATUS_LABEL: Record<string, string> = {
