@@ -114,6 +114,19 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
   const [rejectDialogTarget, setRejectDialogTarget] = useState<{ id: string; listingTitle: string } | null>(null);
   const [rejectNote, setRejectNote] = useState("");
 
+  // 2026-09-23 bugfix (real incident: admin flagged an order for buyer
+  // verification, buyer never got an email): requestBuyerVerification()
+  // throws server-side when the reason is blank ("A reason is required so
+  // the buyer knows what's being asked"), *before* it ever writes the
+  // order_verifications row or attempts sendEmail(). This function's old
+  // `finally` block closed the dialog unconditionally, so that thrown error
+  // looked to the admin exactly like a successful send — the dialog just
+  // closed, with only a small, easy-to-miss red line appearing under the
+  // row afterward. Now the confirm button itself is disabled until a
+  // reason is typed (see the ConfirmDialog below), and the dialog only
+  // closes on an actual successful request, so any other failure (network,
+  // DB) keeps the dialog open with the error visible right there instead of
+  // silently vanishing.
   function submitVerificationRequest() {
     if (!requestDialogTarget) return;
     const target = requestDialogTarget;
@@ -123,11 +136,11 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
       try {
         await requestBuyerVerification(target.id, requestReason);
         setVerificationOverrides((prev) => ({ ...prev, [target.id]: "requested" }));
+        setRequestDialogTarget(null);
       } catch {
         setErrorVerificationId(target.id);
       } finally {
         setPendingVerificationId(null);
-        setRequestDialogTarget(null);
       }
     });
   }
@@ -477,14 +490,19 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
             <textarea
               rows={3}
               autoFocus
-              placeholder="e.g. Order value over $50,000 — identity verification required"
+              placeholder="e.g. Order value over $50,000, identity verification required"
               value={requestReason}
               onChange={(e) => setRequestReason(e.target.value)}
               className="w-full rounded-md border border-rule-strong bg-paper px-3 py-2 text-sm text-ink focus:border-brand-strong focus:outline-none"
             />
+            <p className="mt-1 text-xs text-ink-faint">A reason is required. It&rsquo;s shown to the buyer so they know why they&rsquo;re being asked.</p>
+            {errorVerificationId === requestDialogTarget?.id && (
+              <p className="mt-1 text-xs text-danger">Couldn&rsquo;t send the request. Try again.</p>
+            )}
           </>
         }
         confirmLabel="Request verification"
+        confirmDisabled={requestReason.trim().length === 0}
         busy={isVerificationPending && pendingVerificationId === requestDialogTarget?.id}
         onConfirm={submitVerificationRequest}
         onCancel={() => setRequestDialogTarget(null)}
