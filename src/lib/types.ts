@@ -138,7 +138,7 @@ export interface SellerInfo {
   name: string;
   location?: string;
   isVerified: boolean;
-  verificationMethod?: "passport" | "national_id" | "driving_license";
+  verificationMethod?: "passport" | "national_id" | "driving_license" | "birth_certificate";
   // Whether the seller's own account email is confirmed (Supabase
   // auth.users.email_confirmed_at) — separate from `isVerified`, which is
   // the identity-document (passport/national ID/license) review above.
