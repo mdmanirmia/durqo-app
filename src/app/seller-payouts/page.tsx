@@ -14,6 +14,7 @@ import {
   XCircle,
   Ban,
   Info,
+  UserCheck,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -74,6 +75,16 @@ import { Badge } from "@/components/ui/Badge";
 //   Requested or Under review (SELF_CANCELLABLE_STATUSES in earnings/
 //   page.tsx, matching cancel_withdrawal_request()'s own check) — after
 //   that point only an admin's status change moves it forward.
+//
+// Sep 22, 2026: this page never mentioned identity verification (KYC) at
+// all, even though it's a real, live gate on the first withdrawal
+// (profiles.payout_verified, enforced inside create_withdrawal_request()
+// itself — see claude/payout-policy-v2-deployment-addendum.md) — and never
+// mentioned the newer payout-name-matching requirement either (site
+// owner's KYC policy, Sep 2026 — see claude/kyc-identity-verification-and-
+// buyer-verification-addendum.md). Added a dedicated section plus a
+// KEY_FACTS strip item so this dedicated payouts explainer actually
+// explains both gates, not just the fee/method/status mechanics.
 export const metadata: Metadata = {
   title: "How Seller Payouts Work After a Completed Sale | Durqo",
   description:
@@ -122,6 +133,7 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 }
 
 const KEY_FACTS = [
+  { icon: UserCheck, label: "Identity verification (KYC) is required before your very first withdrawal" },
   { icon: Percent, label: "A flat Success Fee — 10% under $50k, 7% from $50k–$250k, 5% above $250k" },
   { icon: Wallet, label: "Available to Withdraw is already net of the fee — no surprise deduction later" },
   { icon: Clock, label: "Payout requests are normally reviewed within an estimated 3–5 business days" },
@@ -198,7 +210,7 @@ export default function SellerPayoutsPage() {
       <section className="border-b border-rule bg-paper-sunk py-10 sm:py-12">
         <Container>
           <Inner>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {KEY_FACTS.map(({ icon: Icon, label }) => (
                 <div
                   key={label}
@@ -260,6 +272,57 @@ export default function SellerPayoutsPage() {
               <p className="text-sm leading-relaxed text-ink-soft">
                 Neither the buyer nor the seller can mark an order Completed directly — it only happens through
                 one of these two flows.
+              </p>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* IDENTITY VERIFICATION (KYC) & NAME MATCHING */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="mb-8 max-w-[64ch]">
+              <DashEyebrow>Identity verification (KYC)</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Two checks stand between a completed sale and your money.</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Being marked Completed isn&rsquo;t the only gate. Before Durqo pays out to you, two identity checks
+                apply.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="rounded-xl border border-rule bg-paper-raised p-6">
+                <span className="mb-3 grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                  <UserCheck size={19} />
+                </span>
+                <h4 className="text-base font-semibold text-ink">KYC before your first withdrawal</h4>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
+                  Before your very first payout request, you must complete identity verification (KYC) by
+                  uploading an ID document from your dashboard&rsquo;s Verification page. This is separate from
+                  the optional public Verified Seller badge shown on listings. It&rsquo;s required once, and
+                  every withdrawal after that draws on the same approved verification.
+                </p>
+              </div>
+              <div className="rounded-xl border border-rule bg-paper-raised p-6">
+                <span className="mb-3 grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                  <ShieldCheck size={19} />
+                </span>
+                <h4 className="text-base font-semibold text-ink">Your payout name must match your verified name</h4>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
+                  When you request a withdrawal, you enter an account holder name for the payout method you&rsquo;re
+                  using. Durqo compares this by hand against the legal name on your identity verification before
+                  approving the request, so make sure the name on your payout account matches your ID.
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 flex items-start gap-3 rounded-xl border border-rule bg-paper-sunk p-5">
+              <Info size={18} className="mt-0.5 shrink-0 text-ink-faint" />
+              <p className="text-sm leading-relaxed text-ink-soft">
+                Submit your identity documents early from the{" "}
+                <a href="/dashboard/seller/verification" className="font-semibold text-brand-strong hover:underline">
+                  Verification page
+                </a>{" "}
+                so this is already done by the time you have your first payout to request.
               </p>
             </div>
           </Inner>
