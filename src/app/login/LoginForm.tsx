@@ -4,13 +4,14 @@
 // this page needs a server-rendered noindex,nofollow robots tag, which
 // requires page.tsx to be a Server Component. The interactive form (and
 // every bit of its logic) is unchanged — only the file it lives in.
-import { useState, Suspense } from "react";
+import { useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { safeNextPath } from "@/lib/safe-redirect";
 import Container from "@/components/ui/Container";
+import TurnstileWidget, { captchaRequired, type TurnstileHandle } from "@/components/TurnstileWidget";
 
 const CALLBACK_ERRORS: Record<string, string> = {
   backend_not_connected: "Backend isn't connected yet. This is a preview build.",
@@ -45,6 +46,15 @@ function LoginForm() {
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // 2026-09-23 bot-signup cleanup (see TurnstileWidget.tsx): Supabase's
+  // "Enable CAPTCHA protection" toggle covers sign-in as well as sign-up —
+  // there's no way to scope it to signup alone — so the same widget has to
+  // sit on this form too, or every login would start failing the moment
+  // that toggle is turned on in the Supabase dashboard. No-op when
+  // NEXT_PUBLIC_TURNSTILE_SITE_KEY isn't configured.
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileHandle>(null);
+
   // 2026-09-19 (listing-page login gate): carries a visitor back to
   // whatever they were trying to view — e.g. a gated listing — instead of
   // their role dashboard, once they log in. Re-validated here even though
@@ -58,13 +68,23 @@ function LoginForm() {
     setError(null);
     setNotice(null);
     setShowResend(false);
+    if (captchaRequired && !captchaToken) {
+      setError("Please complete the verification check below.");
+      return;
+    }
     const supabase = createClient();
     if (!supabase) {
       setError("Backend isn't connected yet. This is a preview build; once Supabase is set up, this form will log you in for real.");
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken: captchaToken ?? undefined },
+    });
+    turnstileRef.current?.reset();
+    setCaptchaToken(null);
     if (error) {
       setLoading(false);
       const isUnverified = error.message.toLowerCase().includes("not confirmed") || (error as { code?: string }).code === "email_not_confirmed";
@@ -160,7 +180,11 @@ function LoginForm() {
           </p>
         )}
         {notice && <p className="text-sm text-brand-hover">{notice}</p>}
-        <button disabled={loading} className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
+        <TurnstileWidget ref={turnstileRef} onToken={setCaptchaToken} />
+        <button
+          disabled={loading || (captchaRequired && !captchaToken)}
+          className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
+        >
           {loading ? "Logging in…" : "Log in"}
         </button>
       </form>
