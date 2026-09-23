@@ -101,8 +101,12 @@ const FAQ_GROUPS = [
         answer: "An optional step where you connect your Google Analytics account so Durqo can confirm your real traffic numbers. Once reviewed, your listing shows a GA Verified badge that helps build buyer trust.",
       },
       {
-        question: "What is seller identity verification?",
-        answer: "An optional step where you upload an ID document from your dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge. Getting the public badge is optional, but completing this same identity check is required before your very first withdrawal — see the Fees & getting paid section below.",
+        question: "What is seller identity verification (KYC)?",
+        answer: "An optional step where you upload an ID document from your dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge. Getting the public badge is optional, but completing this same identity verification (KYC) is required before your very first withdrawal. See the Fees & getting paid section below.",
+      },
+      {
+        question: "Which documents can I submit for identity verification (KYC)?",
+        answer: "A Passport, National ID, Driving License or Birth Certificate. Choose one document type on the Verification page and upload a clear photo of it (front and back if applicable).",
       },
     ],
   },
@@ -154,7 +158,7 @@ const FAQ_GROUPS = [
       {
         question: "Does my payout account name need to match my verified identity?",
         answer:
-          "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification. Durqo's team checks this by hand as part of reviewing every payout request.",
+          "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification (KYC). Durqo's team checks this by hand as part of reviewing every payout request.",
       },
     ],
   },
