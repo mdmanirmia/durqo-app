@@ -3,7 +3,7 @@
 // Split out of register/page.tsx (Sep 8, 2026 technical-SEO pass, Section
 // 15): page.tsx needs to be a Server Component to export a server-rendered
 // noindex robots tag. Same form, same logic — only the file changed.
-import { useState, Suspense } from "react";
+import { useRef, useState, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
@@ -12,6 +12,7 @@ import { safeNextPath } from "@/lib/safe-redirect";
 import Container from "@/components/ui/Container";
 import { notifySellerAccountCreated } from "./actions";
 import { trackSignUp } from "@/lib/analytics";
+import TurnstileWidget, { captchaRequired, type TurnstileHandle } from "@/components/TurnstileWidget";
 
 function RegisterForm() {
   const router = useRouter();
@@ -27,6 +28,11 @@ function RegisterForm() {
 
   const [loading, setLoading] = useState(false);
 
+  // 2026-09-23 bot-signup cleanup (see TurnstileWidget.tsx) — no-op when
+  // NEXT_PUBLIC_TURNSTILE_SITE_KEY isn't configured.
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileHandle>(null);
+
   // 2026-09-19 (listing-page login gate): carries a visitor back to
   // whatever they were trying to view (e.g. a gated listing) once they've
   // registered, instead of dropping them on their role dashboard. Threaded
@@ -38,6 +44,10 @@ function RegisterForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (captchaRequired && !captchaToken) {
+      setError("Please complete the verification check below.");
+      return;
+    }
     const supabase = createClient();
     if (!supabase) {
       setError("Backend isn't connected yet. This is a preview build; once Supabase is set up, this form will create a real account.");
@@ -50,8 +60,11 @@ function RegisterForm() {
       options: {
         data: { full_name: fullName, role },
         emailRedirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+        captchaToken: captchaToken ?? undefined,
       },
     });
+    turnstileRef.current?.reset();
+    setCaptchaToken(null);
     setLoading(false);
     if (error) { setError(error.message); return; }
 
@@ -160,8 +173,12 @@ function RegisterForm() {
           <label className="text-sm font-semibold text-ink-soft" htmlFor="password">Password</label>
           <input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className={fieldCls} />
         </div>
+        <TurnstileWidget ref={turnstileRef} onToken={setCaptchaToken} />
         {error && <p className="text-sm text-danger">{error}</p>}
-        <button disabled={loading} className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
+        <button
+          disabled={loading || (captchaRequired && !captchaToken)}
+          className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60"
+        >
           {loading ? "Creating account…" : "Create account"}
         </button>
       </form>
