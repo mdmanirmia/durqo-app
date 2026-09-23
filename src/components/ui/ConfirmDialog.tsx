@@ -17,6 +17,13 @@ export default function ConfirmDialog({
   cancelLabel = "Cancel",
   danger,
   busy,
+  // 2026-09-23 bugfix: lets a caller keep the confirm button disabled until
+  // some required input is filled in (e.g. a reason textarea) — see the
+  // "Request verification" dialog in AdminOrdersTable.tsx, where submitting
+  // with an empty reason used to reach the server, throw, and silently
+  // close the dialog with no visible feedback (the admin believed the
+  // request was sent; nothing was ever written, no email ever went out).
+  confirmDisabled,
   onConfirm,
   onCancel,
 }: {
@@ -27,6 +34,7 @@ export default function ConfirmDialog({
   cancelLabel?: string;
   danger?: boolean;
   busy?: boolean;
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }) {
@@ -56,7 +64,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            disabled={busy}
+            disabled={busy || confirmDisabled}
             className={`rounded-md px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 ${
               danger ? "bg-danger hover:bg-danger/90" : "bg-brand hover:bg-brand-hover"
             }`}
