@@ -181,7 +181,7 @@ const STEPS = [
     n: "08",
     icon: Wallet,
     title: "Request your payout",
-    body: "Once your payout becomes eligible, request a withdrawal from your Earnings page. Durqo's applicable success fee is deducted according to the existing fee logic, and eligible payout requests are normally reviewed and processed within 3–5 business days.",
+    body: "Once your payout becomes eligible, request a withdrawal from your Earnings page. Before your very first request, you'll need to have completed the identity verification (KYC) from Step 03, and the account holder name you enter must match your verified legal name, which Durqo checks by hand before approving each payout. Durqo's applicable success fee is deducted according to the existing fee logic, and eligible payout requests are normally reviewed and processed within 3–5 business days.",
   },
 ] as const;
 
@@ -407,9 +407,11 @@ export default function HowToSellPage() {
                 <DashEyebrow>Getting paid</DashEyebrow>
                 <h2 className="text-2xl sm:text-3xl">Withdraw your earnings, your way.</h2>
                 <p className="mt-3 max-w-[54ch] text-sm leading-relaxed text-ink-soft">
-                  Once a sale is complete, request a withdrawal from your seller dashboard. Our team reviews and
-                  processes every request. bKash, Rocket and Nagad withdrawals are each capped at ৳50,000 per day
-                  and ৳300,000 per month, based on that day&rsquo;s exchange rate. See{" "}
+                  Once a sale is complete, request a withdrawal from your seller dashboard. Identity verification
+                  (KYC) is required before your very first withdrawal, and the account holder name you enter must
+                  match your verified legal name, which Durqo checks by hand as part of reviewing every payout
+                  request. bKash, Rocket and Nagad withdrawals are each capped at ৳50,000 per day and ৳300,000 per
+                  month, based on that day&rsquo;s exchange rate. See{" "}
                   <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
                     Buy and Sell Digital Businesses in BDT
                   </Link>{" "}
