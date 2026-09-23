@@ -6,13 +6,14 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 
-const METHODS = ["passport", "national_id", "driving_license"] as const;
+const METHODS = ["passport", "national_id", "driving_license", "birth_certificate"] as const;
 type Method = (typeof METHODS)[number];
 
 const METHOD_LABEL: Record<Method, string> = {
   passport: "Passport",
   national_id: "National ID",
   driving_license: "Driving License",
+  birth_certificate: "Birth Certificate",
 };
 
 // Called after the browser has already uploaded the document(s) straight

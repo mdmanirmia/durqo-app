@@ -13,6 +13,7 @@ const METHODS = [
   { id: "passport", label: "Passport" },
   { id: "national_id", label: "National ID" },
   { id: "driving_license", label: "Driving License" },
+  { id: "birth_certificate", label: "Birth Certificate" },
 ] as const;
 
 export default function VerificationPage() {
