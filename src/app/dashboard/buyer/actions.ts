@@ -17,9 +17,22 @@ import { getUserEmails } from "@/lib/notifications";
 // password go through Supabase Auth's own updateUser — using the caller's
 // own session client (not the service-role admin client), so this can only
 // ever change the signed-in user's own account.
+//
+// 2026-09-23 Account Details follow-up: split the single "full name" field
+// into first_name/last_name (migration 056, new self-service columns) and
+// added a private `address` field, separate from the existing public
+// `location` column. full_name is still kept in sync on every save since
+// it's what listing cards, dashboards, admin tables and emails read across
+// the app. As of migration 056, a BEFORE UPDATE trigger on profiles also
+// blocks this same session from touching admin-only columns (role,
+// payout_verified, is_verified, is_active, verification_status) no matter
+// what a client sends, closing a gap where profiles_update_own's RLS policy
+// only ever restricted which row could be touched, not which columns.
 export async function updateAccount(input: {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   location: string;
+  address: string;
   email: string;
   password: string;
 }) {
@@ -31,13 +44,22 @@ export async function updateAccount(input: {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("You need to be logged in.");
 
-  const fullName = input.fullName.trim();
+  const firstName = input.firstName.trim();
+  const lastName = input.lastName.trim();
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
   const location = input.location.trim();
+  const address = input.address.trim();
   const email = input.email.trim();
 
   const { error: profileError } = await supabase
     .from("profiles")
-    .update({ full_name: fullName || null, location: location || null })
+    .update({
+      first_name: firstName || null,
+      last_name: lastName || null,
+      full_name: fullName || null,
+      location: location || null,
+      address: address || null,
+    })
     .eq("id", user.id);
   if (profileError) throw new Error(profileError.message);
 
