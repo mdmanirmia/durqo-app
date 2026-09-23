@@ -31,6 +31,7 @@ export const SELLER_NAV: DashboardNavItem[] = [
   { href: "/dashboard/seller/messages", label: "Messages", icon: "messageCircle" },
   { href: "/dashboard/seller/verification", label: "Verification", icon: "shieldCheck" },
   { href: "/dashboard/seller/earnings", label: "Earnings", icon: "wallet" },
+  { href: "/dashboard/seller/account", label: "Account Details", icon: "user" },
 ];
 
 export const ADMIN_NAV: DashboardNavItem[] = [
