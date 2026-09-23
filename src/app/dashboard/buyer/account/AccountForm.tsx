@@ -7,16 +7,22 @@ const fieldCls =
   "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none disabled:opacity-60";
 
 export default function AccountForm({
-  initialFullName,
+  initialFirstName,
+  initialLastName,
   initialLocation,
+  initialAddress,
   initialEmail,
 }: {
-  initialFullName: string;
+  initialFirstName: string;
+  initialLastName: string;
   initialLocation: string;
+  initialAddress: string;
   initialEmail: string;
 }) {
-  const [fullName, setFullName] = useState(initialFullName);
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
   const [location, setLocation] = useState(initialLocation);
+  const [address, setAddress] = useState(initialAddress);
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -27,7 +33,7 @@ export default function AccountForm({
     setFeedback(null);
     startTransition(async () => {
       try {
-        const result = await updateAccount({ fullName, location, email, password });
+        const result = await updateAccount({ firstName, lastName, location, address, email, password });
         setPassword("");
         setFeedback({
           type: "success",
@@ -36,7 +42,7 @@ export default function AccountForm({
             : "Your account details were saved.",
         });
       } catch (err) {
-        setFeedback({ type: "error", message: err instanceof Error ? err.message : "Couldn't save — try again." });
+        setFeedback({ type: "error", message: err instanceof Error ? err.message : "Couldn't save. Try again." });
       }
     });
   }
@@ -46,22 +52,22 @@ export default function AccountForm({
       <div className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-ink-soft">Full name</label>
+            <label className="text-sm font-semibold text-ink-soft">First name</label>
             <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
               disabled={isPending}
-              placeholder="Your name"
+              placeholder="First name"
               className={fieldCls}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-ink-soft">Location</label>
+            <label className="text-sm font-semibold text-ink-soft">Last name</label>
             <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               disabled={isPending}
-              placeholder="City, Country"
+              placeholder="Last name"
               className={fieldCls}
             />
           </div>
@@ -76,6 +82,27 @@ export default function AccountForm({
             placeholder="you@email.com"
             className={fieldCls}
           />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-ink-soft">Location</label>
+          <input
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            disabled={isPending}
+            placeholder="City, Country"
+            className={fieldCls}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-ink-soft">Address</label>
+          <input
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            disabled={isPending}
+            placeholder="Street address, city, postal code"
+            className={fieldCls}
+          />
+          <p className="text-xs text-ink-soft">Private. Never shown publicly.</p>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-ink-soft">New password</label>
