@@ -10,12 +10,22 @@ create extension if not exists "uuid-ossp";
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text,
+  -- Account Details feature (Sep 23, 2026): additive, kept in sync with
+  -- full_name on every self-service save (see updateAccount() in
+  -- dashboard/buyer/actions.ts and dashboard/seller/account/actions.ts)
+  -- rather than replacing full_name, which many other read sites still use.
+  first_name text,
+  last_name text,
+  -- Private mailing address entered on the Account Details page --
+  -- deliberately separate from `location` below, which is the public
+  -- city/country shown on a seller's listings and public profile.
+  address text,
   avatar_url text,
   role text not null default 'buyer' check (role in ('buyer','seller','admin')),
   bio text,
   location text,
   is_verified boolean not null default false,
-  verification_method text check (verification_method in ('passport','national_id','driving_license')),
+  verification_method text check (verification_method in ('passport','national_id','driving_license','birth_certificate')),
   verification_status text not null default 'unverified' check (verification_status in ('unverified','pending','verified','rejected')),
   total_purchases int not null default 0,
   total_sales int not null default 0,
@@ -229,6 +239,49 @@ alter table public.listing_faqs enable row level security;
 create policy "profiles_select_all" on public.profiles for select using (true);
 create policy "profiles_update_own" on public.profiles for update using (auth.uid() = id);
 create policy "profiles_insert_own" on public.profiles for insert with check (auth.uid() = id);
+
+-- profiles_update_own above only restricts *which row* a signed-in user can
+-- touch, not *which columns* -- RLS using/with check clauses can't do
+-- column-level restriction. This trigger closes that gap: a plain user
+-- session can freely self-update ordinary profile fields (full_name,
+-- first_name, last_name, location, address, bio, avatar_url, and the
+-- seller verification submission's own columns) but can never write
+-- admin-only columns on their own row, and can only move
+-- verification_status to "pending" (their own submission), never directly
+-- to "verified"/"rejected". See migration
+-- 056_account_details_fields_and_self_update_guard.sql for the full
+-- rationale.
+create or replace function public.profiles_guard_self_update()
+returns trigger
+language plpgsql
+as $$
+begin
+  if auth.role() = 'service_role' then
+    return new;
+  end if;
+
+  new.role := old.role;
+  new.is_verified := old.is_verified;
+  new.payout_verified := old.payout_verified;
+  new.payout_verified_at := old.payout_verified_at;
+  new.is_active := old.is_active;
+  new.total_purchases := old.total_purchases;
+  new.total_sales := old.total_sales;
+  new.created_at := old.created_at;
+
+  if new.verification_status is distinct from old.verification_status
+     and new.verification_status <> 'pending' then
+    new.verification_status := old.verification_status;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_guard_self_update_trg on public.profiles;
+create trigger profiles_guard_self_update_trg
+  before update on public.profiles
+  for each row execute function public.profiles_guard_self_update();
 
 -- Listings: published listings readable by everyone; sellers manage their own
 create policy "listings_select_published" on public.listings for select
