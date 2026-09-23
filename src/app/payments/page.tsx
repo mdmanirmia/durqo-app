@@ -212,6 +212,11 @@ const FAQ_GROUPS = [
           "Yes. Identity Verification (KYC) is required before your first withdrawal, and the account holder name on your payout details must match your verified identity, which Durqo checks by hand before approving a payout. This is separate from the optional public Verified badge shown on listings.",
       },
       {
+        question: "Which documents can I submit for Identity Verification (KYC)?",
+        answer:
+          "A Passport, National ID, Driving License or Birth Certificate. Choose one document type from your Verification page and upload a clear photo of it (front and back if applicable).",
+      },
+      {
         question: "Are bKash, Rocket and Nagad withdrawals limited?",
         answer:
           "Yes. Each of the three has its own independent limit of ৳50,000 per day and ৳300,000 per month, calculated at that day's exchange rate. You can withdraw up to all three limits on the same day, since they don't share one combined cap. Bank Transfer, PayPal and Wise have no such limit.",
@@ -219,7 +224,7 @@ const FAQ_GROUPS = [
       {
         question: "How long does a withdrawal take?",
         answer:
-          "Payout requests are normally reviewed and processed within 3–5 business days. Additional time may be required for first-time payouts, identity verification, high-value transactions, incorrect payout details, compliance reviews, banking delays or active disputes. The time required for funds to reach your account may also vary depending on the selected payout method and destination bank.",
+          "Payout requests are normally reviewed and processed within 3–5 business days. Additional time may be required for first-time payouts, identity verification (KYC), high-value transactions, incorrect payout details, compliance reviews, banking delays or active disputes. The time required for funds to reach your account may also vary depending on the selected payout method and destination bank.",
       },
     ],
   },
