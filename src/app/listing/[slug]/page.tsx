@@ -1232,7 +1232,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                           ? "National ID verified"
                           : listing.seller.verificationMethod === "driving_license"
                             ? "Driving license verified"
-                            : "Identity verified"}
+                            : listing.seller.verificationMethod === "birth_certificate"
+                              ? "Birth certificate verified"
+                              : "Identity verified"}
                     </div>
                   ) : (
                     <div className="text-sm text-ink-faint">Identity not yet verified</div>
