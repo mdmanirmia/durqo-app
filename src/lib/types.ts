@@ -151,6 +151,14 @@ export interface SellerInfo {
   // orders.amount for orders that have actually collected payment —
   // see mapSeller() for exactly which order statuses count).
   lifetimeSalesAmount: number;
+  // Mutual buyer/seller reviews (Sep 24, 2026 — 057_order_reviews.sql).
+  // Aggregated from buyers' reviews of this seller only, and only once
+  // each review has cleared its double-blind reveal window — see
+  // get_seller_review_stats(). avgRating is null (never 0) when
+  // reviewCount is 0, so callers can tell "no reviews yet" apart from
+  // "reviewed as 0 stars" (which can't happen — ratings are 1-5).
+  reviewCount: number;
+  avgRating: number | null;
   memberSince: string;
 }
 
