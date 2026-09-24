@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText, ArrowLeftRight, ClipboardList, ShieldAlert } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
@@ -10,6 +10,7 @@ import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { fmtUSD } from "@/lib/format";
 import { getSellerOrders, type OrderRow } from "@/lib/data/orders.client";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
+import OrderReviewPanel from "@/components/dashboard/OrderReviewPanel";
 
 // Read-only reminder for the seller when a buyer's identity/funds
 // verification is still outstanding (KYC policy, Sep 2026) — the seller
@@ -40,6 +41,10 @@ export default function SellerOrdersPage() {
     };
   }, []);
 
+  function recordReview(orderId: string, review: { rating: number; comment: string | null }) {
+    setOrders((prev) => prev?.map((o) => (o.id === orderId ? { ...o, myReview: review } : o)) ?? prev);
+  }
+
   return (
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <h2 className="mb-4 text-xl">Orders</h2>
@@ -65,39 +70,48 @@ export default function SellerOrdersPage() {
               </thead>
               <tbody>
                 {orders.map((o) => (
-                  <tr key={o.id} className="border-b border-rule last:border-b-0">
-                    <td className="mono px-4 py-3 text-ink-soft">{o.id.slice(0, 8)}</td>
-                    <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
-                    <td className="px-4 py-3 text-ink-soft">{o.counterpartyName}</td>
-                    <td className="px-4 py-3">
-                      <span className="mono">{fmtUSD(o.amount)}</span>
-                      <OrderAmountBreakdown
-                        paymentChannel={o.paymentChannel}
-                        onlineChargeUsd={o.onlineChargeUsd}
-                        remainderUsd={o.remainderUsd}
-                        sslcommerzBdtAmount={o.sslcommerzBdtAmount}
-                        sslcommerzRate={o.sslcommerzRate}
-                        orderStatus={o.status}
-                      />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={o.status} />
-                    </td>
-                    <td className="mono px-4 py-3 text-ink-faint">{o.date}</td>
-                    <td className="px-4 py-3 text-right">
-                      <VerificationNote status={o.verificationStatus} />
-                      <div className="flex flex-col items-end gap-1.5">
-                        {o.hasTransferRoom && (
-                          <Link href={`/dashboard/transfer/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
-                            <ArrowLeftRight size={13} /> Transfer Room
+                  <Fragment key={o.id}>
+                    <tr className="border-b border-rule last:border-b-0">
+                      <td className="mono px-4 py-3 text-ink-soft">{o.id.slice(0, 8)}</td>
+                      <td className="px-4 py-3 font-medium text-ink">{o.listingTitle}</td>
+                      <td className="px-4 py-3 text-ink-soft">{o.counterpartyName}</td>
+                      <td className="px-4 py-3">
+                        <span className="mono">{fmtUSD(o.amount)}</span>
+                        <OrderAmountBreakdown
+                          paymentChannel={o.paymentChannel}
+                          onlineChargeUsd={o.onlineChargeUsd}
+                          remainderUsd={o.remainderUsd}
+                          sslcommerzBdtAmount={o.sslcommerzBdtAmount}
+                          sslcommerzRate={o.sslcommerzRate}
+                          orderStatus={o.status}
+                        />
+                      </td>
+                      <td className="px-4 py-3">
+                        <StatusBadge status={o.status} />
+                      </td>
+                      <td className="mono px-4 py-3 text-ink-faint">{o.date}</td>
+                      <td className="px-4 py-3 text-right">
+                        <VerificationNote status={o.verificationStatus} />
+                        <div className="flex flex-col items-end gap-1.5">
+                          {o.hasTransferRoom && (
+                            <Link href={`/dashboard/transfer/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                              <ArrowLeftRight size={13} /> Transfer Room
+                            </Link>
+                          )}
+                          <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
+                            <FileText size={13} /> Receipt
                           </Link>
-                        )}
-                        <Link href={`/dashboard/receipt/${o.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-ink-soft hover:text-brand-strong">
-                          <FileText size={13} /> Receipt
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
+                        </div>
+                      </td>
+                    </tr>
+                    {o.status === "completed" && (
+                      <tr className="border-b border-rule last:border-b-0">
+                        <td colSpan={7} className="bg-paper px-4 py-3 font-sans">
+                          <OrderReviewPanel order={o} myRole="seller" onSubmitted={(review) => recordReview(o.id, review)} />
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
@@ -143,6 +157,11 @@ export default function SellerOrdersPage() {
                   </Link>
                 </div>
                 <VerificationNote status={o.verificationStatus} />
+                {o.status === "completed" && (
+                  <div className="mt-3">
+                    <OrderReviewPanel order={o} myRole="seller" onSubmitted={(review) => recordReview(o.id, review)} />
+                  </div>
+                )}
               </div>
             ))}
           </div>
