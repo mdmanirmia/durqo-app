@@ -12,6 +12,7 @@ import { fmtUSD } from "@/lib/format";
 import { getBuyerOrders, type OrderRow } from "@/lib/data/orders.client";
 import { uploadBuyerVerificationDocuments, submitBuyerVerification } from "@/lib/data/buyer-verification.client";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
+import OrderReviewPanel from "@/components/dashboard/OrderReviewPanel";
 import { cancelOrder } from "../actions";
 
 // Buyer identity/funds verification (KYC policy, Sep 2026) — shown inline
@@ -116,6 +117,10 @@ export default function BuyerOrdersPage() {
     };
   }, []);
 
+  function recordReview(orderId: string, review: { rating: number; comment: string | null }) {
+    setOrders((prev) => prev?.map((o) => (o.id === orderId ? { ...o, myReview: review } : o)) ?? prev);
+  }
+
   function confirmCancel() {
     if (!cancelTarget) return;
     const target = cancelTarget;
@@ -213,6 +218,13 @@ export default function BuyerOrdersPage() {
                         </td>
                       </tr>
                     )}
+                    {o.status === "completed" && (
+                      <tr className="border-b border-rule last:border-b-0">
+                        <td colSpan={7} className="bg-paper px-4 py-3 font-sans">
+                          <OrderReviewPanel order={o} myRole="buyer" onSubmitted={(review) => recordReview(o.id, review)} />
+                        </td>
+                      </tr>
+                    )}
                   </Fragment>
                 ))}
               </tbody>
@@ -276,6 +288,11 @@ export default function BuyerOrdersPage() {
                         setOrders((prev) => prev?.map((row) => (row.id === o.id ? { ...row, verificationStatus: "submitted" } : row)) ?? prev)
                       }
                     />
+                  </div>
+                )}
+                {o.status === "completed" && (
+                  <div className="mt-3">
+                    <OrderReviewPanel order={o} myRole="buyer" onSubmitted={(review) => recordReview(o.id, review)} />
                   </div>
                 )}
               </div>
