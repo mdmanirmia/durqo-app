@@ -11,6 +11,7 @@ import {
   Clock,
   Calendar,
   MailCheck,
+  Star,
   BarChart3,
   Info,
   LineChart,
@@ -1212,6 +1213,15 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-ink">{listing.seller.name}</div>
                     {listing.seller.location && <div className="truncate text-sm text-ink-soft">{listing.seller.location}</div>}
+                    {listing.seller.reviewCount > 0 && listing.seller.avgRating !== null && (
+                      <div className="mt-0.5 flex items-center gap-1 text-sm text-ink-soft">
+                        <Star size={13} className="fill-gold text-gold" />
+                        <span className="mono font-semibold text-ink">{listing.seller.avgRating.toFixed(1)}</span>
+                        <span className="text-ink-faint">
+                          ({listing.seller.reviewCount} review{listing.seller.reviewCount === 1 ? "" : "s"})
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 {listing.seller.isVerified && (
