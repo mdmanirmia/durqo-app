@@ -8,6 +8,7 @@ export interface OrderRow {
   id: string;
   listingId: string;
   listingTitle: string;
+  counterpartyId: string;
   counterpartyName: string;
   amount: number;
   status: OrderStatus;
@@ -36,6 +37,20 @@ export interface OrderRow {
   // so a seller understands why a payout might be on hold).
   verificationStatus: "requested" | "submitted" | "verified" | "rejected" | null;
   verificationReason: string | null;
+  // Mutual reviews (Sep 24, 2026 — 057_order_reviews.sql). `myReview` is
+  // whatever the signed-in viewer wrote for this order, if anything;
+  // `counterpartReview` is what the other party wrote about them, but —
+  // per the double-blind reveal RLS implements — only ever populated
+  // once it's actually visible to this viewer. A completed order with
+  // `myReview: null` is the "you can leave a review" state.
+  myReview: { rating: number; comment: string | null } | null;
+  counterpartReview: { rating: number; comment: string | null } | null;
+}
+
+// A completed order the viewer hasn't reviewed yet — the only state
+// where the "leave a review" prompt should show.
+export function canReviewOrder(order: OrderRow): boolean {
+  return order.status === "completed" && order.myReview === null;
 }
 
 // Shared by both dashboards — `side` picks which foreign key identifies "me"
@@ -60,7 +75,7 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
   const listingIds = [...new Set(rows.map((r) => r.listing_id))];
   const counterpartyIds = [...new Set(rows.map((r) => r[counterpartyColumn]))];
   const orderIds = rows.map((r) => r.id);
-  const [{ data: listings }, { data: profiles }, { data: rooms }, { data: verifications }] = await Promise.all([
+  const [{ data: listings }, { data: profiles }, { data: rooms }, { data: verifications }, { data: reviews }] = await Promise.all([
     supabase.from("listings").select("id, title").in("id", listingIds),
     supabase.from("profiles").select("id, full_name").in("id", counterpartyIds),
     supabase.from("asset_transfer_rooms").select("order_id").in("order_id", orderIds),
@@ -68,15 +83,30 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
     // seller of an order read its row — see
     // 053_kyc_name_match_and_buyer_verification.sql.
     supabase.from("order_verifications").select("order_id, status, reason").in("order_id", orderIds),
+    // order_reviews_select_participant RLS already implements the
+    // double-blind reveal — a row this viewer authored always comes
+    // back, a row written about them only comes back once it's actually
+    // revealed — see 057_order_reviews.sql.
+    supabase.from("order_reviews").select("order_id, reviewer_id, rating, comment").in("order_id", orderIds),
   ]);
   const listingById = new Map((listings ?? []).map((l) => [l.id, l]));
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
   const orderIdsWithRoom = new Set((rooms ?? []).map((r) => r.order_id as string));
   const verificationByOrderId = new Map((verifications ?? []).map((v) => [v.order_id as string, v]));
+  const myId = userData.user?.id;
+  const reviewsByOrderId = new Map<string, { mine: { rating: number; comment: string | null } | null; theirs: { rating: number; comment: string | null } | null }>();
+  for (const rv of reviews ?? []) {
+    const entry = reviewsByOrderId.get(rv.order_id as string) ?? { mine: null, theirs: null };
+    const parsed = { rating: Number(rv.rating), comment: (rv.comment as string | null) ?? null };
+    if (rv.reviewer_id === myId) entry.mine = parsed;
+    else entry.theirs = parsed;
+    reviewsByOrderId.set(rv.order_id as string, entry);
+  }
 
   return rows.map((r) => ({
     id: r.id,
     listingId: r.listing_id,
+    counterpartyId: r[counterpartyColumn] as string,
     listingTitle: listingById.get(r.listing_id)?.title ?? "Listing",
     counterpartyName: profileById.get(r[counterpartyColumn])?.full_name ?? "—",
     amount: Number(r.amount),
@@ -90,6 +120,8 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
     hasTransferRoom: orderIdsWithRoom.has(r.id),
     verificationStatus: (verificationByOrderId.get(r.id)?.status as OrderRow["verificationStatus"]) ?? null,
     verificationReason: verificationByOrderId.get(r.id)?.reason ?? null,
+    myReview: reviewsByOrderId.get(r.id)?.mine ?? null,
+    counterpartReview: reviewsByOrderId.get(r.id)?.theirs ?? null,
   }));
 }
 

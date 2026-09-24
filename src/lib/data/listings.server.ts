@@ -449,11 +449,20 @@ async function hydrateListingRow(supabase: NonNullable<Awaited<ReturnType<typeof
   // viewing the listing, not just the seller or an admin. Degrades to
   // zeros/false (same graceful pattern as every other function in this
   // file) if the service-role key isn't configured or a query fails.
-  let sellerStats: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number } | undefined;
+  let sellerStats:
+    | {
+        emailVerified: boolean;
+        activeListingsCount: number;
+        completedSalesCount: number;
+        lifetimeSalesAmount: number;
+        reviewCount: number;
+        avgRating: number | null;
+      }
+    | undefined;
   const admin = createAdminClient();
   if (admin) {
     try {
-      const [{ count: activeListingsCount }, { data: sellerOrders }, { data: authUserData }] = await Promise.all([
+      const [{ count: activeListingsCount }, { data: sellerOrders }, { data: authUserData }, { data: reviewStatsRows }] = await Promise.all([
         admin.from("listings").select("id", { count: "exact", head: true }).eq("seller_id", row.seller_id).eq("status", "published"),
         // "Completed sales" / lifetime sales $ counts only orders whose
         // payment has actually been released to the seller (status =
@@ -468,12 +477,20 @@ async function hydrateListingRow(supabase: NonNullable<Awaited<ReturnType<typeof
         // had actually reached "Payment Released to Seller").
         admin.from("orders").select("amount").eq("seller_id", row.seller_id).eq("status", "completed"),
         admin.auth.admin.getUserById(row.seller_id),
+        // Mutual buyer/seller reviews (Sep 24, 2026 — 057_order_reviews.sql).
+        // get_seller_review_stats() already applies the double-blind reveal
+        // filter and only counts buyer->seller reviews, so this is the
+        // final public number — no further filtering needed here.
+        admin.rpc("get_seller_review_stats", { p_seller_id: row.seller_id }),
       ]);
+      const reviewStats = reviewStatsRows?.[0];
       sellerStats = {
         emailVerified: !!authUserData?.user?.email_confirmed_at,
         activeListingsCount: activeListingsCount ?? 0,
         completedSalesCount: (sellerOrders ?? []).length,
         lifetimeSalesAmount: (sellerOrders ?? []).reduce((sum, o) => sum + Number(o.amount), 0),
+        reviewCount: reviewStats?.review_count ?? 0,
+        avgRating: reviewStats?.avg_rating === null || reviewStats?.avg_rating === undefined ? null : Number(reviewStats.avg_rating),
       };
     } catch (err) {
       console.warn("[listings] hydrateListingRow: seller stats lookup failed, showing zeros:", err);

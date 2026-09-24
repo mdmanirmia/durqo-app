@@ -180,7 +180,14 @@ export function buildQuickStats(row: Row, quickStatKeys: QuickStatKey[]): Partia
 // computed live from `orders` instead (see getListingById()).
 export function mapSeller(
   profile: Row | null | undefined,
-  stats?: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number }
+  stats?: {
+    emailVerified: boolean;
+    activeListingsCount: number;
+    completedSalesCount: number;
+    lifetimeSalesAmount: number;
+    reviewCount: number;
+    avgRating: number | null;
+  }
 ): SellerInfo {
   if (!profile) {
     return {
@@ -191,6 +198,8 @@ export function mapSeller(
       activeListingsCount: 0,
       totalSales: 0,
       lifetimeSalesAmount: 0,
+      reviewCount: 0,
+      avgRating: null,
       memberSince: "",
     };
   }
@@ -204,6 +213,8 @@ export function mapSeller(
     activeListingsCount: stats?.activeListingsCount ?? 0,
     totalSales: stats?.completedSalesCount ?? 0,
     lifetimeSalesAmount: stats?.lifetimeSalesAmount ?? 0,
+    reviewCount: stats?.reviewCount ?? 0,
+    avgRating: stats?.avgRating ?? null,
     memberSince: profile.created_at ? String(profile.created_at).slice(0, 10) : "",
   };
 }
@@ -462,7 +473,14 @@ export function mapListing(
   quickStatKeys: QuickStatKey[],
   related: {
     seller?: Row | null;
-    sellerStats?: { emailVerified: boolean; activeListingsCount: number; completedSalesCount: number; lifetimeSalesAmount: number };
+    sellerStats?: {
+      emailVerified: boolean;
+      activeListingsCount: number;
+      completedSalesCount: number;
+      lifetimeSalesAmount: number;
+      reviewCount: number;
+      avgRating: number | null;
+    };
     monthlyStats?: Row[];
     seo?: Row | null;
     socialStats?: Row[];
