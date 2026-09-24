@@ -2,6 +2,19 @@ import type { Metadata } from "next";
 import Container from "@/components/ui/Container";
 import PrivacyToc from "./PrivacyToc";
 
+// Update — Sep 24, 2026: this page's "Account & identity" data category and
+// "How We Use Information" purposes both only ever mentioned verifying
+// *Seller* identity, even though the Sep 22-23 KYC/buyer-verification work
+// (see claude/kyc-identity-verification-and-buyer-verification-addendum.md,
+// already reflected on /terms's own "Identity Verification (KYC)" section)
+// means Durqo can also collect a *Buyer's* identity or funds-verification
+// documents, when an admin flags a specific order for it. Found while
+// checking whether Terms/Privacy were updated alongside that KYC work —
+// Terms already covered all three policies; this page had missed the
+// Buyer-facing half. Both spots now name Buyers explicitly. Effective date
+// bumped since this is a substantive disclosure fix, not cosmetic, per this
+// file's own stated policy above (see the Sep 6 update note below).
+//
 // Update — Sep 13, 2026: added an "Asset transfer records" data category
 // (and matching retention row) for the Transfer Room system, live for every
 // payment channel since Sep 12, 2026 — Deal Messages inside a Transfer Room
@@ -66,7 +79,7 @@ import PrivacyToc from "./PrivacyToc";
 //    "Payment & transaction" row is updated to mention this too.
 // Same discipline as the Sep 6 rebuild: a row is only marked "In use
 // today" once the integration is actually confirmed live in the codebase.
-const EFFECTIVE_DATE = "September 13, 2026";
+const EFFECTIVE_DATE = "September 24, 2026";
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Durqo",
@@ -212,7 +225,7 @@ function InfoCategoryTable({ rows }: { rows: InfoCategory[] }) {
 }
 
 const INFO_CATEGORIES: InfoCategory[] = [
-  { category: "Account & identity", examples: "Name, email address, account credentials, and, where required, seller identity-verification information." },
+  { category: "Account & identity", examples: "Name, email address, account credentials, and, where required, identity-verification information: for Sellers, before a first withdrawal, and for Buyers, if a specific order is flagged for identity or funds verification (see Section 04)." },
   { category: "Business & listing", examples: "Information about the businesses you list, inquire about, or transact on, including business details and supporting documents." },
   { category: "Payment & transaction", examples: "Payment details, transaction records, offers, and payout status, processed by our payment providers; and, if you request a withdrawal as a Seller, the payout account details you provide (such as a bank account number, mobile financial service number, or PayPal/Wise email; see Section 07)." },
   { category: "Asset transfer records", examples: "Once a sale is paid for, records from the Transfer Room used to complete it: messages between the Buyer and Seller in that room, each asset's transfer status, and any evidence a Buyer submits if they report an issue during the inspection window." },
@@ -428,7 +441,7 @@ export default function PrivacyPage() {
                 <p>We use information to:</p>
                 <List
                   items={[
-                    "Provide, operate, and improve the Services, including creating and securing your account and verifying Seller identity where required.",
+                    "Provide, operate, and improve the Services, including creating and securing your account, verifying Seller identity before a first withdrawal, and, where a specific order is flagged for it, verifying Buyer identity or funds.",
                     "Facilitate transactions between Buyers and Sellers, including processing payments through the providers listed in Section 07.",
                     "Communicate with you, including responding to support requests and sending service communications such as order or verification updates.",
                     "Comply with legal obligations, and protect the security and integrity of the Platform.",
