@@ -55,7 +55,7 @@ export default async function AdminVerification({
         }
         return {
           id: p.id,
-          sellerName: p.full_name || "—",
+          sellerName: p.full_name || "-",
           legalName: (p.legal_name as string | null) ?? null,
           sellerEmail: emailById.get(p.id) ?? null,
           method: p.verification_method,

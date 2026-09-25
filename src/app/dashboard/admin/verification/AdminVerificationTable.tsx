@@ -121,10 +121,10 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                     {r.sellerEmail && <div className="text-xs text-ink-faint">{r.sellerEmail}</div>}
                     {r.legalName && <div className="mt-1 text-xs text-ink-faint">Legal name: {r.legalName}</div>}
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "—"}</td>
+                  <td className="px-4 py-3 text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "-"}</td>
                   <td className="px-4 py-3">
                     {r.documentUrls.length === 0 ? (
-                      <span className="text-ink-faint">—</span>
+                      <span className="text-ink-faint">-</span>
                     ) : (
                       <div className="flex flex-wrap gap-2">
                         {r.documentUrls.map((url, i) => (
@@ -163,10 +163,10 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                           : "border border-rule-strong text-ink-soft hover:border-brand-strong"
                       }`}
                     >
-                      {r.payoutVerified ? "Granted — revoke" : "Grant payout access"}
+                      {r.payoutVerified ? "Granted - revoke" : "Grant payout access"}
                     </button>
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{r.submittedAt ?? "—"}</td>
+                  <td className="px-4 py-3 text-ink-soft">{r.submittedAt ?? "-"}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2">
                       {r.status !== "verified" && (
@@ -187,7 +187,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                           Reject
                         </button>
                       )}
-                      {errorId === r.id && <span className="self-center text-xs text-danger">Failed — retry</span>}
+                      {errorId === r.id && <span className="self-center text-xs text-danger">Failed - retry</span>}
                     </div>
                   </td>
                 </tr>
@@ -223,17 +223,17 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
               <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <div className="text-xs text-ink-faint">Document type</div>
-                  <div className="text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "—"}</div>
+                  <div className="text-ink-soft">{r.method ? METHOD_LABEL[r.method] ?? r.method : "-"}</div>
                 </div>
                 <div>
                   <div className="text-xs text-ink-faint">Submitted</div>
-                  <div className="text-ink-soft">{r.submittedAt ?? "—"}</div>
+                  <div className="text-ink-soft">{r.submittedAt ?? "-"}</div>
                 </div>
               </div>
               <div className="mb-3">
                 <div className="mb-1 text-xs text-ink-faint">Documents</div>
                 {r.documentUrls.length === 0 ? (
-                  <span className="text-sm text-ink-faint">—</span>
+                  <span className="text-sm text-ink-faint">-</span>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {r.documentUrls.map((url, i) => (
@@ -261,7 +261,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                       : "border border-rule-strong text-ink-soft hover:border-brand-strong"
                   }`}
                 >
-                  {r.payoutVerified ? "Granted — revoke" : "Grant"}
+                  {r.payoutVerified ? "Granted - revoke" : "Grant"}
                 </button>
               </div>
               <div className="flex flex-wrap items-center gap-2 border-t border-rule pt-3">
@@ -283,7 +283,7 @@ export default function AdminVerificationTable({ rows }: { rows: AdminVerificati
                     Reject
                   </button>
                 )}
-                {errorId === r.id && <span className="self-center text-xs text-danger">Failed — retry</span>}
+                {errorId === r.id && <span className="self-center text-xs text-danger">Failed - retry</span>}
               </div>
             </div>
           );
