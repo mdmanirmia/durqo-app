@@ -38,7 +38,7 @@ export default async function BuyerCommentsPage() {
 
       {questions.length === 0 ? (
         <p className="text-sm text-ink-faint">
-          You haven&rsquo;t asked a question yet — look for &ldquo;Comments&rdquo; on any listing page.
+          You haven&rsquo;t asked a question yet - look for &ldquo;Comments&rdquo; on any listing page.
         </p>
       ) : (
         <div className="flex flex-col gap-4">
