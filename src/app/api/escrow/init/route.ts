@@ -85,7 +85,7 @@ export async function POST(request: Request) {
 
   const config = getEscrowConfig();
   if (!config) {
-    return NextResponse.json({ error: "Escrow.com isn't set up yet — try again shortly." }, { status: 500 });
+    return NextResponse.json({ error: "Escrow.com isn't set up yet - try again shortly." }, { status: 500 });
   }
 
   const admin = createAdminClient();
