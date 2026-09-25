@@ -46,7 +46,7 @@ export default async function AdminOverview() {
     <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       {!admin && (
         <p className="mb-6 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-5 py-4 text-sm text-danger">
-          Admin data source is unavailable — the service role key isn&rsquo;t configured for this deployment.
+          Admin data source is unavailable - the service role key isn&rsquo;t configured for this deployment.
         </p>
       )}
 

@@ -87,7 +87,7 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
           await sendEmail(
             sellerEmail,
             `Your listing "${title}" is now live on Durqo`,
-            `<p>Good news — your listing "${title}" was approved and is now live on the marketplace.</p>
+            `<p>Good news - your listing "${title}" was approved and is now live on the marketplace.</p>
              <p><a href="${origin}/listing/${beforeRow.slug}">View your listing</a></p>`
           );
         } else {
@@ -378,14 +378,14 @@ export async function startAssetTransfer(orderId: string) {
       if (buyerEmail) {
         await sendEmail(
           buyerEmail,
-          `Your Transfer Room is open — "${title}"`,
+          `Your Transfer Room is open - "${title}"`,
           `<p>Your Transfer Room for "${title}" is now open.</p>${buyerTransferGuidanceHtml()}${cta}`
         );
       }
       if (sellerEmail) {
         await sendEmail(
           sellerEmail,
-          `Your Transfer Room is open — "${title}"`,
+          `Your Transfer Room is open - "${title}"`,
           `<p>Your Transfer Room for "${title}" is now open.</p>${sellerTransferGuidanceHtml()}${cta}`
         );
       }
@@ -541,10 +541,10 @@ export async function setVerificationStatus(userId: string, decision: Verificati
     const subject = decision === "verified" ? "You're verified on Durqo" : "Your verification wasn't approved";
     const html =
       decision === "verified"
-        ? `<p>Hi ${sellerName},</p><p>Your identity has been verified. The verified badge is now live on your listings.</p><p>— Durqo</p>`
+        ? `<p>Hi ${sellerName},</p><p>Your identity has been verified. The verified badge is now live on your listings.</p><p>- Durqo</p>`
         : `<p>Hi ${sellerName},</p><p>We weren't able to verify your documents this time.${
             trimmedReason ? ` Reason: ${trimmedReason}` : " Please make sure the photo is clear and legible."
-          }</p><p>Please review and resubmit from your seller dashboard.</p><p>— Durqo</p>`;
+          }</p><p>Please review and resubmit from your seller dashboard.</p><p>- Durqo</p>`;
     await sendEmail(sellerEmail, subject, html);
   }
 }
@@ -588,7 +588,7 @@ export async function setPayoutVerified(userId: string, verified: boolean) {
       await sendEmail(
         sellerEmail,
         "You're verified for payouts on Durqo",
-        `<p>Hi ${sellerName},</p><p>Your payout verification is complete — you can now request a withdrawal from your Earnings dashboard whenever you have a balance available.</p><p>— Durqo</p>`
+        `<p>Hi ${sellerName},</p><p>Your payout verification is complete - you can now request a withdrawal from your Earnings dashboard whenever you have a balance available.</p><p>- Durqo</p>`
       );
     }
   }
@@ -669,7 +669,7 @@ export async function setWithdrawalStatus(
         .eq("stage", "admin_review");
       if (openDisputeRooms && openDisputeRooms.length > 0) {
         throw new Error(
-          "One or more orders in this request have an open dispute under admin review — resolve the dispute before approving this payout."
+          "One or more orders in this request have an open dispute under admin review - resolve the dispute before approving this payout."
         );
       }
     }
@@ -716,31 +716,31 @@ export async function setWithdrawalStatus(
   const EMAIL_COPY: Partial<Record<WithdrawalDecision, { subject: string; html: string }>> = {
     approved: {
       subject: "Your withdrawal request was approved",
-      html: `<p>Hi ${sellerName},</p><p>Your withdrawal request for ${netAmountLabel} has been approved and is being processed to your ${request.payout_method.replace("_", " ")} details on file. We normally process approved payouts within 3–5 business days; your bank or payout provider may require additional time to credit the funds.</p><p>— Durqo</p>`,
+      html: `<p>Hi ${sellerName},</p><p>Your withdrawal request for ${netAmountLabel} has been approved and is being processed to your ${request.payout_method.replace("_", " ")} details on file. We normally process approved payouts within 3–5 business days; your bank or payout provider may require additional time to credit the funds.</p><p>- Durqo</p>`,
     },
     action_required: {
       subject: "Action needed on your withdrawal request",
       html: `<p>Hi ${sellerName},</p><p>We need something from you before we can continue processing your withdrawal request for ${netAmountLabel}.${
         note ? ` ${note}` : ""
-      }</p><p>Please review and update your payout details from your seller dashboard.</p><p>— Durqo</p>`,
+      }</p><p>Please review and update your payout details from your seller dashboard.</p><p>- Durqo</p>`,
     },
     on_hold: {
       subject: "Your withdrawal request is on hold",
       html: `<p>Hi ${sellerName},</p><p>Your withdrawal request for ${netAmountLabel} has been placed on hold while our team reviews it.${
         note ? ` ${note}` : ""
-      } This is not a rejection — we'll email you again once it's resolved.</p><p>— Durqo</p>`,
+      } This is not a rejection - we'll email you again once it's resolved.</p><p>- Durqo</p>`,
     },
     paid: {
       subject: "Your withdrawal has been paid",
       html: `<p>Hi ${sellerName},</p><p>Your withdrawal of ${netAmountLabel} has been paid out.${
         payoutReference?.trim() ? ` Reference: ${payoutReference.trim()}.` : ""
-      } Thanks for selling on Durqo!</p><p>— Durqo</p>`,
+      } Thanks for selling on Durqo!</p><p>- Durqo</p>`,
     },
     rejected: {
       subject: "Your withdrawal request wasn't approved",
       html: `<p>Hi ${sellerName},</p><p>We weren't able to approve your withdrawal request for ${netAmountLabel}.${
         note ? ` Note from our team: ${note}` : ""
-      } The related orders are available in your balance again, so you can submit a new request from your seller dashboard.</p><p>— Durqo</p>`,
+      } The related orders are available in your balance again, so you can submit a new request from your seller dashboard.</p><p>- Durqo</p>`,
     },
   };
 
@@ -937,8 +937,8 @@ export async function resolveTransferDispute(
     const bodyLine = RESOLUTION_COPY[resolutionType];
     const html = `<p>${bodyLine}</p><p>${resolutionText.trim()}</p><p><a href="${roomUrl}">View the Transfer Room</a></p>`;
 
-    if (buyerEmail) await sendEmail(buyerEmail, `Update on your Durqo transfer — "${title}"`, html);
-    if (sellerEmail) await sendEmail(sellerEmail, `Update on your Durqo transfer — "${title}"`, html);
+    if (buyerEmail) await sendEmail(buyerEmail, `Update on your Durqo transfer - "${title}"`, html);
+    if (sellerEmail) await sendEmail(sellerEmail, `Update on your Durqo transfer - "${title}"`, html);
   } catch (err) {
     console.error("[admin] resolveTransferDispute notification emails failed:", err);
   }
@@ -1020,11 +1020,11 @@ export async function requestBuyerVerification(orderId: string, reason: string) 
     const origin = await resolveOrigin();
     await sendEmail(
       buyerEmail,
-      `Verification needed for your order — "${title}"`,
+      `Verification needed for your order - "${title}"`,
       `<p>Hi,</p>
        <p>To continue with your order for "${title}", we need you to complete identity or funds verification. Reason: ${trimmedReason}</p>
        <p>Please upload the requested documents from your <a href="${origin}/dashboard/buyer/orders">Orders page</a>.</p>
-       <p>— Durqo</p>`
+       <p>- Durqo</p>`
     );
   }
 }
@@ -1066,10 +1066,10 @@ export async function reviewBuyerVerification(orderId: string, decision: "verifi
     const subject = decision === "verified" ? "Your verification was approved" : "We need more from your verification";
     const html =
       decision === "verified"
-        ? `<p>Your identity/funds verification has been approved — your order can now proceed normally.</p><p>— Durqo</p>`
+        ? `<p>Your identity/funds verification has been approved - your order can now proceed normally.</p><p>- Durqo</p>`
         : `<p>We weren't able to accept your verification submission.${
             trimmedNote ? ` Reason: ${trimmedNote}` : ""
-          } Please check your Orders page to resubmit.</p><p>— Durqo</p>`;
+          } Please check your Orders page to resubmit.</p><p>- Durqo</p>`;
     await sendEmail(buyerEmail, subject, html);
   }
 }
