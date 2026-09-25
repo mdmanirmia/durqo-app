@@ -20,7 +20,7 @@ export default async function AdminUsers() {
       listAllAuthUsers(admin),
     ]);
 
-    const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? "—"]));
+    const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? "-"]));
 
     // Sep 21 2026: "fake registration korse onekei eita kivabe off kora
     // jai. jara email verified korbe only tarai buyer and seller hobe eita
@@ -57,8 +57,8 @@ export default async function AdminUsers() {
     rows = (profiles ?? [])
       .map((p) => ({
         id: p.id,
-        email: emailById.get(p.id) ?? "—",
-        fullName: p.full_name ?? "—",
+        email: emailById.get(p.id) ?? "-",
+        fullName: p.full_name ?? "-",
         role: p.role,
         joinedAs: joinedAsById.get(p.id) ?? null,
         emailVerified: emailVerifiedById.get(p.id) ?? false,

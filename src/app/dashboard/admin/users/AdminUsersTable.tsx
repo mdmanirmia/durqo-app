@@ -57,7 +57,7 @@ function AddUserForm() {
       setRole("buyer");
       setTimeout(() => setSent(false), 4000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't send the invite — try again.");
+      setError(err instanceof Error ? err.message : "Couldn't send the invite - try again.");
     } finally {
       setSending(false);
     }
@@ -109,7 +109,7 @@ function AddUserForm() {
       <button type="button" onClick={() => setOpen(false)} className="rounded-md border border-rule-strong px-4 py-2 text-sm font-semibold text-ink-soft">
         Cancel
       </button>
-      {sent && <p className="w-full text-xs text-brand-strong">Invite sent — they&rsquo;ll get an email to set their password and sign in.</p>}
+      {sent && <p className="w-full text-xs text-brand-strong">Invite sent - they&rsquo;ll get an email to set their password and sign in.</p>}
       {error && <p className="w-full text-xs text-danger">{error}</p>}
     </form>
   );
@@ -138,7 +138,7 @@ function roleSelect(
         ))}
       </select>
       {isSelf && <div className="mt-1 text-xs text-ink-faint">This is you</div>}
-      {errorId === u.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
+      {errorId === u.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update - try again.</div>}
     </>
   );
 }
@@ -149,7 +149,7 @@ function joinedAsBadge(u: AdminUserRow) {
   if (u.joinedAs === "seller") return <Badge tone="brand">Seller</Badge>;
   if (u.joinedAs === "buyer") return <Badge tone="neutral">Buyer</Badge>;
   return (
-    <span className="text-xs text-ink-faint" title="Created via admin invite — no self-selected signup role">
+    <span className="text-xs text-ink-faint" title="Created via admin invite - no self-selected signup role">
       Invited
     </span>
   );
@@ -253,7 +253,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
         );
       } catch (err) {
         setDeleteConfirmOpen(false);
-        setDeleteNotice(err instanceof Error ? err.message : "Couldn't delete the selected accounts — try again.");
+        setDeleteNotice(err instanceof Error ? err.message : "Couldn't delete the selected accounts - try again.");
       }
     });
   }
@@ -341,7 +341,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
           body={
             view === "verified"
               ? "Everyone who signs up on Durqo will show up here."
-              : "Every signup here has confirmed their email — nothing to clean up right now."
+              : "Every signup here has confirmed their email - nothing to clean up right now."
           }
         />
       ) : view === "verified" ? (
@@ -531,7 +531,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
         title={`Delete ${selectedIds.size} account${selectedIds.size === 1 ? "" : "s"}?`}
         body={
           view === "unverified"
-            ? "These accounts never confirmed their email, so they've never been able to log in or do anything on Durqo. Deleting them removes the account permanently — this can't be undone. Any account that verifies in the meantime is skipped automatically."
+            ? "These accounts never confirmed their email, so they've never been able to log in or do anything on Durqo. Deleting them removes the account permanently - this can't be undone. Any account that verifies in the meantime is skipped automatically."
             : "These are real, email-confirmed accounts. Deleting one removes the account and profile permanently, and this can't be undone. As a safety check, any account that's an admin, owns a listing, or has an order, message, comment, withdrawal, or other real activity on file is skipped automatically rather than deleted."
         }
         confirmLabel="Delete accounts"
