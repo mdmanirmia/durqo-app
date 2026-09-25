@@ -108,7 +108,7 @@ async function fetchOrders(side: "buyer" | "seller"): Promise<OrderRow[]> {
     listingId: r.listing_id,
     counterpartyId: r[counterpartyColumn] as string,
     listingTitle: listingById.get(r.listing_id)?.title ?? "Listing",
-    counterpartyName: profileById.get(r[counterpartyColumn])?.full_name ?? "—",
+    counterpartyName: profileById.get(r[counterpartyColumn])?.full_name ?? "-",
     amount: Number(r.amount),
     status: r.status as OrderStatus,
     date: (r.created_at as string).slice(0, 10),

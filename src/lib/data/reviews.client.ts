@@ -69,7 +69,7 @@ export async function submitOrderReview(
     // verbatim (see submit_order_review()'s own friendly wording) —
     // shown as-is rather than a generic fallback, same as every other
     // RPC-backed action in this codebase.
-    return { ok: false, message: error.message || "Couldn't submit your review — try again." };
+    return { ok: false, message: error.message || "Couldn't submit your review - try again." };
   }
   // Built from what we already know rather than parsed back off the RPC
   // response — every value here is exactly what the RPC was just asked
