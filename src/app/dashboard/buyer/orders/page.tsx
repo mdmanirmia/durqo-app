@@ -58,7 +58,7 @@ function BuyerVerificationNotice({ order, onSubmitted }: { order: OrderRow; onSu
       }
       onSubmitted();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong — please try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong - please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -131,7 +131,7 @@ export default function BuyerOrdersPage() {
         setOrders((prev) => prev?.map((o) => (o.id === target.id ? { ...o, status: "cancelled" } : o)) ?? prev);
         setCancelTarget(null);
       } catch (err) {
-        setCancelError(err instanceof Error ? err.message : "Couldn't cancel this order — try again.");
+        setCancelError(err instanceof Error ? err.message : "Couldn't cancel this order - try again.");
       }
     });
   }
@@ -306,7 +306,7 @@ export default function BuyerOrdersPage() {
         title={`Cancel order for "${cancelTarget?.listingTitle}"?`}
         body={
           <>
-            <p>You haven&rsquo;t paid for this yet, so nothing to refund — this just closes out the request.</p>
+            <p>You haven&rsquo;t paid for this yet, so nothing to refund - this just closes out the request.</p>
             {cancelError && <p className="mt-2 text-danger">{cancelError}</p>}
           </>
         }
