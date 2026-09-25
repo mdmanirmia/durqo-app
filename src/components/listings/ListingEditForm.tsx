@@ -503,7 +503,7 @@ export default function ListingEditForm({
     // server-side too; this client-side check just avoids a round trip and
     // the image-upload work below for a save that would fail anyway.
     if (!assetRows.some((r) => r.name.trim())) {
-      setError("Add at least one asset in Sale Includes before saving — listings can't be updated without at least one asset listed.");
+      setError("Add at least one asset in Sale Includes before saving - listings can't be updated without at least one asset listed.");
       return;
     }
 
@@ -696,8 +696,8 @@ export default function ListingEditForm({
             className={inputCls}
           />
           {categoryId === "youtube-channels" && channelLookup === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching channel details from YouTube…</p>}
-          {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched — Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
-          {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
+          {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched - Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
+          {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube - double-check the Channel URL and click away from the field again to retry.</p>}
         </Field>
         {categoryId !== "websites" && categoryId !== "domains" && (
           <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : categoryId === "apps-tools" ? "App location" : "Business location"}>
@@ -887,7 +887,7 @@ export default function ListingEditForm({
           — a seller can list an app as available on both iOS and Android)
           storing a comma-separated string of ids in quickStats.platform. */}
       {categoryId === "apps-tools" && (
-        <Section title="Platform" hint="Select every platform this app is available on — shown as a Quick Stat on the published listing.">
+        <Section title="Platform" hint="Select every platform this app is available on - shown as a Quick Stat on the published listing.">
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
             {APP_PLATFORMS.map((p) => {
               const selected = (quickStats.platform ?? "").split(",").filter(Boolean);
@@ -968,10 +968,10 @@ export default function ListingEditForm({
           title={categoryId === "startup-business" ? "Business Model" : "Business Type"}
           hint={
             categoryId === "ai-apps-tools"
-              ? "Select every AI model this app or tool is built on — shown as a Quick Stat on the published listing."
+              ? "Select every AI model this app or tool is built on - shown as a Quick Stat on the published listing."
               : categoryId === "startup-business"
-                ? "Select every business model this startup runs on — shown as a Quick Stat on the published listing."
-                : "Select every business model this store uses — shown as a Quick Stat on the published listing."
+                ? "Select every business model this startup runs on - shown as a Quick Stat on the published listing."
+                : "Select every business model this store uses - shown as a Quick Stat on the published listing."
           }
         >
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
@@ -1002,7 +1002,7 @@ export default function ListingEditForm({
           saved value by initialQuickStats() above like every other text
           Quick Stat. */}
       {categoryId === "social-media-accounts" && (
-        <Section title="Account Type" hint="Select every platform this account is on — shown as a Quick Stat on the published listing.">
+        <Section title="Account Type" hint="Select every platform this account is on - shown as a Quick Stat on the published listing.">
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
             {ACCOUNT_TYPES.map((t) => {
               const selected = (quickStats.account_type ?? "").split(",").filter(Boolean);
@@ -1035,7 +1035,7 @@ export default function ListingEditForm({
       {categoryId !== "ai-apps-tools" && (
         <Section
           title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
-          hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on the published listing." : "Select every niche this business fits — shown on the published listing."}
+          hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits - shown on the published listing." : "Select every niche this business fits - shown on the published listing."}
         >
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
             {/* Android & iOS Apps has its own curated Niche list (src/lib/
@@ -1075,7 +1075,7 @@ export default function ListingEditForm({
         </div>
         <EditableImageGallery
           label="Proof of Income Images"
-          hint="Bank statements, payment processor dashboards, etc. — shown publicly on the listing so buyers can verify income."
+          hint="Bank statements, payment processor dashboards, etc. - shown publicly on the listing so buyers can verify income."
           existing={existingImages.proof_of_income}
           onDeleteExisting={(id) => handleDeleteExistingImage("proof_of_income", id)}
           deletingId={deletingImageId}
@@ -1257,7 +1257,7 @@ export default function ListingEditForm({
             onChange={(e) => setCopyrightNotesText(e.target.value)}
             className={`${inputCls} w-full`}
           />
-          <p className="mt-1.5 text-xs text-ink-faint">One note per line — shown as a list on the published listing. Saving updates the &ldquo;last updated&rdquo; date shown there to today.</p>
+          <p className="mt-1.5 text-xs text-ink-faint">One note per line - shown as a list on the published listing. Saving updates the &ldquo;last updated&rdquo; date shown there to today.</p>
           <EditableImageGallery
             label="Proof of Copyright Notes"
             hint="Screenshot(s) of the Copyright Notices page in YouTube Studio."
@@ -1271,7 +1271,7 @@ export default function ListingEditForm({
       )}
 
       {categoryId === "youtube-channels" && (
-        <Section title="Top Performing Videos" hint="Up to 5 of your channel's best-performing videos — shown publicly with a thumbnail pulled from each video URL.">
+        <Section title="Top Performing Videos" hint="Up to 5 of your channel's best-performing videos - shown publicly with a thumbnail pulled from each video URL.">
           <div className="flex flex-col gap-4">
             {topVideoRows.map((v, i) => (
               <div key={i} className="rounded-xl border border-rule bg-paper-raised p-4">
@@ -1287,8 +1287,8 @@ export default function ListingEditForm({
                       className={inputCls}
                     />
                     {videoLookup[i] === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching details from YouTube…</p>}
-                    {videoLookup[i] === "done" && <p className="mt-1 text-xs text-brand-strong">Auto-filled from YouTube — edit any field if needed.</p>}
-                    {videoLookup[i] === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch details automatically — enter them manually below.</p>}
+                    {videoLookup[i] === "done" && <p className="mt-1 text-xs text-brand-strong">Auto-filled from YouTube - edit any field if needed.</p>}
+                    {videoLookup[i] === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch details automatically - enter them manually below.</p>}
                   </Field>
                   <Field label="Title" className="sm:col-span-2">
                     <input value={v.title} onChange={(e) => setTopVideoRows((prev) => prev.map((row, idx) => (idx === i ? { ...row, title: e.target.value } : row)))} className={inputCls} />
@@ -1354,7 +1354,7 @@ export default function ListingEditForm({
         </Link>
       </div>
       {mode === "admin" && status === "published" && <p className="text-sm text-brand-strong">This listing is live and published.</p>}
-      {saved && <p className="text-sm text-brand-strong">Saved — redirecting…</p>}
+      {saved && <p className="text-sm text-brand-strong">Saved - redirecting…</p>}
       {error && <p className="text-sm text-danger">{error}</p>}
     </form>
   );

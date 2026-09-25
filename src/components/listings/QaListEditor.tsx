@@ -31,7 +31,7 @@ export default function QaListEditor({ rows, setRows }: { rows: QaRow[]; setRows
   return (
     <div className="flex flex-col gap-4">
       <p className="text-xs text-ink-faint">
-        Answer the questions buyers ask most — these show up first, above the live comment feed, so buyers see them before they ever have to ask.
+        Answer the questions buyers ask most - these show up first, above the live comment feed, so buyers see them before they ever have to ask.
       </p>
 
       <div className="flex flex-col gap-3">

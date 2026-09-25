@@ -63,7 +63,7 @@ export default function AssetListEditor({
   return (
     <div className="flex flex-col gap-4">
       <p className="rounded-md border border-green-200 bg-green-50 p-3 text-xs text-green-700">
-        Add each asset the buyer is getting. This exact list is what buyers see on the listing, confirms the moment you save, and freezes into their Transfer Room when they pay — nothing auto-generated, only what you enter here.
+        Add each asset the buyer is getting. This exact list is what buyers see on the listing, confirms the moment you save, and freezes into their Transfer Room when they pay - nothing auto-generated, only what you enter here.
       </p>
 
       <div className="flex flex-col gap-3">
@@ -117,13 +117,13 @@ export default function AssetListEditor({
           </span>
         ) : (
           <span className="mono inline-flex w-fit items-center gap-1.5 rounded-full bg-gold-soft px-2 py-1 text-[0.7rem] font-semibold uppercase text-gold">
-            No assets listed yet — can&rsquo;t be sold
+            No assets listed yet - can&rsquo;t be sold
           </span>
         )}
         <p className="mt-1.5 text-xs text-ink-faint">
           {confirmedAt
             ? "Editing and saving this list again will re-confirm it instantly with your new changes."
-            : "Add at least one asset and save — it's confirmed the moment you save, no separate step."}
+            : "Add at least one asset and save - it's confirmed the moment you save, no separate step."}
         </p>
       </div>
     </div>
