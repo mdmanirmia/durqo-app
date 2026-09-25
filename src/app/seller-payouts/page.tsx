@@ -134,10 +134,10 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 
 const KEY_FACTS = [
   { icon: UserCheck, label: "Identity verification (KYC) is required before your very first withdrawal" },
-  { icon: Percent, label: "A flat Success Fee — 10% under $50k, 7% from $50k–$250k, 5% above $250k" },
-  { icon: Wallet, label: "Available to Withdraw is already net of the fee — no surprise deduction later" },
+  { icon: Percent, label: "A flat Success Fee - 10% under $50k, 7% from $50k–$250k, 5% above $250k" },
+  { icon: Wallet, label: "Available to Withdraw is already net of the fee - no surprise deduction later" },
   { icon: Clock, label: "Payout requests are normally reviewed within an estimated 3–5 business days" },
-  { icon: ShieldCheck, label: "Escrow.com sales pay you directly — never through Durqo's own withdrawal system" },
+  { icon: ShieldCheck, label: "Escrow.com sales pay you directly - never through Durqo's own withdrawal system" },
 ];
 
 const FEE_TIERS = [
@@ -164,10 +164,10 @@ const STATUS_FLOW = [
 ];
 
 const STATUS_BRANCHES = [
-  { icon: AlertTriangle, label: "Action required", body: "Durqo needs something from you — usually a payout-detail fix. The 3–5 day clock pauses until it's resolved." },
+  { icon: AlertTriangle, label: "Action required", body: "Durqo needs something from you - usually a payout-detail fix. The 3–5 day clock pauses until it's resolved." },
   { icon: PauseCircle, label: "On hold", body: "A dispute or compliance check paused the request. The clock pauses here too, same as Action required." },
   { icon: XCircle, label: "Rejected", body: "The request didn't go through. Any orders it had claimed are released back into your available balance." },
-  { icon: Ban, label: "Cancelled", body: "You can cancel it yourself — but only while it's still Requested or Under review, before Durqo starts processing it." },
+  { icon: Ban, label: "Cancelled", body: "You can cancel it yourself - but only while it's still Requested or Under review, before Durqo starts processing it." },
 ];
 
 export default function SellerPayoutsPage() {
@@ -189,7 +189,7 @@ export default function SellerPayoutsPage() {
                 You made the sale. <span className="text-brand">Here&rsquo;s how the payout works.</span>
               </h1>
               <p className="mx-auto mt-5 max-w-[56ch] text-lg leading-relaxed text-white/70">
-                From the moment your order is marked complete to the money landing with your payout provider —
+                From the moment your order is marked complete to the money landing with your payout provider -
                 exactly what Durqo deducts, when you can request it, and what each status means.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -235,7 +235,7 @@ export default function SellerPayoutsPage() {
               <DashEyebrow>When it becomes eligible</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">A sale has to be marked complete first.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                An order only counts toward your available balance once its status is Completed — and that only
+                An order only counts toward your available balance once its status is Completed - and that only
                 happens one of two ways.
               </p>
             </div>
@@ -270,7 +270,7 @@ export default function SellerPayoutsPage() {
             <div className="mt-6 flex items-start gap-3 rounded-xl border border-rule bg-paper-sunk p-5">
               <Info size={18} className="mt-0.5 shrink-0 text-ink-faint" />
               <p className="text-sm leading-relaxed text-ink-soft">
-                Neither the buyer nor the seller can mark an order Completed directly — it only happens through
+                Neither the buyer nor the seller can mark an order Completed directly - it only happens through
                 one of these two flows.
               </p>
             </div>
@@ -337,7 +337,7 @@ export default function SellerPayoutsPage() {
               <DashEyebrow>Durqo&rsquo;s Success Fee</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">One flat rate, based on the sale price.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                The rate applies to the entire final sale price — it&rsquo;s a flat lookup, never a marginal,
+                The rate applies to the entire final sale price - it&rsquo;s a flat lookup, never a marginal,
                 tax-bracket-style calculation.
               </p>
             </div>
@@ -353,7 +353,7 @@ export default function SellerPayoutsPage() {
               ))}
             </div>
             <p className="mt-4 text-xs text-ink-faint">
-              Example: a $180,000 sale falls in the $50,000–$250,000 tier, so the fee is 7% of $180,000 —
+              Example: a $180,000 sale falls in the $50,000–$250,000 tier, so the fee is 7% of $180,000 -
               not 10% on the first $50,000 and 7% on the rest.
             </p>
           </Inner>
@@ -368,7 +368,7 @@ export default function SellerPayoutsPage() {
               <DashEyebrow>Payout methods</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Six ways to get paid, three with their own cap.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                bKash, Rocket and Nagad each carry their own independent daily and monthly limit — using one
+                bKash, Rocket and Nagad each carry their own independent daily and monthly limit - using one
                 doesn&rsquo;t count against the other two. Bank Transfer, PayPal and Wise have no cap.
               </p>
             </div>
@@ -388,7 +388,7 @@ export default function SellerPayoutsPage() {
             <div className="mt-6 flex items-start gap-3 rounded-xl border border-rule bg-paper-sunk p-5">
               <Info size={18} className="mt-0.5 shrink-0 text-ink-faint" />
               <p className="text-sm leading-relaxed text-ink-soft">
-                A single order worth more than a method&rsquo;s cap isn&rsquo;t a dead end — it can be claimed
+                A single order worth more than a method&rsquo;s cap isn&rsquo;t a dead end - it can be claimed
                 gradually, split across several requests over time until it&rsquo;s fully withdrawn.
               </p>
             </div>
@@ -405,7 +405,7 @@ export default function SellerPayoutsPage() {
                 <DashEyebrow center>The one exception</DashEyebrow>
                 <h2 className="text-2xl font-semibold text-ink sm:text-3xl">Escrow.com sales don&rsquo;t go through this system.</h2>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                  If a sale went through Escrow.com, Escrow.com pays you directly once it releases the funds —
+                  If a sale went through Escrow.com, Escrow.com pays you directly once it releases the funds -
                   Durqo never creates a second payout for that order. Those orders are excluded from your Durqo
                   balance entirely, so double-check what Escrow.com has already paid you before assuming an order is
                   still waiting on a Durqo withdrawal.
@@ -424,7 +424,7 @@ export default function SellerPayoutsPage() {
               <DashEyebrow>Requesting your payout</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">One request, nine possible statuses.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                There&rsquo;s no amount field to fill in — a request claims whatever&rsquo;s actually available,
+                There&rsquo;s no amount field to fill in - a request claims whatever&rsquo;s actually available,
                 oldest orders first. The normal path runs straight through:
               </p>
             </div>
@@ -440,7 +440,7 @@ export default function SellerPayoutsPage() {
 
             <p className="mb-6 max-w-[64ch] text-[0.95rem] leading-relaxed text-ink-soft">
               Durqo normally reviews and processes an eligible request within an <strong>estimated</strong> 3–5
-              business days — never a guaranteed arrival date, since the destination bank or payout provider can
+              business days - never a guaranteed arrival date, since the destination bank or payout provider can
               add its own time on top. Four other statuses can branch off that path:
             </p>
 
