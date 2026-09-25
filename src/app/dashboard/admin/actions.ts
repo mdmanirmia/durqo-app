@@ -195,6 +195,77 @@ export async function deleteUnverifiedUsers(userIds: string[]): Promise<{ delete
   return { deleted, skipped };
 }
 
+// Sep 25 2026 ("email verified user o bulk delete korar system koro" — build
+// the same bulk-select-and-delete for email-VERIFIED accounts too): a newer
+// bot wave confirms its own email within seconds (see
+// bot-signup-cleanup-and-cloudflare-turnstile-addendum.md), so it lands in
+// the main "Users" tab looking identical to a real signup except for its
+// random-string name — deleteUnverifiedUsers() above can never touch these,
+// since it deliberately only ever deletes an account that has NOT confirmed
+// its email.
+//
+// This is a materially more dangerous action than the unverified-tab one
+// above, because a verified account can be a genuine seller or buyer with
+// real activity — so every id gets two guards an unverified account never
+// needed:
+//   1. Never an admin account, and never the caller's own account (checked
+//      up front, before touching the DB, same as the role/self guards
+//      elsewhere in this file).
+//   2. Never a seller with any live listings. profiles.id cascades to
+//      listings.seller_id (schema.sql) — unlike orders/messages/comments/
+//      withdrawal_requests/asset_transfer_rooms/order_verifications/
+//      order_reviews, which all reference profiles with NO cascade and so
+//      already fail the deleteUser() call below on their own — a seller's
+//      listings would otherwise be silently wiped out along with the
+//      account instead of blocking it. Checked explicitly here since it's
+//      the one case Postgres's own foreign keys won't catch for us.
+// Any other real activity (an order as buyer or seller, a sent or received
+// message, a comment, a withdrawal request, an asset transfer room, a
+// pending buyer verification, a submitted review) makes deleteUser() itself
+// fail with a foreign-key violation, caught below and counted as skipped —
+// so an account with real history is protected even though this function
+// never explicitly queries those tables.
+export async function deleteVerifiedUsers(userIds: string[]): Promise<{ deleted: number; skipped: number }> {
+  const me = await requireAdmin();
+  const supabaseAdmin = createAdminClient();
+  if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  let deleted = 0;
+  let skipped = 0;
+  for (const id of userIds) {
+    if (id === me.id) {
+      skipped++;
+      continue;
+    }
+    const { data: profile } = await supabaseAdmin.from("profiles").select("role").eq("id", id).maybeSingle();
+    if (!profile || profile.role === "admin") {
+      skipped++;
+      continue;
+    }
+    const { count: listingCount } = await supabaseAdmin.from("listings").select("id", { count: "exact", head: true }).eq("seller_id", id);
+    if ((listingCount ?? 0) > 0) {
+      skipped++;
+      continue;
+    }
+    const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+    if (error) {
+      // Almost always a foreign-key violation from real order/message/
+      // comment/withdrawal/transfer-room/verification/review history — see
+      // the function comment above. Treated as an ordinary skip, not a
+      // thrown error, so one protected account doesn't abort the rest of
+      // the batch.
+      skipped++;
+      continue;
+    }
+    deleted++;
+  }
+
+  revalidatePath("/dashboard/admin/users");
+  revalidatePath("/dashboard/admin");
+  revalidatePath("/");
+  return { deleted, skipped };
+}
+
 // "Add user" from the admin dashboard invites by email — Supabase sends its
 // own auth invite/magic-link email (a separate mechanism from the Resend
 // integration used elsewhere in this app), so no password ever passes
