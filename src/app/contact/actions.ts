@@ -27,7 +27,7 @@ export async function submitContactForm({ name, email, subject, message }: Conta
   // the support@durqo.com inbox goes straight to them, not back to Durqo.
   await sendEmail(
     ADMIN_EMAIL,
-    `Contact form: ${cleanSubject} — ${cleanName}`,
+    `Contact form: ${cleanSubject} - ${cleanName}`,
     `<p><strong>From:</strong> ${cleanName} (${cleanEmail})</p>
      <p><strong>Subject:</strong> ${cleanSubject}</p>
      <p>${cleanMessage.replace(/\n/g, "<br/>")}</p>`,
@@ -39,12 +39,12 @@ export async function submitContactForm({ name, email, subject, message }: Conta
   // above, sent to the email address they themselves typed into the form.
   await sendEmail(
     cleanEmail,
-    "We've received your message — Durqo",
+    "We've received your message - Durqo",
     `<p>Hi ${cleanName},</p>
      <p>Thanks for reaching out to Durqo. We've received your message and will reply within 3 hours.</p>
      <p><strong>Subject:</strong> ${cleanSubject}</p>
      <p><strong>Your message:</strong><br/>${cleanMessage.replace(/\n/g, "<br/>")}</p>
-     <p>— Durqo</p>`
+     <p>- Durqo</p>`
   );
 
   return { ok: true };
