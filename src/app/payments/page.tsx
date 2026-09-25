@@ -287,7 +287,7 @@ export default function PaymentsPage() {
                 <span className="font-semibold text-ink">Purchases over $2,000:</span> this only applies to
                 Bangladeshi buyers paying in Bangladeshi Taka through SSLCommerz (bKash, Rocket, Nagad, bank
                 transfer, or card). Durqo collects the BDT equivalent of the first $2,000 online, then emails you
-                instructions for paying the remaining balance by wire transfer, credit card or debit card &mdash;
+                instructions for paying the remaining balance by wire transfer, credit card or debit card -
                 the purchase isn&rsquo;t complete until Durqo has received and verified it. Paying by card through
                 Stripe, or through Escrow.com, always charges the full price in one payment, with no split.
               </p>
