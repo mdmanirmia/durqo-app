@@ -403,7 +403,7 @@ export default function AddNewBusinessPage() {
     // written, so a seller who forgets sees this instead of a half-created
     // "pending_review" listing.
     if (!assetRows.some((r) => r.name.trim())) {
-      setError("Add at least one asset in Sale Includes before publishing — buyers need to see exactly what they're getting.");
+      setError("Add at least one asset in Sale Includes before publishing - buyers need to see exactly what they're getting.");
       return;
     }
 
@@ -430,7 +430,7 @@ export default function AddNewBusinessPage() {
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
-        throw new Error("You need to be logged in to create a listing — log in and try again.");
+        throw new Error("You need to be logged in to create a listing - log in and try again.");
       }
       const sellerId = userData.user.id;
 
@@ -754,8 +754,8 @@ export default function AddNewBusinessPage() {
               className={inputCls}
             />
             {categoryId === "youtube-channels" && channelLookup === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching channel details from YouTube…</p>}
-            {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched — Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
-            {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube — double-check the Channel URL and click away from the field again to retry.</p>}
+            {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched - Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
+            {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube - double-check the Channel URL and click away from the field again to retry.</p>}
           </Field>
           {categoryId !== "websites" && categoryId !== "domains" && (
             <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : categoryId === "apps-tools" ? "App location" : "Business location"}>
@@ -974,7 +974,7 @@ export default function AddNewBusinessPage() {
             TEXT_QUICK_STAT_KEYS above), same mechanism as Business
             Type/Account Type below. */}
         {categoryId === "apps-tools" && (
-          <Section title="Platform" hint="Select every platform this app is available on — shown as a Quick Stat on your published listing.">
+          <Section title="Platform" hint="Select every platform this app is available on - shown as a Quick Stat on your published listing.">
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
               {APP_PLATFORMS.map((p) => {
                 const selected = (quickStats.platform ?? "").split(",").filter(Boolean);
@@ -1068,10 +1068,10 @@ export default function AddNewBusinessPage() {
             title={categoryId === "startup-business" ? "Business Model" : "Business Type"}
             hint={
               categoryId === "ai-apps-tools"
-                ? "Select every AI model this app or tool is built on — shown as a Quick Stat on your published listing."
+                ? "Select every AI model this app or tool is built on - shown as a Quick Stat on your published listing."
                 : categoryId === "startup-business"
-                  ? "Select every business model this startup runs on — shown as a Quick Stat on your published listing."
-                  : "Select every business model this store uses — shown as a Quick Stat on your published listing."
+                  ? "Select every business model this startup runs on - shown as a Quick Stat on your published listing."
+                  : "Select every business model this store uses - shown as a Quick Stat on your published listing."
             }
           >
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
@@ -1103,7 +1103,7 @@ export default function AddNewBusinessPage() {
             buildQuickStats() in map-listing.ts before the public listing
             page's Quick Statistics grid renders it. */}
         {categoryId === "social-media-accounts" && (
-          <Section title="Account Type" hint="Select every platform this account is on — shown as a Quick Stat on your published listing.">
+          <Section title="Account Type" hint="Select every platform this account is on - shown as a Quick Stat on your published listing.">
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
               {ACCOUNT_TYPES.map((t) => {
                 const selected = (quickStats.account_type ?? "").split(",").filter(Boolean);
@@ -1141,7 +1141,7 @@ export default function AddNewBusinessPage() {
         {categoryId !== "ai-apps-tools" && (
           <Section
             title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
-            hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits — shown on your published listing." : "Select every niche this business fits — shown on your published listing."}
+            hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits - shown on your published listing." : "Select every niche this business fits - shown on your published listing."}
           >
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
               {/* Android & iOS Apps has its own curated Niche list (src/lib/
@@ -1213,7 +1213,7 @@ export default function AddNewBusinessPage() {
               />
             </Field>
             <p className="mt-1.5 text-xs text-ink-faint">
-              A short screen recording of your live income dashboard (Loom or similar) speeds up review — it&rsquo;s much harder to fake than a static screenshot. Shared with our review team only, not shown publicly.
+              A short screen recording of your live income dashboard (Loom or similar) speeds up review - it&rsquo;s much harder to fake than a static screenshot. Shared with our review team only, not shown publicly.
             </p>
           </div>
         </Section>
@@ -1297,7 +1297,7 @@ export default function AddNewBusinessPage() {
                   className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
                 />
                 <span>
-                  I&rsquo;ve added <span className="mono text-ink">support@durqo.com</span> as a Viewer on this site&rsquo;s Google Analytics 4 property (Admin &rarr; Property Access Management &rarr; Add users). Our team will check it before publishing — access can be removed once your listing is live.
+                  I&rsquo;ve added <span className="mono text-ink">support@durqo.com</span> as a Viewer on this site&rsquo;s Google Analytics 4 property (Admin &rarr; Property Access Management &rarr; Add users). Our team will check it before publishing - access can be removed once your listing is live.
                 </span>
               </label>
             </Section>
@@ -1324,7 +1324,7 @@ export default function AddNewBusinessPage() {
                   className="mt-0.5 h-4 w-4 shrink-0 accent-brand"
                 />
                 <span>
-                  I&rsquo;ve added <span className="mono text-ink">support@durqo.com</span> with Restricted access on this site&rsquo;s Google Search Console property (Settings &rarr; Users and permissions &rarr; Add user). Our team will check it before publishing — access can be removed once your listing is live.
+                  I&rsquo;ve added <span className="mono text-ink">support@durqo.com</span> with Restricted access on this site&rsquo;s Google Search Console property (Settings &rarr; Users and permissions &rarr; Add user). Our team will check it before publishing - access can be removed once your listing is live.
                 </span>
               </label>
             </Section>
@@ -1362,7 +1362,7 @@ export default function AddNewBusinessPage() {
               placeholder={"e.g. 2 copyright notes found on videos\n1 video is tagged as \"This video is ineligible to earn...\"\nNo copyright notes found on shorts"}
               className={`${inputCls} w-full`}
             />
-            <p className="mt-1.5 text-xs text-ink-faint">One note per line — shown as a list on your published listing, with today&rsquo;s date as the &ldquo;last updated&rdquo; stamp.</p>
+            <p className="mt-1.5 text-xs text-ink-faint">One note per line - shown as a list on your published listing, with today&rsquo;s date as the &ldquo;last updated&rdquo; stamp.</p>
             <ImageGallery
               label="Proof of Copyright Notes"
               hint="Screenshot(s) of the Copyright Notices page in YouTube Studio."
@@ -1373,7 +1373,7 @@ export default function AddNewBusinessPage() {
         )}
 
         {categoryId === "youtube-channels" && (
-          <Section title="Top Performing Videos" hint="Up to 5 of your channel's best-performing videos — shown publicly with a thumbnail pulled from each video URL.">
+          <Section title="Top Performing Videos" hint="Up to 5 of your channel's best-performing videos - shown publicly with a thumbnail pulled from each video URL.">
             <div className="flex flex-col gap-4">
               {topVideos.map((v, i) => (
                 <div key={i} className="rounded-xl border border-rule bg-paper-raised p-4">
@@ -1389,8 +1389,8 @@ export default function AddNewBusinessPage() {
                         className={inputCls}
                       />
                       {videoLookup[i] === "loading" && <p className="mt-1 text-xs text-ink-faint">Fetching details from YouTube…</p>}
-                      {videoLookup[i] === "done" && <p className="mt-1 text-xs text-brand-strong">Auto-filled from YouTube — edit any field if needed.</p>}
-                      {videoLookup[i] === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch details automatically — enter them manually below.</p>}
+                      {videoLookup[i] === "done" && <p className="mt-1 text-xs text-brand-strong">Auto-filled from YouTube - edit any field if needed.</p>}
+                      {videoLookup[i] === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch details automatically - enter them manually below.</p>}
                     </Field>
                     <Field label="Title" className="sm:col-span-2">
                       <input value={v.title} onChange={(e) => setTopVideos((prev) => prev.map((row, idx) => (idx === i ? { ...row, title: e.target.value } : row)))} className={inputCls} />
@@ -1441,7 +1441,7 @@ export default function AddNewBusinessPage() {
           <button type="submit" disabled={saving} className="rounded-md bg-brand px-8 py-3 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-60">
             {saving ? "Creating…" : "Create Business"}
           </button>
-          {submitted && <p className="mt-3 text-sm text-brand-strong">Submitted for review — a Durqo team member verifies every listing before it goes live. Redirecting…</p>}
+          {submitted && <p className="mt-3 text-sm text-brand-strong">Submitted for review - a Durqo team member verifies every listing before it goes live. Redirecting…</p>}
           {error && <p className="mt-3 text-sm text-danger">{error}</p>}
         </div>
       </form>
