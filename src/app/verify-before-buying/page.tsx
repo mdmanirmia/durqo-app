@@ -128,7 +128,7 @@ const DATA_SECTIONS = [
   {
     icon: TrendingUp,
     title: "Google Analytics Data",
-    body: "Total Users, New Users, Total Page Views and Avg. Engagement Time — either a live, auto-updating panel the seller connected by OAuth, or self-reported numbers with proof screenshots.",
+    body: "Total Users, New Users, Total Page Views and Avg. Engagement Time - either a live, auto-updating panel the seller connected by OAuth, or self-reported numbers with proof screenshots.",
   },
   {
     icon: Search,
@@ -166,7 +166,7 @@ export default function VerifyBeforeBuyingPage() {
                 Don&rsquo;t just trust the numbers. <span className="text-brand">Check them.</span>
               </h1>
               <p className="mx-auto mt-5 max-w-[56ch] text-lg leading-relaxed text-white/70">
-                Every listing has already been through Durqo&rsquo;s own review — but the evidence behind the
+                Every listing has already been through Durqo&rsquo;s own review - but the evidence behind the
                 revenue and traffic claims is right there on the listing for you to look at yourself.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -216,7 +216,7 @@ export default function VerifyBeforeBuyingPage() {
                 <DashEyebrow>Start here</DashEyebrow>
                 <h2 className="text-2xl sm:text-3xl">Proof of Income, month by month.</h2>
                 <p className="mt-3 max-w-[70ch] text-[0.95rem] leading-relaxed text-ink-soft">
-                  Look for the 12-month income history on the listing itself — real figures for each month, plus
+                  Look for the 12-month income history on the listing itself - real figures for each month, plus
                   images the seller uploaded as evidence: bank statements, payment processor dashboards and similar.
                   It only appears once at least one month has a real number behind it, so an empty section is a
                   signal on its own.
@@ -235,7 +235,7 @@ export default function VerifyBeforeBuyingPage() {
               <DashEyebrow>Traffic &amp; SEO data</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Four sources, each with its own screenshots.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                For categories where traffic data applies, up to four sections can appear — each one only shows
+                For categories where traffic data applies, up to four sections can appear - each one only shows
                 up when the seller actually submitted numbers for it.
               </p>
             </div>
@@ -253,7 +253,7 @@ export default function VerifyBeforeBuyingPage() {
             <div className="mt-6 flex items-start gap-3 rounded-xl border border-rule bg-paper p-5">
               <ImageIcon size={18} className="mt-0.5 shrink-0 text-ink-faint" />
               <p className="text-sm leading-relaxed text-ink-soft">
-                Every one of these cards has a proof-screenshot button — open it to see the actual dashboard the
+                Every one of these cards has a proof-screenshot button - open it to see the actual dashboard the
                 numbers were taken from, not just the typed-in totals.
               </p>
             </div>
@@ -269,7 +269,7 @@ export default function VerifyBeforeBuyingPage() {
               <DashEyebrow>Two ways Analytics can show up</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">A live connection, or a reviewed screenshot.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                A listing never shows both at once for the same thing — whichever a seller has, that&rsquo;s
+                A listing never shows both at once for the same thing - whichever a seller has, that&rsquo;s
                 what you&rsquo;ll see.
               </p>
             </div>
@@ -281,7 +281,7 @@ export default function VerifyBeforeBuyingPage() {
                 <h4 className="text-base font-semibold text-ink">A live, connected panel</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
                   Some sellers connect their actual Google Analytics property. You get a real, auto-updating panel
-                  with its own 7-day / 30-day / 90-day / 12-month / custom date range picker — pull whatever
+                  with its own 7-day / 30-day / 90-day / 12-month / custom date range picker - pull whatever
                   window you want, live.
                 </p>
               </div>
@@ -292,8 +292,8 @@ export default function VerifyBeforeBuyingPage() {
                 <h4 className="text-base font-semibold text-ink">Self-reported, with a review tag</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
                   Otherwise you&rsquo;ll see the seller&rsquo;s own numbers plus screenshots. If a &ldquo;Reviewed by
-                  Durqo&rdquo; tag appears on that card — or a &ldquo;Google Analytics Verified&rdquo; badge up
-                  by the title — an admin actually logged into the real property and checked it against what was
+                  Durqo&rdquo; tag appears on that card - or a &ldquo;Google Analytics Verified&rdquo; badge up
+                  by the title - an admin actually logged into the real property and checked it against what was
                   submitted.
                 </p>
               </div>
@@ -326,7 +326,7 @@ export default function VerifyBeforeBuyingPage() {
                   <TrendingUp size={20} className="mb-2 text-brand-strong" />
                   <h4 className="text-base font-semibold text-ink">&ldquo;Google Analytics Verified&rdquo;</h4>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                    A separate, specific signal — an admin actually signed into the seller&rsquo;s real GA
+                    A separate, specific signal - an admin actually signed into the seller&rsquo;s real GA
                     property and confirmed the submitted numbers hold up.
                   </p>
                 </div>
@@ -344,7 +344,7 @@ export default function VerifyBeforeBuyingPage() {
               <DashEyebrow>Check who you&rsquo;re buying from</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">The seller card, right on the listing.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                A business can be legitimate and its seller still unverified, or vice versa — that&rsquo;s why
+                A business can be legitimate and its seller still unverified, or vice versa - that&rsquo;s why
                 these are shown as separate lines, not folded into one badge.
               </p>
             </div>
@@ -367,7 +367,7 @@ export default function VerifyBeforeBuyingPage() {
               <div className="rounded-xl border border-rule bg-paper-raised p-5">
                 <TrendingUp size={18} className="mb-2 text-brand-strong" />
                 <p className="text-sm font-semibold text-ink">Completed sales</p>
-                <p className="mt-1 text-xs text-ink-faint">A real count, plus lifetime dollar total once they&rsquo;ve made a sale — and how long they&rsquo;ve been a member.</p>
+                <p className="mt-1 text-xs text-ink-faint">A real count, plus lifetime dollar total once they&rsquo;ve made a sale - and how long they&rsquo;ve been a member.</p>
               </div>
             </div>
           </Inner>
@@ -381,7 +381,7 @@ export default function VerifyBeforeBuyingPage() {
             <div className="flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-5">
               <Info size={18} className="mt-0.5 shrink-0 text-ink-faint" />
               <p className="text-sm leading-relaxed text-ink-soft">
-                Every section above only renders when the seller actually submitted something for it — there&rsquo;s
+                Every section above only renders when the seller actually submitted something for it - there&rsquo;s
                 no placeholder or blank card standing in for missing data. If a Search Console or Ahrefs section is
                 simply absent from a listing, that data was never submitted, not hidden.
               </p>
