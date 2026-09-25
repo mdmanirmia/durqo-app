@@ -112,7 +112,7 @@ export default function ReceiptView({ data }: { data: ReceiptData }) {
             />
             <div className="mt-3 flex items-center justify-between border-t border-rule pt-3 text-sm">
               <span className="text-ink-soft">Payment method</span>
-              <span className="font-medium text-ink">{data.paymentChannel ? PAYMENT_CHANNEL_LABEL[data.paymentChannel] ?? data.paymentChannel : "—"}</span>
+              <span className="font-medium text-ink">{data.paymentChannel ? PAYMENT_CHANNEL_LABEL[data.paymentChannel] ?? data.paymentChannel : "-"}</span>
             </div>
             <div className="mt-2 flex items-center justify-between text-sm">
               <span className="text-ink-soft">Status</span>
@@ -141,7 +141,7 @@ export default function ReceiptView({ data }: { data: ReceiptData }) {
               </div>
               {!data.alreadyClaimedByWithdrawal && (
                 <p className="mt-2 text-xs text-ink-faint">
-                  Charged only if/when this order is included in a withdrawal request — see your Earnings page.
+                  Charged only if/when this order is included in a withdrawal request - see your Earnings page.
                 </p>
               )}
             </div>
