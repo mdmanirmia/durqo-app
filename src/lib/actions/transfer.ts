@@ -98,21 +98,21 @@ export async function approveTransfer(orderId: string, roomId: string) {
         if (buyerEmail) {
           await sendEmail(
             buyerEmail,
-            `You confirmed receipt — "${title}"`,
+            `You confirmed receipt - "${title}"`,
             `<p>You've confirmed receipt of the assets for "${title}". Thanks for using Durqo!</p>${cta}`
           );
         }
         if (sellerEmail) {
           await sendEmail(
             sellerEmail,
-            `Transfer approved — "${title}" is ready for payout`,
-            `<p>The buyer has confirmed receipt of the assets for "${title}". Your payout is now eligible — head to your Earnings page to request a withdrawal.</p>
+            `Transfer approved - "${title}" is ready for payout`,
+            `<p>The buyer has confirmed receipt of the assets for "${title}". Your payout is now eligible - head to your Earnings page to request a withdrawal.</p>
              <p><a href="${origin}/dashboard/seller/earnings">Go to Earnings</a></p>`
           );
         }
         await sendEmail(
           ADMIN_EMAIL,
-          `Transfer approved — "${title}"`,
+          `Transfer approved - "${title}"`,
           `<p>The buyer approved the asset transfer for "${title}" (order ${orderId}).</p>
            <p><a href="${origin}/dashboard/admin/transfers">Review in admin dashboard</a></p>`
         );

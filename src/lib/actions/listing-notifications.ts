@@ -43,7 +43,7 @@ export async function notifyListingSubmitted(listingId: string) {
     // rather than parsing it out of prose.
     await sendEmail(
       ADMIN_EMAIL,
-      `New listing submitted for review — ${listing.title}`,
+      `New listing submitted for review - ${listing.title}`,
       `<p>A new business listing has been submitted for review: <strong>${listing.title}</strong>.</p>
        <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
        <p><a href="${adminReviewUrl}">Review the listing</a>.</p>`

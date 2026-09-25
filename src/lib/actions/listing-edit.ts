@@ -145,7 +145,7 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
   // through — a listing can't be saved with zero named rows in the
   // structured "Assets included" list (listingAssets / listing_assets).
   if (!fields.listingAssets.some((r) => r.name.trim())) {
-    throw new Error("Add at least one asset in Sale Includes before saving — listings can't be updated without at least one asset listed.");
+    throw new Error("Add at least one asset in Sale Includes before saving - listings can't be updated without at least one asset listed.");
   }
 
   // Sep 16, 2026 slug-URL change: `slug` is deliberately absent from this
@@ -386,7 +386,7 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
       // folded into the lead sentence.
       await sendEmail(
         ADMIN_EMAIL,
-        `Listing updated — ${fields.title}`,
+        `Listing updated - ${fields.title}`,
         `<p>The listing "${fields.title}" was updated.</p>
          <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
          <p><a href="${origin}/dashboard/admin/listings">Review it in the admin dashboard</a>.</p>`
