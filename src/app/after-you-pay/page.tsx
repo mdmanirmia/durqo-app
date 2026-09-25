@@ -76,21 +76,21 @@ import Button from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "What Happens After You Pay for a Digital Business on Durqo? | Durqo",
   description:
-    "The exact sequence after a Durqo purchase — where your money sits, how you land in your Transfer Room, and what happens during the 7-day inspection window before a sale is final.",
+    "The exact sequence after a Durqo purchase - where your money sits, how you land in your Transfer Room, and what happens during the 7-day inspection window before a sale is final.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     siteName: "Durqo",
     title: "What Happens After You Pay for a Digital Business on Durqo?",
     description:
-      "The exact sequence after a Durqo purchase — where your money sits, how you land in your Transfer Room, and what happens before a sale is final.",
+      "The exact sequence after a Durqo purchase - where your money sits, how you land in your Transfer Room, and what happens before a sale is final.",
     url: "https://www.durqo.com/after-you-pay",
   },
   twitter: {
     card: "summary_large_image",
     title: "What Happens After You Pay for a Digital Business on Durqo?",
     description:
-      "The exact sequence after a Durqo purchase — where your money sits, how you land in your Transfer Room, and what happens before a sale is final.",
+      "The exact sequence after a Durqo purchase - where your money sits, how you land in your Transfer Room, and what happens before a sale is final.",
   },
   alternates: { canonical: "https://www.durqo.com/after-you-pay" },
 };
@@ -131,7 +131,7 @@ const REDIRECT_METHODS = [
   {
     icon: CreditCard,
     title: "Card, or bKash / Rocket / Nagad / bank transfer",
-    body: "Paid through Stripe or SSLCommerz for a single listing? You're redirected straight into your Transfer Room the moment payment is confirmed — no confirmation page to click through first.",
+    body: "Paid through Stripe or SSLCommerz for a single listing? You're redirected straight into your Transfer Room the moment payment is confirmed - no confirmation page to click through first.",
   },
   {
     icon: Landmark,
@@ -141,7 +141,7 @@ const REDIRECT_METHODS = [
   {
     icon: ShieldCheck,
     title: "More than one listing in one order",
-    body: "Each listing you buy gets its own order and its own Transfer Room. With more than one, there's no single room to land on, so you'll see a general confirmation page instead — every room is still reachable from your dashboard.",
+    body: "Each listing you buy gets its own order and its own Transfer Room. With more than one, there's no single room to land on, so you'll see a general confirmation page instead - every room is still reachable from your dashboard.",
   },
 ] as const;
 
@@ -149,12 +149,12 @@ const MONEY_HOLDING = [
   {
     title: "Paid via Escrow.com",
     status: "Held by Escrow.com",
-    body: "Your order status shows \"Held by Escrow.com\" — the funds sit with Escrow.com itself, a neutral third party, until the transfer is approved.",
+    body: "Your order status shows \"Held by Escrow.com\" - the funds sit with Escrow.com itself, a neutral third party, until the transfer is approved.",
   },
   {
     title: "Paid via Stripe or SSLCommerz",
     status: "Payment Received",
-    body: "Your order status shows \"Payment Received\" — Durqo is holding the funds directly. It isn't a third-party escrow service for these channels, but the same rule applies: nothing moves to the seller until you approve.",
+    body: "Your order status shows \"Payment Received\" - Durqo is holding the funds directly. It isn't a third-party escrow service for these channels, but the same rule applies: nothing moves to the seller until you approve.",
   },
 ] as const;
 
@@ -183,7 +183,7 @@ export default function AfterYouPayPage() {
                 You&rsquo;ve paid. <span className="text-brand">Here&rsquo;s exactly what happens next.</span>
               </h1>
               <p className="mx-auto mt-5 max-w-[56ch] text-lg leading-relaxed text-white/70">
-                Paying for a listing isn&rsquo;t the end of the deal — it&rsquo;s the start of a guided handover.
+                Paying for a listing isn&rsquo;t the end of the deal - it&rsquo;s the start of a guided handover.
                 Here&rsquo;s the exact sequence, payment method by payment method.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -229,7 +229,7 @@ export default function AfterYouPayPage() {
               <DashEyebrow>The moment payment clears</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Where you land depends on how you paid.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Every Durqo purchase ends up in the same place — a private Transfer Room for that order — but how
+                Every Durqo purchase ends up in the same place - a private Transfer Room for that order - but how
                 you get there differs slightly by payment method.
               </p>
             </div>
@@ -245,7 +245,7 @@ export default function AfterYouPayPage() {
               ))}
             </div>
             <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-ink-faint">
-              Land on the room a beat too early? It auto-checks again every few seconds on its own — payment
+              Land on the room a beat too early? It auto-checks again every few seconds on its own - payment
               confirmation and the room being ready aren&rsquo;t always the exact same instant, so give it a moment
               before assuming something&rsquo;s wrong.
             </p>
@@ -284,7 +284,7 @@ export default function AfterYouPayPage() {
               <DashEyebrow>Inside the Transfer Room</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">A checklist, not a waiting room.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                The room is built around whatever the listing includes — domain, codebase, social accounts, and so
+                The room is built around whatever the listing includes - domain, codebase, social accounts, and so
                 on. Each item moves through the same three steps.
               </p>
             </div>
@@ -311,7 +311,7 @@ export default function AfterYouPayPage() {
               </div>
             </div>
             <p className="mt-6 text-sm leading-relaxed text-ink-soft">
-              Want the full mechanics — Deal Messages, Activity History, amendments, disputes?{" "}
+              Want the full mechanics - Deal Messages, Activity History, amendments, disputes?{" "}
               <a href="/transfer-room" className="font-semibold text-brand-strong hover:underline">
                 Read the full Transfer Room guide →
               </a>
@@ -338,7 +338,7 @@ export default function AfterYouPayPage() {
                   <AlertTriangle size={20} className="mb-2 text-gold" />
                   <h4 className="text-base font-semibold text-ink">Something&rsquo;s off?</h4>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                    Report an Issue right in the room — pick a category, flag the specific asset if relevant, and
+                    Report an Issue right in the room - pick a category, flag the specific asset if relevant, and
                     explain what went wrong, instead of being forced to approve.
                   </p>
                 </div>
@@ -371,7 +371,7 @@ export default function AfterYouPayPage() {
               <div>
                 <p className="text-sm leading-relaxed text-ink-soft">
                   Every purchase gets a confirmation email that spells out the four steps to receiving your
-                  assets — open the room, watch each item arrive, mark it Received, then Approve once everything
+                  assets - open the room, watch each item arrive, mark it Received, then Approve once everything
                   checks out. If you paid through Escrow.com, this email is more than a courtesy: it&rsquo;s
                   literally how you and the seller both get the link into your Transfer Room, since there&rsquo;s
                   no in-app redirect for that channel.
