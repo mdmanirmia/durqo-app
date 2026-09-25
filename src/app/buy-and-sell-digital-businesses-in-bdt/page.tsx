@@ -245,7 +245,7 @@ const COMPARISON_ROWS: { feature: string; durqo: Cell; flippa: Cell; acquire: Ce
   },
   {
     feature: "Bangladesh-focused BDT flow",
-    durqo: { text: "Yes — BDT payments and payouts", highlight: true },
+    durqo: { text: "Yes - BDT payments and payouts", highlight: true },
     flippa: { text: "No dedicated BDT payment flow" },
     acquire: { text: "No dedicated BDT payment flow" },
     empireFlippers: { text: "No dedicated BDT payment flow" },
@@ -839,7 +839,7 @@ export default function BuyAndSellInBdtPage() {
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Flippa, Acquire.com, Empire Flippers and Motion Invest are established international marketplaces.
                 Durqo is the first marketplace built specifically for buying and selling digital businesses in
-                BDT — buyers pay in BDT, and eligible sellers get paid out through supported local BDT methods.
+                BDT - buyers pay in BDT, and eligible sellers get paid out through supported local BDT methods.
                 Durqo isn&rsquo;t bigger or more established than these platforms; its edge is the Bangladesh BDT
                 experience.
               </p>
