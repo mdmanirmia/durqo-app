@@ -351,7 +351,7 @@ export default function ReportAnIssuePage() {
                   <h4 className="text-base font-semibold text-ink">Funds stay put</h4>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
                     Whether the seller is paid, refunded, or something in between waits entirely on the resolution
-                    &mdash; nothing moves in the meantime.
+                    - nothing moves in the meantime.
                   </p>
                 </div>
               </div>
@@ -369,7 +369,7 @@ export default function ReportAnIssuePage() {
               <h2 className="text-2xl sm:text-3xl">One of these, decided by an admin, explained to both sides.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Whichever way it goes, you and the seller are both emailed the resolution and a link back into the
-                room &mdash; no outcome is decided quietly.
+                room - no outcome is decided quietly.
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
