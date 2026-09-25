@@ -30,7 +30,7 @@ function GaStatusCell({
   onSync: (listingId: string) => void;
 }) {
   if (!hasSeoData) {
-    return <span className="text-xs text-ink-faint">—</span>;
+    return <span className="text-xs text-ink-faint">-</span>;
   }
   if (!ga || ga.status === "disconnected") {
     return (
@@ -116,7 +116,7 @@ export default function SellerOverview() {
       const error = params.get("ga_error");
       const connected = params.get("ga_connected");
       if (error) setGaNotice({ kind: "error", text: error });
-      else if (connected) setGaNotice({ kind: "success", text: "Google Analytics connected — stats are syncing." });
+      else if (connected) setGaNotice({ kind: "success", text: "Google Analytics connected - stats are syncing." });
       if (error || connected) window.history.replaceState({}, "", window.location.pathname);
     });
 
