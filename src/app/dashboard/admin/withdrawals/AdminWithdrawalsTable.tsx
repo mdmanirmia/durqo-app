@@ -160,7 +160,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
         await setWithdrawalStatus(id, decision, note, reference);
       } catch (e) {
         setErrorId(id);
-        setErrorMessage(e instanceof Error ? e.message : "Failed — retry");
+        setErrorMessage(e instanceof Error ? e.message : "Failed - retry");
       } finally {
         setPendingId(null);
       }
@@ -247,10 +247,10 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                     {(r.sellerLegalName || r.payoutAccountHolderName) && (
                       <div className="mt-2 max-w-[220px] rounded-md border border-rule bg-paper px-2 py-1.5 text-xs">
                         <div className="text-ink-faint">
-                          Legal name: <span className="text-ink-soft">{r.sellerLegalName ?? "—"}</span>
+                          Legal name: <span className="text-ink-soft">{r.sellerLegalName ?? "-"}</span>
                         </div>
                         <div className="text-ink-faint">
-                          Account holder: <span className="text-ink-soft">{r.payoutAccountHolderName ?? "—"}</span>
+                          Account holder: <span className="text-ink-soft">{r.payoutAccountHolderName ?? "-"}</span>
                         </div>
                         {namesLikelyMismatch(r.sellerLegalName, r.payoutAccountHolderName) && (
                           <div className="mt-1 flex items-center gap-1 font-semibold text-gold">
@@ -335,10 +335,10 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
               {(r.sellerLegalName || r.payoutAccountHolderName) && (
                 <div className="mb-3 rounded-md border border-rule bg-paper px-2.5 py-2 text-xs">
                   <div className="text-ink-faint">
-                    Legal name: <span className="text-ink-soft">{r.sellerLegalName ?? "—"}</span>
+                    Legal name: <span className="text-ink-soft">{r.sellerLegalName ?? "-"}</span>
                   </div>
                   <div className="text-ink-faint">
-                    Account holder: <span className="text-ink-soft">{r.payoutAccountHolderName ?? "—"}</span>
+                    Account holder: <span className="text-ink-soft">{r.payoutAccountHolderName ?? "-"}</span>
                   </div>
                   {namesLikelyMismatch(r.sellerLegalName, r.payoutAccountHolderName) && (
                     <div className="mt-1 flex items-center gap-1 font-semibold text-gold">
@@ -375,7 +375,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
         body={
           <>
             {dialogTarget?.decision === "rejected" && (
-              <p className="mb-2">They&rsquo;ll get an email with your note (if you added one). The orders this request claimed go back into their available balance, so this doesn&rsquo;t lose them any money — they can submit a new request any time.</p>
+              <p className="mb-2">They&rsquo;ll get an email with your note (if you added one). The orders this request claimed go back into their available balance, so this doesn&rsquo;t lose them any money - they can submit a new request any time.</p>
             )}
             {dialogTarget?.decision === "on_hold" && (
               <p className="mb-2">They&rsquo;ll get an email letting them know it&rsquo;s on hold, not rejected. The claimed orders stay reserved for this request while it&rsquo;s on hold.</p>

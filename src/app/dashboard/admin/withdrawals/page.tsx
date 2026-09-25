@@ -71,7 +71,7 @@ export default async function AdminWithdrawals({
 
     rows = (requests ?? []).map((r) => ({
       id: r.id,
-      sellerName: nameById.get(r.seller_id) || "—",
+      sellerName: nameById.get(r.seller_id) || "-",
       sellerLegalName: legalNameById.get(r.seller_id) ?? null,
       sellerEmail: emailById.get(r.seller_id) ?? null,
       grossAmount: Number(r.gross_amount),
@@ -98,7 +98,7 @@ export default async function AdminWithdrawals({
   return (
     <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl">Withdrawals{status ? ` — ${status}` : ""}</h2>
+        <h2 className="text-xl">Withdrawals{status ? ` - ${status}` : ""}</h2>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       {!status && pendingCount > 0 && (
