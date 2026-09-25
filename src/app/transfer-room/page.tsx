@@ -139,7 +139,7 @@ const BUYER_STEPS = [
   {
     n: "03",
     title: "Approve Transfer, or report an issue",
-    body: "Once every item checks out, approve to release payment. If something's wrong, report it instead — payment stays held.",
+    body: "Once every item checks out, approve to release payment. If something's wrong, report it instead - payment stays held.",
   },
 ];
 
