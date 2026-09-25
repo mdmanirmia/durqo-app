@@ -316,7 +316,7 @@ export default function ListingReviewPage() {
               <DashEyebrow>Two separate checks</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">The listing and the seller are verified independently.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Approving a listing&rsquo;s numbers doesn&rsquo;t say anything about who&rsquo;s selling it &mdash;
+                Approving a listing&rsquo;s numbers doesn&rsquo;t say anything about who&rsquo;s selling it -
                 that&rsquo;s checked on its own.
               </p>
             </div>
@@ -345,7 +345,7 @@ export default function ListingReviewPage() {
             </div>
             <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-ink-faint">
               A &ldquo;Verified&rdquo; badge on a listing card reflects the listing having cleared this review and
-              being live on the marketplace &mdash; every published listing has already passed this gate before a
+              being live on the marketplace - every published listing has already passed this gate before a
               buyer ever sees it.
             </p>
           </Inner>
