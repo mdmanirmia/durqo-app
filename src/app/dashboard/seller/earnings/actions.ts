@@ -119,12 +119,12 @@ export async function requestWithdrawal(
       `<p>Hi ${sellerName},</p>
        <p>Your payout request has been submitted${netAmount !== null ? ` for ${fmtUSD(netAmount)} (after the Success Fee)` : ""}. We normally review and process eligible payout requests within 3–5 business days.</p>
        <p>Your bank or payout provider may require additional time to credit the funds.</p>
-       <p>— Durqo</p>`
+       <p>- Durqo</p>`
     );
   }
   await sendEmail(
     ADMIN_EMAIL,
-    `New withdrawal request — ${sellerName}`,
+    `New withdrawal request - ${sellerName}`,
     `<p>${sellerName} (${sellerEmail ?? "no email on file"}) requested a withdrawal${netAmount !== null ? ` of ${fmtUSD(netAmount)}` : ""}.</p>
      <p><a href="${origin}/dashboard/admin/withdrawals">Review it in the admin dashboard</a>.</p>`
   );

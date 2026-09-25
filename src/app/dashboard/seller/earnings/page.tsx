@@ -169,7 +169,7 @@ export default function SellerEarningsPage() {
       if (!result.ok) {
         setError(result.message);
       } else {
-        setNotice("Withdrawal request cancelled — the related orders are available in your balance again.");
+        setNotice("Withdrawal request cancelled - the related orders are available in your balance again.");
         reload();
       }
     } finally {
@@ -253,7 +253,7 @@ export default function SellerEarningsPage() {
       );
       reload();
     } catch {
-      setError("Something went wrong — please try again.");
+      setError("Something went wrong - please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -279,7 +279,7 @@ export default function SellerEarningsPage() {
         </div>
         <div className="rounded-xl border border-rule bg-paper-raised p-5">
           <div className="mono text-2xl font-semibold">{balance === null ? "…" : fmtUSD(balance.successFeeAmount)}</div>
-          <div className="text-sm text-ink-faint">Success Fee ({balance === null || balance.orderCount === 0 ? "—" : fmtRate(balance.successFeeAmount / balance.grossAmount)})</div>
+          <div className="text-sm text-ink-faint">Success Fee ({balance === null || balance.orderCount === 0 ? "-" : fmtRate(balance.successFeeAmount / balance.grossAmount)})</div>
         </div>
       </div>
 
@@ -288,7 +288,7 @@ export default function SellerEarningsPage() {
           <Info size={18} className="mt-0.5 shrink-0 text-gold" />
           <p className="text-sm text-ink-soft">
             {balance.escrowComOrderCount} of your {balance.orderCount} available order{balance.orderCount === 1 ? "" : "s"} went through Escrow.com.
-            Seller payment is being handled by the escrow provider and is subject to the provider&rsquo;s processing timeline — Escrow.com pays you
+            Seller payment is being handled by the escrow provider and is subject to the provider&rsquo;s processing timeline - Escrow.com pays you
             directly once it releases funds, so double-check what it has already paid you before requesting a Durqo withdrawal that covers it.
           </p>
         </div>
@@ -298,7 +298,7 @@ export default function SellerEarningsPage() {
         <div className="mb-6 flex items-start gap-3 rounded-xl border border-gold/30 bg-gold-soft px-5 py-4">
           <Info size={18} className="mt-0.5 shrink-0 text-gold" />
           <p className="text-sm text-ink-soft">
-            Identity verification (KYC) is required before your first withdrawal — this is separate from the optional public Verified badge. Submit your
+            Identity verification (KYC) is required before your first withdrawal - this is separate from the optional public Verified badge. Submit your
             identity documents from the{" "}
             <a href="/dashboard/seller/verification" className="font-semibold text-brand-strong hover:underline">
               Verification page
@@ -310,7 +310,7 @@ export default function SellerEarningsPage() {
 
       {hasBalance && (
         <p className="mb-4 max-w-[65ch] text-xs text-ink-faint">
-          The account holder name you enter below must match the legal name on your identity verification — our team checks this before approving a
+          The account holder name you enter below must match the legal name on your identity verification - our team checks this before approving a
           payout.
         </p>
       )}
