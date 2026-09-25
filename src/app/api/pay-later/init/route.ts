@@ -151,8 +151,8 @@ export async function POST(request: Request) {
 
     await sendEmail(
       ADMIN_EMAIL,
-      `New Pay Later "purchase" — ${listing.title}`,
-      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy ${listingLinkHtml(origin, listing.slug as string, listing.title as string)} for $${price.toLocaleString()} — no payment was actually collected.</p>
+      `New Pay Later "purchase" - ${listing.title}`,
+      `<p>${buyerEmail ?? "A buyer"} used Pay Later to buy ${listingLinkHtml(origin, listing.slug as string, listing.title as string)} for $${price.toLocaleString()} - no payment was actually collected.</p>
        <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
        <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
     );
@@ -164,9 +164,9 @@ export async function POST(request: Request) {
       await sendEmail(
         buyerEmail,
         "Your Durqo purchase is confirmed",
-        `<p>Thanks for your purchase — here's what you bought:</p>
-         <ul><li>${listing.title} — $${price.toLocaleString()}</li></ul>
-         <p>This purchase was made using Pay Later — arrange payment directly with our team as agreed.</p>
+        `<p>Thanks for your purchase - here's what you bought:</p>
+         <ul><li>${listing.title} - $${price.toLocaleString()}</li></ul>
+         <p>This purchase was made using Pay Later - arrange payment directly with our team as agreed.</p>
          ${
            roomReady
              ? `${buyerTransferGuidanceHtml()}${transferRoomEmailCta(origin, insertedOrder.id)}`
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
       await sendEmail(
         sellerEmail,
         `Your listing "${listing.title}" has sold`,
-        `<p>Good news — "${listing.title}" sold via Pay Later for $${price.toLocaleString()}.</p>
+        `<p>Good news - "${listing.title}" sold via Pay Later for $${price.toLocaleString()}.</p>
          ${
            roomReady
              ? `${sellerTransferGuidanceHtml()}${transferRoomEmailCta(origin, insertedOrder.id)}`
