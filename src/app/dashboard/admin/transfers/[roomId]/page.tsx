@@ -71,7 +71,7 @@ export default async function AdminTransferDetailPage({ params }: { params: Prom
     buyerName,
     sellerName,
     amount: order ? Number(order.amount) : 0,
-    orderStatus: order?.status ?? "—",
+    orderStatus: order?.status ?? "-",
     unlockedAt: room.unlocked_at,
     inspectionDeadlineAt: room.inspection_deadline_at,
     payoutEligibleAt: room.payout_eligible_at,

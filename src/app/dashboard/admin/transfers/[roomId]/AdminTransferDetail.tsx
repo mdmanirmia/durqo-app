@@ -73,7 +73,7 @@ const STAGE_LABEL: Record<string, { label: string; tone: "neutral" | "brand" | "
 
 const RESOLUTION_OPTIONS: { value: string; label: string; hint: string }[] = [
   { value: "returned_to_seller", label: "Send back to seller", hint: "Reopens the flagged asset (or the whole room) for the seller to redo." },
-  { value: "approved_despite_report", label: "Approve despite report", hint: "Sides with the seller — finishes the transfer as if the buyer had approved." },
+  { value: "approved_despite_report", label: "Approve despite report", hint: "Sides with the seller - finishes the transfer as if the buyer had approved." },
   { value: "refund_authorized", label: "Refund authorized", hint: "Closes the transfer as refunded. Process the actual refund on the payment rail separately." },
   { value: "settlement_recorded", label: "Settlement recorded", hint: "Closes the transfer with a recorded settlement between the parties." },
   { value: "order_cancelled", label: "Order cancelled", hint: "Closes the transfer as cancelled. Update the order's own status separately if needed." },
@@ -93,7 +93,7 @@ function formatDateTime(iso: string): string {
 }
 
 function formatEventType(type: string): string {
-  return type.replace(/^admin_resolved_/, "admin resolved — ").replace(/_/g, " ");
+  return type.replace(/^admin_resolved_/, "admin resolved - ").replace(/_/g, " ");
 }
 
 export default function AdminTransferDetail({ data }: { data: AdminTransferDetailData }) {
@@ -182,7 +182,7 @@ export default function AdminTransferDetail({ data }: { data: AdminTransferDetai
                     <div className="mb-1 flex items-center justify-between gap-2">
                       <span className="text-sm font-semibold text-ink">
                         {CATEGORY_LABEL[issue.category] ?? issue.category}
-                        {issue.itemName ? ` — ${issue.itemName}` : " — general"}
+                        {issue.itemName ? ` - ${issue.itemName}` : " - general"}
                       </span>
                       <Badge tone={issue.status === "resolved" ? "dark" : "danger"}>{issue.status.replace(/_/g, " ")}</Badge>
                     </div>
@@ -193,7 +193,7 @@ export default function AdminTransferDetail({ data }: { data: AdminTransferDetai
 
                     {issue.status === "resolved" ? (
                       <div className="mt-3 rounded-md border border-rule bg-paper-raised p-2.5 text-xs">
-                        <span className="font-semibold text-ink">Resolved — {issue.resolutionType?.replace(/_/g, " ")}</span>
+                        <span className="font-semibold text-ink">Resolved - {issue.resolutionType?.replace(/_/g, " ")}</span>
                         <p className="mt-1 text-ink-soft">{issue.resolution}</p>
                         {issue.resolvedAt && <p className="mt-1 text-ink-faint">{formatDateTime(issue.resolvedAt)}</p>}
                       </div>
@@ -216,7 +216,7 @@ export default function AdminTransferDetail({ data }: { data: AdminTransferDetai
             {canResolve && openIssues.length === 0 && (
               <div className="mt-4 border-t border-rule pt-4">
                 <p className="mb-2 text-sm text-ink-soft">
-                  This transfer is under admin review with no open reported issue — likely an expired inspection window. Resolve it directly:
+                  This transfer is under admin review with no open reported issue - likely an expired inspection window. Resolve it directly:
                 </p>
                 <ResolutionForm
                   rowKey="room"
@@ -233,13 +233,13 @@ export default function AdminTransferDetail({ data }: { data: AdminTransferDetai
 
           {data.amendments.length > 0 && (
             <div className="rounded-xl border border-rule bg-paper-raised p-5">
-              <h3 className="mb-3 text-lg text-ink">Proposed Changes (read-only — buyer decides)</h3>
+              <h3 className="mb-3 text-lg text-ink">Proposed Changes (read-only - buyer decides)</h3>
               <div className="flex flex-col gap-2">
                 {data.amendments.map((a) => (
                   <div key={a.id} className="rounded-md border border-rule bg-paper p-2.5 text-xs">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-semibold text-ink-soft">
-                        {a.itemName ?? "Post-sale support"} — {a.field.replace(/_/g, " ")} — proposed by {a.proposedByName}
+                        {a.itemName ?? "Post-sale support"} - {a.field.replace(/_/g, " ")} - proposed by {a.proposedByName}
                       </span>
                       <Badge tone={a.status === "pending" ? "gold" : a.status === "accepted" ? "brand" : "danger"}>{a.status}</Badge>
                     </div>
@@ -283,7 +283,7 @@ export default function AdminTransferDetail({ data }: { data: AdminTransferDetai
                     <div className="min-w-0">
                       <p className="text-ink-soft">
                         <span className="font-semibold text-ink">{e.actorName}</span> {formatEventType(e.eventType)}
-                        {e.reason ? ` — ${e.reason}` : ""}
+                        {e.reason ? ` - ${e.reason}` : ""}
                       </p>
                       <p className="mono text-[0.65rem] text-ink-faint">{formatDateTime(e.createdAt)}</p>
                     </div>
