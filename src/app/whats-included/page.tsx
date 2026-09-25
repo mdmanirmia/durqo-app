@@ -64,21 +64,21 @@ import Button from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "What Is Included When You Buy a Digital Business in Durqo Marketplace? | Durqo",
   description:
-    "How Durqo listings spell out exactly what a buyer gets, asset by asset — the four fields every listing must fill in, why it's mandatory, and how it becomes your Transfer Room checklist.",
+    "How Durqo listings spell out exactly what a buyer gets, asset by asset - the four fields every listing must fill in, why it's mandatory, and how it becomes your Transfer Room checklist.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     siteName: "Durqo",
     title: "What Is Included When You Buy a Digital Business in Durqo Marketplace?",
     description:
-      "How Durqo listings spell out exactly what a buyer gets, asset by asset — before you ever pay for one.",
+      "How Durqo listings spell out exactly what a buyer gets, asset by asset - before you ever pay for one.",
     url: "https://www.durqo.com/whats-included",
   },
   twitter: {
     card: "summary_large_image",
     title: "What Is Included When You Buy a Digital Business in Durqo Marketplace?",
     description:
-      "How Durqo listings spell out exactly what a buyer gets, asset by asset — before you ever pay for one.",
+      "How Durqo listings spell out exactly what a buyer gets, asset by asset - before you ever pay for one.",
   },
   alternates: { canonical: "https://www.durqo.com/whats-included" },
 };
@@ -110,13 +110,13 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 
 const KEY_FACTS = [
   { icon: Package, label: "Every listing must name at least one asset before it can even go live" },
-  { icon: PenLine, label: "100% seller-authored — no templates, no AI-generated lists" },
+  { icon: PenLine, label: "100% seller-authored - no templates, no AI-generated lists" },
   { icon: ListChecks, label: "The exact list you see is what freezes into your Transfer Room after you pay" },
   { icon: HeartHandshake, label: "Post-sale support terms are separate and spelled out in the seller's own words" },
 ];
 
 const ASSET_FIELDS = [
-  { icon: Tag, title: "Asset name", body: "What the item actually is — a domain, a codebase, a social account, a customer list. Example: “Domain name.”" },
+  { icon: Tag, title: "Asset name", body: "What the item actually is - a domain, a codebase, a social account, a customer list. Example: “Domain name.”" },
   { icon: Gift, title: "What the buyer receives", body: "Exactly what changes hands for that asset. Example: “Full ownership transfer.”" },
   { icon: Truck, title: "How it will be transferred", body: "The actual handover mechanism. Example: “Registrar transfer.”" },
   { icon: StickyNote, title: "Note (optional)", body: "Anything else the buyer should know about that specific asset before they buy." },
@@ -142,7 +142,7 @@ export default function WhatsIncludedPage() {
               </h1>
               <p className="mx-auto mt-5 max-w-[56ch] text-lg leading-relaxed text-white/70">
                 No vague bundles. Before a listing can even go live, the seller has to break down what&rsquo;s
-                included, asset by asset — written entirely in their own words.
+                included, asset by asset - written entirely in their own words.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Button href="/buy" size="lg">
@@ -218,8 +218,8 @@ export default function WhatsIncludedPage() {
               <div className="flex items-start gap-4">
                 <AlertTriangle size={20} className="mt-0.5 shrink-0 text-gold" />
                 <p className="text-sm leading-relaxed text-ink-soft">
-                  A listing with zero named assets is blocked from publishing or being updated — by the seller or
-                  by an admin — until at least one is added. The moment a save includes a named asset, the list
+                  A listing with zero named assets is blocked from publishing or being updated - by the seller or
+                  by an admin - until at least one is added. The moment a save includes a named asset, the list
                   confirms instantly; there&rsquo;s no separate &ldquo;confirm this list&rdquo; step. Sellers see
                   exactly where their listing stands: &ldquo;No assets listed yet &mdash; can&rsquo;t be sold,&rdquo;
                   &ldquo;Will confirm when you save,&rdquo; or &ldquo;Confirmed.&rdquo;
