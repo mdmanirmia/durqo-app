@@ -127,7 +127,7 @@ export async function POST(request: Request) {
     // Clean up the orders we just created — otherwise they'd sit as
     // permanently-orphaned "awaiting_payment" rows with no way to pay.
     await supabase.from("orders").delete().in("id", insertedOrders.map((o) => o.id));
-    return NextResponse.json({ error: "Payments aren't set up yet — try again shortly." }, { status: 500 });
+    return NextResponse.json({ error: "Payments aren't set up yet - try again shortly." }, { status: 500 });
   }
 
   const origin = new URL(request.url).origin;
