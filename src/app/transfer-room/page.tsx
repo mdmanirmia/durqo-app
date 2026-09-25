@@ -190,7 +190,7 @@ export default function TransferRoomPage() {
               </h1>
               <p className="mx-auto mt-5 max-w-[56ch] text-lg leading-relaxed text-white/70">
                 Payment is only step one. Here&rsquo;s exactly how buyers and sellers hand over a business, confirm
-                everything&rsquo;s right, and release funds &mdash; together, in one shared room built for that
+                everything&rsquo;s right, and release funds - together, in one shared room built for that
                 one job.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -235,7 +235,7 @@ export default function TransferRoomPage() {
             <DashEyebrow center>What it is</DashEyebrow>
             <h2 className="mb-5 text-center text-2xl sm:text-3xl">A shared workspace, not just a payment screen.</h2>
             <p className="text-center text-[0.95rem] leading-relaxed text-ink-soft">
-              The moment a payment is confirmed &mdash; by card, bKash/Rocket/Nagad/bank, or Escrow.com &mdash;
+              The moment a payment is confirmed - by card, bKash/Rocket/Nagad/bank, or Escrow.com -
               Durqo opens a private Transfer Room for that order. It&rsquo;s where the seller hands over the
               domain, code, accounts, customer lists or whatever else the listing included, and where the buyer
               decides, item by item, whether the sale is actually done. For most single-item card and mobile-banking
@@ -325,8 +325,8 @@ export default function TransferRoomPage() {
                 <DashEyebrow center>Per asset, every time</DashEyebrow>
                 <h2 className="text-2xl font-semibold text-ink sm:text-3xl">The same handover, item by item.</h2>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                  Each asset on the checklist &mdash; a domain, a codebase, a social account, anything the listing
-                  included &mdash; moves through this exact sequence before the sale can close.
+                  Each asset on the checklist - a domain, a codebase, a social account, anything the listing
+                  included - moves through this exact sequence before the sale can close.
                 </p>
               </div>
 
@@ -356,7 +356,7 @@ export default function TransferRoomPage() {
                   <AlertTriangle size={16} />
                 </span>
                 <p className="text-sm leading-relaxed text-danger">
-                  Something not right? The buyer clicks <strong>Report an Issue</strong> instead &mdash; choosing a
+                  Something not right? The buyer clicks <strong>Report an Issue</strong> instead - choosing a
                   category, optionally the specific asset, and an explanation. Payment stays held, and nothing
                   releases automatically until Durqo&rsquo;s team reviews it.
                 </p>
@@ -402,7 +402,7 @@ export default function TransferRoomPage() {
                 <CheckCircle2 size={20} className="mb-2 text-brand" />
                 <h4 className="text-base font-semibold text-white">Buyer approves</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-white/70">
-                  The order moves to completed and becomes eligible for payout &mdash; the seller can then request a
+                  The order moves to completed and becomes eligible for payout - the seller can then request a
                   withdrawal. (Escrow.com purchases release through Escrow.com&rsquo;s own process instead, since
                   that payment never sits with Durqo.)
                 </p>
@@ -412,7 +412,7 @@ export default function TransferRoomPage() {
                 <h4 className="text-base font-semibold text-white">Window runs out</h4>
                 <p className="mt-1.5 text-sm leading-relaxed text-white/70">
                   If the buyer neither approves nor reports an issue within the inspection window, the order goes to
-                  Durqo&rsquo;s admin review &mdash; it never auto-releases funds without a person checking first.
+                  Durqo&rsquo;s admin review - it never auto-releases funds without a person checking first.
                 </p>
               </div>
             </div>
