@@ -123,7 +123,7 @@ export async function POST(request: Request) {
   const config = getSslcommerzConfig();
   if (!config) {
     await supabase.from("orders").delete().in("id", insertedOrders.map((o) => o.id));
-    return NextResponse.json({ error: "Bangladesh payment gateway isn't set up yet — try again shortly." }, { status: 500 });
+    return NextResponse.json({ error: "Bangladesh payment gateway isn't set up yet - try again shortly." }, { status: 500 });
   }
 
   // Fetch the buyer's profile name for the SSLCommerz customer fields —
