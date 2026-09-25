@@ -821,7 +821,7 @@ export default function BuyAndSellInBdtPage() {
               <p className="text-sm leading-relaxed text-ink-soft">
                 The Transfer Room opens only after the complete purchase price has been received and verified. For a
                 purchase above USD 2,000, the initial SSLCommerz payment does not unlock the Transfer Room.
-                SSLCommerz is a payment gateway or payment processor, not an escrow provider &mdash; it does not hold
+                SSLCommerz is a payment gateway or payment processor, not an escrow provider - it does not hold
                 the seller&rsquo;s funds until the buyer approves the transfer.
               </p>
             </div>
