@@ -52,7 +52,7 @@ export default async function AdminListings({
       categoryId: l.category_id,
       status: l.status,
       price: Number(l.price),
-      sellerName: sellerById.get(l.seller_id) ?? "—",
+      sellerName: sellerById.get(l.seller_id) ?? "-",
       createdAt: (l.created_at as string).slice(0, 10),
       gaAccessConfirmed: !!l.ga_access_confirmed,
       gaVerified: !!l.ga_verified,

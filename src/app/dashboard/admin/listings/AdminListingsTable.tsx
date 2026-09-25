@@ -215,7 +215,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
                   <td className="px-4 py-3 text-ink-soft">{CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId}</td>
                   <td className="px-4 py-3">
                     <StatusBadge status={l.status} />
-                    {errorId === l.id && <div className="mt-1 text-xs text-danger">Action failed — try again.</div>}
+                    {errorId === l.id && <div className="mt-1 text-xs text-danger">Action failed - try again.</div>}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col items-start gap-1.5">{gaSection(l, busy, toggleGaVerified)}</div>
@@ -249,7 +249,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
                 </div>
                 <StatusBadge className="shrink-0" status={l.status} />
               </div>
-              {errorId === l.id && <div className="mb-2 text-xs text-danger">Action failed — try again.</div>}
+              {errorId === l.id && <div className="mb-2 text-xs text-danger">Action failed - try again.</div>}
               <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 <div>
                   <div className="text-xs text-ink-faint">Price</div>
@@ -273,7 +273,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
         body={
           confirmTarget?.kind === "reject"
             ? "The seller will get an email saying this listing wasn't approved. It moves to Archived and can be restored later if needed."
-            : "This moves the listing to Archived — it comes off the marketplace immediately, but nothing is permanently erased and it can be restored from the Archived filter."
+            : "This moves the listing to Archived - it comes off the marketplace immediately, but nothing is permanently erased and it can be restored from the Archived filter."
         }
         confirmLabel={confirmTarget?.kind === "reject" ? "Reject listing" : "Delete listing"}
         danger
