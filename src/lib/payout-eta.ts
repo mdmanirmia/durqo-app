@@ -104,9 +104,9 @@ function fmtDate(d: Date): string {
 // never implies a guarantee — and explicitly names the paused/settled
 // cases instead of showing a stale or misleading date range.
 export function fmtPayoutEta(result: PayoutEtaResult): string {
-  if (result.settled) return "—";
-  if (result.paused) return "Paused — awaiting resolution";
-  if (!result.earliest || !result.latest) return "—";
+  if (result.settled) return "-";
+  if (result.paused) return "Paused - awaiting resolution";
+  if (!result.earliest || !result.latest) return "-";
   return `Estimated ${fmtDate(result.earliest)} – ${fmtDate(result.latest)}`;
 }
 

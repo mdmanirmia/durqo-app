@@ -77,12 +77,12 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "gsc
     },
     socialStats: [{ platform: "X", followers: 3100 },{ platform: "Email list", followers: 4200 }],
     faqs: [
-      { question: "Why are you selling?", answer: "Moving full-time onto a new product — Loom & Ledger is stable and doesn't need my daily attention anymore." },
-      { question: "Is the churn rate improving?", answer: "Yes — down from 4.8% to 3.1% over the last six months after a pricing and onboarding change." },
+      { question: "Why are you selling?", answer: "Moving full-time onto a new product - Loom & Ledger is stable and doesn't need my daily attention anymore." },
+      { question: "Is the churn rate improving?", answer: "Yes - down from 4.8% to 3.1% over the last six months after a pricing and onboarding change." },
     ],
     comments: [
       { id: "c1", author: "InvestorDana", body: "Solid MRR growth. What's the tech debt situation like?", createdAt: "2026-08-20",
-        replies: [{ id: "c1r1", author: "Marcus Feld", body: "Minimal — codebase was rewritten 18 months ago, test coverage is around 70%.", createdAt: "2026-08-20" }] },
+        replies: [{ id: "c1r1", author: "Marcus Feld", body: "Minimal - codebase was rewritten 18 months ago, test coverage is around 70%.", createdAt: "2026-08-20" }] },
       { id: "c2", author: "SaaSBuyer22", body: "Would you consider seller financing?", createdAt: "2026-08-22" },
     ],
     seller: seller1,
@@ -144,7 +144,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "gsc
       month, income: [2100,2200,2350,2500,2650,2750,2850,2900,2950,3000,3020,3050][i],
     })),
     socialStats: [{ platform: "YouTube", followers: 210000 },{ platform: "Instagram", followers: 18000 }],
-    faqs: [{ question: "Do you appear on camera?", answer: "No — fully faceless, voiceover only, so the buyer doesn't need to re-brand around a personality." }],
+    faqs: [{ question: "Do you appear on camera?", answer: "No - fully faceless, voiceover only, so the buyer doesn't need to re-brand around a personality." }],
     comments: [],
     seller: seller1,
   },
@@ -185,7 +185,7 @@ const RAW_MOCK_LISTINGS: Omit<Listing, "gaAccessConfirmed" | "gaVerified" | "gsc
     socialStats: [{ platform: "Pinterest", followers: 6100 }],
     faqs: [{ question: "Why the slight income dip?", answer: "A 2025 core update softened rankings for two articles; both have since been refreshed and are recovering." }],
     comments: [{ id: "c4", author: "NicheHunter", body: "Solid DA for the niche age. Any manual actions in Search Console?", createdAt: "2026-08-10",
-      replies: [{ id: "c4r1", author: "Marcus Feld", body: "None — clean history, happy to share the full GSC login for a quick audit pre-purchase.", createdAt: "2026-08-11" }] }],
+      replies: [{ id: "c4r1", author: "Marcus Feld", body: "None - clean history, happy to share the full GSC login for a quick audit pre-purchase.", createdAt: "2026-08-11" }] }],
     seller: seller1,
   },
   {

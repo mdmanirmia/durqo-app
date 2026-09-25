@@ -31,7 +31,7 @@ export async function sendEmail(
   replyTo?: string | string[]
 ): Promise<{ sent: boolean }> {
   if (!resend) {
-    console.warn(`[email] RESEND_API_KEY not set — skipping "${subject}" to`, to);
+    console.warn(`[email] RESEND_API_KEY not set - skipping "${subject}" to`, to);
     return { sent: false };
   }
   try {

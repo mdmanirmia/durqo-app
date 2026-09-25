@@ -17,7 +17,7 @@ export function unconfirmedListingTitles<T extends { title: string; assets_confi
 
 export function assetsNotConfirmedMessage(titles: string[]): string {
   if (titles.length === 1) {
-    return `"${titles[0]}" isn't ready to sell yet — the seller hasn't confirmed its asset list. Please check back once they have.`;
+    return `"${titles[0]}" isn't ready to sell yet - the seller hasn't confirmed its asset list. Please check back once they have.`;
   }
-  return `Some items aren't ready to sell yet — the seller hasn't confirmed their asset list for: ${titles.join(", ")}. Please check back once they have.`;
+  return `Some items aren't ready to sell yet - the seller hasn't confirmed their asset list for: ${titles.join(", ")}. Please check back once they have.`;
 }

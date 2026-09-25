@@ -1,5 +1,5 @@
 export function fmtUSD(n: number | undefined | null): string {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null) return "-";
   return "$" + Math.round(n).toLocaleString("en-US");
 }
 
@@ -8,7 +8,7 @@ export function fmtUSD(n: number | undefined | null): string {
 // Keeps the 2 decimal places SSLCommerz itself charges to (e.g. "৳257.72"),
 // unlike fmtUSD's rounded-to-the-dollar display.
 export function fmtBDT(n: number | undefined | null): string {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null) return "-";
   return "৳" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
@@ -18,7 +18,7 @@ export function fmtBDT(n: number | undefined | null): string {
 // round BDT withdrawal cap on the seller Earnings page
 // (dashboard/seller/earnings/page.tsx: "$413.22 (৳50,000)").
 export function fmtUSD2(n: number | undefined | null): string {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null) return "-";
   return "$" + n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
@@ -27,7 +27,7 @@ export function fmtUSD2(n: number | undefined | null): string {
 // ("৳50,000"), unlike fmtBDT() above which always keeps 2 decimals for
 // SSLCommerz's exact checkout charges.
 export function fmtBDTWhole(n: number | undefined | null): string {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null) return "-";
   return "৳" + Math.round(n).toLocaleString("en-US");
 }
 
@@ -49,7 +49,7 @@ export function fmtAgeOrNA(years: number | undefined | null): string {
 }
 
 export function fmtNumber(n: number | undefined | null): string {
-  if (n === undefined || n === null) return "—";
+  if (n === undefined || n === null) return "-";
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
   if (n >= 1_000) return (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
   return String(n);
@@ -174,7 +174,7 @@ export function extractYoutubeChannelIdentifier(
 // %, ages in years, everything else (ratings, domain registrar/expiry
 // strings, etc.) shown as-is.
 export function formatQuickStat(key: string, value: number | string | undefined): string {
-  if (value === undefined || value === null || value === "") return "—";
+  if (value === undefined || value === null || value === "") return "-";
   if (QUICK_STAT_MONEY.has(key)) return fmtUSD(Number(value));
   if (QUICK_STAT_YEARS.has(key)) return `${value} ${Number(value) <= 1 ? "Year" : "Years"}`;
   if (QUICK_STAT_PERCENT.has(key)) return `${value}%`;

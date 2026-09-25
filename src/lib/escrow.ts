@@ -103,7 +103,7 @@ async function escrowFetch<T>(config: EscrowConfig, path: string, init?: Request
     // Always log the raw body — this is what actually diagnoses a failure
     // like the 422 above; the message returned to the caller may still be
     // trimmed/generic, but this line is the source of truth in Vercel logs.
-    console.error(`[escrow] ${init?.method ?? "GET"} ${path} failed: HTTP ${res.status} — ${text || "(empty body)"}`);
+    console.error(`[escrow] ${init?.method ?? "GET"} ${path} failed: HTTP ${res.status} - ${text || "(empty body)"}`);
 
     let message: string | undefined;
     if (data && typeof data === "object") {
@@ -131,7 +131,7 @@ async function escrowFetch<T>(config: EscrowConfig, path: string, init?: Request
     // at Durqo's other payment options instead of the raw API string.
     if (message && /amount paid by the buyer must be at least the amount of the escrow fee/i.test(message)) {
       message =
-        "Escrow.com can't be used for this listing — their own minimum fee is larger than the purchase price. Please use one of the other payment options (Stripe, SSLCommerz, or Pay Later) instead.";
+        "Escrow.com can't be used for this listing - their own minimum fee is larger than the purchase price. Please use one of the other payment options (Stripe, SSLCommerz, or Pay Later) instead.";
     }
 
     throw new Error(message || `Escrow.com API returned HTTP ${res.status}`);

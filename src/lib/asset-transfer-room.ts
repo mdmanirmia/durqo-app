@@ -92,7 +92,7 @@ export function buyerTransferGuidanceHtml(): string {
       <li>Open your Transfer Room using the button below.</li>
       <li>The seller will hand over each item listed under "Assets included" for this business (domain, hosting, social accounts, source code, etc.).</li>
       <li>Check off each item as you receive it, then mark it "Received" in the room.</li>
-      <li>Once everything checks out, click "Approve" — this releases your payment to the seller and completes the purchase.</li>
+      <li>Once everything checks out, click "Approve" - this releases your payment to the seller and completes the purchase.</li>
     </ol>`;
 }
 
@@ -102,7 +102,7 @@ export function sellerTransferGuidanceHtml(): string {
       <li>Open your Transfer Room using the button below.</li>
       <li>Go through each item in your "Assets included" list and hand it over using the method you specified (transfer the domain, share login access, etc.).</li>
       <li>Mark each item "Submitted" once you've sent it.</li>
-      <li>Once the buyer confirms receipt of everything, your payout becomes eligible — request a withdrawal from your Earnings page.</li>
+      <li>Once the buyer confirms receipt of everything, your payout becomes eligible - request a withdrawal from your Earnings page.</li>
     </ol>`;
 }
 
