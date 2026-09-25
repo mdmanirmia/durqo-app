@@ -36,13 +36,13 @@ export default async function SellerQuestionsPage() {
       <h2 className="mb-1 text-xl">Comments</h2>
       <p className="mb-4 text-sm text-ink-faint">
         {unanswered.length === 0
-          ? "You're all caught up — no open questions."
+          ? "You're all caught up - no open questions."
           : `${unanswered.length} question${unanswered.length === 1 ? "" : "s"} waiting for your reply.`}
       </p>
 
       {questions.length === 0 ? (
         <p className="text-sm text-ink-faint">
-          No questions yet — buyers can ask questions on your listings under &ldquo;Comments.&rdquo;
+          No questions yet - buyers can ask questions on your listings under &ldquo;Comments.&rdquo;
         </p>
       ) : (
         <div className="flex flex-col gap-4">
