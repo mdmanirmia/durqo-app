@@ -90,14 +90,14 @@ export async function submitVerification(method: Method, documentPaths: string[]
       sellerEmail,
       "We've received your verification documents",
       `<p>Hi ${sellerName},</p>
-       <p>Thanks for submitting your ${METHOD_LABEL[method]} for identity verification. Our team will review it and email you the outcome — this usually takes 1–2 business days.</p>
-       <p>— Durqo</p>`
+       <p>Thanks for submitting your ${METHOD_LABEL[method]} for identity verification. Our team will review it and email you the outcome - this usually takes 1–2 business days.</p>
+       <p>- Durqo</p>`
     );
   }
   if (adminEmails.length) {
     await sendEmail(
       adminEmails,
-      `New seller verification request — ${sellerName}`,
+      `New seller verification request - ${sellerName}`,
       `<p>${sellerName} (${sellerEmail ?? "no email on file"}) submitted a ${METHOD_LABEL[method]} for identity verification.</p>
        <p><a href="${origin}/dashboard/admin/verification">Review it in the admin dashboard</a>.</p>`
     );

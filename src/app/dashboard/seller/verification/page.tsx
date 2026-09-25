@@ -51,7 +51,7 @@ export default function VerificationPage() {
       setStatus("pending");
       setFiles([]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong — please try again.");
+      setError(err instanceof Error ? err.message : "Something went wrong - please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -61,10 +61,10 @@ export default function VerificationPage() {
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <h2 className="mb-2 text-xl">Identity verification</h2>
       <p className="mb-2 max-w-[60ch] text-sm text-ink-soft">
-        Verified sellers get a badge on every listing and rank higher in search. Choose one document to verify — this only needs to be done once.
+        Verified sellers get a badge on every listing and rank higher in search. Choose one document to verify - this only needs to be done once.
       </p>
       <p className="mb-6 max-w-[60ch] text-sm text-ink-soft">
-        Identity verification (KYC) is also required before your first withdrawal. When you request a payout, the account holder name you enter must match the legal name below — our team checks this by hand before approving a withdrawal.
+        Identity verification (KYC) is also required before your first withdrawal. When you request a payout, the account holder name you enter must match the legal name below - our team checks this by hand before approving a withdrawal.
       </p>
 
       {status === null && <p className="text-sm text-ink-faint">Loading&hellip;</p>}
@@ -75,7 +75,7 @@ export default function VerificationPage() {
           <div>
             <div className="font-semibold text-ink">Under review</div>
             <p className="mt-1 text-sm text-ink-soft">
-              Your documents were submitted and are being reviewed by our team. We&rsquo;ll email you as soon as a decision is made — usually within 1–2 business days.
+              Your documents were submitted and are being reviewed by our team. We&rsquo;ll email you as soon as a decision is made - usually within 1–2 business days.
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function VerificationPage() {
           <label className="mb-1 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-rule-strong bg-paper-raised px-4 py-8 text-center hover:border-brand-strong">
             <Upload size={20} className="text-ink-faint" />
             <span className="text-sm font-medium text-ink">Click to upload one or more photos</span>
-            <span className="text-xs text-ink-faint">Front &amp; back if applicable — JPG, PNG or PDF</span>
+            <span className="text-xs text-ink-faint">Front &amp; back if applicable - JPG, PNG or PDF</span>
             <input
               type="file"
               multiple
