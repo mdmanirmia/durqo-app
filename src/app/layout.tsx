@@ -49,7 +49,7 @@ import ScrollRevealInit from "@/components/ScrollReveal";
 // from the nearest ancestor that sets them.
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.durqo.com"),
-  title: "Durqo — Buy and Sell Digital Businesses",
+  title: "Durqo - Buy and Sell Digital Businesses",
   description:
     "Discover reviewed websites, SaaS products, apps, e-commerce brands and other digital businesses for sale, or list your business on Durqo.",
   robots: { index: true, follow: true },
