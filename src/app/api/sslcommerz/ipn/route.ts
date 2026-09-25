@@ -152,7 +152,7 @@ export async function POST(request: Request) {
       const itemsHtml = (paidListings ?? [])
         .map((l) => {
           const remainder = remainderByListingId.get(l.id) ?? 0;
-          return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
+          return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)}${remainder > 0 ? ` - remaining balance due: $${remainder.toLocaleString()} USD` : ""}</li>`;
         })
         .join("");
       const adminItemsHtml = (paidListings ?? [])
@@ -160,7 +160,7 @@ export async function POST(request: Request) {
           const remainder = remainderByListingId.get(l.id) ?? 0;
           const sellerName = sellerNameById.get(l.seller_id as string) || "Unknown seller";
           const sellerEmail = emails[l.seller_id as string];
-          return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)}${remainder > 0 ? ` — remaining balance due: $${remainder.toLocaleString()} USD` : ""}<br>Seller: ${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""}</li>`;
+          return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)}${remainder > 0 ? ` - remaining balance due: $${remainder.toLocaleString()} USD` : ""}<br>Seller: ${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""}</li>`;
         })
         .join("");
       // Meta Conversions API — one Purchase event per order, using
@@ -184,12 +184,12 @@ export async function POST(request: Request) {
         ? `<p style="color:#b91c1c"><strong>Risk flag:</strong> SSLCommerz marked this transaction risk_level=1 (${validation.riskTitle ?? "unspecified"}). Please verify the customer before releasing the held funds.</p>`
         : "";
       const balanceOpsNote = hasRemainder
-        ? `<p><strong>Remaining balance owed:</strong> $${totalRemainderUsd.toLocaleString()} USD. Follow up with the buyer with wire transfer/credit card/debit card instructions — do not mark this order completed until the full balance is received and verified.</p>`
+        ? `<p><strong>Remaining balance owed:</strong> $${totalRemainderUsd.toLocaleString()} USD. Follow up with the buyer with wire transfer/credit card/debit card instructions - do not mark this order completed until the full balance is received and verified.</p>`
         : "";
 
       await sendEmail(
         ADMIN_EMAIL,
-        `New SSLCommerz purchase — ${paidListings?.length ?? 0} listing(s)${isRisky ? " [RISK FLAG]" : ""}${hasRemainder ? " [BALANCE DUE]" : ""}`,
+        `New SSLCommerz purchase - ${paidListings?.length ?? 0} listing(s)${isRisky ? " [RISK FLAG]" : ""}${hasRemainder ? " [BALANCE DUE]" : ""}`,
         `<p>${buyerEmail ?? "A buyer"} completed checkout via SSLCommerz for:</p>
          <ul>${adminItemsHtml}</ul>
          <p>Amount: ${validation.amount ?? "?"} ${validation.currency ?? "BDT"} (tran_id ${tranId})</p>
@@ -215,7 +215,7 @@ export async function POST(request: Request) {
         const balanceNote = hasRemainder
           ? `<p><strong>What happens next:</strong></p>
              <ol style="margin:4px 0 0;padding-left:20px;">
-               <li>This was your initial payment — a remaining balance of $${totalRemainderUsd.toLocaleString()} USD is still due.</li>
+               <li>This was your initial payment - a remaining balance of $${totalRemainderUsd.toLocaleString()} USD is still due.</li>
                <li>Our team will contact you shortly with instructions to pay it by bank wire transfer, credit card, or debit card.</li>
                <li>Once we&rsquo;ve received and verified the full remaining balance, your purchase will be completed.</li>
                <li>We&rsquo;ll then open your Transfer Room and email you the link along with step-by-step guidance on how to receive the assets.</li>
@@ -238,8 +238,8 @@ export async function POST(request: Request) {
 
         await sendEmail(
           buyerEmail,
-          hasRemainder ? "Your Durqo purchase — remaining balance due" : "Your Durqo purchase is confirmed",
-          `<p>Thanks for your purchase — here's what you bought:</p>
+          hasRemainder ? "Your Durqo purchase - remaining balance due" : "Your Durqo purchase is confirmed",
+          `<p>Thanks for your purchase - here's what you bought:</p>
            <ul>${itemsHtml}</ul>
            ${balanceNote}
            ${transferSectionHtml}`
@@ -254,7 +254,7 @@ export async function POST(request: Request) {
         await sendEmail(
           sellerEmail,
           `Your listing "${listing.title}" has sold`,
-          `<p>Good news — "${listing.title}" sold via our Bangladesh payment gateway.</p>
+          `<p>Good news - "${listing.title}" sold via our Bangladesh payment gateway.</p>
            ${
              roomReady && orderId
                ? `${sellerTransferGuidanceHtml()}${transferRoomEmailCta(origin, orderId)}`
