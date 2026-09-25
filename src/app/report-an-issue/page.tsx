@@ -78,21 +78,21 @@ import Button from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "What Happens If a Transferred Asset Is Missing or Incorrect? | Durqo",
   description:
-    "Exactly what happens when you report a problem in your Transfer Room — when you can report it, what a Durqo admin reviews, and the five possible outcomes.",
+    "Exactly what happens when you report a problem in your Transfer Room - when you can report it, what a Durqo admin reviews, and the five possible outcomes.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     siteName: "Durqo",
     title: "What Happens If a Transferred Asset Is Missing or Incorrect?",
     description:
-      "Exactly what happens when you report a problem in your Transfer Room — when you can report it, what gets reviewed, and how it gets resolved.",
+      "Exactly what happens when you report a problem in your Transfer Room - when you can report it, what gets reviewed, and how it gets resolved.",
     url: "https://www.durqo.com/report-an-issue",
   },
   twitter: {
     card: "summary_large_image",
     title: "What Happens If a Transferred Asset Is Missing or Incorrect?",
     description:
-      "Exactly what happens when you report a problem in your Transfer Room — when you can report it, what gets reviewed, and how it gets resolved.",
+      "Exactly what happens when you report a problem in your Transfer Room - when you can report it, what gets reviewed, and how it gets resolved.",
   },
   alternates: { canonical: "https://www.durqo.com/report-an-issue" },
 };
@@ -123,7 +123,7 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 }
 
 const KEY_FACTS = [
-  { icon: AlertTriangle, label: "Reporting an issue instantly freezes the transfer — nothing releases until it's resolved" },
+  { icon: AlertTriangle, label: "Reporting an issue instantly freezes the transfer - nothing releases until it's resolved" },
   { icon: Clock, label: "Issues can only be reported during your 7-day inspection window" },
   { icon: ShieldCheck, label: "A Durqo admin reviews every report personally" },
   { icon: Mail, label: "You and the seller are both emailed the outcome, whichever way it goes" },
@@ -147,12 +147,12 @@ const REPORT_STEPS = [
   {
     n: "02",
     title: "Choose a category",
-    body: "One of the six reasons above — it tells the admin what kind of problem they're looking at before they even read your explanation.",
+    body: "One of the six reasons above - it tells the admin what kind of problem they're looking at before they even read your explanation.",
   },
   {
     n: "03",
     title: "Explain what happened",
-    body: "In your own words. This is required — the admin is a real person deciding a real outcome, not a form being auto-processed.",
+    body: "In your own words. This is required - the admin is a real person deciding a real outcome, not a form being auto-processed.",
   },
   {
     n: "04",
@@ -165,7 +165,7 @@ const OUTCOMES = [
   {
     icon: RotateCcw,
     title: "Send back to seller",
-    body: "Reopens the flagged asset — or the whole room — for the seller to redo. The only outcome that keeps the deal alive rather than closing it out.",
+    body: "Reopens the flagged asset - or the whole room - for the seller to redo. The only outcome that keeps the deal alive rather than closing it out.",
   },
   {
     icon: CheckCircle2,
@@ -180,7 +180,7 @@ const OUTCOMES = [
   {
     icon: Handshake,
     title: "Settlement recorded",
-    body: "Closes the transfer with a recorded settlement between you and the seller — for example, a partial resolution agreed outside a full refund.",
+    body: "Closes the transfer with a recorded settlement between you and the seller - for example, a partial resolution agreed outside a full refund.",
   },
   {
     icon: Ban,
@@ -252,17 +252,17 @@ export default function ReportAnIssuePage() {
           <Inner>
             <div className="mb-8 max-w-[64ch]">
               <DashEyebrow>When you can report an issue</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Only during your inspection window — not before.</h2>
+              <h2 className="text-2xl sm:text-3xl">Only during your inspection window - not before.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 You mark each item Received as the seller hands it over. Once every item on the checklist is marked
-                Received, your 7-day inspection window opens automatically — and that&rsquo;s exactly when Report
+                Received, your 7-day inspection window opens automatically - and that&rsquo;s exactly when Report
                 an Issue becomes available.
               </p>
             </div>
             <div className="rounded-xl border border-rule bg-paper-raised p-6 sm:p-8">
               <p className="text-sm leading-relaxed text-ink-soft">
                 Notice something wrong with an item before you&rsquo;ve marked everything Received? The Report an
-                Issue button stays disabled until the inspection window opens — use Deal Messages to sort it out
+                Issue button stays disabled until the inspection window opens - use Deal Messages to sort it out
                 directly with the seller first. Once every item is in and the window is open, reporting is there
                 for anything that turns out to be missing, broken, or not what was promised.
               </p>
@@ -384,7 +384,7 @@ export default function ReportAnIssuePage() {
               ))}
             </div>
             <p className="mt-6 max-w-[70ch] text-xs leading-relaxed text-ink-faint">
-              A resolution records the decision itself — an actual refund or reversal still has to be processed on
+              A resolution records the decision itself - an actual refund or reversal still has to be processed on
               the payment rail you used, separately from this record.
             </p>
           </Inner>
