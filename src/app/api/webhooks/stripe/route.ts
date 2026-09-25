@@ -131,13 +131,13 @@ export async function POST(request: Request) {
             const sellerNameById = new Map((sellerProfiles ?? []).map((p) => [p.id, p.full_name]));
 
             const itemsHtml = (purchasedListings ?? [])
-              .map((l) => `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)} — $${Number(l.price).toLocaleString()}</li>`)
+              .map((l) => `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)} - $${Number(l.price).toLocaleString()}</li>`)
               .join("");
             const adminItemsHtml = (purchasedListings ?? [])
               .map((l) => {
                 const sellerName = sellerNameById.get(l.seller_id as string) || "Unknown seller";
                 const sellerEmail = emails[l.seller_id as string];
-                return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)} — $${Number(l.price).toLocaleString()}<br>Seller: ${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""}</li>`;
+                return `<li>${listingLinkHtml(origin, l.slug as string, l.title as string)} - $${Number(l.price).toLocaleString()}<br>Seller: ${sellerName}${sellerEmail ? ` (${sellerEmail})` : ""}</li>`;
               })
               .join("");
             const total = (purchasedListings ?? []).reduce((sum, l) => sum + Number(l.price || 0), 0);
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
 
             await sendEmail(
               ADMIN_EMAIL,
-              `New purchase completed — ${purchasedListings?.length ?? 0} listing(s)`,
+              `New purchase completed - ${purchasedListings?.length ?? 0} listing(s)`,
               `<p>${buyerEmail ?? "A buyer"} completed checkout for:</p>
                <ul>${adminItemsHtml}</ul>
                <p>Total: $${total.toLocaleString()}</p>
@@ -187,7 +187,7 @@ export async function POST(request: Request) {
               await sendEmail(
                 buyerEmail,
                 "Your Durqo purchase is confirmed",
-                `<p>Thanks for your purchase — here's what you bought:</p>
+                `<p>Thanks for your purchase - here's what you bought:</p>
                  <ul>${itemsHtml}</ul>
                  <p>Durqo is holding your payment until the seller transfers the assets and you confirm receipt.</p>
                  ${transferSectionHtml}`
@@ -202,7 +202,7 @@ export async function POST(request: Request) {
               await sendEmail(
                 sellerEmail,
                 `Your listing "${listing.title}" has sold`,
-                `<p>Good news — "${listing.title}" sold for $${Number(listing.price).toLocaleString()}.</p>
+                `<p>Good news - "${listing.title}" sold for $${Number(listing.price).toLocaleString()}.</p>
                  ${
                    roomReady && orderId
                      ? `${sellerTransferGuidanceHtml()}${transferRoomEmailCta(origin, orderId)}`
