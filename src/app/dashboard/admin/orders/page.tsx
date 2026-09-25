@@ -47,8 +47,8 @@ export default async function AdminOrders() {
     rows = (orders ?? []).map((o) => ({
       id: o.id,
       listingTitle: listingById.get(o.listing_id) ?? "Listing",
-      buyerName: nameById.get(o.buyer_id) ?? "—",
-      sellerName: nameById.get(o.seller_id) ?? "—",
+      buyerName: nameById.get(o.buyer_id) ?? "-",
+      sellerName: nameById.get(o.seller_id) ?? "-",
       amount: Number(o.amount),
       status: o.status,
       paymentChannel: o.payment_channel ?? "stripe",

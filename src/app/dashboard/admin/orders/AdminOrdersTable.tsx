@@ -17,7 +17,7 @@ export type BuyerVerificationStatus = "requested" | "submitted" | "verified" | "
 
 const VERIFICATION_LABEL: Record<Exclude<BuyerVerificationStatus, null>, string> = {
   requested: "Requested",
-  submitted: "Submitted — review",
+  submitted: "Submitted - review",
   verified: "Verified",
   rejected: "Rejected",
 };
@@ -273,7 +273,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
             </>
           )}
         </div>
-        {errorVerificationId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
+        {errorVerificationId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update - try again.</div>}
       </div>
     );
   }
@@ -348,7 +348,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                           <option key={s} value={s}>{statusLabel(s)}</option>
                         ))}
                       </select>
-                      {errorId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
+                      {errorId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update - try again.</div>}
                     </td>
                     <td className="px-3 py-3">
                       <select
@@ -362,7 +362,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                           <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
                         ))}
                       </select>
-                      {errorChannelId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update — try again.</div>}
+                      {errorChannelId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update - try again.</div>}
                     </td>
                     <td className="px-3 py-3">{renderVerification(o)}</td>
                     <td className="px-3 py-3">
@@ -378,10 +378,10 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                           >
                             {transferBusy ? "Starting…" : "Start Asset Transfer"}
                           </button>
-                          {errorTransferId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t start — try again.</div>}
+                          {errorTransferId === o.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t start - try again.</div>}
                         </>
                       ) : (
-                        <span className="text-xs text-ink-faint">—</span>
+                        <span className="text-xs text-ink-faint">-</span>
                       )}
                     </td>
                     <td className="mono px-3 py-3 text-xs text-ink-faint">{o.createdAt}</td>
@@ -436,7 +436,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                     <option key={s} value={s}>{statusLabel(s)}</option>
                   ))}
                 </select>
-                {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+                {errorId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update - try again.</div>}
               </div>
               <div>
                 <label className="mb-1 block text-xs text-ink-faint">Payment Channel</label>
@@ -450,7 +450,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                     <option key={c} value={c}>{PAYMENT_CHANNEL_LABEL[c]}</option>
                   ))}
                 </select>
-                {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update — try again.</div>}
+                {errorChannelId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t update - try again.</div>}
               </div>
               <div className="mt-3">
                 <label className="mb-1 block text-xs text-ink-faint">Buyer Verification</label>
@@ -471,7 +471,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
                       >
                         {transferBusy ? "Starting…" : "Start Asset Transfer"}
                       </button>
-                      {errorTransferId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t start — try again.</div>}
+                      {errorTransferId === o.id && <div className="mt-1 text-xs text-red-600">Couldn&rsquo;t start - try again.</div>}
                     </>
                   )}
                 </div>
