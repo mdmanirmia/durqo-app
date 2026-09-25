@@ -5,7 +5,7 @@ import { Trash2, UserPlus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
-import { setUserRole, setUserActive, inviteUser, deleteUnverifiedUsers } from "../actions";
+import { setUserRole, setUserActive, inviteUser, deleteUnverifiedUsers, deleteVerifiedUsers } from "../actions";
 
 export interface AdminUserRow {
   id: string;
@@ -203,7 +203,17 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
   const [isDeleting, startDeleteTransition] = useTransition();
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteNotice, setDeleteNotice] = useState<string | null>(null);
-  const selectableIds = useMemo(() => unverifiedRows.map((u) => u.id), [unverifiedRows]);
+  // Sep 25 2026: bulk delete extended to the verified "Users" tab too (a
+  // newer bot wave confirms its own email in seconds, landing here instead
+  // of the Unverified tab — see deleteVerifiedUsers()'s own comment). Never
+  // selectable there: the caller's own row, or any admin account — mirrors
+  // the two up-front guards deleteVerifiedUsers() re-checks server-side, so
+  // a row that can't actually be deleted is never shown as selectable in
+  // the first place.
+  const selectableIds = useMemo(
+    () => (view === "unverified" ? unverifiedRows : verifiedRows.filter((u) => u.id !== selfId && u.role !== "admin")).map((u) => u.id),
+    [view, unverifiedRows, verifiedRows, selfId]
+  );
   const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selectedIds.has(id));
 
   function switchView(next: "verified" | "unverified") {
@@ -227,17 +237,20 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
 
   function handleDeleteSelected() {
     const ids = Array.from(selectedIds);
+    const isVerifiedView = view === "verified";
     setDeleteNotice(null);
     startDeleteTransition(async () => {
       try {
-        const result = await deleteUnverifiedUsers(ids);
+        const result = isVerifiedView ? await deleteVerifiedUsers(ids) : await deleteUnverifiedUsers(ids);
         setSelectedIds(new Set());
         setDeleteConfirmOpen(false);
-        if (result.skipped > 0) {
-          setDeleteNotice(
-            `Deleted ${result.deleted} account${result.deleted === 1 ? "" : "s"}. ${result.skipped} skipped (already verified, no longer found, or your own account).`
-          );
-        }
+        const skipReason = isVerifiedView
+          ? "an admin account, has listings, orders, messages, or other activity, or is your own account"
+          : "already verified, no longer found, or your own account";
+        setDeleteNotice(
+          `Deleted ${result.deleted} account${result.deleted === 1 ? "" : "s"}.` +
+            (result.skipped > 0 ? ` ${result.skipped} skipped (${skipReason}).` : "")
+        );
       } catch (err) {
         setDeleteConfirmOpen(false);
         setDeleteNotice(err instanceof Error ? err.message : "Couldn't delete the selected accounts — try again.");
@@ -302,7 +315,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
         </button>
       </div>
 
-      {view === "unverified" && unverifiedRows.length > 0 && (
+      {selectableIds.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rule-strong bg-paper-raised p-3">
           <label className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
             <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
@@ -338,6 +351,9 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
             <table className="w-full min-w-[980px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+                  <th className="w-10 px-4 py-3">
+                    <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
+                  </th>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Email</th>
                   <th className="px-4 py-3 font-medium">Role</th>
@@ -352,8 +368,19 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                 {verifiedRows.map((u) => {
                   const busy = isPending && pendingId === u.id;
                   const isSelf = u.id === selfId;
+                  const isProtected = isSelf || u.role === "admin";
                   return (
                     <tr key={u.id} className={`border-b border-rule align-top last:border-b-0 ${!u.isActive ? "opacity-60" : ""}`}>
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(u.id)}
+                          disabled={isProtected}
+                          onChange={() => toggleSelected(u.id)}
+                          title={isProtected ? (isSelf ? "This is you" : "Admin accounts can't be bulk-deleted") : undefined}
+                          className="h-4 w-4 rounded border-rule-strong disabled:opacity-30"
+                        />
+                      </td>
                       <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
                       <td className="px-4 py-3 text-ink-soft">{u.email}</td>
                       <td className="px-4 py-3">{roleSelect(u, busy, isSelf, errorId, changeRole)}</td>
@@ -374,11 +401,22 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
             {verifiedRows.map((u) => {
               const busy = isPending && pendingId === u.id;
               const isSelf = u.id === selfId;
+              const isProtected = isSelf || u.role === "admin";
               return (
                 <div key={u.id} className={`min-w-0 rounded-xl border border-rule bg-paper-raised p-4 ${!u.isActive ? "opacity-60" : ""}`}>
-                  <div className="mb-3 min-w-0">
-                    <div className="truncate font-medium text-ink">{u.fullName}</div>
-                    <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="truncate font-medium text-ink">{u.fullName}</div>
+                      <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(u.id)}
+                      disabled={isProtected}
+                      onChange={() => toggleSelected(u.id)}
+                      title={isProtected ? (isSelf ? "This is you" : "Admin accounts can't be bulk-deleted") : undefined}
+                      className="mt-1 h-4 w-4 shrink-0 rounded border-rule-strong disabled:opacity-30"
+                    />
                   </div>
                   <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                     <div>
@@ -490,8 +528,12 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
 
       <ConfirmDialog
         open={deleteConfirmOpen}
-        title={`Delete ${selectedIds.size} unverified account${selectedIds.size === 1 ? "" : "s"}?`}
-        body="These accounts never confirmed their email, so they've never been able to log in or do anything on Durqo. Deleting them removes the account permanently — this can't be undone. Any account that verifies in the meantime is skipped automatically."
+        title={`Delete ${selectedIds.size} account${selectedIds.size === 1 ? "" : "s"}?`}
+        body={
+          view === "unverified"
+            ? "These accounts never confirmed their email, so they've never been able to log in or do anything on Durqo. Deleting them removes the account permanently — this can't be undone. Any account that verifies in the meantime is skipped automatically."
+            : "These are real, email-confirmed accounts. Deleting one removes the account and profile permanently, and this can't be undone. As a safety check, any account that's an admin, owns a listing, or has an order, message, comment, withdrawal, or other real activity on file is skipped automatically rather than deleted."
+        }
         confirmLabel="Delete accounts"
         danger
         busy={isDeleting}
