@@ -55,12 +55,12 @@ export default function CartButton({ listingId, sold }: { listingId: string; sol
         type="button"
         onClick={handleClick}
         disabled={busy || locked}
-        title={sold ? "This listing has already been sold." : isDemo ? "This is a sample listing — cart opens up once real listings are live." : undefined}
+        title={sold ? "This listing has already been sold." : isDemo ? "This is a sample listing - cart opens up once real listings are live." : undefined}
         className="rounded-xl border border-rule-strong py-2.5 text-sm font-semibold transition-colors hover:border-brand-strong disabled:opacity-60"
       >
-        {sold ? "Sold" : isDemo ? "Sample listing" : inCart ? "In Cart — Remove" : "Add to Cart"}
+        {sold ? "Sold" : isDemo ? "Sample listing" : inCart ? "In Cart - Remove" : "Add to Cart"}
       </button>
-      {error && <span className="text-xs text-red-600">Couldn&apos;t save — please try again.</span>}
+      {error && <span className="text-xs text-red-600">Couldn&apos;t save - please try again.</span>}
     </div>
   );
 }

@@ -33,8 +33,8 @@ import { fmtUSD, fmtBDT } from "@/lib/format";
 // ReceiptView) already carries status as a bare string, not the union type.
 function remainderNote(orderStatus: string | undefined): string {
   if (orderStatus === "completed") return "balance received and verified by Durqo";
-  if (orderStatus === "cancelled") return "balance not collected — order cancelled";
-  return "balance due — pay by wire/card once Durqo emails instructions; not yet completed";
+  if (orderStatus === "cancelled") return "balance not collected - order cancelled";
+  return "balance due - pay by wire/card once Durqo emails instructions; not yet completed";
 }
 
 export default function OrderAmountBreakdown({

@@ -60,7 +60,7 @@ export default function EscrowConfirmModal({
         <h3 id="escrow-confirm-heading" className="text-lg font-semibold text-ink">
           Pay with Escrow.com
         </h3>
-        <p className="mt-1 text-xs text-ink-faint">Secure, licensed third-party escrow — for the full purchase price</p>
+        <p className="mt-1 text-xs text-ink-faint">Secure, licensed third-party escrow - for the full purchase price</p>
 
         {status === "loading" && (
           <p className="mt-6 text-sm text-ink-soft">Preparing your transaction&hellip;</p>
@@ -88,14 +88,14 @@ export default function EscrowConfirmModal({
                 <span className="text-sm text-ink-soft">Full purchase price</span>
                 <span className="text-xl font-semibold text-brand-strong">{fmtUSD(quote.fullPriceUsd)}</span>
               </div>
-              <p className="mt-1 text-xs text-ink-faint">Held securely by Escrow.com until you confirm receipt — no remaining balance to settle separately.</p>
+              <p className="mt-1 text-xs text-ink-faint">Held securely by Escrow.com until you confirm receipt - no remaining balance to settle separately.</p>
             </div>
 
             <p className="mt-4 text-sm leading-relaxed text-ink-soft">
               Confirming creates a real Escrow.com transaction for this purchase, then Escrow.com emails you a
               &ldquo;please agree&rdquo; link to finish there. If you don&rsquo;t already have an Escrow.com account,
               they&rsquo;ll create one for you and email you instructions to set a password. Escrow.com charges its
-              own service fee on top of the {fmtUSD(quote.fullPriceUsd)} price — you&rsquo;ll see the exact amount on
+              own service fee on top of the {fmtUSD(quote.fullPriceUsd)} price - you&rsquo;ll see the exact amount on
               their site before you pay. Funds are released to the seller only after you confirm you&rsquo;ve
               received the business.
             </p>
@@ -128,7 +128,7 @@ export default function EscrowConfirmModal({
               <p className="mt-1 text-sm leading-relaxed text-ink-soft">
                 Your Escrow.com transaction has been created. Escrow.com just sent
                 {buyerEmail ? <> <span className="font-semibold text-ink">{buyerEmail}</span></> : " you"} an email
-                titled something like &ldquo;Please agree to the transaction&rdquo; — open it and click{" "}
+                titled something like &ldquo;Please agree to the transaction&rdquo; - open it and click{" "}
                 <span className="font-semibold text-ink">Click to Agree</span> to review the terms and pay. It can
                 take a minute or two to arrive; check spam if you don&rsquo;t see it.
               </p>

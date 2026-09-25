@@ -58,7 +58,7 @@ export default function ProofGalleryButton({ label, images, count = 3 }: { label
                 // eslint-disable-next-line @next/next/no-img-element -- external Supabase Storage URLs, not a local /public asset
                 <img src={images![index]} alt={`${label} screenshot ${index + 1}`} className="h-full w-full object-contain" />
               ) : (
-                <span>{label} screenshot {index + 1} of {total} — uploaded by seller for verification</span>
+                <span>{label} screenshot {index + 1} of {total} - uploaded by seller for verification</span>
               )}
               {total > 1 && (
                 <>

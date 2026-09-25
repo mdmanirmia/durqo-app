@@ -78,7 +78,7 @@ export default function CommentsPanel({
   return (
     <div className="flex flex-col">
       {comments.length === 0 && (
-        <p className="px-5 py-4 text-sm text-ink-faint sm:px-6">No questions yet — ask one below.</p>
+        <p className="px-5 py-4 text-sm text-ink-faint sm:px-6">No questions yet - ask one below.</p>
       )}
       {comments.map((c, i) => {
         const hasSellerReply = !!c.replies?.some((r) => r.isSeller);

@@ -66,7 +66,7 @@ export default function SslcommerzConfirmModal({
         <h3 id="sslcommerz-confirm-heading" className="text-lg font-semibold text-ink">
           Pay with SSLCommerz
         </h3>
-        <p className="mt-1 text-xs text-ink-faint">bKash · Rocket · Nagad · Bank — for buyers paying in Bangladeshi Taka</p>
+        <p className="mt-1 text-xs text-ink-faint">bKash · Rocket · Nagad · Bank - for buyers paying in Bangladeshi Taka</p>
 
         {status === "loading" && (
           <p className="mt-6 text-sm text-ink-soft">Checking today&rsquo;s exchange rate&hellip;</p>
@@ -107,7 +107,7 @@ export default function SslcommerzConfirmModal({
                 {fmtUSD(quote.depositCap)} now through SSLCommerz. Once this payment is confirmed, Durqo will email
                 you with instructions for paying the remaining {fmtUSD(quote.remainderUsd)} (&asymp;{" "}
                 {fmtBDT(Math.round(quote.remainderUsd * quote.rate * 100) / 100)}, at today&rsquo;s rate) by bank
-                wire transfer, credit card, or debit card — your purchase will be completed only after that balance
+                wire transfer, credit card, or debit card - your purchase will be completed only after that balance
                 has been received and verified.
               </p>
             ) : (

@@ -61,7 +61,7 @@ export default function WishlistButton({
     }
   }
 
-  const title = isDemo ? "This is a sample listing — wishlist opens up once real listings are live." : undefined;
+  const title = isDemo ? "This is a sample listing - wishlist opens up once real listings are live." : undefined;
 
   if (variant === "full") {
     // 2026-09-20 redesign: dropped the bordered-button look for a plain
@@ -81,7 +81,7 @@ export default function WishlistButton({
           <Heart size={15} className={saved ? "fill-brand text-brand" : ""} />
           {isDemo ? "Sample listing" : saved ? "Saved to wishlist" : "Add to Wishlist"}
         </button>
-        {error && <span className="text-xs text-red-600">Couldn&apos;t save — please try again.</span>}
+        {error && <span className="text-xs text-red-600">Couldn&apos;t save - please try again.</span>}
       </div>
     );
   }

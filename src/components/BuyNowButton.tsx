@@ -350,7 +350,7 @@ export default function BuyNowButton({
       <button
         type="button"
         disabled
-        title={sold ? "This listing has already been sold." : "This is a sample listing — buying opens up once real listings are live."}
+        title={sold ? "This listing has already been sold." : "This is a sample listing - buying opens up once real listings are live."}
         className="rounded-xl bg-brand-strong py-2.5 text-sm font-semibold text-paper-raised shadow-[0_1px_2px_rgba(15,23,42,0.08)] opacity-60"
       >
         {sold ? "Sold" : "Sample listing"}

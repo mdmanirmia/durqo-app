@@ -325,7 +325,7 @@ export default function GoogleAnalyticsLivePanel({
                   </div>
                   <span className="mono w-16 shrink-0 text-right text-xs text-ink-faint">{fmtNumber(p.views)}</span>
                   <span className="mono w-16 shrink-0 text-right text-xs text-ink-faint">
-                    {p.visitors !== undefined ? fmtNumber(p.visitors) : "—"}
+                    {p.visitors !== undefined ? fmtNumber(p.visitors) : "-"}
                   </span>
                 </div>
               );
