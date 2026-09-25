@@ -54,7 +54,7 @@ export async function GET(request: Request) {
       // access outside our app, a re-consent can come back without one.
       // access_type=offline + prompt=consent (see buildGoogleAuthUrl)
       // should always force a fresh one, but guard anyway.
-      return redirectToListings("Google didn't grant lasting access — please try connecting again.");
+      return redirectToListings("Google didn't grant lasting access - please try connecting again.");
     }
 
     const properties = await listGa4Properties(tokens.access_token);
