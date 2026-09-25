@@ -63,7 +63,7 @@ import Button from "@/components/ui/Button";
 export const metadata: Metadata = {
   title: "How Durqo Reviews a Digital Business Before It Goes Live | Durqo",
   description:
-    "What a seller submits and what Durqo's team actually checks — proof of income, real traffic data, and identity verification — before a listing ever reaches a buyer.",
+    "What a seller submits and what Durqo's team actually checks - proof of income, real traffic data, and identity verification - before a listing ever reaches a buyer.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
@@ -118,7 +118,7 @@ const SUBMISSION_ITEMS = [
   {
     icon: FileCheck,
     title: "Proof of Income",
-    body: "12 months of income figures, plus images — bank statements, payment processor dashboards and similar — shown right on the listing so buyers can check it themselves.",
+    body: "12 months of income figures, plus images - bank statements, payment processor dashboards and similar - shown right on the listing so buyers can check it themselves.",
   },
   {
     icon: BarChart3,
@@ -133,7 +133,7 @@ const SUBMISSION_ITEMS = [
   {
     icon: Video,
     title: "An optional Loom walkthrough",
-    body: "A short screen recording of the live income dashboard. Seen only by Durqo's review team, never shown publicly — harder to fake than a static image.",
+    body: "A short screen recording of the live income dashboard. Seen only by Durqo's review team, never shown publicly - harder to fake than a static image.",
   },
 ] as const;
 
@@ -141,7 +141,7 @@ const REVIEW_STEPS = [
   {
     n: "01",
     title: "Seller submits the listing",
-    body: "Business overview, financials, monetization, and (where relevant) traffic data — with the images and account access described above.",
+    body: "Business overview, financials, monetization, and (where relevant) traffic data - with the images and account access described above.",
   },
   {
     n: "02",
@@ -151,12 +151,12 @@ const REVIEW_STEPS = [
   {
     n: "03",
     title: "Durqo's team checks the numbers",
-    body: "Where analytics access was granted, an admin signs in to the real Google Analytics property and compares it against what was submitted. Search Console, SEMrush, and Ahrefs data is checked by the team the same way — every figure is manually reviewed, not just glanced at.",
+    body: "Where analytics access was granted, an admin signs in to the real Google Analytics property and compares it against what was submitted. Search Console, SEMrush, and Ahrefs data is checked by the team the same way - every figure is manually reviewed, not just glanced at.",
   },
   {
     n: "04",
     title: "Approved and live, or sent back",
-    body: "Only once everything has been manually checked does an admin make the call: approve — the listing publishes immediately and the seller is emailed — or reject, which archives the listing and emails the seller so it can be corrected and resubmitted.",
+    body: "Only once everything has been manually checked does an admin make the call: approve - the listing publishes immediately and the seller is emailed - or reject, which archives the listing and emails the seller so it can be corrected and resubmitted.",
   },
 ] as const;
 
@@ -299,7 +299,7 @@ export default function ListingReviewPage() {
                   <h4 className="text-base font-semibold text-ink">Rejected</h4>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
                     The listing is archived and never reaches the marketplace. The seller is emailed, and can fix
-                    the issue and resubmit — nothing is deleted outright.
+                    the issue and resubmit - nothing is deleted outright.
                   </p>
                 </div>
               </div>
