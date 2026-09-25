@@ -221,7 +221,7 @@ export default function WhatsIncludedPage() {
                   A listing with zero named assets is blocked from publishing or being updated - by the seller or
                   by an admin - until at least one is added. The moment a save includes a named asset, the list
                   confirms instantly; there&rsquo;s no separate &ldquo;confirm this list&rdquo; step. Sellers see
-                  exactly where their listing stands: &ldquo;No assets listed yet &mdash; can&rsquo;t be sold,&rdquo;
+                  exactly where their listing stands: &ldquo;No assets listed yet - can&rsquo;t be sold,&rdquo;
                   &ldquo;Will confirm when you save,&rdquo; or &ldquo;Confirmed.&rdquo;
                 </p>
               </div>
@@ -239,7 +239,7 @@ export default function WhatsIncludedPage() {
               <h2 className="text-2xl sm:text-3xl">On the listing itself, before you buy anything.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Every listing has a &ldquo;Sale Includes&rdquo; section with a quick Assets / Post-sale support
-                summary, plus &mdash; once the seller has confirmed it &mdash; the full item-by-item breakdown
+                summary, plus - once the seller has confirmed it - the full item-by-item breakdown
                 underneath.
               </p>
             </div>
@@ -263,7 +263,7 @@ export default function WhatsIncludedPage() {
                 </li>
               </ul>
               <p className="mt-4 text-xs text-ink-faint">
-                Illustrative example &mdash; the actual assets, wording, and count vary listing by listing, since
+                Illustrative example - the actual assets, wording, and count vary listing by listing, since
                 every row is written by that listing&rsquo;s own seller.
               </p>
             </div>
@@ -280,7 +280,7 @@ export default function WhatsIncludedPage() {
                 <DashEyebrow center>Separate from the asset list</DashEyebrow>
                 <h2 className="text-2xl font-semibold text-ink sm:text-3xl">Post-sale support, in the seller&rsquo;s own words.</h2>
                 <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                  A short free-text field the seller fills in themselves &mdash; for example, &ldquo;30 days of
+                  A short free-text field the seller fills in themselves - for example, &ldquo;30 days of
                   email support.&rdquo; It&rsquo;s not part of the itemized asset list, and it&rsquo;s entirely up
                   to the seller what, if anything, they offer.
                 </p>
@@ -301,7 +301,7 @@ export default function WhatsIncludedPage() {
               <div>
                 <h2 className="text-lg font-semibold text-ink">The same list becomes your checklist.</h2>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-                  Once you pay, this exact asset list freezes into your private Transfer Room &mdash; the same
+                  Once you pay, this exact asset list freezes into your private Transfer Room - the same
                   names, the same descriptions. Each one gets marked In Progress, then Submitted by the seller, and
                   Received by you, before you Approve Transfer and the deal is done.
                 </p>
