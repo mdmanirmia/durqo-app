@@ -128,7 +128,7 @@ const STEPS = [
     n: "02",
     icon: BadgeCheck,
     title: "Verify your identity (optional)",
-    body: "Upload an ID document from your seller dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge that buyers trust. The public badge is optional, but this same identity check is required before your very first payout — see Step 08.",
+    body: "Upload an ID document from your seller dashboard. Once Durqo's team reviews and approves it, your profile shows a Verified badge that buyers trust. The public badge is optional, but this same identity check is required before your very first payout - see Step 08.",
   },
   {
     n: "03",
