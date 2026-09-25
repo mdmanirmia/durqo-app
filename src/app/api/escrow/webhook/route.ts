@@ -125,7 +125,7 @@ export async function POST(request: Request) {
 
       await sendEmail(
         ADMIN_EMAIL,
-        `New Escrow.com purchase — ${title}`,
+        `New Escrow.com purchase - ${title}`,
         `<p>${buyerEmail ?? "A buyer"} funded an Escrow.com transaction (id ${transactionId}) for ${listingLinkHtml(origin, listingSlug, title)}.</p>
          <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
          <p><a href="${origin}/dashboard/admin/orders">Review in admin dashboard</a></p>`
@@ -140,7 +140,7 @@ export async function POST(request: Request) {
         await sendEmail(
           buyerEmail,
           "Your Durqo purchase is confirmed",
-          `<p>Thanks for your purchase — your payment for "${title}" is now held securely in escrow by Escrow.com.</p>
+          `<p>Thanks for your purchase - your payment for "${title}" is now held securely in escrow by Escrow.com.</p>
            <p>Once the seller transfers the assets and you confirm receipt on Escrow.com, funds will be released to them.</p>
            ${
              roomReady
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
         await sendEmail(
           sellerEmail,
           `Your listing "${title}" has sold`,
-          `<p>Good news — "${title}" sold via Escrow.com, and the buyer's payment is now secured in escrow.</p>
+          `<p>Good news - "${title}" sold via Escrow.com, and the buyer's payment is now secured in escrow.</p>
            <p>Log in to Escrow.com to agree to the transaction (if you haven't already) and arrange the asset transfer.</p>
            ${
              roomReady
