@@ -76,7 +76,7 @@ export default function AdminMessagesPanel({ conversations }: { conversations: A
   return (
     <div>
       <p className="mb-3 flex items-center gap-1.5 text-xs text-ink-faint">
-        <Eye size={13} /> Viewing as admin — read-only. Nothing here can be sent or replied to on a user&rsquo;s behalf.
+        <Eye size={13} /> Viewing as admin - read-only. Nothing here can be sent or replied to on a user&rsquo;s behalf.
       </p>
 
       <div className="grid h-[70vh] overflow-hidden rounded-xl border border-rule sm:h-[560px] sm:grid-cols-[300px_1fr] sm:grid-rows-[minmax(0,1fr)]">

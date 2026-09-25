@@ -43,7 +43,7 @@ export default async function AdminMessages() {
     ]);
     const rows = rowsResult ?? [];
 
-    const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? "—"]));
+    const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? "-"]));
     const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name ?? "Durqo user"]));
 
     const listingIds = [...new Set(rows.map((r) => r.listing_id).filter((id): id is string => Boolean(id)))];
@@ -77,11 +77,11 @@ export default async function AdminMessages() {
           listingTitle: listing?.title ?? "General",
           participantAId: aId,
           participantAName: nameById.get(aId) ?? "Durqo user",
-          participantAEmail: emailById.get(aId) ?? "—",
+          participantAEmail: emailById.get(aId) ?? "-",
           participantARole: listing ? (listing.seller_id === aId ? ("seller" as const) : ("buyer" as const)) : null,
           participantBId: bId,
           participantBName: nameById.get(bId) ?? "Durqo user",
-          participantBEmail: emailById.get(bId) ?? "—",
+          participantBEmail: emailById.get(bId) ?? "-",
           participantBRole: listing ? (listing.seller_id === bId ? ("seller" as const) : ("buyer" as const)) : null,
           messages: g.rows.map((r) => ({
             id: r.id,
