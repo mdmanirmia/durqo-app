@@ -56,8 +56,8 @@ export default function TransferRoomsTable({
     return (
       <p className="rounded-xl border border-rule bg-paper-raised p-5 text-sm text-ink-faint">
         {viewerSide === "buyer"
-          ? "No Transfer Rooms yet — they open automatically once you complete a purchase."
-          : "No Transfer Rooms yet — they open automatically once one of your listings sells."}
+          ? "No Transfer Rooms yet - they open automatically once you complete a purchase."
+          : "No Transfer Rooms yet - they open automatically once one of your listings sells."}
       </p>
     );
   }

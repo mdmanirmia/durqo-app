@@ -62,7 +62,7 @@ export default function GaPropertyPicker() {
     <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <h2 className="mb-1 text-xl">Choose a Google Analytics property</h2>
       <p className="mb-6 text-sm text-ink-faint">
-        Your Google account has access to more than one GA4 property — pick the one for this listing&rsquo;s website.
+        Your Google account has access to more than one GA4 property - pick the one for this listing&rsquo;s website.
       </p>
 
       {error && (

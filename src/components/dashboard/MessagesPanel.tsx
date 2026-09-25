@@ -215,7 +215,7 @@ export default function MessagesPanel({
       const [freshThread] = await Promise.all([getThread(selected.otherUserId, selected.listingId), refreshConversations()]);
       setThread(freshThread);
     } catch (err) {
-      setSendError(err instanceof Error ? err.message : "Couldn't send that — please try again.");
+      setSendError(err instanceof Error ? err.message : "Couldn't send that - please try again.");
     } finally {
       setSending(false);
     }
@@ -228,7 +228,7 @@ export default function MessagesPanel({
       {conversations === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : conversations.length === 0 && !selected ? (
-        <p className="text-sm text-ink-faint">No conversations yet — message a seller from any listing page to start one.</p>
+        <p className="text-sm text-ink-faint">No conversations yet - message a seller from any listing page to start one.</p>
       ) : (
         <div className="grid h-[70vh] overflow-hidden rounded-xl border border-rule sm:h-[520px] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
           {/* Conversation list — below sm, hidden once a thread is open
@@ -299,7 +299,7 @@ export default function MessagesPanel({
                   {thread === null ? (
                     <p className="text-sm text-ink-faint">Loading&hellip;</p>
                   ) : thread.length === 0 ? (
-                    <p className="text-sm text-ink-faint">No messages yet — say hello.</p>
+                    <p className="text-sm text-ink-faint">No messages yet - say hello.</p>
                   ) : (
                     thread.map((m, i) => {
                       const mine = m.senderId === myId;
