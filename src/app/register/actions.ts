@@ -37,7 +37,7 @@ export async function notifySellerAccountCreated(fullName: string, email: string
     "Welcome to Durqo",
     `<p>Hi ${fullName.trim() || "there"},</p>
      <p>Your Durqo seller account has been created. Once you've verified your email, you can head to your seller dashboard to create your first listing.</p>
-     <p>— Durqo</p>`
+     <p>- Durqo</p>`
   );
 
   return { ok: true };
@@ -56,7 +56,7 @@ export async function notifyAdminSellerVerified(fullName: string, email: string)
 
   await sendEmail(
     ADMIN_EMAIL,
-    `New seller account — ${name}`,
+    `New seller account - ${name}`,
     `<p>${name} (${email}) verified their email and is now an active seller account on Durqo.</p>`
   );
 
