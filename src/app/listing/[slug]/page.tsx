@@ -519,7 +519,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
           <div className="mb-6 flex items-start gap-2.5 rounded-lg border border-gold/40 bg-gold-soft px-4 py-3 text-sm text-ink-soft">
             <Eye size={16} className="mt-0.5 shrink-0 text-ink-faint" />
             <span>
-              <strong className="text-ink">Preview mode</strong> &mdash; this listing is currently {previewStatusPhrase[listing.rawStatus] ?? statusLabel(listing.rawStatus)} and isn&rsquo;t visible to buyers on the marketplace yet.
+              <strong className="text-ink">Preview mode</strong> - this listing is currently {previewStatusPhrase[listing.rawStatus] ?? statusLabel(listing.rawStatus)} and isn&rsquo;t visible to buyers on the marketplace yet.
             </span>
           </div>
         )}
