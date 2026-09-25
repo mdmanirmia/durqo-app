@@ -114,7 +114,7 @@ export async function cancelOrder(orderId: string) {
     .maybeSingle();
   if (!order || order.buyer_id !== user.id) throw new Error("Order not found.");
   if (!CANCELLABLE_STATUSES.includes(order.status)) {
-    throw new Error("This order can no longer be cancelled — payment has already been made.");
+    throw new Error("This order can no longer be cancelled - payment has already been made.");
   }
 
   const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", orderId);
@@ -142,7 +142,7 @@ export async function cancelOrder(orderId: string) {
         await sendEmail(
           sellerEmail,
           `An order for "${title}" was cancelled`,
-          `<p>The buyer cancelled their order for "${title}" before paying — no action needed on your end.</p>
+          `<p>The buyer cancelled their order for "${title}" before paying - no action needed on your end.</p>
            <p><a href="${origin}/listing/${listingSlug}">View your listing</a></p>`
         );
       }

@@ -80,7 +80,7 @@ export default function BuyerOverview() {
           {wishlisted.slice(0, 3).map((l) => <ListingCard key={l.id} listing={l} />)}
         </div>
       ) : (
-        <p className="text-sm text-ink-faint">Nothing saved yet — tap the heart on any listing to save it here.</p>
+        <p className="text-sm text-ink-faint">Nothing saved yet - tap the heart on any listing to save it here.</p>
       )}
     </DashboardShell>
   );
