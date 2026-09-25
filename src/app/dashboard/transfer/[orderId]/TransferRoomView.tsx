@@ -154,8 +154,8 @@ const STAGE_LABEL: Record<string, { label: string; tone: "neutral" | "brand" | "
   inspection_active: { label: "Inspection Window Open", tone: "gold" },
   admin_review: { label: "Under Admin Review", tone: "danger" },
   payout_eligible: { label: "Transfer Approved", tone: "dark" },
-  resolved_refund: { label: "Resolved — Refunded", tone: "dark" },
-  resolved_settlement: { label: "Resolved — Settlement", tone: "dark" },
+  resolved_refund: { label: "Resolved - Refunded", tone: "dark" },
+  resolved_settlement: { label: "Resolved - Settlement", tone: "dark" },
   cancelled: { label: "Cancelled", tone: "danger" },
 };
 
@@ -190,7 +190,7 @@ const AMENDMENT_FIELD_LABEL: Record<string, string> = {
 };
 
 const EVENT_LABEL: Record<string, string> = {
-  room_unlocked: "Transfer room unlocked — payment confirmed",
+  room_unlocked: "Transfer room unlocked - payment confirmed",
   item_in_progress: "marked an asset in progress",
   item_submitted: "submitted an asset",
   item_received: "confirmed receipt of an asset",
@@ -336,7 +336,7 @@ export default function TransferRoomView({ data }: { data: TransferRoomData }) {
       }
       const msLeft = new Date(room.inspectionDeadlineAt).getTime() - Date.now();
       if (msLeft <= 0) {
-        setInspectionLabel("Inspection window has ended — this transfer now needs admin review.");
+        setInspectionLabel("Inspection window has ended - this transfer now needs admin review.");
         setInspectionExpired(true);
         return;
       }
@@ -618,11 +618,11 @@ function NoRoomState({ data }: { data: TransferRoomData }) {
   }, [paymentConfirmed, router]);
 
   let message =
-    "Your Transfer Room for this order hasn't been set up yet. This usually only takes a moment after payment — please check back shortly, or contact support if it's been a while.";
+    "Your Transfer Room for this order hasn't been set up yet. This usually only takes a moment after payment - please check back shortly, or contact support if it's been a while.";
   if (data.orderStatus === "requested" || data.orderStatus === "awaiting_payment") {
     message = "This order hasn't been paid for yet. The Transfer Room unlocks automatically once payment is confirmed.";
   } else if (data.orderStatus === "cancelled") {
-    message = "This order was cancelled — there's no Transfer Room for it.";
+    message = "This order was cancelled - there's no Transfer Room for it.";
   }
   return (
     <div className="flex flex-col gap-5">
@@ -745,7 +745,7 @@ function NextActionCard({
       // rejects an approval past the deadline regardless, so this is about
       // never showing a release control that would just fail anyway.
       if (inspectionExpired) {
-        body = "Your inspection window has ended. This transfer now needs admin review before it can proceed — funds are never released automatically.";
+        body = "Your inspection window has ended. This transfer now needs admin review before it can proceed - funds are never released automatically.";
         break;
       }
       body = isBuyer
@@ -776,7 +776,7 @@ function NextActionCard({
       }
       break;
     case "admin_review":
-      body = "This transfer is under review by a Durqo admin. Funds are never released automatically — you'll hear back once it's resolved.";
+      body = "This transfer is under review by a Durqo admin. Funds are never released automatically - you'll hear back once it's resolved.";
       break;
     case "payout_eligible":
       if (isBuyer) {
@@ -1058,7 +1058,7 @@ function AmendmentRow({
     <div className="rounded-md border border-rule bg-paper-raised p-2.5 text-xs">
       <div className="flex items-center justify-between gap-2">
         <span className="font-semibold text-ink-soft">
-          {fieldLabel} — {amendment.proposedByName} proposed
+          {fieldLabel} - {amendment.proposedByName} proposed
         </span>
         {amendment.status !== "pending" && (
           <Badge tone={amendment.status === "accepted" ? "brand" : "danger"}>{amendment.status === "accepted" ? "Accepted" : "Declined"}</Badge>
@@ -1272,7 +1272,7 @@ function ActivityHistorySection({ room }: { room: TransferRoomState }) {
               <div className="min-w-0">
                 <p className="text-ink-soft">
                   <span className="font-semibold text-ink">{e.actorName}</span> {formatEventType(e.eventType)}
-                  {e.reason ? ` — ${e.reason}` : ""}
+                  {e.reason ? ` - ${e.reason}` : ""}
                 </p>
                 <p className="mono text-[0.65rem] text-ink-faint">{formatDateTime(e.createdAt)}</p>
               </div>
@@ -1357,7 +1357,7 @@ function ReportIssueModal({
         <h3 id="report-issue-heading" className="text-lg font-semibold text-ink">
           Report an Issue
         </h3>
-        <p className="mt-1 text-xs text-ink-faint">This goes to a Durqo admin for review — funds stay held until it&apos;s resolved.</p>
+        <p className="mt-1 text-xs text-ink-faint">This goes to a Durqo admin for review - funds stay held until it&apos;s resolved.</p>
 
         <div className="mt-4 flex flex-col gap-3">
           <label className="flex flex-col gap-1.5">
