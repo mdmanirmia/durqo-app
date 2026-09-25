@@ -167,7 +167,7 @@ const FAQ_GROUPS = [
         answer: (
           <>
             No. Card payments through Stripe and Escrow.com are available to buyers anywhere. The
-            bKash/Rocket/Nagad/Bank option through SSLCommerz is specifically for buyers paying in Bangladeshi Taka —
+            bKash/Rocket/Nagad/Bank option through SSLCommerz is specifically for buyers paying in Bangladeshi Taka -
             see{" "}
             <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
               Buy and Sell Digital Businesses in BDT
