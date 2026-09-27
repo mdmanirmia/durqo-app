@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { CATEGORY_MAP } from "@/lib/categories";
-import { estimateValuation, type ValuationResult } from "@/lib/valuation";
+import { estimateValuation, getCategoryMetricConfig, type ValuationResult } from "@/lib/valuation";
 
 export type ValuationLeadFields = {
   name: string;
@@ -14,6 +14,10 @@ export type ValuationLeadFields = {
   monthlyRevenue: number;
   monthlyProfit: number;
   businessAgeYears: number;
+  // The one category-specific Quick Stat the form asks for (see
+  // src/lib/valuation.ts's CATEGORY_METRICS) — undefined for a category
+  // with no configured metric.
+  categoryMetricValue?: number;
 };
 
 export type ValuationLeadOutcome = ValuationResult & { categoryName: string };
@@ -35,11 +39,21 @@ export async function submitValuationLead(fields: ValuationLeadFields): Promise<
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Please enter a valid email address.");
   if (!category) throw new Error("Please choose a business category.");
 
+  // Only trust a category-metric value for the category it was actually
+  // configured for — guards against a stale value left over from a
+  // previously-selected category being submitted for a different one.
+  const metricConfig = getCategoryMetricConfig(category.id);
+  const categoryMetricValue =
+    metricConfig && fields.categoryMetricValue !== undefined && fields.categoryMetricValue !== null
+      ? Math.max(0, Number(fields.categoryMetricValue) || 0)
+      : undefined;
+
   const result = estimateValuation({
     categoryId: category.id,
     monthlyRevenue,
     monthlyProfit,
     businessAgeYears,
+    categoryMetricValue,
   });
 
   // Best-effort: attach the submitter's user id when they happen to be
@@ -68,6 +82,7 @@ export async function submitValuationLead(fields: ValuationLeadFields): Promise<
       business_age_years: businessAgeYears,
       estimated_low: result.low,
       estimated_high: result.high,
+      category_metric_value: categoryMetricValue ?? null,
       user_id: userId,
     });
     if (error) console.error("[valuation] failed to store lead:", error);
@@ -80,6 +95,11 @@ export async function submitValuationLead(fields: ValuationLeadFields): Promise<
   // Admin notification — new sales lead, same "notify support@durqo.com
   // immediately" pattern the contact form and every other lead-style event
   // in this codebase already uses.
+  const metricLine =
+    metricConfig && categoryMetricValue !== undefined
+      ? `<br/><strong>${metricConfig.label}:</strong> ${categoryMetricValue.toLocaleString("en-US")}`
+      : "";
+
   await sendEmail(
     ADMIN_EMAIL,
     `New valuation lead: ${name} (${category.name})`,
@@ -87,7 +107,7 @@ export async function submitValuationLead(fields: ValuationLeadFields): Promise<
      <p><strong>Category:</strong> ${category.name}<br/>
         <strong>Monthly revenue:</strong> $${monthlyRevenue.toLocaleString("en-US")}<br/>
         <strong>Monthly profit:</strong> $${monthlyProfit.toLocaleString("en-US")}<br/>
-        <strong>Business age:</strong> ${businessAgeYears} year(s)</p>
+        <strong>Business age:</strong> ${businessAgeYears} year(s)${metricLine}</p>
      <p><strong>Estimated range shown:</strong> ${rangeLabel}</p>`,
     email
   );
