@@ -181,7 +181,10 @@ export default function ValuationForm() {
           </div>
           {categoryMetric && (
             <div className="flex flex-col gap-1.5">
-              <label className={labelClass} htmlFor="categoryMetricValue">{categoryMetric.label}</label>
+              <label className={labelClass} htmlFor="categoryMetricValue">
+                {categoryMetric.label}
+                {categoryMetric.sourceHint && <span className="font-normal text-ink-faint"> ({categoryMetric.sourceHint})</span>}
+              </label>
               <input
                 id="categoryMetricValue"
                 type="number"
