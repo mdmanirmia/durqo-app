@@ -7,13 +7,19 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  ClipboardCheck,
   Compass,
   DollarSign,
+  FileSearch,
+  FileText,
   Globe,
+  Handshake,
+  Info,
   Layers,
   Link as LinkIcon,
   Package,
   Repeat,
+  Scale,
   Settings,
   Share2,
   ShieldCheck,
@@ -46,15 +52,28 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 //
 // Every claim on this page is either a real, current fact about how Durqo
 // works (its 8-step listing/review/transfer process, its existing BDT
-// payout page, its existing FAQ/valuation/listing-review pages) or a
-// general, unattributed statement about how buyers evaluate businesses —
-// never a specific number, buyer count, transaction count, testimonial, or
-// outcome guarantee. Per the brief's own implementation rules, this page
-// deliberately does NOT: state or imply Durqo guarantees a buyer, a sale, a
-// valuation, a price, or a transaction timeframe; quote fees, BDT payment
-// methods, or verification rules inline (it links to /buy-and-sell-digital-
-// businesses-in-bdt, /seller-payouts and /listing-review instead, so this
-// page never drifts out of sync with those); or invent usage statistics.
+// payout page, its existing FAQ/valuation/listing-review pages, "free to
+// list with no upfront charge" — the same claim already made on /sell,
+// /how-to-sell and /seller-faq) or a general, unattributed statement about
+// how buyers evaluate businesses — never a specific number, buyer count,
+// transaction count, testimonial, or outcome guarantee. Per the brief's own
+// implementation rules, this page deliberately does NOT: state or imply
+// Durqo guarantees a buyer, a sale, a valuation, a price, or a transaction
+// timeframe; quote fees, BDT payment methods, or verification rules inline
+// (it links to /buy-and-sell-digital-businesses-in-bdt, /seller-payouts and
+// /listing-review instead, so this page never drifts out of sync with
+// those); or invent usage statistics.
+//
+// Sep 27, 2026 revision: redesigned after direct feedback that the first
+// version read as visually flat next to sibling guide pages. Rebuilt the
+// hero as a two-column layout with an "Overview" info panel (matching the
+// pattern already established on /how-to-sell-a-website-in-bangladesh and
+// /sell), converted the flat bullet/number-square sections into icon-carded
+// grids and a connected vertical step timeline (matching /how-to-sell's own
+// 8-step STEPS pattern), and turned the bare BDT internal link into a
+// resource card. No new facts were introduced — every added line (the
+// trust-row items, the overview panel's copy) restates something already
+// said elsewhere on this same page or already established sitewide.
 //
 // Not added to the Footer's "Resources" column, matching how every other
 // page in this same Sep 22, 2026 batch of keyword/campaign-targeted guide
@@ -87,6 +106,7 @@ export const metadata: Metadata = {
 const PAGE_URL = "https://www.durqo.com/sell-your-online-business-bangladesh";
 const PAGE_TITLE = "How to Sell an Online Business from Bangladesh";
 const PUBLISHED_DATE = "2026-09-27";
+const MODIFIED_DATE = "2026-09-27";
 
 const BREADCRUMB_JSON_LD = {
   "@context": "https://schema.org",
@@ -107,14 +127,26 @@ const ARTICLE_JSON_LD = {
   author: DURQO_ORG,
   publisher: DURQO_ORG,
   datePublished: PUBLISHED_DATE,
-  dateModified: PUBLISHED_DATE,
+  dateModified: MODIFIED_DATE,
   mainEntityOfPage: { "@type": "WebPage", "@id": PAGE_URL },
   url: PAGE_URL,
 };
 
-function DashEyebrow({ children }: { children: React.ReactNode }) {
+function DashEyebrow({
+  children,
+  onDark = false,
+  center = false,
+}: {
+  children: React.ReactNode;
+  onDark?: boolean;
+  center?: boolean;
+}) {
   return (
-    <p className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-ink-soft">
+    <p
+      className={`mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider ${
+        onDark ? "text-white/70" : "text-ink-soft"
+      } ${center ? "justify-center" : ""}`}
+    >
       <span className="h-px w-6 bg-brand" aria-hidden />
       {children}
     </p>
@@ -134,6 +166,21 @@ function Dot({ children }: { children: React.ReactNode }) {
   );
 }
 
+function InfoNote({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-paper-sunk px-3.5 py-3">
+      <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
+      <p className="text-xs leading-relaxed text-ink-faint">{children}</p>
+    </div>
+  );
+}
+
+const HERO_TRUST_ROW = [
+  { icon: Globe, label: "Every digital business category" },
+  { icon: ShieldCheck, label: "Listings reviewed before publishing" },
+  { icon: Compass, label: "Present to buyers in Bangladesh and beyond" },
+];
+
 const BUSINESS_TYPES = [
   { icon: Globe, label: "Content websites" },
   { icon: Layers, label: "SaaS businesses" },
@@ -145,13 +192,13 @@ const BUSINESS_TYPES = [
   { icon: Boxes, label: "Other digital businesses" },
 ];
 
-const SELL_REASONS = [
-  "Move on to another project",
-  "Free up capital for a new venture",
-  "Reduce the number of businesses you operate",
-  "Step away from day-to-day operations",
-  "Realize some of the value you have created",
-  "Find a buyer who can take the business to its next stage",
+const WHY_FOUNDERS_SELL = [
+  { icon: Compass, text: "Move on to another project" },
+  { icon: DollarSign, text: "Free up capital for a new venture" },
+  { icon: Layers, text: "Reduce the number of businesses you operate" },
+  { icon: Clock, text: "Step away from day-to-day operations" },
+  { icon: TrendingUp, text: "Realize some of the value you have created" },
+  { icon: Users, text: "Find a buyer who can take the business to its next stage" },
 ];
 
 const VALUE_FACTORS = [
@@ -237,36 +284,61 @@ const PRICE_FACTORS = [
   "Future opportunities",
 ];
 
-const SELLING_STEPS = [
+type SellingStep = {
+  n: string;
+  icon: typeof FileText;
+  title: string;
+  body: string;
+  link?: { href: string; label: string };
+};
+
+const SELLING_STEPS: SellingStep[] = [
   {
+    n: "01",
+    icon: FileText,
     title: "Create Your Listing",
     body: "Provide information about your business, performance, operations, asking price, and the assets included in the proposed sale.",
   },
   {
+    n: "02",
+    icon: ClipboardCheck,
     title: "Listing Review",
     body: "Durqo reviews submitted listings before publication according to its current listing-review process.",
+    link: { href: "/listing-review", label: "How listings are reviewed" },
   },
   {
+    n: "03",
+    icon: Globe,
     title: "Present the Opportunity",
     body: "Once approved and published, your business can be discovered by prospective buyers using Durqo.",
   },
   {
+    n: "04",
+    icon: Users,
     title: "Receive Buyer Interest",
     body: "Interested buyers can review the opportunity and communicate through the available marketplace process.",
   },
   {
+    n: "05",
+    icon: Scale,
     title: "Evaluate Offers",
     body: "Review potential offers and determine whether the proposed price and terms are acceptable.",
   },
   {
+    n: "06",
+    icon: FileSearch,
     title: "Complete Due Diligence",
     body: "The buyer may review relevant business, financial, operational, traffic, and ownership information.",
   },
   {
+    n: "07",
+    icon: Handshake,
     title: "Transfer the Business",
     body: "Once an agreement is reached and applicable requirements are satisfied, the agreed assets can be transferred through Durqo's transaction process.",
   },
   {
+    n: "08",
+    icon: CheckCircle2,
     title: "Complete the Transaction",
     body: "Complete the required confirmation and payout process according to Durqo's current transaction terms.",
   },
@@ -307,36 +379,105 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       {/* HERO */}
       <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
         <Container>
-          <Inner className="max-w-[820px]">
-            <DashEyebrow>Seller guide · Bangladesh</DashEyebrow>
-            <h1 className="max-w-[24ch] text-4xl leading-[1.1] sm:text-5xl lg:text-[3.2rem]">
-              How to Sell an Online Business from <span className="text-brand">Bangladesh</span>
-            </h1>
-            <div className="mt-6 flex flex-col gap-4 text-[1.05rem] leading-relaxed text-ink-soft">
-              <p>Building an online business takes time.</p>
-              <p>
-                Whether you have developed a profitable website, SaaS product, e-commerce business, app, YouTube
-                channel, or another digital business, there may come a point when selling becomes the right next
-                step.
-              </p>
-              <p>
-                For entrepreneurs in Bangladesh, selling a digital business does not necessarily mean limiting the
-                search to local buyers. A digital business can potentially be presented to buyers across different
-                markets.
-              </p>
-              <p>
-                This guide explains how to prepare your business for sale, understand what buyers look for, organize
-                the information needed for due diligence, and list your business for potential buyers.
-              </p>
-            </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <TrackedCta href="/sell" cta="hero_primary" size="lg">
-                List Your Business
-                <ArrowRight size={16} />
-              </TrackedCta>
-              <TrackedCta href="/how-to-sell" cta="hero_secondary" variant="secondary" size="lg">
-                Explore Selling on Durqo
-              </TrackedCta>
+          <Inner>
+            <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:items-start lg:gap-16">
+              <div className="min-w-0">
+                <DashEyebrow>Seller guide · Bangladesh</DashEyebrow>
+                <h1 className="max-w-[24ch] text-4xl leading-[1.1] sm:text-5xl lg:text-[3.2rem]">
+                  How to Sell an Online Business from <span className="text-brand">Bangladesh</span>
+                </h1>
+                <div className="mt-5 flex flex-col gap-4 text-lg leading-relaxed text-ink-soft">
+                  <p>
+                    Building an online business takes time. Whether you have developed a profitable website, SaaS
+                    product, e-commerce business, app, YouTube channel, or another digital business, there may come a
+                    point when selling becomes the right next step.
+                  </p>
+                  <p className="text-[1.05rem]">
+                    This guide explains how to prepare your business for sale, understand what buyers look for,
+                    organize the information needed for due diligence, and list it for potential buyers, wherever
+                    they are based.
+                  </p>
+                </div>
+                <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
+                  Reviewed by the Durqo Marketplace Team · Updated September 2026
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <TrackedCta href="/sell" cta="hero_primary" size="lg">
+                    List Your Business
+                    <ArrowRight size={16} />
+                  </TrackedCta>
+                  <TrackedCta href="/how-to-sell" cta="hero_secondary" variant="secondary" size="lg">
+                    Explore Selling on Durqo
+                  </TrackedCta>
+                </div>
+                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-rule pt-6">
+                  {HERO_TRUST_ROW.map(({ icon: Icon, label }) => (
+                    <span key={label} className="flex items-center gap-2 text-sm text-ink-soft">
+                      <Icon size={15} className="text-brand" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
+                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                  Selling Overview
+                </p>
+
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <DollarSign size={16} />
+                  </span>
+                  <div>
+                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">
+                      What buyers weigh
+                    </p>
+                    <h3 className="text-sm font-semibold text-ink">Revenue, traffic and growth history</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                      Buyers commonly evaluate revenue, profit, traffic, growth trends and how the business operates
+                      before making an offer.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {["Revenue", "Profit", "Traffic"].map((label) => (
+                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="my-5 h-px bg-rule" aria-hidden />
+
+                <div className="flex items-start gap-3">
+                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
+                    <ShieldCheck size={16} />
+                  </span>
+                  <div>
+                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">
+                      Structured listing process
+                    </p>
+                    <h3 className="text-sm font-semibold text-ink">Reviewed before it goes live</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                      Every submitted listing goes through Durqo&rsquo;s review process, then can be discovered by
+                      buyers on the marketplace.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {["Free to list", "Reviewed", "Any category"].map((label) => (
+                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
+                          {label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <InfoNote>
+                  This guide does not estimate your specific value or guarantee a buyer, price, or sale. See
+                  &ldquo;What Could Your Online Business Be Worth?&rdquo; below.
+                </InfoNote>
+              </div>
             </div>
           </Inner>
         </Container>
@@ -359,8 +500,10 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {BUSINESS_TYPES.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2.5 rounded-lg border border-rule bg-paper-raised px-3.5 py-3">
-                  <Icon size={16} className="shrink-0 text-brand" />
+                <div key={label} className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised p-4">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={16} />
+                  </span>
                   <span className="text-sm font-medium text-ink">{label}</span>
                 </div>
               ))}
@@ -378,18 +521,25 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       {/* WHY FOUNDERS SELL */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <Inner className="max-w-[760px]">
-            <DashEyebrow>Why founders sell</DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">Selling doesn&rsquo;t mean the business failed.</h2>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Owners consider selling for many reasons. You may want to:
-            </p>
-            <ul className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
-              {SELL_REASONS.map((r) => (
-                <Dot key={r}>{r}</Dot>
+          <Inner>
+            <div className="mb-8 max-w-[70ch]">
+              <DashEyebrow>Why founders sell</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Selling doesn&rsquo;t mean the business failed.</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Owners consider selling for many reasons. You may want to:
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {WHY_FOUNDERS_SELL.map(({ icon: Icon, text }) => (
+                <div key={text} className="flex items-start gap-3.5 rounded-xl border border-rule bg-paper-raised p-5">
+                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={16} />
+                  </span>
+                  <p className="text-sm font-medium leading-relaxed text-ink">{text}</p>
+                </div>
               ))}
-            </ul>
-            <p className="mt-6 text-sm leading-relaxed text-ink-soft">
+            </div>
+            <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
               Whatever the reason, preparing properly before approaching buyers can make the selling process more
               organized and transparent.
             </p>
@@ -441,9 +591,12 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {BUYER_QUESTIONS.map((q) => (
-                <div key={q} className="rounded-lg border border-rule bg-paper-raised px-4 py-3.5 text-sm font-medium text-ink">
-                  {q}
+              {BUYER_QUESTIONS.map((q, i) => (
+                <div key={q} className="flex items-start gap-3 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
+                  <span className="mono mt-0.5 shrink-0 text-xs font-semibold text-brand-strong">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-sm font-medium text-ink">{q}</span>
                 </div>
               ))}
             </div>
@@ -490,9 +643,12 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       </section>
 
       {/* MID-PAGE CTA */}
-      <section className="border-b border-rule bg-brand-strong py-14 sm:py-16">
+      <section className="border-b border-rule bg-brand-strong py-14 text-center sm:py-16">
         <Container>
-          <Inner className="max-w-[720px] text-center">
+          <Inner className="max-w-[720px]">
+            <DashEyebrow onDark center>
+              Ready when you are
+            </DashEyebrow>
             <h2 className="text-2xl text-white sm:text-3xl">Built something valuable?</h2>
             <p className="mx-auto mt-3 max-w-[56ch] text-[0.95rem] leading-relaxed text-white/70">
               If you have built a website, SaaS product, e-commerce business, app, or another digital business, you
@@ -528,10 +684,12 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             </ul>
             <p className="mt-6 text-sm leading-relaxed text-ink-soft">
               The objective should be to establish an asking price that you can explain and support with business
-              information. Remember that an asking price is not a guarantee of the final transaction price - the
-              eventual price may depend on buyer interest, due diligence, negotiations, transaction terms, and other
-              factors.
+              information.
             </p>
+            <InfoNote>
+              An asking price is not a guarantee of the final transaction price - the eventual price may depend on
+              buyer interest, due diligence, negotiations, transaction terms, and other factors.
+            </InfoNote>
             <p className="mt-4 text-sm leading-relaxed text-ink-soft">
               Not sure where to start?{" "}
               <Link href="/valuation" className="font-semibold text-brand-strong hover:underline">
@@ -555,10 +713,10 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               attract buyers from other countries, including those interested in established websites, profitable
               SaaS businesses, e-commerce operations, apps, content businesses, and other digital assets.
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+            <InfoNote>
               Presenting a business through a marketplace can give sellers an opportunity to make their listing
               discoverable to a broader audience. This does not guarantee international buyer interest or a sale.
-            </p>
+            </InfoNote>
           </Inner>
         </Container>
       </section>
@@ -571,24 +729,35 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <DashEyebrow>The process</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">How selling on Durqo works.</h2>
             </div>
-            <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {SELLING_STEPS.map((step, i) => (
-                <li key={step.title} className="rounded-xl border border-rule bg-paper-raised p-5">
-                  <span className="mono mb-3 flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="text-sm font-semibold text-ink">{step.title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>
-                  {i === 1 && (
-                    <Link href="/listing-review" className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline">
-                      How listings are reviewed
-                      <ArrowRight size={12} />
-                    </Link>
-                  )}
-                </li>
+            <div className="flex flex-col gap-8">
+              {SELLING_STEPS.map(({ n, icon: Icon, title, body, link }, i) => (
+                <div key={n} className="flex gap-5 sm:gap-6">
+                  <div className="flex flex-col items-center">
+                    <span className="mono grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong">
+                      {n}
+                    </span>
+                    {i < SELLING_STEPS.length - 1 && <span className="mt-2 w-px flex-1 bg-rule" aria-hidden />}
+                  </div>
+                  <div className="pb-2">
+                    <div className="mb-1.5 flex items-center gap-2">
+                      <Icon size={16} className="text-brand" />
+                      <h3 className="text-base font-semibold text-ink">{title}</h3>
+                    </div>
+                    <p className="max-w-[62ch] text-sm leading-relaxed text-ink-soft">{body}</p>
+                    {link && (
+                      <Link
+                        href={link.href}
+                        className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline"
+                      >
+                        {link.label}
+                        <ArrowRight size={12} />
+                      </Link>
+                    )}
+                  </div>
+                </div>
               ))}
-            </ol>
-            <div className="mt-8">
+            </div>
+            <div className="mt-10">
               <TrackedCta href="/sell" cta="how_it_works_cta" size="lg">
                 Start Your Listing
                 <ArrowRight size={16} />
@@ -640,10 +809,18 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             </p>
             <Link
               href="/buy-and-sell-digital-businesses-in-bdt"
-              className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline"
+              className="mt-5 flex items-center gap-3.5 rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong"
             >
-              Learn about BDT payments and payouts
-              <ArrowRight size={14} />
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                <Wallet size={17} />
+              </span>
+              <span className="flex-1">
+                <span className="block text-sm font-semibold text-ink">BDT payments and payouts</span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">
+                  Payment methods, payouts and transaction details for sellers in Bangladesh.
+                </span>
+              </span>
+              <ArrowRight size={16} className="shrink-0 text-ink-faint" />
             </Link>
           </Inner>
         </Container>
