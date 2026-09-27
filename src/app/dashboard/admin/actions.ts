@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
 import { transferRoomEmailCta, buyerTransferGuidanceHtml, sellerTransferGuidanceHtml } from "@/lib/asset-transfer-room";
+import { sendListingApprovedEvent } from "@/lib/ga4-measurement-protocol";
 
 // Shared by every best-effort notification block below — resolves the
 // request's own host so links always point at whatever origin the admin is
@@ -45,8 +46,14 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
 
   // Fetched before the update purely to know what the seller's pending
   // listing just turned into (see the notification block below) — not used
-  // to gate the update itself.
-  const { data: beforeRow } = await admin.from("listings").select("status, title, slug, seller_id").eq("id", listingId).maybeSingle();
+  // to gate the update itself. category_id/price are only read for the
+  // listing_approved GA4 event fired below, not for anything in the update
+  // itself.
+  const { data: beforeRow } = await admin
+    .from("listings")
+    .select("status, title, slug, seller_id, category_id, price")
+    .eq("id", listingId)
+    .maybeSingle();
 
   const { error } = await admin.from("listings").update({ status }).eq("id", listingId);
   if (error) throw new Error(error.message);
@@ -76,6 +83,24 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
   // possible status change this function can make (Unpublish/Mark Sold/
   // Restore/Delete are admin housekeeping, not a decision the seller is
   // sitting there waiting to hear about).
+  // Sep 27, 2026: the "Listing Approved" step of the Bangladesh seller-
+  // acquisition funnel (see claude/bangladesh-seller-acquisition-page-and-
+  // ad-copy-addendum.md) — same pending_review -> published transition as
+  // the seller-notification email below, so it's scoped identically. Fired
+  // unconditionally (not just for sellers reached via that campaign) since
+  // "Approved Quality Listing" is a real, general fact about the listing,
+  // and there's no first-touch/campaign-source data on the listing row to
+  // filter by. Fire-and-forget like every other best-effort side effect in
+  // this function — see sendListingApprovedEvent()'s own guarded-optional,
+  // never-throws posture in src/lib/ga4-measurement-protocol.ts.
+  if (beforeRow?.status === "pending_review" && status === "published") {
+    void sendListingApprovedEvent({
+      listingId,
+      category: (beforeRow.category_id as string | null) ?? null,
+      price: (beforeRow.price as number | null) ?? null,
+    });
+  }
+
   if (beforeRow?.status === "pending_review" && (status === "published" || status === "archived") && beforeRow.seller_id) {
     try {
       const emails = await getUserEmails(admin, [beforeRow.seller_id as string]);
