@@ -710,7 +710,7 @@ export default async function Home() {
                 <p className="mt-3 max-w-[42ch] text-ink-soft">
                   Reach qualified buyers and get a fair valuation for your digital business.
                 </p>
-                <Button href="/sell" size="lg" className="mt-6">
+                <Button href="/valuation" size="lg" className="mt-6">
                   Get a free valuation
                   <ArrowRight size={16} />
                 </Button>
@@ -856,7 +856,7 @@ export default async function Home() {
                 Explore businesses
                 <ArrowRight size={16} />
               </Button>
-              <Button href="/sell" variant="secondary" size="lg">
+              <Button href="/valuation" variant="secondary" size="lg">
                 Get a free valuation
               </Button>
             </div>
