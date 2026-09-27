@@ -397,14 +397,14 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 </h1>
                 <div className="mt-5 flex flex-col gap-4 text-lg leading-relaxed text-ink-soft">
                   <p>
-                    Building an online business takes time. Whether you have developed a profitable website, SaaS
-                    product, e-commerce business, app, YouTube channel, or another digital business, there may come a
-                    point when selling becomes the right next step.
+                    You built something real: a website, a SaaS product, an e-commerce business, an app, a YouTube
+                    channel, or another kind of digital business. At some point, many founders start asking the same
+                    question: what would it take to sell it, and to whom?
                   </p>
                   <p className="text-[1.05rem]">
-                    This guide explains how to prepare your business for sale, understand what buyers look for,
-                    organize the information needed for due diligence, and list it for potential buyers, wherever
-                    they are based.
+                    This guide walks through exactly that: preparing your business, understanding what buyers look
+                    for, and listing it on Durqo, so that when you are ready, you can present it with confidence to
+                    buyers wherever they are based.
                   </p>
                 </div>
                 <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
@@ -500,11 +500,11 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <DashEyebrow>Where to start</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Is your online business sellable?</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Many digital businesses can potentially be sold when ownership of the underlying assets and operations
-                can be transferred to another owner. A business does not need to be a large company to attract
-                acquisition interest. What matters is whether a prospective buyer can understand what the business
-                does, how it generates value, what assets are included, and how the business could operate after
-                ownership changes.
+                If you can transfer ownership of what you have built, your business is a candidate. It does
+                not need to be a large company to attract acquisition interest, and it does not need a
+                perfect track record. What matters most is clarity: can a prospective buyer understand what
+                the business does, how it generates value, what assets are included, and how it could operate
+                under new ownership.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -535,7 +535,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <DashEyebrow>Why founders sell</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Selling doesn&rsquo;t mean the business failed.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Owners consider selling for many reasons. You may want to:
+                Owners consider selling for many reasons, and none of them require the business to be in
+                trouble. Some of the most common:
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -549,8 +550,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               ))}
             </div>
             <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
-              Whatever the reason, preparing properly before approaching buyers can make the selling process more
-              organized and transparent.
+              Whatever your reason, the way to act on it is the same: prepare properly before approaching
+              buyers, so the process stays organized and transparent from the first conversation.
             </p>
           </Inner>
         </Container>
@@ -565,7 +566,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <h2 className="text-2xl sm:text-3xl">What could your online business be worth?</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 There is no single formula that determines the value of every digital business - different buyers may
-                evaluate the same opportunity differently. Buyers commonly consider factors such as:
+                evaluate the same opportunity differently. Understanding what buyers commonly weigh is the
+                first step toward pricing your business with confidence:
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -581,7 +583,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             </div>
             <p className="mt-8 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
               A credible asking price should be supported by the actual characteristics and performance of the
-              business, not simply the amount the seller hopes to receive.
+              business, not simply the amount the seller hopes to receive. Knowing where your business stands
+              on these factors is what makes a listing convincing.
             </p>
           </Inner>
         </Container>
@@ -596,7 +599,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <h2 className="text-2xl sm:text-3xl">Think like a buyer before you list.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Before making an offer, a serious buyer will usually want to understand both the opportunity and the
-                risks. Expect questions such as:
+                risks. Sellers who have thought through these questions in advance tend to have stronger
+                conversations with buyers:
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -610,7 +614,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               ))}
             </div>
             <p className="mt-6 text-sm leading-relaxed text-ink-soft">
-              Preparing clear answers before listing can make conversations with prospective buyers more productive.
+              Preparing clear answers before listing can make conversations with prospective buyers more
+              productive, and shows a buyer they are dealing with a founder who knows their own business.
             </p>
           </Inner>
         </Container>
@@ -624,8 +629,9 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <DashEyebrow>Preparation</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Prepare your business before going to market.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Good preparation can make it easier for potential buyers to evaluate an opportunity. Before creating a
-                listing, organize the key information about your business.
+                Good preparation can make it easier for potential buyers to evaluate an opportunity, and most
+                of the work happens before you ever create a listing. Start by organizing the key information
+                about your business into these four areas.
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
@@ -660,8 +666,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             </DashEyebrow>
             <h2 className="text-2xl text-white sm:text-3xl">Built something valuable?</h2>
             <p className="mx-auto mt-3 max-w-[56ch] text-[0.95rem] leading-relaxed text-white/70">
-              If you have built a website, SaaS product, e-commerce business, app, or another digital business, you
-              can explore listing it on Durqo and presenting the opportunity to potential buyers.
+              If you have built a website, SaaS product, e-commerce business, app, or another digital business,
+              listing it on Durqo is the way to put it in front of potential buyers, wherever they are based.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <TrackedCta href="/sell" cta="mid_page_primary" size="lg">
@@ -683,8 +689,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             <DashEyebrow>Pricing</DashEyebrow>
             <h2 className="text-2xl sm:text-3xl">Set a realistic asking price.</h2>
             <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              An unrealistic asking price can make it difficult to generate serious buyer interest. Before deciding on
-              a price, consider:
+              An unrealistic asking price can make it difficult to generate serious buyer interest, while an
+              overly cautious one can leave value on the table. Before deciding on a price, consider:
             </p>
             <ul className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
               {PRICE_FACTORS.map((f) => (
@@ -692,8 +698,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               ))}
             </ul>
             <p className="mt-6 text-sm leading-relaxed text-ink-soft">
-              The objective should be to establish an asking price that you can explain and support with business
-              information.
+              The objective should be to establish an asking price that you can explain and support with
+              business information - a price you can defend is a price buyers take seriously.
             </p>
             <InfoNote>
               An asking price is not a guarantee of the final transaction price - the eventual price may depend on
@@ -720,7 +726,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               Digital businesses differ from many traditional businesses because their operations and assets are not
               always tied to one physical location. A digital business built in Bangladesh may therefore potentially
               attract buyers from other countries, including those interested in established websites, profitable
-              SaaS businesses, e-commerce operations, apps, content businesses, and other digital assets.
+              SaaS businesses, e-commerce operations, apps, content businesses, and other digital assets - your
+              location does not have to limit who sees your listing.
             </p>
             <InfoNote>
               Presenting a business through a marketplace can give sellers an opportunity to make their listing
@@ -737,6 +744,9 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             <div className="mb-10 max-w-[70ch]">
               <DashEyebrow>The process</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">How selling on Durqo works.</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                From your first listing to a completed transfer, each step follows a defined process.
+              </p>
             </div>
             <div className="flex flex-col gap-8">
               {SELLING_STEPS.map(({ n, icon: Icon, title, body, link }, i) => (
@@ -783,9 +793,10 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             <DashEyebrow>Trust</DashEyebrow>
             <h2 className="text-2xl sm:text-3xl">Give buyers information they can evaluate.</h2>
             <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Trust is particularly important when buying a digital business. A strong listing should clearly
-              distinguish between information that can be supported and information that is simply provided by the
-              seller. Where applicable, Durqo may provide verification or review features for certain information.
+              Trust is particularly important when buying a digital business, and it is something a seller can
+              actively build rather than simply hope for. A strong listing should clearly distinguish between
+              information that can be supported and information that is simply provided by the seller. Where
+              applicable, Durqo may provide verification or review features for certain information.
             </p>
             <p className="mt-4 text-sm font-semibold text-ink">
               Sellers should provide accurate information and should never intentionally misrepresent:
@@ -798,7 +809,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               ))}
             </div>
             <p className="mt-5 text-sm leading-relaxed text-ink-soft">
-              A transparent listing can help prospective buyers evaluate an opportunity more effectively.
+              A transparent listing can help prospective buyers evaluate an opportunity more effectively, and it
+              is often what separates a listing that gets serious attention from one that does not.
             </p>
           </Inner>
         </Container>
@@ -811,10 +823,10 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             <DashEyebrow>Selling from Bangladesh</DashEyebrow>
             <h2 className="text-2xl sm:text-3xl">Selling a digital business from Bangladesh.</h2>
             <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Durqo supports digital entrepreneurs in Bangladesh who want to participate in the digital-business
-              marketplace. Review the current Durqo information on supported transaction methods, BDT-related
-              payment or payout options, verification requirements, and any transaction limitations before
-              proceeding.
+              Being based in Bangladesh does not have to complicate selling a digital business. Durqo supports
+              digital entrepreneurs in Bangladesh who want to participate in the digital-business marketplace.
+              Review the current Durqo information on supported transaction methods, BDT-related payment or
+              payout options, verification requirements, and any transaction limitations before proceeding.
             </p>
             <Link
               href="/buy-and-sell-digital-businesses-in-bdt"
@@ -843,7 +855,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <DashEyebrow>Before you list</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Seller checklist.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Before listing your business, make sure you can clearly explain:
+                A quick way to check if you are ready: before listing your business, make sure you can clearly
+                explain each of the following.
               </p>
             </div>
             <ul className="grid gap-3 sm:grid-cols-2">
@@ -890,9 +903,9 @@ export default function SellYourOnlineBusinessBangladeshPage() {
           <Inner className="max-w-[700px] text-center">
             <h2 className="text-2xl sm:text-3xl">Built the business. Ready for what comes next?</h2>
             <p className="mx-auto mt-3 max-w-[54ch] text-sm text-white/70">
-              If you are considering selling your digital business, start by presenting the opportunity clearly.
-              Create your Durqo listing, provide the relevant business information, and make your business available
-              for potential buyers to discover.
+              If you are considering selling your digital business, the next step is simple: present the
+              opportunity clearly. Create your Durqo listing, provide the relevant business information, and
+              make your business available for potential buyers to discover.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <TrackedCta href="/sell" cta="final_primary" size="lg">
