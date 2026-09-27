@@ -1,0 +1,126 @@
+import type { Metadata } from "next";
+import { Ban, CheckCircle2, Coins, ShieldCheck, TrendingUp } from "lucide-react";
+import Container from "@/components/ui/Container";
+import ValuationForm from "./ValuationForm";
+
+// Sep 27, 2026 build — real interactive valuation tool + lead capture,
+// replacing the dead /contact?subject=valuation link every "Get a free
+// valuation" button on /sell used to point to. See
+// claude/free-valuation-lead-gen-addendum.md and src/lib/valuation.ts for
+// the methodology, and 058_valuation_leads.sql for where submissions land.
+export const metadata: Metadata = {
+  title: "Free Business Valuation | Durqo",
+  description: "Get a free, instant estimate of what your digital business could sell for on Durqo, based on your revenue, profit and business type.",
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    siteName: "Durqo",
+    title: "Free Business Valuation | Durqo",
+    description: "Get a free, instant estimate of what your digital business could sell for on Durqo.",
+    url: "https://www.durqo.com/valuation",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Business Valuation | Durqo",
+    description: "Get a free, instant estimate of what your digital business could sell for on Durqo.",
+  },
+  alternates: { canonical: "https://www.durqo.com/valuation" },
+};
+
+function Inner({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  return <div className={`mx-auto max-w-[1200px] ${className}`}>{children}</div>;
+}
+
+// Sep 27, 2026: only real, factual claims here — no invented usage stats
+// (e.g. a fake "X,000+ businesses valued" count) since this is the tool's
+// first release and Durqo has no such number to point to yet.
+const TRUST_POINTS = [
+  { icon: TrendingUp, label: "Instant estimate" },
+  { icon: Ban, label: "No obligation" },
+  { icon: Coins, label: "Free, always" },
+  { icon: ShieldCheck, label: "100% confidential" },
+];
+
+export default function ValuationPage() {
+  return (
+    <main>
+      <section className="relative overflow-hidden border-b border-rule bg-brand-strong py-16 sm:py-20 lg:py-24">
+        <div
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
+          aria-hidden
+        />
+        <Container className="relative">
+          <Inner>
+            <div className="grid items-start gap-10 lg:grid-cols-[0.46fr_0.54fr] lg:gap-x-14">
+              <div>
+                <p className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70">
+                  <span className="h-px w-6 bg-brand" aria-hidden />
+                  Free valuation tool
+                </p>
+                <h1 className="max-w-[16ch] text-4xl leading-[1.1] text-white sm:text-5xl">
+                  What could your business <span className="text-brand">sell for?</span>
+                </h1>
+                <p className="mt-5 max-w-[46ch] text-lg leading-relaxed text-white/70">
+                  Share a few numbers and get an instant estimate of your business&rsquo;s value, based on how similar
+                  businesses sell on Durqo.
+                </p>
+
+                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-white/10 pt-6">
+                  {["Takes under a minute", "No account required", "See real buyer demand after"].map((label) => (
+                    <span key={label} className="flex items-center gap-1.5 text-xs font-medium text-white/70">
+                      <CheckCircle2 size={14} className="text-brand" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <ValuationForm />
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      <section className="border-b border-rule bg-paper-sunk py-6">
+        <Container>
+          <Inner>
+            <div className="grid grid-cols-2 divide-y divide-rule sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+              {TRUST_POINTS.map(({ icon: Icon, label }) => (
+                <div key={label} className="flex items-center justify-center gap-2.5 px-4 py-3 text-center sm:py-0">
+                  <Icon size={16} className="shrink-0 text-brand" />
+                  <span className="text-sm font-medium text-ink">{label}</span>
+                </div>
+              ))}
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      <section className="py-14 sm:py-16">
+        <Container>
+          <Inner className="max-w-[760px]">
+            <h2 className="mb-6 text-2xl sm:text-3xl">How this estimate works.</h2>
+            <div className="flex flex-col gap-4 text-sm leading-relaxed text-ink-soft">
+              <p>
+                We compare your monthly revenue, monthly profit, business category and business age against typical
+                sale multiples for similar businesses on Durqo. It&rsquo;s a quick starting reference, not a formal
+                appraisal, an offer to buy your business, or a guarantee of what it will actually sell for.
+              </p>
+              <p>
+                Your final sale price depends on factors this quick tool can&rsquo;t see: verified financials, traffic
+                quality, growth trend, and how many buyers are interested. The best way to find out your real market
+                value is to <a href="/register?as=seller" className="font-semibold text-brand-strong hover:underline">create a listing</a> and
+                let real buyers respond.
+              </p>
+              <p className="flex items-start gap-2 rounded-lg border border-rule bg-paper-sunk p-4 text-xs text-ink-faint">
+                <Ban size={14} className="mt-0.5 shrink-0 text-ink-faint" />
+                We never share the details you submit here with anyone outside Durqo. We may follow up by email to
+                help you sell, and you can opt out of that at any time.
+              </p>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+    </main>
+  );
+}
