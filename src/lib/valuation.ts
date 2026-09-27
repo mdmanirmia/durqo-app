@@ -68,6 +68,12 @@ export interface CategoryMetricConfig {
   placeholder: string;
   helpText: string;
   tiers: { max: number; factor: number }[]; // ascending, last entry should use Infinity
+  // Shown next to the label (e.g. "Monthly Visitors (Google Analytics)") for
+  // a metric a seller would actually go look up in a specific tool rather
+  // than just know off the top of their head — owner's request, Sep 27,
+  // 2026. Omitted for metrics sellers already track directly (subscriber
+  // counts, active clients, app store stats, etc.).
+  sourceHint?: string;
 }
 
 function tiers(...entries: [number, number][]): { max: number; factor: number }[] {
@@ -76,18 +82,20 @@ function tiers(...entries: [number, number][]): { max: number; factor: number }[
 
 export const CATEGORY_METRICS: Partial<Record<string, CategoryMetricConfig>> = {
   websites: {
-    key: "monthly_views",
-    label: QUICK_STAT_LABELS.monthly_views,
+    key: "monthly_visitors",
+    label: QUICK_STAT_LABELS.monthly_visitors,
     placeholder: "e.g. 25000",
     helpText: "More consistent traffic supports a higher multiple.",
     tiers: tiers([5000, 0.95], [50000, 1.0], [Infinity, 1.1]),
+    sourceHint: "Google Analytics",
   },
   "e-commerce": {
-    key: "monthly_views",
-    label: QUICK_STAT_LABELS.monthly_views,
+    key: "monthly_visitors",
+    label: QUICK_STAT_LABELS.monthly_visitors,
     placeholder: "e.g. 25000",
     helpText: "More consistent traffic supports a higher multiple.",
     tiers: tiers([5000, 0.95], [50000, 1.0], [Infinity, 1.1]),
+    sourceHint: "Google Analytics",
   },
   "youtube-channels": {
     key: "subscribers",
@@ -172,6 +180,7 @@ export const CATEGORY_METRICS: Partial<Record<string, CategoryMetricConfig>> = {
     placeholder: "e.g. 25000",
     helpText: "More consistent traffic supports a higher multiple.",
     tiers: tiers([5000, 0.95], [50000, 1.0], [Infinity, 1.08]),
+    sourceHint: "Google Analytics",
   },
   "startup-business": {
     key: "funding_raised",
