@@ -31,7 +31,6 @@ export default function ValuationForm() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
 
   const categoryMetric = getCategoryMetricConfig(categoryId);
 
@@ -56,7 +55,6 @@ export default function ValuationForm() {
       const outcome = await submitValuationLead({
         name,
         email,
-        phone,
         categoryId,
         monthlyRevenue: Number(monthlyRevenue) || 0,
         monthlyProfit: Number(monthlyProfit) || 0,
@@ -235,17 +233,6 @@ export default function ValuationForm() {
                 className={inputClass}
               />
             </div>
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className={labelClass} htmlFor="phone">Phone (optional)</label>
-            <input
-              id="phone"
-              type="tel"
-              placeholder="+880 1XXX-XXXXXX"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className={inputClass}
-            />
           </div>
           <p className="text-xs leading-relaxed text-ink-faint">
             We&rsquo;ll email you this estimate and may reach out to help you sell. We won&rsquo;t share your details
