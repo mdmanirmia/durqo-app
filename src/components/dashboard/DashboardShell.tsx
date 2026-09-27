@@ -19,6 +19,7 @@ import {
   Wallet,
   Tag,
   Users,
+  TrendingUp,
   X,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
@@ -54,6 +55,7 @@ const ICONS = {
   tag: Tag,
   users: Users,
   arrowLeftRight: ArrowLeftRight,
+  trendingUp: TrendingUp,
 } as const;
 
 export type DashboardIconName = keyof typeof ICONS;
@@ -114,6 +116,9 @@ const WISHLIST_HREF = "/dashboard/buyer/wishlist";
 const ADMIN_LISTINGS_HREF = "/dashboard/admin/listings";
 const ADMIN_VERIFICATION_HREF = "/dashboard/admin/verification";
 const ADMIN_WITHDRAWALS_HREF = "/dashboard/admin/withdrawals";
+// Sep 27, 2026: new Valuation Leads nav item — same live-badge treatment as
+// the three above, counting leads still in the fresh "new" status.
+const ADMIN_VALUATION_LEADS_HREF = "/dashboard/admin/valuation-leads";
 
 // Mobile-width redesign (Sep 11, 2026): the desktop sidebar below is
 // untouched. Below md, it's replaced by two pieces that read the same `nav`
@@ -163,6 +168,7 @@ export default function DashboardShell({
   const [adminListingsBadge, setAdminListingsBadge] = useState<number | undefined>(undefined);
   const [adminVerificationBadge, setAdminVerificationBadge] = useState<number | undefined>(undefined);
   const [adminWithdrawalsBadge, setAdminWithdrawalsBadge] = useState<number | undefined>(undefined);
+  const [adminValuationLeadsBadge, setAdminValuationLeadsBadge] = useState<number | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
   const switcherRef = useRef<HTMLDivElement>(null);
 
@@ -272,6 +278,7 @@ export default function DashboardShell({
       setAdminListingsBadge(counts.listings > 0 ? counts.listings : undefined);
       setAdminVerificationBadge(counts.verification > 0 ? counts.verification : undefined);
       setAdminWithdrawalsBadge(counts.withdrawals > 0 ? counts.withdrawals : undefined);
+      setAdminValuationLeadsBadge(counts.valuationLeads > 0 ? counts.valuationLeads : undefined);
     }
     refetch();
     return () => {
@@ -455,6 +462,7 @@ export default function DashboardShell({
     if (item.href === ADMIN_LISTINGS_HREF) return adminListingsBadge;
     if (item.href === ADMIN_VERIFICATION_HREF) return adminVerificationBadge;
     if (item.href === ADMIN_WITHDRAWALS_HREF) return adminWithdrawalsBadge;
+    if (item.href === ADMIN_VALUATION_LEADS_HREF) return adminValuationLeadsBadge;
     return item.badge;
   }
 
