@@ -5,6 +5,7 @@ import { Mail, Phone, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import { fmtUSD } from "@/lib/format";
+import { getCategoryMetricConfig } from "@/lib/valuation";
 import { setValuationLeadStatus, type ValuationLeadStatus } from "../actions";
 
 export interface AdminValuationLeadRow {
@@ -17,11 +18,26 @@ export interface AdminValuationLeadRow {
   monthlyRevenue: number;
   monthlyProfit: number;
   businessAgeYears: number;
+  // Sep 27, 2026 same-day follow-up: the one category-specific Quick Stat
+  // the /valuation form asks for (see src/lib/valuation.ts's
+  // CATEGORY_METRICS) — null when the category has no configured metric,
+  // the seller left it blank, or the lead predates this column.
+  categoryMetricValue: number | null;
   estimatedLow: number;
   estimatedHigh: number;
   status: string;
   adminNote: string | null;
   createdAt: string;
+}
+
+// e.g. "Subscribers: 50,000" — reads the label from the same config the
+// form itself uses, so a change to the wording there never has to be
+// duplicated here.
+function categoryMetricLabel(row: AdminValuationLeadRow): string | null {
+  if (row.categoryMetricValue === null) return null;
+  const config = getCategoryMetricConfig(row.categoryId);
+  if (!config) return null;
+  return `${config.label}: ${row.categoryMetricValue.toLocaleString("en-US")}`;
 }
 
 const STATUS_TONE: Record<string, "brand" | "gold" | "neutral"> = {
@@ -140,7 +156,12 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-ink-soft">{row.categoryName}</td>
+                  <td className="px-4 py-3 text-ink-soft">
+                    {row.categoryName}
+                    {categoryMetricLabel(row) && (
+                      <div className="mono mt-0.5 text-xs text-ink-faint">{categoryMetricLabel(row)}</div>
+                    )}
+                  </td>
                   <td className="mono px-4 py-3 text-ink-soft">
                     {fmtUSD(row.monthlyRevenue)} / {fmtUSD(row.monthlyProfit)}
                   </td>
@@ -183,6 +204,9 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
                 <div>
                   <div className="mb-1 text-xs text-ink-faint">Category</div>
                   <div className="text-ink-soft">{row.categoryName}</div>
+                  {categoryMetricLabel(row) && (
+                    <div className="mono mt-0.5 text-xs text-ink-faint">{categoryMetricLabel(row)}</div>
+                  )}
                 </div>
                 <div>
                   <div className="mb-1 text-xs text-ink-faint">Age</div>
