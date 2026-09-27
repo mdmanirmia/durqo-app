@@ -83,11 +83,15 @@ export default function ValuationPage() {
                 with the category-specific field, so pinning the left copy
                 to the top left a large dead gap under the trust checklist
                 on desktop once the card got taller than the copy block.
-                Sep 27, 2026: a perfect vertical center still read as sitting
-                too low against the form, so the left column gets a small
-                lg:-mt-16 nudge to settle a bit above dead-center instead. */}
+                Sep 27, 2026: tried a fixed lg:-mt-16 nudge to settle the
+                left column a bit higher, but ValuationForm's own height
+                swings a lot between its three steps (tallest on "business",
+                shortest on "contact") - a fixed offset calibrated against
+                the tall step overcorrected badly on the short one, pushing
+                the copy way above center. Plain items-center self-adjusts
+                to whichever step is showing, so it stays back to that. */}
             <div className="grid items-center gap-10 lg:grid-cols-[0.46fr_0.54fr] lg:gap-x-14">
-              <div className="lg:-mt-16">
+              <div>
                 <p className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70">
                   <span className="h-px w-6 bg-brand" aria-hidden />
                   Free valuation tool
