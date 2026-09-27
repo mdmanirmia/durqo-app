@@ -153,8 +153,17 @@ function DashEyebrow({
   );
 }
 
+// Sep 27, 2026, second revision: narrowed the shared full-width cap from
+// 1200px to 1040px after direct feedback that the page felt too wide.
+// Several of this page's grids hold short items (a business-type chip, a
+// one-line buyer question) rather than the longer-copy cards its sibling
+// guide pages use at 1200px, so the extra width mostly showed up as empty
+// space inside each card rather than as content. Sections that were
+// already narrower than 1040px (the 760/700/900px text columns) are
+// unaffected — this only tightens the sections that used the bare
+// default.
 function Inner({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`mx-auto max-w-[1200px] ${className}`}>{children}</div>;
+  return <div className={`mx-auto max-w-[1040px] ${className}`}>{children}</div>;
 }
 
 function Dot({ children }: { children: React.ReactNode }) {
@@ -581,7 +590,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       {/* WHAT BUYERS WANT TO KNOW */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <Inner>
+          <Inner className="max-w-[880px]">
             <div className="mb-8 max-w-[70ch]">
               <DashEyebrow>Buyer&rsquo;s perspective</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Think like a buyer before you list.</h2>
