@@ -1073,3 +1073,27 @@ export async function reviewBuyerVerification(orderId: string, decision: "verifi
     await sendEmail(buyerEmail, subject, html);
   }
 }
+
+// ---- Valuation Leads (Sep 27, 2026 Free Valuation lead-gen build) --------
+// Plain triage: an admin marks a lead "contacted" once someone on the team
+// has reached out, and "closed" once it's a dead end or has converted into
+// a listing - no email side effects here, unlike the seller-facing actions
+// above, since this status only ever matters internally.
+const VALUATION_LEAD_STATUSES = ["new", "contacted", "closed"] as const;
+export type ValuationLeadStatus = (typeof VALUATION_LEAD_STATUSES)[number];
+
+export async function setValuationLeadStatus(leadId: string, status: ValuationLeadStatus, adminNote?: string) {
+  await requireAdmin();
+  if (!VALUATION_LEAD_STATUSES.includes(status)) throw new Error("Invalid status");
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const update: Record<string, unknown> = { status };
+  if (adminNote !== undefined) update.admin_note = adminNote.trim() || null;
+
+  const { error } = await admin.from("valuation_leads").update(update).eq("id", leadId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/valuation-leads");
+}
