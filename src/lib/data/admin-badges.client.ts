@@ -8,14 +8,15 @@ export interface AdminBadgeCounts {
   listings: number;
   verification: number;
   withdrawals: number;
+  valuationLeads: number;
 }
 
 export async function getAdminBadgeCounts(): Promise<AdminBadgeCounts> {
   try {
     const res = await fetch("/api/admin/badge-counts");
-    if (!res.ok) return { listings: 0, verification: 0, withdrawals: 0 };
+    if (!res.ok) return { listings: 0, verification: 0, withdrawals: 0, valuationLeads: 0 };
     return await res.json();
   } catch {
-    return { listings: 0, verification: 0, withdrawals: 0 };
+    return { listings: 0, verification: 0, withdrawals: 0, valuationLeads: 0 };
   }
 }
