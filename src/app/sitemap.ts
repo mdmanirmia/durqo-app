@@ -75,6 +75,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.6,
     },
+    {
+      url: `${BASE_URL}/sell-your-online-business-bangladesh`,
+      // Sep 27, 2026: Bangladesh seller-acquisition content page, the
+      // landing destination for a Facebook/Instagram ad campaign - see
+      // claude/bangladesh-seller-acquisition-page-and-ad-copy-addendum.md.
+      // lastModified matches this page's own Article JSON-LD dateModified.
+      lastModified: new Date("2026-09-27"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     { url: `${BASE_URL}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.3 },
