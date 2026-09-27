@@ -217,7 +217,7 @@ export default async function SellPage() {
                 </p>
 
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Button href="/contact?subject=valuation" size="lg">
+                  <Button href="/valuation" size="lg">
                     Get a free valuation
                     <ArrowRight size={16} />
                   </Button>
@@ -276,6 +276,10 @@ export default async function SellPage() {
                   <p className="mt-3 text-[0.68rem] leading-relaxed text-ink-faint">
                     This is an illustrative example, not a live valuation.
                   </p>
+                  <Link href="/valuation" className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand-strong hover:underline">
+                    Try it with your own numbers
+                    <ArrowRight size={13} />
+                  </Link>
                 </div>
               </div>
             </div>
@@ -454,8 +458,8 @@ export default async function SellPage() {
                 <p className="text-sm leading-relaxed text-ink-soft">
                   Request a free valuation and we&rsquo;ll help you understand the next step.
                 </p>
-                <Button href="/contact" className="mt-2 min-h-11 self-start">
-                  Talk to Durqo
+                <Button href="/valuation" className="mt-2 min-h-11 self-start">
+                  Get a free valuation
                 </Button>
               </div>
             </div>
@@ -491,7 +495,7 @@ export default async function SellPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button href="/contact?subject=valuation" size="lg">
+                <Button href="/valuation" size="lg">
                   Get a free valuation
                   <ArrowRight size={16} />
                 </Button>
