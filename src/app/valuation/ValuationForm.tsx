@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, TrendingUp } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { valuationCategoryOptions, BUSINESS_AGE_OPTIONS, type ValuationBasis } from "@/lib/valuation";
+import { valuationCategoryOptions, getCategoryMetricConfig, BUSINESS_AGE_OPTIONS, type ValuationBasis } from "@/lib/valuation";
 import { submitValuationLead, type ValuationLeadOutcome } from "./actions";
 
 const CATEGORY_OPTIONS = valuationCategoryOptions();
@@ -27,10 +27,21 @@ export default function ValuationForm() {
   const [monthlyRevenue, setMonthlyRevenue] = useState("");
   const [monthlyProfit, setMonthlyProfit] = useState("");
   const [businessAgeYears, setBusinessAgeYears] = useState(String(BUSINESS_AGE_OPTIONS[2].value));
+  const [categoryMetricValue, setCategoryMetricValue] = useState("");
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+
+  const categoryMetric = getCategoryMetricConfig(categoryId);
+
+  function handleCategoryChange(nextCategoryId: string) {
+    setCategoryId(nextCategoryId);
+    // A value typed for one category's metric (e.g. Subscribers) almost
+    // never means the same thing for another (e.g. Total Downloads) — clear
+    // it rather than silently carrying it over.
+    setCategoryMetricValue("");
+  }
 
   function handleBusinessSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,6 +61,7 @@ export default function ValuationForm() {
         monthlyRevenue: Number(monthlyRevenue) || 0,
         monthlyProfit: Number(monthlyProfit) || 0,
         businessAgeYears: Number(businessAgeYears) || 0,
+        categoryMetricValue: categoryMetric && categoryMetricValue !== "" ? Number(categoryMetricValue) || 0 : undefined,
       });
       setResult(outcome);
       setStep("result");
@@ -80,6 +92,11 @@ export default function ValuationForm() {
           </p>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-ink-soft">{BASIS_NOTE[result.basis]}</p>
+        {categoryMetric && categoryMetricValue !== "" && (
+          <p className="mt-1 text-sm leading-relaxed text-ink-soft">
+            We also factored in the {categoryMetric.label.toLowerCase()} you shared ({Number(categoryMetricValue).toLocaleString("en-US")}).
+          </p>
+        )}
         <p className="mt-2 text-xs leading-relaxed text-ink-faint">
           This is an illustrative estimate, not an appraisal, an offer, or a guarantee of your final sale price. Your
           actual sale price depends on buyer interest, verified financials and market conditions. We&rsquo;ve emailed
@@ -113,7 +130,7 @@ export default function ValuationForm() {
             <select
               id="categoryId"
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
+              onChange={(e) => handleCategoryChange(e.target.value)}
               className={inputClass}
             >
               {CATEGORY_OPTIONS.map((c) => (
@@ -162,6 +179,22 @@ export default function ValuationForm() {
               ))}
             </select>
           </div>
+          {categoryMetric && (
+            <div className="flex flex-col gap-1.5">
+              <label className={labelClass} htmlFor="categoryMetricValue">{categoryMetric.label}</label>
+              <input
+                id="categoryMetricValue"
+                type="number"
+                min={0}
+                inputMode="numeric"
+                placeholder={categoryMetric.placeholder}
+                value={categoryMetricValue}
+                onChange={(e) => setCategoryMetricValue(e.target.value)}
+                className={inputClass}
+              />
+              <p className="text-xs leading-relaxed text-ink-faint">{categoryMetric.helpText}</p>
+            </div>
+          )}
           <p className="text-xs leading-relaxed text-ink-faint">
             Leave revenue and profit at 0 if your business hasn&rsquo;t made money yet (e.g. a domain or a brand-new
             project) - you&rsquo;ll still get a rough starting range.
