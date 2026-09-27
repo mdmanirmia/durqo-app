@@ -25,7 +25,18 @@ type CommonProps = {
   children: React.ReactNode;
 };
 
-type ButtonAsLink = CommonProps & { href: string; onClick?: never; type?: never; disabled?: never };
+// Sep 27, 2026: onClick is now allowed (optional) on the link variant too —
+// used by the Bangladesh seller-acquisition page's TrackedCta wrapper (see
+// src/app/sell-your-online-business-bangladesh/CtaTracking.tsx) to fire a
+// seller_cta_click analytics event right before the Link's own navigation.
+// Purely additive: existing callers never pass it, so `undefined` reaches
+// Link exactly as before this change.
+type ButtonAsLink = CommonProps & {
+  href: string;
+  onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+  type?: never;
+  disabled?: never;
+};
 type ButtonAsButton = CommonProps &
   Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children"> & { href?: never };
 
@@ -35,7 +46,7 @@ export default function Button(props: ButtonAsLink | ButtonAsButton) {
 
   if ("href" in props && props.href) {
     return (
-      <Link href={props.href} className={cls}>
+      <Link href={props.href} className={cls} onClick={props.onClick}>
         {children}
       </Link>
     );
