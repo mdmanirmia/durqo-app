@@ -82,9 +82,12 @@ export default function ValuationPage() {
             {/* items-center (not items-start): the form card's height grows
                 with the category-specific field, so pinning the left copy
                 to the top left a large dead gap under the trust checklist
-                on desktop once the card got taller than the copy block. */}
+                on desktop once the card got taller than the copy block.
+                Sep 27, 2026: a perfect vertical center still read as sitting
+                too low against the form, so the left column gets a small
+                lg:-mt-16 nudge to settle a bit above dead-center instead. */}
             <div className="grid items-center gap-10 lg:grid-cols-[0.46fr_0.54fr] lg:gap-x-14">
-              <div>
+              <div className="lg:-mt-16">
                 <p className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70">
                   <span className="h-px w-6 bg-brand" aria-hidden />
                   Free valuation tool
