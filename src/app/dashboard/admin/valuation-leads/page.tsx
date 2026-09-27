@@ -34,6 +34,11 @@ export default async function AdminValuationLeadsPage({
       monthlyRevenue: Number(l.monthly_revenue),
       monthlyProfit: Number(l.monthly_profit),
       businessAgeYears: Number(l.business_age_years),
+      // Sep 27, 2026 same-day follow-up: the one category-specific Quick
+      // Stat the form asks for (see src/lib/valuation.ts's
+      // CATEGORY_METRICS) — null for a submission from before this column
+      // existed, or a category with no configured metric.
+      categoryMetricValue: l.category_metric_value !== null && l.category_metric_value !== undefined ? Number(l.category_metric_value) : null,
       estimatedLow: Number(l.estimated_low),
       estimatedHigh: Number(l.estimated_high),
       status: l.status,
