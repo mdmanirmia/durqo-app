@@ -43,4 +43,7 @@ export const ADMIN_NAV: DashboardNavItem[] = [
   { href: "/dashboard/admin/orders", label: "Orders", icon: "clipboardList" },
   { href: "/dashboard/admin/transfers", label: "Asset Transfers", icon: "arrowLeftRight" },
   { href: "/dashboard/admin/withdrawals", label: "Withdrawals", icon: "wallet" },
+  // Sep 27, 2026: new /valuation lead-gen tool (src/lib/valuation.ts) —
+  // every submission lands in valuation_leads, viewed here.
+  { href: "/dashboard/admin/valuation-leads", label: "Valuation Leads", icon: "trendingUp" },
 ];
