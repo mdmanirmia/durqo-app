@@ -1,0 +1,215 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { Mail, Phone, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
+import { fmtUSD } from "@/lib/format";
+import { setValuationLeadStatus, type ValuationLeadStatus } from "../actions";
+
+export interface AdminValuationLeadRow {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  categoryId: string;
+  categoryName: string;
+  monthlyRevenue: number;
+  monthlyProfit: number;
+  businessAgeYears: number;
+  estimatedLow: number;
+  estimatedHigh: number;
+  status: string;
+  adminNote: string | null;
+  createdAt: string;
+}
+
+const STATUS_TONE: Record<string, "brand" | "gold" | "neutral"> = {
+  new: "gold",
+  contacted: "brand",
+  closed: "neutral",
+};
+
+function ageLabel(years: number): string {
+  if (years < 1) return `${Math.round(years * 12)} mo`;
+  return `${years.toFixed(years % 1 === 0 ? 0 : 1)} yr`;
+}
+
+function statusSelect(row: AdminValuationLeadRow, busy: boolean, onChange: (status: ValuationLeadStatus) => void) {
+  return (
+    <select
+      value={row.status}
+      disabled={busy}
+      onChange={(e) => onChange(e.target.value as ValuationLeadStatus)}
+      className="mono rounded-md border border-rule-strong bg-paper px-2 py-1.5 text-xs disabled:opacity-60"
+    >
+      <option value="new">New</option>
+      <option value="contacted">Contacted</option>
+      <option value="closed">Closed</option>
+    </select>
+  );
+}
+
+// A real component (not a plain helper function like statusSelect above) —
+// it needs its own per-row useState for the in-progress note text, and a
+// hook can only be called from an actual component/hook, never from a
+// plain function invoked in a loop during another component's render.
+function NoteInput({
+  row,
+  busy,
+  onSave,
+}: {
+  row: AdminValuationLeadRow;
+  busy: boolean;
+  onSave: (note: string) => void;
+}) {
+  const [value, setValue] = useState(row.adminNote ?? "");
+  return (
+    <input
+      value={value}
+      disabled={busy}
+      placeholder="Add a note..."
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={() => {
+        if (value !== (row.adminNote ?? "")) onSave(value);
+      }}
+      className="w-full rounded-md border border-rule-strong bg-paper px-2 py-1.5 text-xs disabled:opacity-60"
+    />
+  );
+}
+
+export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuationLeadRow[] }) {
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function updateStatus(id: string, status: ValuationLeadStatus, note?: string) {
+    setPendingId(id);
+    setErrorId(null);
+    startTransition(async () => {
+      try {
+        await setValuationLeadStatus(id, status, note);
+      } catch {
+        setErrorId(id);
+      } finally {
+        setPendingId(null);
+      }
+    });
+  }
+
+  if (rows.length === 0) {
+    return (
+      <EmptyState
+        icon={TrendingUp}
+        title="No valuation leads yet"
+        body="Every submission from the /valuation tool will show up here."
+      />
+    );
+  }
+
+  return (
+    <>
+      {/* Desktop table */}
+      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+        <table className="w-full min-w-[1040px] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+              <th className="px-4 py-3 font-medium">Lead</th>
+              <th className="px-4 py-3 font-medium">Category</th>
+              <th className="px-4 py-3 font-medium">Revenue / Profit</th>
+              <th className="px-4 py-3 font-medium">Age</th>
+              <th className="px-4 py-3 font-medium">Estimated Range</th>
+              <th className="px-4 py-3 font-medium">Note</th>
+              <th className="px-4 py-3 font-medium">Date</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const busy = isPending && pendingId === row.id;
+              return (
+                <tr key={row.id} className="border-b border-rule align-top last:border-b-0">
+                  <td className="px-4 py-3">
+                    <div className="font-medium text-ink">{row.name}</div>
+                    <div className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-faint">
+                      <Mail size={11} /> {row.email}
+                    </div>
+                    {row.phone && (
+                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-faint">
+                        <Phone size={11} /> {row.phone}
+                      </div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-ink-soft">{row.categoryName}</td>
+                  <td className="mono px-4 py-3 text-ink-soft">
+                    {fmtUSD(row.monthlyRevenue)} / {fmtUSD(row.monthlyProfit)}
+                  </td>
+                  <td className="mono px-4 py-3 text-ink-soft">{ageLabel(row.businessAgeYears)}</td>
+                  <td className="mono px-4 py-3 font-semibold text-brand-strong">
+                    {fmtUSD(row.estimatedLow)} &ndash; {fmtUSD(row.estimatedHigh)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <NoteInput row={row} busy={busy} onSave={(note) => updateStatus(row.id, row.status as ValuationLeadStatus, note)} />
+                  </td>
+                  <td className="mono px-4 py-3 text-ink-faint">{row.createdAt}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col items-start gap-1.5">
+                      {statusSelect(row, busy, (status) => updateStatus(row.id, status))}
+                      {errorId === row.id && <span className="text-[0.68rem] text-danger">Couldn&rsquo;t update - try again.</span>}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="grid gap-3 md:hidden">
+        {rows.map((row) => {
+          const busy = isPending && pendingId === row.id;
+          return (
+            <div key={row.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="truncate font-medium text-ink">{row.name}</div>
+                  <div className="truncate text-xs text-ink-faint">{row.email}</div>
+                  {row.phone && <div className="truncate text-xs text-ink-faint">{row.phone}</div>}
+                </div>
+                <Badge tone={STATUS_TONE[row.status] ?? "neutral"}>{row.status}</Badge>
+              </div>
+              <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <div>
+                  <div className="mb-1 text-xs text-ink-faint">Category</div>
+                  <div className="text-ink-soft">{row.categoryName}</div>
+                </div>
+                <div>
+                  <div className="mb-1 text-xs text-ink-faint">Age</div>
+                  <div className="mono text-ink-soft">{ageLabel(row.businessAgeYears)}</div>
+                </div>
+                <div>
+                  <div className="mb-1 text-xs text-ink-faint">Revenue / Profit</div>
+                  <div className="mono text-ink-soft">{fmtUSD(row.monthlyRevenue)} / {fmtUSD(row.monthlyProfit)}</div>
+                </div>
+                <div>
+                  <div className="mb-1 text-xs text-ink-faint">Estimated Range</div>
+                  <div className="mono font-semibold text-brand-strong">{fmtUSD(row.estimatedLow)} &ndash; {fmtUSD(row.estimatedHigh)}</div>
+                </div>
+              </div>
+              <div className="mb-3">
+                <div className="mb-1 text-xs text-ink-faint">Note</div>
+                <NoteInput row={row} busy={busy} onSave={(note) => updateStatus(row.id, row.status as ValuationLeadStatus, note)} />
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="mono text-xs text-ink-faint">{row.createdAt}</span>
+                {statusSelect(row, busy, (status) => updateStatus(row.id, status))}
+              </div>
+              {errorId === row.id && <p className="mt-2 text-xs text-danger">Couldn&rsquo;t update - try again.</p>}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
