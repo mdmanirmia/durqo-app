@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Ban, CheckCircle2, Coins, ShieldCheck, TrendingUp } from "lucide-react";
+import { Ban, BarChart3, CheckCircle2, ClipboardList, Coins, Gauge, ShieldCheck, TrendingUp } from "lucide-react";
 import Container from "@/components/ui/Container";
 import ValuationForm from "./ValuationForm";
 
@@ -41,6 +41,34 @@ const TRUST_POINTS = [
   { icon: ShieldCheck, label: "100% confidential" },
 ];
 
+// Sep 27, 2026 (design pass): a few representative multiples pulled straight
+// from CATEGORY_MULTIPLES in src/lib/valuation.ts - real numbers the
+// calculator itself uses, not invented marketing figures - shown as a quick
+// visual hook in the hero.
+const MULTIPLE_HIGHLIGHTS = [
+  { label: "Websites", range: "2.5–4x" },
+  { label: "SaaS", range: "3–5x" },
+  { label: "YouTube channels", range: "2–3.5x" },
+];
+
+const ESTIMATE_STEPS = [
+  {
+    icon: ClipboardList,
+    title: "Share your numbers",
+    body: "Revenue, profit, business category and age - takes under a minute, no account needed.",
+  },
+  {
+    icon: BarChart3,
+    title: "We apply real sale multiples",
+    body: "We compare your numbers against typical multiples for similar businesses that sell on Durqo.",
+  },
+  {
+    icon: Gauge,
+    title: "Get your instant range",
+    body: "A quick starting reference - not a formal appraisal, an offer, or a guarantee.",
+  },
+];
+
 export default function ValuationPage() {
   return (
     <main>
@@ -77,6 +105,18 @@ export default function ValuationPage() {
                     </span>
                   ))}
                 </div>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {MULTIPLE_HIGHLIGHTS.map((m) => (
+                    <span
+                      key={m.label}
+                      className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white/70"
+                    >
+                      {m.label} <span className="font-semibold text-white">{m.range}</span>
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-2 text-[0.68rem] text-white/40">Typical multiples of annual profit, by category</p>
               </div>
 
               <ValuationForm />
@@ -104,12 +144,23 @@ export default function ValuationPage() {
         <Container>
           <Inner className="max-w-[760px]">
             <h2 className="mb-6 text-2xl sm:text-3xl">How this estimate works.</h2>
-            <div className="flex flex-col gap-4 text-sm leading-relaxed text-ink-soft">
-              <p>
-                We compare your monthly revenue, monthly profit, business category and business age against typical
-                sale multiples for similar businesses on Durqo. It&rsquo;s a quick starting reference, not a formal
-                appraisal, an offer to buy your business, or a guarantee of what it will actually sell for.
-              </p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {ESTIMATE_STEPS.map(({ icon: Icon, title, body }, i) => (
+                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
+                  <div className="mb-3 flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand-strong">
+                      <Icon size={16} />
+                    </span>
+                    <span className="mono text-[0.68rem] font-semibold uppercase tracking-wide text-ink-faint">
+                      Step {i + 1}
+                    </span>
+                  </div>
+                  <h3 className="mb-1.5 text-sm font-semibold text-ink">{title}</h3>
+                  <p className="text-sm leading-relaxed text-ink-soft">{body}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-col gap-4 text-sm leading-relaxed text-ink-soft">
               <p>
                 Your final sale price depends on factors this quick tool can&rsquo;t see: verified financials, traffic
                 quality, growth trend, and how many buyers are interested. The best way to find out your real market
