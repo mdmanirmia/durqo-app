@@ -25,7 +25,7 @@ import { confirmListingAssets } from "@/lib/actions/listing-assets";
 import { notifyListingSubmitted } from "@/lib/actions/listing-notifications";
 import { QUICK_STAT_COLUMNS } from "@/lib/data/map-listing";
 import { parseDurationToSeconds } from "@/lib/format";
-import { trackListingSubmitted } from "@/lib/analytics";
+import { trackListingSubmitted, trackListingStarted } from "@/lib/analytics";
 import { sanitizeFileName } from "@/lib/sanitize-filename";
 
 // How long the post-submit "Connect Google Analytics now?" screen waits
@@ -324,6 +324,18 @@ export default function AddNewBusinessPage() {
   // OAuth connect needs a real listing id that only exists post-insert.
   const [createdListingId, setCreatedListingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Sep 27, 2026: fires once per mount of this page, marking the "Listing
+  // Started" step of the seller-acquisition funnel (see
+  // claude/bangladesh-seller-acquisition-page-and-ad-copy-addendum.md) —
+  // regardless of what a seller landed here from, since this is genuinely
+  // the moment a listing gets started. Deliberately not deduped against
+  // repeat visits the way trackPurchase()'s localStorage guard is: a seller
+  // who abandons and comes back to start a fresh listing later has, in fact,
+  // started again.
+  useEffect(() => {
+    trackListingStarted();
+  }, []);
   // Sep 19, 2026 ("listing dashboard e niye jabe" — should land on the
   // dashboard after creating a listing): this GA-connect screen used to
   // require a manual "Skip, do it later" click to ever reach the seller
