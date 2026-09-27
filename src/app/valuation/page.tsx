@@ -51,7 +51,11 @@ export default function ValuationPage() {
         />
         <Container className="relative">
           <Inner>
-            <div className="grid items-start gap-10 lg:grid-cols-[0.46fr_0.54fr] lg:gap-x-14">
+            {/* items-center (not items-start): the form card's height grows
+                with the category-specific field, so pinning the left copy
+                to the top left a large dead gap under the trust checklist
+                on desktop once the card got taller than the copy block. */}
+            <div className="grid items-center gap-10 lg:grid-cols-[0.46fr_0.54fr] lg:gap-x-14">
               <div>
                 <p className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70">
                   <span className="h-px w-6 bg-brand" aria-hidden />
