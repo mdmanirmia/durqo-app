@@ -243,7 +243,7 @@ export default function HowToSellPage() {
                 reviewed, how a sale closes, and how you get paid.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Button href="/sell" size="lg">
+                <Button href="/valuation" size="lg">
                   Get a free valuation
                   <ArrowRight size={16} />
                 </Button>
@@ -266,7 +266,7 @@ export default function HowToSellPage() {
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Nothing is charged until your business actually sells, and every listing goes through a real,
                 manual review before it publishes. Curious what your business might be worth first? Get a{" "}
-                <Link href="/sell" className="font-semibold text-brand-strong hover:underline">
+                <Link href="/valuation" className="font-semibold text-brand-strong hover:underline">
                   free valuation
                 </Link>{" "}
                 before you list.
@@ -462,7 +462,7 @@ export default function HowToSellPage() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-3">
-                <Button href="/contact?subject=valuation" size="lg">
+                <Button href="/valuation" size="lg">
                   Get a free valuation
                   <ArrowRight size={16} />
                 </Button>
