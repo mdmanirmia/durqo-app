@@ -75,6 +75,12 @@ export default function ValuationForm() {
   const labelClass = "text-sm font-semibold text-ink-soft";
 
   if (step === "result" && result) {
+    // A quick visual "where does this land" bar next to the number - scaled
+    // against a ceiling a bit above the high end so the filled band never
+    // touches either edge of the track.
+    const scaleMax = Math.max(result.high * 1.3, 1);
+    const lowPct = Math.min(100, (result.low / scaleMax) * 100);
+    const highPct = Math.min(100, (result.high / scaleMax) * 100);
     return (
       <div className="rounded-2xl border border-rule bg-paper-raised p-6 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.4)] sm:p-8">
         <span className="eyebrow mb-3 flex items-center gap-2 text-brand-strong">
@@ -88,6 +94,12 @@ export default function ValuationForm() {
           <p className="mono mt-1 text-3xl font-bold text-brand-strong">
             ${result.low.toLocaleString("en-US")} &ndash; ${result.high.toLocaleString("en-US")}
           </p>
+          <div className="mt-4 h-2 rounded-full bg-black/10">
+            <div
+              className="h-full rounded-full bg-brand-strong"
+              style={{ marginLeft: `${lowPct}%`, width: `${Math.max(highPct - lowPct, 3)}%` }}
+            />
+          </div>
         </div>
         <p className="mt-4 text-sm leading-relaxed text-ink-soft">{BASIS_NOTE[result.basis]}</p>
         {categoryMetric && categoryMetricValue !== "" && (
@@ -115,10 +127,23 @@ export default function ValuationForm() {
 
   return (
     <div className="rounded-2xl border border-rule bg-paper-raised p-6 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.4)] sm:p-8">
-      <div className="mb-6 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">
-        <span className={step === "business" ? "text-brand-strong" : ""}>1. Your business</span>
-        <span className="h-px w-5 bg-rule" aria-hidden />
-        <span className={step === "contact" ? "text-brand-strong" : ""}>2. Get your estimate</span>
+      <div className="mb-6">
+        <div className="mb-2 flex items-center justify-between text-xs font-semibold uppercase tracking-wide">
+          <span className={step === "business" ? "text-brand-strong" : "text-ink-faint"}>1. Your business</span>
+          <span className={step === "contact" ? "text-brand-strong" : "text-ink-faint"}>2. Get your estimate</span>
+        </div>
+        <div
+          className="flex gap-1.5"
+          role="progressbar"
+          aria-valuenow={step === "contact" ? 2 : 1}
+          aria-valuemin={1}
+          aria-valuemax={2}
+        >
+          <div className="h-1.5 flex-1 rounded-full bg-brand-strong" />
+          <div
+            className={`h-1.5 flex-1 rounded-full transition-colors ${step === "contact" ? "bg-brand-strong" : "bg-rule"}`}
+          />
+        </div>
       </div>
 
       {step === "business" && (
