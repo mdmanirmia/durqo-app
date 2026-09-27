@@ -202,3 +202,42 @@ export function trackListingSubmitted(params: { category: string; price: number 
 export function trackVerificationSubmitted(method: string) {
   sendGAEvent("event", "verification_submitted", { method });
 }
+
+// Sep 27, 2026: three new custom events added for the Bangladesh seller-
+// acquisition content page (see claude/bangladesh-seller-acquisition-page-
+// and-ad-copy-addendum.md), covering the funnel steps between an ad click
+// and the existing trackListingSubmitted()/trackVerificationSubmitted()
+// events above: Ad Click -> Article View -> Sell CTA Click -> Listing
+// Started -> Listing Submitted (already wired) -> Listing Approved (server-
+// side, see src/lib/ga4-measurement-protocol.ts). Plain GA4 custom events,
+// no GA4 "recommended event" fits any of these, and no Meta Pixel call —
+// same posture as verification_submitted above: Meta already gets its own
+// PageView from the base pixel script on every page, and already gets its
+// one "Lead" standard event at listing_submitted, so nothing here would be
+// a new, distinct Meta conversion action without separately configuring a
+// Custom Conversion in Ads Manager (out of scope for this pass).
+
+/** Fired once per page view of a seller-acquisition content/landing page. */
+export function trackSellerArticleView(params: { slug: string }) {
+  sendGAEvent("event", "seller_article_view", { slug: params.slug });
+}
+
+/**
+ * Fired when a visitor clicks a "List Your Business"-style CTA on a seller-
+ * acquisition content page, right before that click's own navigation.
+ * `cta` is a short, stable label for which of the page's several CTAs was
+ * clicked (e.g. "hero_primary"), not its visible button text, so relabeling
+ * a button's copy later doesn't silently rename its GA4 events.
+ */
+export function trackSellerCtaClick(params: { slug: string; cta: string }) {
+  sendGAEvent("event", "seller_cta_click", { slug: params.slug, cta: params.cta });
+}
+
+// Fired once when a seller lands on the "create a new listing" form itself
+// (dashboard/seller/listings/new/page.tsx), marking the "Listing Started"
+// funnel step. Distinct from trackListingSubmitted() above, which only
+// fires once the multi-step form's full submission has actually succeeded —
+// most visits to this event will never reach that one.
+export function trackListingStarted() {
+  sendGAEvent("event", "listing_started");
+}
