@@ -32,13 +32,21 @@ export async function GET() {
   }
 
   const admin = createAdminClient();
-  if (!admin) return NextResponse.json({ listings: 0, verification: 0, withdrawals: 0 });
+  if (!admin) return NextResponse.json({ listings: 0, verification: 0, withdrawals: 0, valuationLeads: 0 });
 
-  const [{ count: listings }, { count: verification }, { count: withdrawals }] = await Promise.all([
+  const [{ count: listings }, { count: verification }, { count: withdrawals }, { count: valuationLeads }] = await Promise.all([
     admin.from("listings").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
     admin.from("profiles").select("id", { count: "exact", head: true }).eq("verification_status", "pending"),
     admin.from("withdrawal_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
+    // Sep 27, 2026: new Valuation Leads nav badge — counts submissions the
+    // admin hasn't triaged yet (see 058_valuation_leads.sql).
+    admin.from("valuation_leads").select("id", { count: "exact", head: true }).eq("status", "new"),
   ]);
 
-  return NextResponse.json({ listings: listings ?? 0, verification: verification ?? 0, withdrawals: withdrawals ?? 0 });
+  return NextResponse.json({
+    listings: listings ?? 0,
+    verification: verification ?? 0,
+    withdrawals: withdrawals ?? 0,
+    valuationLeads: valuationLeads ?? 0,
+  });
 }
