@@ -1218,16 +1218,10 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                   </span>
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-ink">{listing.seller.name}</div>
-                    {(listing.seller.location || sellerCountryName) && (
+                    {sellerCountryName && (
                       <div className="truncate text-sm text-ink-soft">
-                        {listing.seller.location}
-                        {listing.seller.location && sellerCountryName && " · "}
-                        {sellerCountryName && (
-                          <span className="whitespace-nowrap">
-                            {sellerFlag && <span className="mr-1">{sellerFlag}</span>}
-                            {sellerCountryName}
-                          </span>
-                        )}
+                        {sellerFlag && <span className="mr-1">{sellerFlag}</span>}
+                        {sellerCountryName}
                       </div>
                     )}
                     {listing.seller.reviewCount > 0 && listing.seller.avgRating !== null && (
