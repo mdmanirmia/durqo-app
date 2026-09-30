@@ -10,21 +10,18 @@ const fieldCls =
 export default function AccountForm({
   initialFirstName,
   initialLastName,
-  initialLocation,
   initialCountry,
   initialAddress,
   initialEmail,
 }: {
   initialFirstName: string;
   initialLastName: string;
-  initialLocation: string;
   initialCountry: string;
   initialAddress: string;
   initialEmail: string;
 }) {
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
-  const [location, setLocation] = useState(initialLocation);
   const [country, setCountry] = useState(initialCountry);
   const [address, setAddress] = useState(initialAddress);
   const [email, setEmail] = useState(initialEmail);
@@ -37,7 +34,7 @@ export default function AccountForm({
     setFeedback(null);
     startTransition(async () => {
       try {
-        const result = await updateAccount({ firstName, lastName, location, country, address, email, password });
+        const result = await updateAccount({ firstName, lastName, country, address, email, password });
         setPassword("");
         setFeedback({
           type: "success",
@@ -86,17 +83,6 @@ export default function AccountForm({
             placeholder="you@email.com"
             className={fieldCls}
           />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-sm font-semibold text-ink-soft">Location</label>
-          <input
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            disabled={isPending}
-            placeholder="City, Country"
-            className={fieldCls}
-          />
-          <p className="text-xs text-ink-soft">Shown publicly on your listings and seller profile.</p>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-ink-soft">Country</label>
