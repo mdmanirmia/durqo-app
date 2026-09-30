@@ -21,6 +21,7 @@ export default async function BuyerAccountPage() {
   let initialFirstName = "";
   let initialLastName = "";
   let initialLocation = "";
+  let initialCountry = "";
   let initialAddress = "";
   let initialEmail = "";
 
@@ -32,7 +33,7 @@ export default async function BuyerAccountPage() {
       initialEmail = user.email ?? "";
       const { data: profile } = await supabase
         .from("profiles")
-        .select("first_name, last_name, full_name, location, address")
+        .select("first_name, last_name, full_name, location, country, address")
         .eq("id", user.id)
         .maybeSingle();
 
@@ -45,6 +46,7 @@ export default async function BuyerAccountPage() {
         initialLastName = split.last;
       }
       initialLocation = profile?.location ?? "";
+      initialCountry = profile?.country ?? "";
       initialAddress = profile?.address ?? "";
     }
   }
@@ -56,6 +58,7 @@ export default async function BuyerAccountPage() {
         initialFirstName={initialFirstName}
         initialLastName={initialLastName}
         initialLocation={initialLocation}
+        initialCountry={initialCountry}
         initialAddress={initialAddress}
         initialEmail={initialEmail}
       />
