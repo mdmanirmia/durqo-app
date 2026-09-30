@@ -24,6 +24,10 @@ create table if not exists public.profiles (
   role text not null default 'buyer' check (role in ('buyer','seller','admin')),
   bio text,
   location text,
+  -- Structured ISO 3166-1 alpha-2 country code (e.g. "BD"), separate from the
+  -- free-text `location` above — Sep 30, 2026, so the seller card can show a
+  -- reliable country name + flag. See src/lib/countries.ts.
+  country text,
   is_verified boolean not null default false,
   verification_method text check (verification_method in ('passport','national_id','driving_license','birth_certificate')),
   verification_status text not null default 'unverified' check (verification_status in ('unverified','pending','verified','rejected')),
