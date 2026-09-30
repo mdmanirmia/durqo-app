@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { COUNTRY_MAP } from "@/lib/countries";
 
 // 2026-09-23: seller-side "Account Details" page (mirrors the buyer's own
 // dashboard/buyer/actions.ts updateAccount()). first_name/last_name are new
@@ -20,6 +21,7 @@ export async function updateAccount(input: {
   firstName: string;
   lastName: string;
   location: string;
+  country: string;
   address: string;
   email: string;
   password: string;
@@ -36,6 +38,14 @@ export async function updateAccount(input: {
   const lastName = input.lastName.trim();
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
   const location = input.location.trim();
+  // Only ever a code from the fixed <select> in AccountForm.tsx, but
+  // validated against the known list anyway rather than trusted blindly —
+  // this still goes through the caller's own session client, so nothing
+  // stops a handcrafted request from sending an arbitrary string otherwise.
+  const country = input.country.trim().toUpperCase();
+  if (country && !COUNTRY_MAP[country]) {
+    throw new Error("That country isn't recognized. Please pick one from the list.");
+  }
   const address = input.address.trim();
   const email = input.email.trim();
 
@@ -46,6 +56,7 @@ export async function updateAccount(input: {
       last_name: lastName || null,
       full_name: fullName || null,
       location: location || null,
+      country: country || null,
       address: address || null,
     })
     .eq("id", user.id);
