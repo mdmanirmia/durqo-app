@@ -44,6 +44,7 @@ import { MONETIZATION_MAP } from "@/lib/monetization-types";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
 import { ONLINE_DEPOSIT_CAP } from "@/lib/payment-terms";
 import { BUSINESS_PLATFORM_MAP } from "@/lib/business-platforms";
+import { countryFlagEmoji, countryName } from "@/lib/countries";
 import IncomeHistoryPanel from "@/components/IncomeHistoryPanel";
 import GoogleAnalyticsLivePanel from "@/components/GoogleAnalyticsLivePanel";
 import FaqAccordion from "@/components/FaqAccordion";
@@ -312,6 +313,11 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
 
   const category = CATEGORY_MAP[listing.categoryId];
   const price = listing.discountedPrice ?? listing.price;
+  // Seller card country + flag (Sep 30, 2026) — from the structured
+  // profiles.country ISO code (see src/lib/countries.ts), separate from the
+  // free-text `location` line already shown above it.
+  const sellerCountryName = countryName(listing.seller.country);
+  const sellerFlag = countryFlagEmoji(listing.seller.country);
   const incomeSeries = listing.monthlyStats.map((m) => ({ month: m.month, income: m.income }));
 
   // Websites/E-commerce Quick Stat label overrides (Business Page Layout
@@ -1212,7 +1218,18 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                   </span>
                   <div className="min-w-0">
                     <div className="truncate font-semibold text-ink">{listing.seller.name}</div>
-                    {listing.seller.location && <div className="truncate text-sm text-ink-soft">{listing.seller.location}</div>}
+                    {(listing.seller.location || sellerCountryName) && (
+                      <div className="truncate text-sm text-ink-soft">
+                        {listing.seller.location}
+                        {listing.seller.location && sellerCountryName && " · "}
+                        {sellerCountryName && (
+                          <span className="whitespace-nowrap">
+                            {sellerFlag && <span className="mr-1">{sellerFlag}</span>}
+                            {sellerCountryName}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     {listing.seller.reviewCount > 0 && listing.seller.avgRating !== null && (
                       <div className="mt-0.5 flex items-center gap-1 text-sm text-ink-soft">
                         <Star size={13} className="fill-gold text-gold" />
