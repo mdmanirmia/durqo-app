@@ -21,10 +21,12 @@ import { COUNTRY_MAP } from "@/lib/countries";
 //
 // 2026-09-23 Account Details follow-up: split the single "full name" field
 // into first_name/last_name (migration 056, new self-service columns) and
-// added a private `address` field, separate from the existing public
-// `location` column. full_name is still kept in sync on every save since
-// it's what listing cards, dashboards, admin tables and emails read across
-// the app. As of migration 056, a BEFORE UPDATE trigger on profiles also
+// added a private `address` field. full_name is still kept in sync on every
+// save since it's what listing cards, dashboards, admin tables and emails
+// read across the app. `country` was added 2026-09-30 as the structured
+// replacement for the old free-text `location` column, which was dropped
+// from this form the same day. As of migration 056, a BEFORE UPDATE trigger
+// on profiles also
 // blocks this same session from touching admin-only columns (role,
 // payout_verified, is_verified, is_active, verification_status) no matter
 // what a client sends, closing a gap where profiles_update_own's RLS policy
@@ -32,7 +34,6 @@ import { COUNTRY_MAP } from "@/lib/countries";
 export async function updateAccount(input: {
   firstName: string;
   lastName: string;
-  location: string;
   country: string;
   address: string;
   email: string;
@@ -49,7 +50,6 @@ export async function updateAccount(input: {
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
-  const location = input.location.trim();
   // Only ever a code from the fixed <select> in AccountForm.tsx, but
   // validated against the known list anyway rather than trusted blindly —
   // this still goes through the caller's own session client, so nothing
@@ -67,7 +67,6 @@ export async function updateAccount(input: {
       first_name: firstName || null,
       last_name: lastName || null,
       full_name: fullName || null,
-      location: location || null,
       country: country || null,
       address: address || null,
     })
