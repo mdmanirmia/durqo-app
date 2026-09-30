@@ -137,6 +137,10 @@ export interface SellerInfo {
   id: string;
   name: string;
   location?: string;
+  // ISO 3166-1 alpha-2 code (e.g. "BD"), from the seller's Account Details
+  // page — see src/lib/countries.ts for the option list and the
+  // countryFlagEmoji()/countryName() helpers used to render it.
+  country?: string;
   isVerified: boolean;
   verificationMethod?: "passport" | "national_id" | "driving_license" | "birth_certificate";
   // Whether the seller's own account email is confirmed (Supabase
