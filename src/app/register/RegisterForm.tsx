@@ -12,6 +12,7 @@ import Container from "@/components/ui/Container";
 import { notifySellerAccountCreated } from "./actions";
 import { trackSignUp } from "@/lib/analytics";
 import TurnstileWidget, { captchaRequired, type TurnstileHandle } from "@/components/TurnstileWidget";
+import { COUNTRIES } from "@/lib/countries";
 
 function RegisterForm() {
   const router = useRouter();
@@ -22,6 +23,7 @@ function RegisterForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [country, setCountry] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -57,7 +59,7 @@ function RegisterForm() {
       email,
       password,
       options: {
-        data: { full_name: fullName, role },
+        data: { full_name: fullName, role, country },
         emailRedirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
         captchaToken: captchaToken ?? undefined,
       },
@@ -171,6 +173,17 @@ function RegisterForm() {
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-ink-soft" htmlFor="password">Password</label>
           <input id="password" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className={fieldCls} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-ink-soft" htmlFor="country">Country</label>
+          <select id="country" required value={country} onChange={(e) => setCountry(e.target.value)} className={fieldCls}>
+            <option value="" disabled>Select a country</option>
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
         <TurnstileWidget ref={turnstileRef} onToken={setCaptchaToken} />
         {error && <p className="text-sm text-danger">{error}</p>}
