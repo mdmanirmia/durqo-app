@@ -207,6 +207,7 @@ export function mapSeller(
     id: profile.id,
     name: profile.full_name ?? "Durqo Seller",
     location: profile.location ?? undefined,
+    country: profile.country ?? undefined,
     isVerified: !!profile.is_verified,
     verificationMethod: profile.verification_method ?? undefined,
     emailVerified: stats?.emailVerified ?? false,
