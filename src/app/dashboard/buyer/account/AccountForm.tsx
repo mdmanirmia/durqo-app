@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { updateAccount } from "../actions";
+import { COUNTRIES } from "@/lib/countries";
 
 const fieldCls =
   "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none disabled:opacity-60";
@@ -10,18 +11,21 @@ export default function AccountForm({
   initialFirstName,
   initialLastName,
   initialLocation,
+  initialCountry,
   initialAddress,
   initialEmail,
 }: {
   initialFirstName: string;
   initialLastName: string;
   initialLocation: string;
+  initialCountry: string;
   initialAddress: string;
   initialEmail: string;
 }) {
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
   const [location, setLocation] = useState(initialLocation);
+  const [country, setCountry] = useState(initialCountry);
   const [address, setAddress] = useState(initialAddress);
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
@@ -33,7 +37,7 @@ export default function AccountForm({
     setFeedback(null);
     startTransition(async () => {
       try {
-        const result = await updateAccount({ firstName, lastName, location, address, email, password });
+        const result = await updateAccount({ firstName, lastName, location, country, address, email, password });
         setPassword("");
         setFeedback({
           type: "success",
@@ -92,6 +96,22 @@ export default function AccountForm({
             placeholder="City, Country"
             className={fieldCls}
           />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-semibold text-ink-soft">Country</label>
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+            disabled={isPending}
+            className={fieldCls}
+          >
+            <option value="">Select a country</option>
+            {COUNTRIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-semibold text-ink-soft">Address</label>
