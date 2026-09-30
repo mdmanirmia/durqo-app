@@ -80,6 +80,12 @@ const TRUST_BAR = [
 // merchant asked to keep it out of this column. It's still indexable (see
 // its own metadata/robots and its sitemap.ts entry) and reachable from
 // search and internal links elsewhere on the site.
+//
+// Sep 30, 2026: added a 7th Resources link to the new /durqo-bangladesh
+// marketing/positioning page. Unlike the how-to guide above, this one is
+// meant to be a primary destination for Bangladesh-focused traffic (ad
+// campaigns, social links), so it gets a footer link like
+// /buy-and-sell-digital-businesses-in-bdt rather than being excluded.
 export default function Footer() {
   // Sep 2026 About-page redesign: the About page's own Final CTA already
   // closes with the same "browse marketplace / sell a business" pair this
@@ -169,6 +175,7 @@ export default function Footer() {
               <li><Link href="/seller-faq" className="hover:text-white">Seller&apos;s FAQ</Link></li>
               <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
               <li><Link href="/buy-and-sell-digital-businesses-in-bdt" className="hover:text-white">Buy &amp; Sell BDT</Link></li>
+              <li><Link href="/durqo-bangladesh" className="hover:text-white">Durqo for Bangladesh</Link></li>
               <li><Link href="/transfer-room" className="hover:text-white">The Transfer Room</Link></li>
               <li><Link href="/report-an-issue" className="hover:text-white">Report an Issue</Link></li>
               <li><Link href="/listing-review" className="hover:text-white">How Listings Are Reviewed</Link></li>
