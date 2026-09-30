@@ -85,6 +85,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    {
+      url: `${BASE_URL}/durqo-bangladesh`,
+      // Sep 30, 2026: standalone Bangladesh marketing/positioning page (the
+      // "problems Bangladeshi buyers and sellers face, and Durqo's answer to
+      // each" landing page) — see claude/durqo-bangladesh-marketing-page-
+      // addendum.md. lastModified matches this page's own WebPage JSON-LD.
+      lastModified: new Date("2026-09-30"),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
     { url: `${BASE_URL}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/contact`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/terms`, changeFrequency: "yearly", priority: 0.3 },
