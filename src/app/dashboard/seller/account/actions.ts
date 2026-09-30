@@ -9,8 +9,10 @@ import { COUNTRY_MAP } from "@/lib/countries";
 // self-service columns (migration 056) kept in sync into the existing
 // full_name field on every save, since full_name is still what listing
 // cards, dashboards, admin tables and emails read across the app.
-// `address` is a new private mailing-address field, separate from the
-// existing public `location` column shown on this seller's listings.
+// `address` is a private mailing-address field, never shown publicly.
+// `country` is the public location shown on this seller's listings (as a
+// flag + name); the old free-text `location` column was dropped from this
+// form on 2026-09-30 now that country covers what it used to show.
 // Uses the caller's own session client throughout (never the service-role
 // admin client), so this can only ever change the signed-in seller's own
 // row -- and as of migration 056, a BEFORE UPDATE trigger on profiles also
@@ -20,7 +22,6 @@ import { COUNTRY_MAP } from "@/lib/countries";
 export async function updateAccount(input: {
   firstName: string;
   lastName: string;
-  location: string;
   country: string;
   address: string;
   email: string;
@@ -37,7 +38,6 @@ export async function updateAccount(input: {
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
-  const location = input.location.trim();
   // Only ever a code from the fixed <select> in AccountForm.tsx, but
   // validated against the known list anyway rather than trusted blindly —
   // this still goes through the caller's own session client, so nothing
@@ -55,7 +55,6 @@ export async function updateAccount(input: {
       first_name: firstName || null,
       last_name: lastName || null,
       full_name: fullName || null,
-      location: location || null,
       country: country || null,
       address: address || null,
     })
