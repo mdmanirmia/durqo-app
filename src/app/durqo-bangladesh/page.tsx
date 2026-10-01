@@ -808,7 +808,7 @@ export default function DurqoBangladeshPage() {
       </section>
 
       {/* MARKETPLACE FEES */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner>
             <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
@@ -866,7 +866,7 @@ export default function DurqoBangladeshPage() {
       </section>
 
       {/* INSIDE THE TRANSFER ROOM */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[900px]">
             <div className="mb-10 text-center">
@@ -888,7 +888,7 @@ export default function DurqoBangladeshPage() {
       </section>
 
       {/* 16 CATEGORIES */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
             <div className="mb-10 max-w-[70ch]">
@@ -975,7 +975,7 @@ export default function DurqoBangladeshPage() {
       </section>
 
       {/* FAQ */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[860px]">
             <DashEyebrow center>Frequently asked questions</DashEyebrow>
@@ -986,7 +986,7 @@ export default function DurqoBangladeshPage() {
       </section>
 
       {/* RELATED READING */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
             <DashEyebrow>Keep exploring</DashEyebrow>
