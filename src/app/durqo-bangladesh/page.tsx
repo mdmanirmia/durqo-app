@@ -181,10 +181,10 @@ const PAYOUT_METHODS = [
 
 type Audience = "For Buyers" | "For Sellers" | "For Everyone";
 
-const AUDIENCE_STYLE: Record<Audience, { pill: string; icon: string; bar: string }> = {
-  "For Buyers": { pill: "bg-brand-soft text-brand-strong", icon: "bg-brand-soft text-brand-strong", bar: "bg-brand" },
-  "For Sellers": { pill: "bg-gold-soft text-[#92730F]", icon: "bg-gold-soft text-[#92730F]", bar: "bg-gold" },
-  "For Everyone": { pill: "bg-paper-sunk text-ink-soft", icon: "bg-paper-sunk text-ink-soft", bar: "bg-ink-faint" },
+const AUDIENCE_STYLE: Record<Audience, { pill: string; icon: string; bar: string; solutionBg: string }> = {
+  "For Buyers": { pill: "bg-brand-soft text-brand-strong", icon: "bg-brand-soft text-brand-strong", bar: "bg-brand", solutionBg: "bg-brand-soft" },
+  "For Sellers": { pill: "bg-gold-soft text-[#92730F]", icon: "bg-gold-soft text-[#92730F]", bar: "bg-gold", solutionBg: "bg-gold-soft" },
+  "For Everyone": { pill: "bg-paper-sunk text-ink-soft", icon: "bg-paper-sunk text-ink-soft", bar: "bg-ink-faint", solutionBg: "bg-paper-sunk" },
 };
 
 const PROBLEMS: {
@@ -525,28 +525,36 @@ export default function DurqoBangladeshPage() {
               </p>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2">
+            <div className="flex flex-col gap-4">
               {PROBLEMS.map(({ audience, icon: Icon, problem, solution }, i) => {
                 const style = AUDIENCE_STYLE[audience];
                 return (
                   <div
                     key={problem}
-                    className="relative overflow-hidden rounded-xl border border-rule bg-paper-raised p-6 pl-7 transition hover:border-rule-strong hover:shadow-sm"
+                    className="relative overflow-hidden rounded-2xl border border-rule bg-paper-raised transition hover:border-rule-strong hover:shadow-sm sm:grid sm:grid-cols-[1fr_1fr]"
                   >
                     <span className={`absolute inset-y-0 left-0 w-1.5 ${style.bar}`} aria-hidden />
-                    <div className="mb-4 flex items-center justify-between">
-                      <span className={`mono grid h-9 w-9 shrink-0 place-items-center rounded-lg text-sm ${style.icon}`}>
-                        <Icon size={16} />
-                      </span>
-                      <span className="mono text-xs font-semibold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
+
+                    {/* Problem side — deliberately quiet, so the solution reads as the answer */}
+                    <div className="p-6 pl-8 sm:p-8 sm:pl-9">
+                      <div className="mb-4 flex items-center justify-between gap-3">
+                        <span className={`mono inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider ${style.pill}`}>
+                          <Icon size={12} />
+                          {audience}
+                        </span>
+                        <span className="mono text-xs font-semibold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
+                      </div>
+                      <p className="mono mb-2 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">The problem</p>
+                      <p className="text-[0.95rem] font-medium leading-relaxed text-ink">{problem}</p>
                     </div>
-                    <span className={`mono mb-3 inline-flex rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider ${style.pill}`}>
-                      {audience}
-                    </span>
-                    <p className="text-sm font-medium leading-relaxed text-ink">{problem}</p>
-                    <div className="mt-3 flex items-start gap-2 border-t border-rule pt-3">
-                      <CheckCircle2 size={15} className="mt-0.5 shrink-0 text-brand-strong" />
-                      <p className="text-sm leading-relaxed text-ink-soft">{solution}</p>
+
+                    {/* Solution side — highlighted so Durqo's answer is the visual payoff of each row */}
+                    <div className={`border-t border-rule p-6 pl-8 sm:border-l sm:border-t-0 sm:p-8 sm:pl-8 ${style.solutionBg}`}>
+                      <p className="mono mb-2 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-brand-strong">
+                        <CheckCircle2 size={13} />
+                        Durqo&rsquo;s solution
+                      </p>
+                      <p className="text-[0.95rem] leading-relaxed text-ink">{solution}</p>
                     </div>
                   </div>
                 );
@@ -664,10 +672,10 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[70ch] text-center sm:mx-auto">
-              <DashEyebrow center>Built for Bangladesh</DashEyebrow>
+            <div className="mb-10 max-w-[70ch]">
+              <DashEyebrow>Built for Bangladesh</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Why Buy and Sell Through Durqo?</h2>
-              <p className="mx-auto mt-3 max-w-[60ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Durqo combines Bangladesh-focused payment accessibility with a structured marketplace and
                 asset-transfer process.
               </p>
