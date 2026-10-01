@@ -11,6 +11,7 @@ import {
   Layers,
   Handshake,
   Globe2,
+  MapPin,
   Calculator,
   CheckCircle2,
   Smartphone,
@@ -196,14 +197,14 @@ const PROBLEMS: {
   {
     audience: "For Buyers",
     icon: Wallet,
-    problem: "Paying an international seller in BDT is hard — most global marketplaces only take cards or wires priced in USD.",
+    problem: "Paying an international seller in BDT is hard - most global marketplaces only take cards or wires priced in USD.",
     solution: "Buy in BDT through supported local payment methods, including bKash, Nagad, Rocket, bank transfer or card.",
   },
   {
     audience: "For Sellers",
     icon: Landmark,
     problem: "Bangladeshi sellers struggle to reach buyers outside the country, and getting paid back in BDT is even harder.",
-    solution: "Sell to buyers anywhere in the world and get paid out in BDT — through bank transfer, bKash, Nagad or Rocket.",
+    solution: "Sell to buyers anywhere in the world and get paid out in BDT - through bank transfer, bKash, Nagad or Rocket.",
   },
   {
     audience: "For Buyers",
@@ -216,7 +217,7 @@ const PROBLEMS: {
     icon: Lock,
     problem: "Both sides carry payment and delivery risk in a deal this size.",
     solution:
-      "A structured process — payment, transfer, inspection, approval, then payout — keeps things organized end to end. Supported transactions may also use Escrow.com as an independent escrow option.",
+      "A structured process - payment, transfer, inspection, approval, then payout - keeps things organized end to end. Supported transactions may also use Escrow.com as an independent escrow option.",
   },
   {
     audience: "For Everyone",
@@ -229,12 +230,12 @@ const PROBLEMS: {
     icon: Search,
     problem: "Listing information on many marketplaces can't be trusted.",
     solution:
-      "Listings go through review before they go live and carry verification signals, including supported Google Analytics connections — though buyers should still do their own diligence.",
+      "Listings go through review before they go live and carry verification signals, including supported Google Analytics connections - though buyers should still do their own diligence.",
   },
   {
     audience: "For Everyone",
     icon: Layers,
-    problem: "A sale with several moving parts — domain, app, accounts, documents — is hard to hand over cleanly.",
+    problem: "A sale with several moving parts - domain, app, accounts, documents - is hard to hand over cleanly.",
     solution: "The Transfer Room tracks every asset in the sale individually, so nothing gets lost in a multi-part handover.",
   },
   {
@@ -253,12 +254,12 @@ const PROBLEMS: {
     audience: "For Sellers",
     icon: Calculator,
     problem: "Many owners have no idea what their business is actually worth.",
-    solution: "Get a free indicative valuation before deciding whether — or when — to sell.",
+    solution: "Get a free indicative valuation before deciding whether - or when - to sell.",
   },
 ];
 
 const WHY_DURQO_CARDS = [
-  { icon: Layers, title: "16 Digital Business Categories", body: "Buy or sell across websites, e-commerce, SaaS, apps, domains and more — all in one marketplace." },
+  { icon: Layers, title: "16 Digital Business Categories", body: "Buy or sell across websites, e-commerce, SaaS, apps, domains and more - all in one marketplace." },
   { icon: Wallet, title: "Buy and Sell in BDT", body: "Bangladesh-based buyers pay in BDT, and eligible sellers get paid out in BDT through supported local methods." },
   { icon: Percent, title: "No Buyer Marketplace Fee", body: "Durqo does not charge buyers a marketplace fee. Buyers pay the agreed purchase price, although disclosed payment-provider, banking or currency charges may apply." },
   { icon: Percent, title: "Seller Fee Only After a Sale", body: "Durqo deducts the applicable success fee from the seller only after a successful sale." },
@@ -271,7 +272,7 @@ const TRANSACTION_STEPS = [
   { title: "Transfer Room Opens", body: "Buyer and seller move into a private Transfer Room to hand over every asset in the sale.", icon: Handshake },
   { title: "7-Day Inspection", body: "The buyer has 7 days to inspect the assets against what was agreed.", icon: ClipboardCheck },
   { title: "Buyer Approves", body: "The buyer approves the completed transfer, or reports an issue for review instead of an automatic approval.", icon: CheckCircle2 },
-  { title: "Seller Is Paid Out", body: "Once the transfer is approved, the seller can request their payout — including in BDT for Bangladeshi sellers.", icon: Landmark },
+  { title: "Seller Is Paid Out", body: "Once the transfer is approved, the seller can request their payout - including in BDT for Bangladeshi sellers.", icon: Landmark },
 ];
 
 const FAQ_GROUPS: FaqGroup[] = [
@@ -286,7 +287,7 @@ const FAQ_GROUPS: FaqGroup[] = [
         question: "Do I need to be in Bangladesh to buy?",
         answer: (
           <>
-            No. Durqo is open to buyers anywhere — card payments and Escrow.com are available globally, while bKash,
+            No. Durqo is open to buyers anywhere - card payments and Escrow.com are available globally, while bKash,
             Nagad, Rocket and bank transfer are specifically for buyers paying in BDT. See{" "}
             <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
               Buy &amp; Sell in BDT
@@ -326,7 +327,7 @@ const FAQ_GROUPS: FaqGroup[] = [
         answer: "Yes. After a successful sale, completed asset transfer and any required review, eligible sellers can request their available earnings through bank transfer, bKash, Nagad or Rocket.",
       },
       {
-        question: "I already have a buyer through Facebook or a personal contact — can I still use Durqo?",
+        question: "I already have a buyer through Facebook or a personal contact - can I still use Durqo?",
         answer: "Yes. Bring that buyer onto Durqo and run the sale through the same structured payment, Transfer Room and inspection process as any other listing.",
       },
       {
@@ -334,7 +335,7 @@ const FAQ_GROUPS: FaqGroup[] = [
         answer: (
           <>
             Durqo does not charge buyers a marketplace fee. Sellers are charged a tiered success fee, deducted only
-            after a successful sale — see{" "}
+            after a successful sale - see{" "}
             <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
               Buy &amp; Sell in BDT
             </Link>{" "}
@@ -431,14 +432,14 @@ const FAQ_JSON_LD = {
   "@type": "FAQPage",
   mainEntity: [
     { q: "Do I need an account to browse listings?", a: "No. Anyone can browse and view listing details, but you'll need a free buyer account to message a seller or make a purchase." },
-    { q: "Do I need to be in Bangladesh to buy?", a: "No. Durqo is open to buyers anywhere — card payments and Escrow.com are available globally, while bKash, Nagad, Rocket and bank transfer are specifically for buyers paying in BDT." },
+    { q: "Do I need to be in Bangladesh to buy?", a: "No. Durqo is open to buyers anywhere - card payments and Escrow.com are available globally, while bKash, Nagad, Rocket and bank transfer are specifically for buyers paying in BDT." },
     { q: "How do I create a listing?", a: "Sign up for a free seller account, then use “Add New Business” from your seller dashboard to build your listing." },
     { q: "Can I list more than one business?", a: "Yes, there's no limit on how many listings you can create." },
     { q: "Can I pay for a business in BDT from Bangladesh?", a: "Yes. Bangladesh-based buyers can pay for eligible digital businesses in BDT through SSLCommerz, using bKash, Nagad, Rocket, a supported bank, or a credit or debit card." },
     { q: "Which payment methods are available through SSLCommerz?", a: "SSLCommerz payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards." },
     { q: "What happens if the business costs more than USD 2,000?", a: "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. After that payment is confirmed, Durqo emails you instructions for paying the remaining balance. The purchase proceeds to asset transfer only after the complete balance has been received and verified." },
     { q: "Can I get paid out in BDT as a Bangladeshi seller?", a: "Yes. After a successful sale, completed asset transfer and any required review, eligible sellers can request their available earnings through bank transfer, bKash, Nagad or Rocket." },
-    { q: "I already have a buyer through Facebook or a personal contact — can I still use Durqo?", a: "Yes. Bring that buyer onto Durqo and run the sale through the same structured payment, Transfer Room and inspection process as any other listing." },
+    { q: "I already have a buyer through Facebook or a personal contact - can I still use Durqo?", a: "Yes. Bring that buyer onto Durqo and run the sale through the same structured payment, Transfer Room and inspection process as any other listing." },
     { q: "How much does it cost to buy or sell on Durqo?", a: "Durqo does not charge buyers a marketplace fee. Sellers are charged a tiered success fee, deducted only after a successful sale." },
     { q: "What does “Reviewed by Durqo” mean?", a: "Every listing is manually reviewed by our team for accuracy and completeness before it's allowed to publish." },
     { q: "What does a “GA Verified” badge mean?", a: "It means Durqo was given read-only access to that listing's Google Analytics account and reviewed the real traffic numbers being shown." },
@@ -518,7 +519,22 @@ export default function DurqoBangladeshPage() {
           <Inner>
             <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:items-start lg:gap-16">
               <div className="min-w-0">
-                <DashEyebrow>🇧🇩 Bangladesh to the world</DashEyebrow>
+                <div className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-ink-soft">
+                  <span className="h-px w-6 bg-brand" aria-hidden="true" />
+                  <span className="flex items-center gap-1.5 text-brand-strong">
+                    <MapPin size={13} />
+                    Bangladesh
+                  </span>
+                  <span className="flex items-center gap-1" aria-hidden="true">
+                    <span className="h-px w-5 bg-rule-strong" />
+                    <span className="h-1 w-1 rounded-full bg-rule-strong" />
+                    <span className="h-px w-5 bg-rule-strong" />
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Globe2 size={13} />
+                    The World
+                  </span>
+                </div>
                 <h1 className="text-4xl leading-[1.1] sm:text-5xl lg:text-[3.3rem]">
                   The Global Marketplace to{" "}
                   <span className="text-brand">Buy and Sell in BDT.</span>
@@ -632,10 +648,10 @@ export default function DurqoBangladeshPage() {
           <Inner>
             <div className="mb-10 max-w-[70ch]">
               <DashEyebrow>The problems we hear most</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">What Bangladeshi Buyers and Sellers Struggle With — and How Durqo Solves It</h2>
+              <h2 className="text-2xl sm:text-3xl">What Bangladeshi Buyers and Sellers Struggle With - and How Durqo Solves It</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 These are the real obstacles Bangladeshi buyers and sellers run into when trying to buy or sell a
-                digital business internationally — and how Durqo addresses each one.
+                digital business internationally - and how Durqo addresses each one.
               </p>
             </div>
 
@@ -686,7 +702,7 @@ export default function DurqoBangladeshPage() {
               <DashEyebrow>Local money, global reach</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Pay and Get Paid the Way You Already Do</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                No foreign wire transfers or unfamiliar payment forms — Durqo runs on the same local payment methods
+                No foreign wire transfers or unfamiliar payment forms - Durqo runs on the same local payment methods
                 Bangladeshi buyers and sellers already use every day.
               </p>
             </div>
@@ -741,7 +757,7 @@ export default function DurqoBangladeshPage() {
               <h2 className="text-2xl sm:text-3xl">Buy or Sell Across 16 Digital Business Categories</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Selling only within Bangladesh limits how many buyers ever see a listing. Durqo opens every listing
-                to buyers everywhere, across 16 digital business categories — whatever kind of digital business
+                to buyers everywhere, across 16 digital business categories - whatever kind of digital business
                 you&rsquo;re buying or selling, it has a home here.
               </p>
             </div>
@@ -792,7 +808,7 @@ export default function DurqoBangladeshPage() {
               <DashEyebrow>Built for Bangladesh</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Why Buy and Sell Through Durqo?</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Bangladeshi buyers and sellers face real friction buying and selling internationally — paying and
+                Bangladeshi buyers and sellers face real friction buying and selling internationally - paying and
                 getting paid in BDT, and trusting a stranger with the handover. Durqo&rsquo;s structured, tracked
                 process and local payment support solve both.
               </p>
