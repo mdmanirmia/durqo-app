@@ -761,10 +761,10 @@ export default function BuyAndSellInBdtPage() {
             <div className="rounded-2xl bg-brand-soft p-7 shadow-sm sm:p-10">
               <DashEyebrow>Clear currency conversion</DashEyebrow>
               <h2 className="mb-6 text-2xl sm:text-3xl">See the Exact BDT Amount Before Confirming</h2>
-              <div className="grid gap-8 sm:grid-cols-2">
-                <div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="rounded-xl bg-paper-raised p-5 sm:p-6">
                   <div className="mb-2 flex items-center gap-2.5">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-paper-raised text-brand-strong">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
                       <ShoppingCart size={15} />
                     </span>
                     <h4 className="text-sm font-semibold text-ink">When You Purchase</h4>
@@ -774,9 +774,9 @@ export default function BuyAndSellInBdtPage() {
                     displays the applicable exchange rate and exact BDT amount before the payment is confirmed.
                   </p>
                 </div>
-                <div>
+                <div className="rounded-xl bg-paper-raised p-5 sm:p-6">
                   <div className="mb-2 flex items-center gap-2.5">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-paper-raised text-brand-strong">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
                       <Store size={15} />
                     </span>
                     <h4 className="text-sm font-semibold text-ink">When You Request a Payout</h4>
