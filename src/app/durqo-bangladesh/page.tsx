@@ -1016,7 +1016,7 @@ export default function DurqoBangladeshPage() {
           <Inner>
             <h2 className="text-2xl text-white sm:text-3xl">Ready to Buy or Sell a Digital Business?</h2>
             <p className="mx-auto mt-3 max-w-[54ch] text-center text-[0.95rem] leading-relaxed text-white/65">
-              Browse income-generating digital businesses in BDT, or list your business and reach buyers around the
+              Browse income-generating digital businesses, or list your business and reach buyers around the
               world.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
