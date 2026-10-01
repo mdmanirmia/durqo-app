@@ -158,10 +158,10 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
 }
 
 const STATS = [
-  { value: "16", label: "Digital business categories" },
-  { value: "5", label: "Local ways to pay in BDT" },
-  { value: "4", label: "Local BDT payout methods" },
-  { value: "7-Day", label: "Buyer inspection window" },
+  { value: "16", label: "Digital business categories", icon: Layers },
+  { value: "5", label: "Local ways to pay in BDT", icon: Wallet },
+  { value: "4", label: "Local BDT payout methods", icon: Landmark },
+  { value: "7-Day", label: "Buyer inspection window", icon: ClipboardCheck },
 ];
 
 const BUYER_CHANNELS = [
@@ -531,9 +531,9 @@ export default function DurqoBangladeshPage() {
                     Sell a Business
                   </Button>
                 </div>
-                <p className="mono mt-4 flex items-center gap-1.5 text-xs text-ink-faint">
-                  <ShieldCheck size={13} className="shrink-0 text-ink-faint" />
-                  Payments secured through Stripe and SSLCommerz, with Escrow.com available for extra protection.
+                <p className="mono mt-5 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
+                  <ShieldCheck size={13} className="mt-0.5 shrink-0 text-ink-faint" />
+                  <span>Payments secured through Stripe and SSLCommerz, with Escrow.com available for extra protection.</span>
                 </p>
               </div>
 
@@ -603,13 +603,16 @@ export default function DurqoBangladeshPage() {
         <Container>
           <Inner>
             <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-4">
-              {STATS.map((stat, i) => (
+              {STATS.map(({ value, label, icon: Icon }, i) => (
                 <div
-                  key={stat.label}
-                  className={`px-2 text-center sm:border-l sm:border-rule sm:px-4 sm:text-left ${i === 0 ? "sm:border-l-0 sm:px-0" : ""}`}
+                  key={label}
+                  className={`flex flex-col items-center px-2 text-center sm:items-start sm:border-l sm:border-rule sm:px-4 sm:text-left ${i === 0 ? "sm:border-l-0 sm:px-0" : ""}`}
                 >
-                  <p className="mono text-3xl font-bold tabular-nums text-brand-strong sm:text-4xl">{stat.value}</p>
-                  <p className="mt-1 text-xs leading-snug text-ink-soft">{stat.label}</p>
+                  <span className="mb-2 grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={15} />
+                  </span>
+                  <p className="mono text-3xl font-bold tabular-nums text-brand-strong sm:text-4xl">{value}</p>
+                  <p className="mt-1 text-xs leading-snug text-ink-soft">{label}</p>
                 </div>
               ))}
             </div>
