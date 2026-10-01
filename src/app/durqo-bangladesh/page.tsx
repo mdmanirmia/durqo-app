@@ -26,6 +26,7 @@ import GroupedFaq, { type FaqGroup } from "@/components/GroupedFaq";
 import { BkashIcon } from "@/components/icons/PaymentIcons";
 import { CATEGORIES } from "@/lib/categories";
 import { categoryIcon } from "@/lib/category-icons";
+import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 
 // Sep 30, 2026: new Bangladesh-focused marketing/positioning page, built per
 // the merchant's own brief (chat — "akta page banao ei gulor upor based kore
@@ -98,6 +99,29 @@ import { categoryIcon } from "@/lib/category-icons";
 //     /buy-and-sell-digital-businesses-in-bdt's WHY_DIFFERENT_CARDS and FAQ.
 //   - Free valuation tool — /valuation route exists (see
 //     claude/free-valuation-lead-gen-addendum.md).
+//
+// Oct 1, 2026 (Revision 10): merchant asked for more sections/content
+// overall after the em-dash + hero-graphic polish pass. Added three new
+// sections, each built from already-published facts/copy elsewhere on the
+// site rather than anything invented:
+//   - Marketplace Fees — the real tiered seller success-fee schedule
+//     (SUCCESS_FEE_TIERS/fmtRate from src/lib/fees.ts, the same single
+//     source of truth /buy-and-sell-digital-businesses-in-bdt already
+//     renders), inserted between Pay & Get Paid in BDT and the 16
+//     Categories grid. This page previously deliberately omitted the exact
+//     rates; the user's own "more content" request is read as authorization
+//     to show the schedule, which is already public on a sibling page.
+//   - Free Valuation CTA — a standalone callout linking to /valuation,
+//     reusing that page's own copy ("instant estimate," "free, always,"
+//     "based on how similar businesses sell on Durqo") and the "before
+//     deciding whether or when to sell" phrasing already used in this
+//     page's own Problems & Solutions row #10, inserted between Why Durqo
+//     and the FAQ.
+//   - Related Reading — six internal links (BDT guide, Bangladesh buy/sell
+//     how-to pages, how-to-buy, how-to-sell, free valuation), matching the
+//     "Keep exploring" pattern already used on
+//     /sell-your-online-business-bangladesh, inserted between the FAQ and
+//     the Final CTA.
 export const metadata: Metadata = {
   title: "Durqo for Bangladesh | Buy and Sell Digital Businesses Worldwide",
   description:
@@ -265,6 +289,15 @@ const WHY_DURQO_CARDS = [
   { icon: Percent, title: "Seller Fee Only After a Sale", body: "Durqo deducts the applicable success fee from the seller only after a successful sale." },
   { icon: ShieldCheck, title: "Structured, Tracked Transfers", body: "Every sale moves through the Transfer Room, which stays locked until the complete purchase price has been received and verified." },
   { icon: ClipboardCheck, title: "7-Day Buyer Inspection", body: "Buyers get a 7-day window to inspect every asset in the sale before the transfer is finalized." },
+];
+
+const RELATED_LINKS = [
+  { href: "/buy-and-sell-digital-businesses-in-bdt", label: "Buy & Sell in BDT: The Full Guide" },
+  { href: "/how-to-buy-a-website-in-bangladesh", label: "How to Buy a Website in Bangladesh" },
+  { href: "/sell-your-online-business-bangladesh", label: "How to Sell an Online Business from Bangladesh" },
+  { href: "/how-to-buy", label: "How Buying on Durqo Works" },
+  { href: "/how-to-sell", label: "How Selling on Durqo Works" },
+  { href: "/valuation", label: "Get a Free Business Valuation" },
 ];
 
 const TRANSACTION_STEPS = [
@@ -748,6 +781,47 @@ export default function DurqoBangladeshPage() {
         </Container>
       </section>
 
+      {/* MARKETPLACE FEES */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
+              <div className="max-w-[60ch]">
+                <DashEyebrow>What it costs</DashEyebrow>
+                <h2 className="text-2xl sm:text-3xl">Marketplace Fees</h2>
+                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                  Durqo does not charge buyers a marketplace fee. Buyers pay the agreed purchase price, although
+                  disclosed payment-provider, banking or currency-related charges may apply. Sellers are charged a
+                  tiered success fee based on the final sale price, deducted only after a successful sale.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
+                <dl className="flex flex-col gap-3">
+                  {SUCCESS_FEE_TIERS.map((tier) => (
+                    <div
+                      key={tier.id}
+                      className="flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0"
+                    >
+                      <dt className="text-sm text-ink-soft">{tier.label}</dt>
+                      <dd className="mono text-lg font-bold text-brand-strong">{fmtRate(tier.rate)}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
+                  <Info size={13} className="mt-0.5 shrink-0" />
+                  Applies to the full final sale price. See{" "}
+                  <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+                    Buy &amp; Sell in BDT
+                  </Link>{" "}
+                  for the full fee schedule and payout details.
+                </p>
+              </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
       {/* 16 CATEGORIES */}
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
@@ -828,6 +902,30 @@ export default function DurqoBangladeshPage() {
         </Container>
       </section>
 
+      {/* FREE VALUATION CTA */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="flex flex-col items-center gap-6 rounded-2xl border border-rule bg-paper-raised p-8 text-center sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:text-left">
+              <div className="lg:max-w-[48ch]">
+                <span className="mb-3 inline-grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                  <Calculator size={19} />
+                </span>
+                <h2 className="text-xl font-semibold text-ink sm:text-2xl">Not Sure What Your Business Is Worth?</h2>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                  Get a free, instant estimate based on how similar businesses sell on Durqo, before deciding whether
+                  or when to sell.
+                </p>
+              </div>
+              <Button href="/valuation" size="lg" className="shrink-0">
+                Get a Free Valuation
+                <ArrowRight size={16} />
+              </Button>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
       {/* FAQ */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
@@ -835,6 +933,31 @@ export default function DurqoBangladeshPage() {
             <DashEyebrow center>Frequently asked questions</DashEyebrow>
             <h2 className="mb-8 text-center text-2xl sm:text-3xl">Everything About Buying and Selling from Bangladesh.</h2>
             <GroupedFaq groups={FAQ_GROUPS} />
+          </Inner>
+        </Container>
+      </section>
+
+      {/* RELATED READING */}
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <DashEyebrow>Keep exploring</DashEyebrow>
+            <h2 className="mb-6 text-2xl sm:text-3xl">Related Reading</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {RELATED_LINKS.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="group flex items-center justify-between gap-3 rounded-xl border border-rule bg-paper-raised px-5 py-4 transition hover:border-brand-strong hover:shadow-sm"
+                >
+                  <span className="text-sm font-semibold text-ink">{label}</span>
+                  <ArrowRight
+                    size={15}
+                    className="shrink-0 text-ink-faint transition group-hover:translate-x-0.5 group-hover:text-brand-strong"
+                  />
+                </Link>
+              ))}
+            </div>
           </Inner>
         </Container>
       </section>
