@@ -221,14 +221,14 @@ const PROBLEMS: {
   {
     audience: "For Buyers",
     icon: Wallet,
-    problem: "Paying an international seller in BDT is hard - most global marketplaces only take cards or wires priced in USD.",
+    problem: "Paying an international seller in BDT is hard. Most global marketplaces only take cards or wires priced in USD.",
     solution: "Buy in BDT through supported local payment methods, including bKash, Nagad, Rocket, bank transfer or card.",
   },
   {
     audience: "For Sellers",
     icon: Landmark,
     problem: "Bangladeshi sellers struggle to reach buyers outside the country, and getting paid back in BDT is even harder.",
-    solution: "Sell to buyers anywhere in the world and get paid out in BDT - through bank transfer, bKash, Nagad or Rocket.",
+    solution: "Sell to buyers anywhere in the world and get paid out in BDT through bank transfer, bKash, Nagad or Rocket.",
   },
   {
     audience: "For Buyers",
@@ -241,7 +241,7 @@ const PROBLEMS: {
     icon: Lock,
     problem: "Both sides carry payment and delivery risk in a deal this size.",
     solution:
-      "A structured process - payment, transfer, inspection, approval, then payout - keeps things organized end to end. Supported transactions may also use Escrow.com as an independent escrow option.",
+      "A structured process covering payment, transfer, inspection, approval and payout keeps things organized end to end. Supported transactions may also use Escrow.com as an independent escrow option.",
   },
   {
     audience: "For Everyone",
@@ -254,12 +254,12 @@ const PROBLEMS: {
     icon: Search,
     problem: "Listing information on many marketplaces can't be trusted.",
     solution:
-      "Listings go through review before they go live and carry verification signals, including supported Google Analytics connections - though buyers should still do their own diligence.",
+      "Listings go through review before they go live and carry verification signals, including supported Google Analytics connections, though buyers should still do their own diligence.",
   },
   {
     audience: "For Everyone",
     icon: Layers,
-    problem: "A sale with several moving parts - domain, app, accounts, documents - is hard to hand over cleanly.",
+    problem: "A sale with several moving parts, such as the domain, app, accounts and documents, is hard to hand over cleanly.",
     solution: "The Transfer Room tracks every asset in the sale individually, so nothing gets lost in a multi-part handover.",
   },
   {
@@ -278,7 +278,7 @@ const PROBLEMS: {
     audience: "For Sellers",
     icon: Calculator,
     problem: "Many owners have no idea what their business is actually worth.",
-    solution: "Get a free indicative valuation before deciding whether - or when - to sell.",
+    solution: "Get a free indicative valuation before deciding whether or when to sell.",
   },
 ];
 
@@ -681,10 +681,10 @@ export default function DurqoBangladeshPage() {
           <Inner>
             <div className="mb-10 max-w-[70ch]">
               <DashEyebrow>The problems we hear most</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">What Bangladeshi Buyers and Sellers Struggle With - and How Durqo Solves It</h2>
+              <h2 className="text-2xl sm:text-3xl">What Bangladeshi Buyers and Sellers Struggle With, and How Durqo Solves It</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 These are the real obstacles Bangladeshi buyers and sellers run into when trying to buy or sell a
-                digital business internationally - and how Durqo addresses each one.
+                digital business internationally, and how Durqo addresses each one.
               </p>
             </div>
 
@@ -694,27 +694,32 @@ export default function DurqoBangladeshPage() {
                 return (
                   <div
                     key={problem}
-                    className="relative overflow-hidden rounded-2xl border border-rule bg-paper-raised transition hover:border-rule-strong hover:shadow-sm sm:grid sm:grid-cols-[1fr_1fr]"
+                    className="group relative overflow-hidden rounded-2xl border border-rule bg-paper-raised transition duration-200 hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-md sm:grid sm:grid-cols-[1fr_1fr]"
                   >
                     <span className={`absolute inset-y-0 left-0 w-1.5 ${style.bar}`} aria-hidden />
 
                     {/* Problem side — deliberately quiet, so the solution reads as the answer */}
-                    <div className="p-6 pl-8 sm:p-8 sm:pl-9">
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <span className={`mono inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider ${style.pill}`}>
-                          <Icon size={12} />
-                          {audience}
-                        </span>
-                        <span className="mono text-xs font-semibold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
-                      </div>
+                    <div className="relative p-6 pl-8 sm:p-8 sm:pl-9">
+                      <span
+                        className="mono pointer-events-none absolute right-5 top-5 text-3xl font-bold leading-none text-ink-faint/20 transition group-hover:text-ink-faint/30 sm:right-6 sm:top-6 sm:text-4xl"
+                        aria-hidden
+                      >
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span className={`mono mb-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider ${style.pill}`}>
+                        <Icon size={12} />
+                        {audience}
+                      </span>
                       <p className="mono mb-2 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">The problem</p>
-                      <p className="text-[0.95rem] font-medium leading-relaxed text-ink">{problem}</p>
+                      <p className="max-w-[90%] text-[0.95rem] font-medium leading-relaxed text-ink">{problem}</p>
                     </div>
 
                     {/* Solution side — highlighted so Durqo's answer is the visual payoff of each row */}
                     <div className={`border-t border-rule p-6 pl-8 sm:border-l sm:border-t-0 sm:p-8 sm:pl-8 ${style.solutionBg}`}>
-                      <p className="mono mb-2 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-brand-strong">
-                        <CheckCircle2 size={13} />
+                      <p className="mono mb-2 flex items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-wider text-brand-strong">
+                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/70">
+                          <CheckCircle2 size={12} />
+                        </span>
                         Durqo&rsquo;s solution
                       </p>
                       <p className="text-[0.95rem] leading-relaxed text-ink">{solution}</p>
