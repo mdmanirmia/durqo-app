@@ -632,7 +632,7 @@ export default function DurqoBangladeshPage() {
           <Inner>
             <div className="mb-10 max-w-[70ch]">
               <DashEyebrow>The problems we hear most</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Built to Solve What Actually Gets in the Way</h2>
+              <h2 className="text-2xl sm:text-3xl">What Bangladeshi Buyers and Sellers Struggle With — and How Durqo Solves It</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 These are the real obstacles Bangladeshi buyers and sellers run into when trying to buy or sell a
                 digital business internationally — and how Durqo addresses each one.
@@ -737,10 +737,12 @@ export default function DurqoBangladeshPage() {
         <Container>
           <Inner>
             <div className="mb-10 max-w-[70ch]">
-              <DashEyebrow>One marketplace, sixteen categories</DashEyebrow>
+              <DashEyebrow>Reach buyers beyond Bangladesh</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Buy or Sell Across 16 Digital Business Categories</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Whatever kind of digital business you&rsquo;re buying or selling, it has a home on Durqo.
+                Selling only within Bangladesh limits how many buyers ever see a listing. Durqo opens every listing
+                to buyers everywhere, across 16 digital business categories — whatever kind of digital business
+                you&rsquo;re buying or selling, it has a home here.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
@@ -790,8 +792,9 @@ export default function DurqoBangladeshPage() {
               <DashEyebrow>Built for Bangladesh</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Why Buy and Sell Through Durqo?</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Durqo combines Bangladesh-focused payment accessibility with a structured marketplace and
-                asset-transfer process.
+                Bangladeshi buyers and sellers face real friction buying and selling internationally — paying and
+                getting paid in BDT, and trusting a stranger with the handover. Durqo&rsquo;s structured, tracked
+                process and local payment support solve both.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
