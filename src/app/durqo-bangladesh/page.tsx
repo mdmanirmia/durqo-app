@@ -520,8 +520,8 @@ export default function DurqoBangladeshPage() {
               <div className="min-w-0">
                 <DashEyebrow>🇧🇩 Bangladesh to the world</DashEyebrow>
                 <h1 className="text-4xl leading-[1.1] sm:text-5xl lg:text-[3.3rem]">
-                  Durqo Is the Global Marketplace to{" "}
-                  <span className="text-brand">Buy and Sell Digital Businesses in BDT.</span>
+                  The Global Marketplace to{" "}
+                  <span className="text-brand">Buy and Sell in BDT.</span>
                 </h1>
                 <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-ink-soft">
                   Buy international digital businesses using BDT through supported local payment methods. Sell to
