@@ -267,11 +267,11 @@ const WHY_DURQO_CARDS = [
 ];
 
 const TRANSACTION_STEPS = [
-  { title: "Payment Is Confirmed", body: "The buyer's payment is received and verified before the sale moves forward." },
-  { title: "Transfer Room Opens", body: "Buyer and seller move into a private Transfer Room to hand over every asset in the sale." },
-  { title: "7-Day Inspection", body: "The buyer has 7 days to inspect the assets against what was agreed." },
-  { title: "Buyer Approves", body: "The buyer approves the completed transfer, or reports an issue for review instead of an automatic approval." },
-  { title: "Seller Is Paid Out", body: "Once the transfer is approved, the seller can request their payout — including in BDT for Bangladeshi sellers." },
+  { title: "Payment Is Confirmed", body: "The buyer's payment is received and verified before the sale moves forward.", icon: Wallet },
+  { title: "Transfer Room Opens", body: "Buyer and seller move into a private Transfer Room to hand over every asset in the sale.", icon: Handshake },
+  { title: "7-Day Inspection", body: "The buyer has 7 days to inspect the assets against what was agreed.", icon: ClipboardCheck },
+  { title: "Buyer Approves", body: "The buyer approves the completed transfer, or reports an issue for review instead of an automatic approval.", icon: CheckCircle2 },
+  { title: "Seller Is Paid Out", body: "Once the transfer is approved, the seller can request their payout — including in BDT for Bangladeshi sellers.", icon: Landmark },
 ];
 
 const FAQ_GROUPS: FaqGroup[] = [
@@ -458,7 +458,7 @@ const FAQ_JSON_LD = {
   })),
 };
 
-function NumberedFlow({ steps }: { steps: { title: string; body?: string }[] }) {
+function NumberedFlow({ steps }: { steps: { title: string; body?: string; icon?: typeof Wallet }[] }) {
   const n = steps.length;
   const inset = (0.5 / n) * 100;
   return (
@@ -473,7 +473,10 @@ function NumberedFlow({ steps }: { steps: { title: string; body?: string }[] }) 
               {i < n - 1 && <span className="mt-2 w-px flex-1 bg-rule" aria-hidden />}
             </div>
             <div className={step.body ? "pb-1" : "pb-1 pt-2"}>
-              <h4 className="text-sm font-semibold text-ink">{step.title}</h4>
+              <h4 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+                {step.icon && <step.icon size={14} className="shrink-0 text-brand-strong" />}
+                {step.title}
+              </h4>
               {step.body && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>}
             </div>
           </li>
@@ -488,7 +491,10 @@ function NumberedFlow({ steps }: { steps: { title: string; body?: string }[] }) 
                 {i + 1}
               </span>
               <div>
-                <h4 className="text-sm font-semibold text-ink">{step.title}</h4>
+                <h4 className="flex items-center justify-center gap-1.5 text-sm font-semibold text-ink">
+                  {step.icon && <step.icon size={14} className="shrink-0 text-brand-strong" />}
+                  {step.title}
+                </h4>
                 {step.body && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>}
               </div>
             </li>
@@ -514,11 +520,11 @@ export default function DurqoBangladeshPage() {
               <div className="min-w-0">
                 <DashEyebrow>🇧🇩 Bangladesh to the world</DashEyebrow>
                 <h1 className="text-4xl leading-[1.1] sm:text-5xl lg:text-[3.3rem]">
-                  Durqo Connects Bangladesh to the{" "}
-                  <span className="text-brand">Global Digital Business Marketplace.</span>
+                  Durqo Is the Global Marketplace to{" "}
+                  <span className="text-brand">Buy and Sell Digital Businesses in BDT.</span>
                 </h1>
                 <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-ink-soft">
-                  Buy international digital businesses using BDT through supported local payment methods, or sell to
+                  Buy international digital businesses using BDT through supported local payment methods. Sell to
                   buyers at home and abroad and get paid out in BDT. A structured payment, asset transfer and
                   inspection process keeps every transaction organized and transparent.
                 </p>
@@ -831,6 +837,20 @@ export default function DurqoBangladeshPage() {
               <Button href="/sell" variant="on-dark" size="lg">
                 Sell a Business
               </Button>
+            </div>
+            <div className="mono mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-white/60">
+              <span className="flex items-center gap-1.5">
+                <Percent size={13} className="shrink-0 text-white/50" />
+                No buyer marketplace fee
+              </span>
+              <span className="flex items-center gap-1.5">
+                <ClipboardCheck size={13} className="shrink-0 text-white/50" />
+                7-day buyer inspection
+              </span>
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck size={13} className="shrink-0 text-white/50" />
+                Payments secured via Stripe &amp; SSLCommerz
+              </span>
             </div>
           </Inner>
         </Container>
