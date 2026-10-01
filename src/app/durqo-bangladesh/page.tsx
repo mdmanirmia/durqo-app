@@ -126,21 +126,21 @@ import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 //     /sell-your-online-business-bangladesh, inserted between the FAQ and
 //     the Final CTA.
 export const metadata: Metadata = {
-  title: "Durqo for Bangladesh | Buy and Sell Digital Businesses Worldwide",
+  title: "Buy & Sell Digital Businesses in BDT | Durqo Bangladesh",
   description:
     "Durqo connects Bangladesh to the global digital business marketplace. Buy in BDT through bKash, Nagad, Rocket, bank transfer or card, or sell internationally and get paid out in BDT, across 16 digital business categories with a structured payment, transfer and inspection process built in.",
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     siteName: "Durqo",
-    title: "Durqo for Bangladesh | Buy and Sell Digital Businesses Worldwide",
+    title: "Buy & Sell Digital Businesses in BDT | Durqo Bangladesh",
     description:
       "Bangladeshi buyers can purchase digital businesses in BDT. Bangladeshi sellers can reach global buyers and get paid out in BDT. A structured payment, transfer and inspection process keeps every deal organized.",
     url: "https://www.durqo.com/durqo-bangladesh",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Durqo for Bangladesh | Buy and Sell Digital Businesses Worldwide",
+    title: "Buy & Sell Digital Businesses in BDT | Durqo Bangladesh",
     description:
       "Bangladeshi buyers can purchase digital businesses in BDT. Bangladeshi sellers can reach global buyers and get paid out in BDT. A structured payment, transfer and inspection process keeps every deal organized.",
   },
