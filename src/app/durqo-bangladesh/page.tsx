@@ -524,9 +524,9 @@ export default function DurqoBangladeshPage() {
                   <span className="text-brand">Buy and Sell in BDT.</span>
                 </h1>
                 <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-ink-soft">
-                  Buy international digital businesses using BDT through supported local payment methods. Sell to
-                  buyers at home and abroad and get paid out in BDT. A structured payment, asset transfer and
-                  inspection process keeps every transaction organized and transparent.
+                  Buy global digital businesses using BDT through bKash, Rocket, Nagad, bank transfer and card.
+                  Sell to buyers in Bangladesh and globally and get paid out in BDT. A structured payment, asset
+                  transfer and inspection process keeps every transaction organized and transparent.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <Button href="/buy" size="lg">
