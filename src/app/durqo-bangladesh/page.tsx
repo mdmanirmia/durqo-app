@@ -848,41 +848,6 @@ export default function DurqoBangladeshPage() {
         </Container>
       </section>
 
-      {/* 16 CATEGORIES */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <div className="mb-10 max-w-[70ch]">
-              <DashEyebrow>Reach buyers beyond Bangladesh</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Buy or Sell Across 16 Digital Business Categories</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Selling only within Bangladesh limits how many buyers ever see a listing. Durqo opens every listing
-                to buyers everywhere, across 16 digital business categories - whatever kind of digital business
-                you&rsquo;re buying or selling, it has a home here.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {CATEGORIES.map((c) => {
-                const Icon = categoryIcon(c.id);
-                return (
-                  <Link
-                    key={c.id}
-                    href={`/buy/${c.id}`}
-                    className="group rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong hover:shadow-sm"
-                  >
-                    <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-paper-sunk text-ink-soft transition group-hover:bg-brand-soft group-hover:text-brand-strong">
-                      <Icon size={17} />
-                    </span>
-                    <h3 className="text-sm font-semibold text-ink">{c.name}</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">{c.description}</p>
-                  </Link>
-                );
-              })}
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
       {/* HOW A DURQO TRANSACTION WORKS */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
@@ -917,6 +882,41 @@ export default function DurqoBangladeshPage() {
               <Link href="/transfer-room" className="text-sm font-semibold text-brand-strong hover:underline">
                 See the full Transfer Room walkthrough
               </Link>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* 16 CATEGORIES */}
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="mb-10 max-w-[70ch]">
+              <DashEyebrow>Reach buyers beyond Bangladesh</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Buy or Sell Across 16 Digital Business Categories</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Selling only within Bangladesh limits how many buyers ever see a listing. Durqo opens every listing
+                to buyers everywhere, across 16 digital business categories - whatever kind of digital business
+                you&rsquo;re buying or selling, it has a home here.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {CATEGORIES.map((c) => {
+                const Icon = categoryIcon(c.id);
+                return (
+                  <Link
+                    key={c.id}
+                    href={`/buy/${c.id}`}
+                    className="group rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong hover:shadow-sm"
+                  >
+                    <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-paper-sunk text-ink-soft transition group-hover:bg-brand-soft group-hover:text-brand-strong">
+                      <Icon size={17} />
+                    </span>
+                    <h3 className="text-sm font-semibold text-ink">{c.name}</h3>
+                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">{c.description}</p>
+                  </Link>
+                );
+              })}
             </div>
           </Inner>
         </Container>
