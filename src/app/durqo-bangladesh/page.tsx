@@ -276,11 +276,50 @@ const TRANSACTION_STEPS = [
 
 const FAQ_GROUPS: FaqGroup[] = [
   {
+    heading: "Getting started",
+    items: [
+      {
+        question: "Do I need an account to browse listings?",
+        answer: "No. Anyone can browse and view listing details, but you'll need a free buyer account to message a seller or make a purchase.",
+      },
+      {
+        question: "Do I need to be in Bangladesh to buy?",
+        answer: (
+          <>
+            No. Durqo is open to buyers anywhere — card payments and Escrow.com are available globally, while bKash,
+            Nagad, Rocket and bank transfer are specifically for buyers paying in BDT. See{" "}
+            <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+              Buy &amp; Sell in BDT
+            </Link>{" "}
+            for the full walkthrough.
+          </>
+        ),
+      },
+      {
+        question: "How do I create a listing?",
+        answer: "Sign up for a free seller account, then use “Add New Business” from your seller dashboard to build your listing.",
+      },
+      {
+        question: "Can I list more than one business?",
+        answer: "Yes, there's no limit on how many listings you can create.",
+      },
+    ],
+  },
+  {
     heading: "Buying & selling in BDT",
     items: [
       {
         question: "Can I pay for a business in BDT from Bangladesh?",
         answer: "Yes. Bangladesh-based buyers can pay for eligible digital businesses in BDT through SSLCommerz, using bKash, Nagad, Rocket, a supported bank, or a credit or debit card.",
+      },
+      {
+        question: "Which payment methods are available through SSLCommerz?",
+        answer: "SSLCommerz payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards.",
+      },
+      {
+        question: "What happens if the business costs more than USD 2,000?",
+        answer:
+          "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. After that payment is confirmed, Durqo emails you instructions for paying the remaining balance. The purchase proceeds to asset transfer only after the complete balance has been received and verified.",
       },
       {
         question: "Can I get paid out in BDT as a Bangladeshi seller?",
@@ -306,6 +345,33 @@ const FAQ_GROUPS: FaqGroup[] = [
     ],
   },
   {
+    heading: "Listings, badges & verification",
+    items: [
+      {
+        question: "What does “Reviewed by Durqo” mean?",
+        answer: "Every listing is manually reviewed by our team for accuracy and completeness before it's allowed to publish.",
+      },
+      {
+        question: "What does a “GA Verified” badge mean?",
+        answer: "It means Durqo was given read-only access to that listing's Google Analytics account and reviewed the real traffic numbers being shown.",
+      },
+      {
+        question: "What does a “Verified” seller badge mean?",
+        answer: "That seller submitted an identity document which Durqo's team reviewed and approved.",
+      },
+      {
+        question: "What is seller identity verification (KYC)?",
+        answer:
+          "An optional step where a seller uploads an ID document from their dashboard. Once Durqo's team reviews and approves it, the seller's profile shows a Verified badge. The public badge itself is optional, but completing this same identity verification is required before a seller's very first withdrawal.",
+      },
+      {
+        question: "Can I ask the seller questions before buying?",
+        answer:
+          "Yes, three ways. Many listings already answer common questions in their own Questions & Answers section, written by the seller. You can also post a question in the Comments section on the listing page, and the seller is notified and replies there publicly. Or message the seller directly for a private conversation, which stays in your dashboard inbox.",
+      },
+    ],
+  },
+  {
     heading: "Trust & safety",
     items: [
       {
@@ -321,6 +387,28 @@ const FAQ_GROUPS: FaqGroup[] = [
         question: "How is Durqo different from Flippa or Acquire.com?",
         answer:
           "Flippa and Acquire.com are established international marketplaces serving broad global audiences. Durqo is the first marketplace specifically built to support the purchase of digital businesses in BDT and eligible seller payouts through supported local methods.",
+      },
+    ],
+  },
+  {
+    heading: "Payments & support",
+    items: [
+      {
+        question: "How long does a seller payout take?",
+        answer:
+          "Durqo normally reviews and processes a payout request within 3–5 business days. The receiving bank or payment provider may require additional time to credit the seller's account.",
+      },
+      {
+        question: "What should I do if my payment status is pending?",
+        answer: (
+          <>
+            Do not submit the same payment again immediately. Check your order status and contact{" "}
+            <a href="mailto:support@durqo.com" className="font-semibold text-brand-strong hover:underline">
+              support@durqo.com
+            </a>{" "}
+            so the transaction can be reviewed.
+          </>
+        ),
       },
       {
         question: "Where can I get help?",
@@ -342,13 +430,26 @@ const FAQ_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: [
+    { q: "Do I need an account to browse listings?", a: "No. Anyone can browse and view listing details, but you'll need a free buyer account to message a seller or make a purchase." },
+    { q: "Do I need to be in Bangladesh to buy?", a: "No. Durqo is open to buyers anywhere — card payments and Escrow.com are available globally, while bKash, Nagad, Rocket and bank transfer are specifically for buyers paying in BDT." },
+    { q: "How do I create a listing?", a: "Sign up for a free seller account, then use “Add New Business” from your seller dashboard to build your listing." },
+    { q: "Can I list more than one business?", a: "Yes, there's no limit on how many listings you can create." },
     { q: "Can I pay for a business in BDT from Bangladesh?", a: "Yes. Bangladesh-based buyers can pay for eligible digital businesses in BDT through SSLCommerz, using bKash, Nagad, Rocket, a supported bank, or a credit or debit card." },
+    { q: "Which payment methods are available through SSLCommerz?", a: "SSLCommerz payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards." },
+    { q: "What happens if the business costs more than USD 2,000?", a: "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. After that payment is confirmed, Durqo emails you instructions for paying the remaining balance. The purchase proceeds to asset transfer only after the complete balance has been received and verified." },
     { q: "Can I get paid out in BDT as a Bangladeshi seller?", a: "Yes. After a successful sale, completed asset transfer and any required review, eligible sellers can request their available earnings through bank transfer, bKash, Nagad or Rocket." },
     { q: "I already have a buyer through Facebook or a personal contact — can I still use Durqo?", a: "Yes. Bring that buyer onto Durqo and run the sale through the same structured payment, Transfer Room and inspection process as any other listing." },
     { q: "How much does it cost to buy or sell on Durqo?", a: "Durqo does not charge buyers a marketplace fee. Sellers are charged a tiered success fee, deducted only after a successful sale." },
+    { q: "What does “Reviewed by Durqo” mean?", a: "Every listing is manually reviewed by our team for accuracy and completeness before it's allowed to publish." },
+    { q: "What does a “GA Verified” badge mean?", a: "It means Durqo was given read-only access to that listing's Google Analytics account and reviewed the real traffic numbers being shown." },
+    { q: "What does a “Verified” seller badge mean?", a: "That seller submitted an identity document which Durqo's team reviewed and approved." },
+    { q: "What is seller identity verification (KYC)?", a: "An optional step where a seller uploads an ID document from their dashboard. Once Durqo's team reviews and approves it, the seller's profile shows a Verified badge. The public badge itself is optional, but completing this same identity verification is required before a seller's very first withdrawal." },
+    { q: "Can I ask the seller questions before buying?", a: "Yes, three ways. Many listings already answer common questions in their own Questions & Answers section, written by the seller. You can also post a question in the Comments section on the listing page, and the seller is notified and replies there publicly. Or message the seller directly for a private conversation, which stays in your dashboard inbox." },
     { q: "Is SSLCommerz an escrow service?", a: "No. SSLCommerz is a payment gateway or payment processor and is not described as an escrow provider. Durqo holds the buyer's payment until the transfer is approved, and supported transactions may also use Escrow.com as an independent escrow option." },
     { q: "What happens if the assets don't match what was agreed?", a: "The buyer can report an issue and have the transaction reviewed, instead of the sale auto-approving." },
     { q: "How is Durqo different from Flippa or Acquire.com?", a: "Flippa and Acquire.com are established international marketplaces serving broad global audiences. Durqo is the first marketplace specifically built to support the purchase of digital businesses in BDT and eligible seller payouts through supported local methods." },
+    { q: "How long does a seller payout take?", a: "Durqo normally reviews and processes a payout request within 3–5 business days. The receiving bank or payment provider may require additional time to credit the seller's account." },
+    { q: "What should I do if my payment status is pending?", a: "Do not submit the same payment again immediately. Check your order status and contact support@durqo.com so the transaction can be reviewed." },
     { q: "Where can I get help?", a: "Contact support@durqo.com before repeating a payment, changing payment methods or sending money using different instructions." },
   ].map(({ q, a }) => ({
     "@type": "Question",
@@ -430,6 +531,10 @@ export default function DurqoBangladeshPage() {
                     Sell a Business
                   </Button>
                 </div>
+                <p className="mono mt-4 flex items-center gap-1.5 text-xs text-ink-faint">
+                  <ShieldCheck size={13} className="shrink-0 text-ink-faint" />
+                  Payments secured through Stripe and SSLCommerz, with Escrow.com available for extra protection.
+                </p>
               </div>
 
               <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
@@ -577,7 +682,7 @@ export default function DurqoBangladeshPage() {
               </p>
             </div>
             <div className="grid gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-rule bg-paper-raised p-6">
+              <div className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
                 <span className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
                   <Wallet size={19} />
                 </span>
@@ -595,7 +700,7 @@ export default function DurqoBangladeshPage() {
                   ))}
                 </div>
               </div>
-              <div className="rounded-xl border border-rule bg-paper-raised p-6">
+              <div className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
                 <span className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
                   <Landmark size={19} />
                 </span>
@@ -682,8 +787,10 @@ export default function DurqoBangladeshPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-6">
-                  <Icon size={18} className="mb-2 text-brand-strong" />
+                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
+                  <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={17} />
+                  </span>
                   <h4 className="text-sm font-semibold text-ink">{title}</h4>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
                 </div>
