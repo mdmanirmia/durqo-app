@@ -19,6 +19,9 @@ import {
   CreditCard,
   Percent,
   Info,
+  Edit3,
+  Send,
+  Eye,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -306,6 +309,24 @@ const TRANSACTION_STEPS = [
   { title: "7-Day Inspection", body: "The buyer has 7 days to inspect the assets against what was agreed.", icon: ClipboardCheck },
   { title: "Buyer Approves", body: "The buyer approves the completed transfer, or reports an issue for review instead of an automatic approval.", icon: CheckCircle2 },
   { title: "Seller Is Paid Out", body: "Once the transfer is approved, the seller can request their payout - including in BDT for Bangladeshi sellers.", icon: Landmark },
+];
+
+// Oct 1, 2026 (Revision 12): zooms into step 2 of TRANSACTION_STEPS above —
+// what actually happens, per asset, inside the Transfer Room itself. Every
+// label and behavior here is traced to the real Transfer Room page
+// (src/app/transfer-room/page.tsx, itself traced to TransferRoomView.tsx and
+// the asset-transfer RPC migrations): "Mark In Progress" / "Mark Submitted"
+// are the seller's real action labels (SELLER_STEPS there); "Mark Received"
+// is the buyer's real action label (BUYER_STEPS there); the closing
+// approve-or-report branch, including that a reported issue holds payment
+// for admin review rather than auto-releasing, matches TRANSFER_FLOW and the
+// "Report an Issue" copy on that same page. Nothing here is new information —
+// it restates /transfer-room's own facts at a glance for this audience.
+const TRANSFER_ROOM_STEPS = [
+  { title: "Seller Marks In Progress", body: "As the seller starts preparing each asset on the checklist for handover.", icon: Edit3 },
+  { title: "Seller Marks Submitted", body: "Once it's handed over, with an optional reference note, such as a transfer code or login details.", icon: Send },
+  { title: "Buyer Marks Received", body: "After checking the asset against what was agreed, inside the 7-day inspection window.", icon: Eye },
+  { title: "Buyer Approves, or Reports an Issue", body: "Approving releases payment for that asset. Reporting an issue keeps payment held until Durqo's team reviews it.", icon: CheckCircle2 },
 ];
 
 const FAQ_GROUPS: FaqGroup[] = [
@@ -875,6 +896,28 @@ export default function DurqoBangladeshPage() {
               </p>
             </div>
             <NumberedFlow steps={TRANSACTION_STEPS} />
+          </Inner>
+        </Container>
+      </section>
+
+      {/* INSIDE THE TRANSFER ROOM */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner className="max-w-[900px]">
+            <div className="mb-10 text-center">
+              <DashEyebrow center>Step 2, zoomed in</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">What Happens Inside the Transfer Room</h2>
+              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
+                Every asset on the checklist, such as the domain, code, accounts or documents, moves through this
+                same handover sequence before the sale can close.
+              </p>
+            </div>
+            <NumberedFlow steps={TRANSFER_ROOM_STEPS} />
+            <div className="mt-8 text-center">
+              <Link href="/transfer-room" className="text-sm font-semibold text-brand-strong hover:underline">
+                See the full Transfer Room walkthrough
+              </Link>
+            </div>
           </Inner>
         </Container>
       </section>
