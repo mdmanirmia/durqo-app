@@ -207,10 +207,10 @@ const SELLER_STATUSES = [
 ];
 
 const PAYOUT_METHODS = [
-  { icon: Landmark, title: "Bank Transfer", body: "Request an eligible payout to a supported Bangladeshi bank account.", tint: "text-brand-strong", bg: "bg-brand-soft" },
-  { icon: BkashIcon, title: "bKash", body: "Request an eligible payout to a valid bKash account.", tint: "text-[#E2136E]", bg: "bg-[#E2136E]/10" },
-  { icon: Smartphone, title: "Nagad", body: "Request an eligible payout to a valid Nagad account.", tint: "text-[#ED1C24]", bg: "bg-[#ED1C24]/10" },
-  { icon: RocketGlyph, title: "Rocket", body: "Request an eligible payout to a valid Rocket account.", tint: "text-[#7B1E3F]", bg: "bg-[#7B1E3F]/10" },
+  { icon: Landmark, title: "Bank Transfer", body: "Request an eligible payout to a supported Bangladeshi bank account.", tint: "text-brand-strong" },
+  { icon: BkashIcon, title: "bKash", body: "Request an eligible payout to a valid bKash account.", tint: "text-[#E2136E]" },
+  { icon: Smartphone, title: "Nagad", body: "Request an eligible payout to a valid Nagad account.", tint: "text-[#ED1C24]" },
+  { icon: RocketGlyph, title: "Rocket", body: "Request an eligible payout to a valid Rocket account.", tint: "text-[#7B1E3F]" },
 ];
 
 const PAYOUT_LIMITS = [
@@ -496,7 +496,7 @@ export default function BuyAndSellInBdtPage() {
                 </div>
               </div>
 
-              <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-md sm:p-7">
+              <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
                 <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
                   BDT Transaction Overview
                 </p>
@@ -570,7 +570,7 @@ export default function BuyAndSellInBdtPage() {
               </p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
-              <div className="rounded-xl border border-rule bg-paper-raised p-7 transition hover:border-brand-strong hover:shadow-sm">
+              <div className="rounded-xl border border-rule bg-paper-raised p-7">
                 <span className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
                   <ShoppingCart size={19} />
                 </span>
@@ -585,7 +585,7 @@ export default function BuyAndSellInBdtPage() {
                   <ArrowRight size={14} />
                 </a>
               </div>
-              <div className="rounded-xl border border-rule bg-paper-raised p-7 transition hover:border-gold hover:shadow-sm">
+              <div className="rounded-xl border border-rule bg-paper-raised p-7">
                 <span className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
                   <Store size={19} />
                 </span>
@@ -635,7 +635,7 @@ export default function BuyAndSellInBdtPage() {
               The amount collected through SSLCommerz depends on the listing&rsquo;s price in USD.
             </p>
             <div className="mb-5 grid gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-rule bg-brand-soft p-6 transition hover:border-brand-strong/40 hover:shadow-sm">
+              <div className="rounded-xl border border-rule bg-brand-soft p-6">
                 <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-paper-raised text-brand-strong">
                   <Tag size={18} />
                 </span>
@@ -647,7 +647,7 @@ export default function BuyAndSellInBdtPage() {
                 </p>
                 <p className="mono mt-3 text-xs font-semibold text-brand-strong">Status: Full payment at checkout</p>
               </div>
-              <div className="rounded-xl border border-gold/30 bg-gold-soft p-6 transition hover:border-gold hover:shadow-sm">
+              <div className="rounded-xl border border-gold/30 bg-gold-soft p-6">
                 <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-paper-raised text-[#92730F]">
                   <FileText size={18} />
                 </span>
@@ -699,11 +699,9 @@ export default function BuyAndSellInBdtPage() {
 
             <h3 className="mb-5 mt-14 text-lg font-semibold text-ink">Supported Local Payout Methods</h3>
             <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 sm:grid-cols-4">
-              {PAYOUT_METHODS.map(({ icon: Icon, title, body, tint, bg }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-rule-strong hover:shadow-sm">
-                  <span className={`mb-2 grid h-9 w-9 place-items-center rounded-lg ${bg} ${tint}`}>
-                    <Icon size={16} />
-                  </span>
+              {PAYOUT_METHODS.map(({ icon: Icon, title, body, tint }) => (
+                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
+                  <Icon size={18} className={`mb-2 ${tint}`} />
                   <h4 className="text-sm font-semibold text-ink">{title}</h4>
                   <p className="mt-1 text-xs leading-relaxed text-ink-soft">{body}</p>
                 </div>
@@ -760,15 +758,13 @@ export default function BuyAndSellInBdtPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="rounded-2xl bg-brand-soft p-7 shadow-sm sm:p-10">
+            <div className="rounded-2xl bg-brand-soft p-7 sm:p-10">
               <DashEyebrow>Clear currency conversion</DashEyebrow>
               <h2 className="mb-6 text-2xl sm:text-3xl">See the Exact BDT Amount Before Confirming</h2>
               <div className="grid gap-8 sm:grid-cols-2">
                 <div>
-                  <div className="mb-2 flex items-center gap-2.5">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-paper-raised text-brand-strong">
-                      <ShoppingCart size={15} />
-                    </span>
+                  <div className="mb-2 flex items-center gap-2">
+                    <ShoppingCart size={16} className="text-brand-strong" />
                     <h4 className="text-sm font-semibold text-ink">When You Purchase</h4>
                   </div>
                   <p className="text-sm leading-relaxed text-ink-soft">
@@ -777,10 +773,8 @@ export default function BuyAndSellInBdtPage() {
                   </p>
                 </div>
                 <div>
-                  <div className="mb-2 flex items-center gap-2.5">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-paper-raised text-brand-strong">
-                      <Store size={15} />
-                    </span>
+                  <div className="mb-2 flex items-center gap-2">
+                    <Store size={16} className="text-brand-strong" />
                     <h4 className="text-sm font-semibold text-ink">When You Request a Payout</h4>
                   </div>
                   <p className="text-sm leading-relaxed text-ink-soft">
@@ -813,8 +807,8 @@ export default function BuyAndSellInBdtPage() {
             </div>
             <div className="grid gap-5 sm:grid-cols-3">
               {TRANSFER_STEPS.map((step, i) => (
-                <div key={step.title} className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
-                  <span className="mono mb-3 grid h-9 w-9 place-items-center rounded-full bg-brand text-sm font-bold text-white">
+                <div key={step.title} className="rounded-xl border border-rule bg-paper-raised p-6">
+                  <span className="mono mb-3 grid h-9 w-9 place-items-center rounded-full border border-rule text-sm font-bold text-ink">
                     {i + 1}
                   </span>
                   <h4 className="text-sm font-semibold text-ink">{step.title}</h4>
@@ -868,10 +862,7 @@ export default function BuyAndSellInBdtPage() {
                 </thead>
                 <tbody>
                   {COMPARISON_ROWS.map((row, i) => (
-                    <tr
-                      key={row.feature}
-                      className={`transition-colors hover:bg-paper-sunk/60 ${i !== COMPARISON_ROWS.length - 1 ? "border-b border-rule" : ""}`}
-                    >
+                    <tr key={row.feature} className={i !== COMPARISON_ROWS.length - 1 ? "border-b border-rule" : ""}>
                       <th scope="row" className="px-5 py-4 text-sm font-medium text-ink">{row.feature}</th>
                       <td className="bg-brand-soft/40 px-5 py-4 text-sm font-medium text-brand-strong">{row.durqo.text}</td>
                       <td className="px-5 py-4 text-sm text-ink-soft">{row.flippa.text}</td>
@@ -937,10 +928,8 @@ export default function BuyAndSellInBdtPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {WHY_DIFFERENT_CARDS.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
-                  <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={18} />
-                  </span>
+                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-6">
+                  <Icon size={18} className="mb-2 text-brand-strong" />
                   <h4 className="text-sm font-semibold text-ink">{title}</h4>
                   <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
                 </div>
