@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Mail, Phone, TrendingUp } from "lucide-react";
+import { Check, Copy, Mail, Phone, Trash2, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
 import { fmtUSD } from "@/lib/format";
 import { getCategoryMetricConfig } from "@/lib/valuation";
-import { setValuationLeadStatus, type ValuationLeadStatus } from "../actions";
+import { setValuationLeadStatus, deleteValuationLead, type ValuationLeadStatus } from "../actions";
 
 export interface AdminValuationLeadRow {
   id: string;
@@ -66,6 +67,36 @@ function statusSelect(row: AdminValuationLeadRow, busy: boolean, onChange: (stat
   );
 }
 
+// 2026-10-02 ("email gulo jeno copy kora jai sei besbostah koro" - arrange
+// it so the emails can be copied): a one-click copy affordance for the
+// lead's email/phone, which were previously plain unselectable-looking text
+// next to their icon. navigator.clipboard can reject in rare contexts
+// (non-HTTPS, permissions) - caught and ignored rather than surfaced, since
+// the value is still right there in the row to select and copy by hand.
+function CopyButton({ value, label }: { value: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async (e) => {
+        e.stopPropagation();
+        try {
+          await navigator.clipboard.writeText(value);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1500);
+        } catch {
+          // Clipboard unavailable - nothing to do; the text is still visible.
+        }
+      }}
+      title={copied ? "Copied" : `Copy ${label}`}
+      aria-label={`Copy ${label}`}
+      className="shrink-0 rounded p-0.5 text-ink-faint hover:bg-paper-sunk hover:text-brand-strong"
+    >
+      {copied ? <Check size={11} className="text-brand-strong" /> : <Copy size={11} />}
+    </button>
+  );
+}
+
 // A real component (not a plain helper function like statusSelect above) —
 // it needs its own per-row useState for the in-progress note text, and a
 // hook can only be called from an actual component/hook, never from a
@@ -99,6 +130,15 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
   const [errorId, setErrorId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // 2026-10-02 ("delete korar o bebostha koro" - add a way to delete too):
+  // one row at a time, behind the same ConfirmDialog pattern used for every
+  // other destructive admin action in this codebase (see AdminUsersTable's
+  // bulk delete) - deleteTarget holds the row so the dialog can name who
+  // it's about to remove.
+  const [deleteTarget, setDeleteTarget] = useState<AdminValuationLeadRow | null>(null);
+  const [isDeleting, startDeleteTransition] = useTransition();
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
   function updateStatus(id: string, status: ValuationLeadStatus, note?: string) {
     setPendingId(id);
     setErrorId(null);
@@ -109,6 +149,20 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
         setErrorId(id);
       } finally {
         setPendingId(null);
+      }
+    });
+  }
+
+  function handleDeleteConfirmed() {
+    if (!deleteTarget) return;
+    const target = deleteTarget;
+    setDeleteError(null);
+    startDeleteTransition(async () => {
+      try {
+        await deleteValuationLead(target.id);
+        setDeleteTarget(null);
+      } catch (err) {
+        setDeleteError(err instanceof Error ? err.message : "Couldn't delete this lead - try again.");
       }
     });
   }
@@ -127,7 +181,7 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
     <>
       {/* Desktop table */}
       <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
-        <table className="w-full min-w-[1040px] border-collapse text-sm">
+        <table className="w-full min-w-[1100px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
               <th className="px-4 py-3 font-medium">Lead</th>
@@ -138,6 +192,9 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
               <th className="px-4 py-3 font-medium">Note</th>
               <th className="px-4 py-3 font-medium">Date</th>
               <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -147,12 +204,16 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
                 <tr key={row.id} className="border-b border-rule align-top last:border-b-0">
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink">{row.name}</div>
-                    <div className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-faint">
-                      <Mail size={11} /> {row.email}
+                    <div className="mt-0.5 flex items-center gap-1 text-xs text-ink-faint">
+                      <Mail size={11} className="shrink-0" />
+                      <span>{row.email}</span>
+                      <CopyButton value={row.email} label="email" />
                     </div>
                     {row.phone && (
-                      <div className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-faint">
-                        <Phone size={11} /> {row.phone}
+                      <div className="mt-0.5 flex items-center gap-1 text-xs text-ink-faint">
+                        <Phone size={11} className="shrink-0" />
+                        <span>{row.phone}</span>
+                        <CopyButton value={row.phone} label="phone number" />
                       </div>
                     )}
                   </td>
@@ -179,6 +240,17 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
                       {errorId === row.id && <span className="text-[0.68rem] text-danger">Couldn&rsquo;t update - try again.</span>}
                     </div>
                   </td>
+                  <td className="px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(row)}
+                      title="Delete lead"
+                      aria-label="Delete lead"
+                      className="rounded-md p-1.5 text-ink-faint hover:bg-danger/10 hover:text-danger"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </td>
                 </tr>
               );
             })}
@@ -195,10 +267,29 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="truncate font-medium text-ink">{row.name}</div>
-                  <div className="truncate text-xs text-ink-faint">{row.email}</div>
-                  {row.phone && <div className="truncate text-xs text-ink-faint">{row.phone}</div>}
+                  <div className="flex items-center gap-1 text-xs text-ink-faint">
+                    <span className="truncate">{row.email}</span>
+                    <CopyButton value={row.email} label="email" />
+                  </div>
+                  {row.phone && (
+                    <div className="flex items-center gap-1 text-xs text-ink-faint">
+                      <span className="truncate">{row.phone}</span>
+                      <CopyButton value={row.phone} label="phone number" />
+                    </div>
+                  )}
                 </div>
-                <Badge tone={STATUS_TONE[row.status] ?? "neutral"}>{row.status}</Badge>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Badge tone={STATUS_TONE[row.status] ?? "neutral"}>{row.status}</Badge>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteTarget(row)}
+                    title="Delete lead"
+                    aria-label="Delete lead"
+                    className="rounded-md p-1.5 text-ink-faint hover:bg-danger/10 hover:text-danger"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
               <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <div>
@@ -234,6 +325,26 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
           );
         })}
       </div>
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={`Delete this lead?`}
+        body={
+          <>
+            This permanently removes {deleteTarget?.name ?? "this lead"}&rsquo;s valuation submission
+            ({deleteTarget?.email}) - this can&rsquo;t be undone.
+            {deleteError && <span className="mt-2 block text-danger">{deleteError}</span>}
+          </>
+        }
+        confirmLabel="Delete lead"
+        danger
+        busy={isDeleting}
+        onConfirm={handleDeleteConfirmed}
+        onCancel={() => {
+          setDeleteTarget(null);
+          setDeleteError(null);
+        }}
+      />
     </>
   );
 }
