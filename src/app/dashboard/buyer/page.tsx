@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Wallet, Clock, Heart, CheckCircle2, ShoppingBag } from "lucide-react";
+import { Wallet, Clock, Heart, CheckCircle2 } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { getWishlistedListings } from "@/lib/data/wishlist.client";
@@ -29,7 +29,7 @@ export default function BuyerOverview() {
   }, []);
 
   return (
-    <DashboardShell title="Buyer Dashboard" icon={ShoppingBag} nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
+    <DashboardShell title="Buyer Dashboard" icon="shoppingBag" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div className="group rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
           <div className="flex items-start gap-3">
