@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, Tag, Clock, Wallet, ShieldCheck, ListChecks, ReceiptText } from "lucide-react";
+import { Users, Tag, Clock, Wallet, ListChecks, ReceiptText } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -43,7 +43,7 @@ export default async function AdminOverview() {
   }
 
   return (
-    <DashboardShell title="Admin Dashboard" icon={ShieldCheck} nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+    <DashboardShell title="Admin Dashboard" icon="shieldCheck" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       {!admin && (
         <p className="mb-6 flex items-start gap-3 rounded-xl border border-danger/30 bg-danger-soft px-5 py-4 text-sm text-danger">
           Admin data source is unavailable - the service role key isn&rsquo;t configured for this deployment.
