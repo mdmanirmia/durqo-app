@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { ArrowLeftRight } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { createClient } from "@/lib/supabase/server";
@@ -67,8 +68,13 @@ export default async function BuyerTransfersPage() {
   });
 
   return (
-    <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
-      <h2 className="mb-4 text-xl text-ink">Asset Transfers</h2>
+    <DashboardShell title="Buyer Dashboard" icon="arrowLeftRight" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
+      <div className="mb-4 flex items-center gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+          <ArrowLeftRight size={15} />
+        </div>
+        <h2 className="text-xl text-ink">Asset Transfers</h2>
+      </div>
       <TransferRoomsTable rows={rows} viewerSide="buyer" />
     </DashboardShell>
   );
