@@ -21,6 +21,7 @@ import {
   Users,
   TrendingUp,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import { COUNTS_CHANGED_EVENT } from "@/lib/count-events";
@@ -132,6 +133,7 @@ const MOBILE_BOTTOM_SLOTS = 3;
 
 export default function DashboardShell({
   title,
+  icon: Icon,
   nav,
   switchHref,
   switchLabel,
@@ -139,6 +141,12 @@ export default function DashboardShell({
   wide,
 }: {
   title: string;
+  // Oct 2, 2026 ("dashboard er look premium o professional koro" — make the
+  // admin/seller/buyer dashboard look premium/professional, no data
+  // changes): optional icon chip shown next to the page title. Purely
+  // cosmetic and opt-in — every existing call site that doesn't pass it
+  // renders exactly as before.
+  icon?: LucideIcon;
   nav: DashboardNavItem[];
   switchHref: string;
   switchLabel: string;
@@ -473,8 +481,17 @@ export default function DashboardShell({
   return (
     <main className="py-6 pb-24 md:py-10 md:pb-10">
       <Container maxWidth={wide ? 1600 : undefined}>
-        <p className="mono mb-1 text-xs uppercase tracking-wider text-ink-faint">Dashboard</p>
-        <h1 className="mb-4 text-3xl md:mb-8">{title}</h1>
+        <div className="mb-5 flex items-center gap-3 md:mb-8">
+          {Icon && (
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover shadow-[var(--shadow-card)]">
+              <Icon size={20} />
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="eyebrow mb-1.5">Dashboard</p>
+            <h1 className="truncate text-3xl">{title}</h1>
+          </div>
+        </div>
 
         {/* Mobile-only section switcher — replaces the pill row below md */}
         <div className="relative mb-6 md:hidden" ref={switcherRef}>
@@ -483,18 +500,20 @@ export default function DashboardShell({
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-haspopup="menu"
-            className="flex w-full items-center justify-between gap-2 rounded-lg border border-rule-strong bg-paper px-4 py-3 text-left text-sm font-semibold text-ink"
+            className="flex w-full items-center justify-between gap-2 rounded-xl border border-rule bg-paper-raised px-4 py-3 text-left text-sm font-semibold text-ink shadow-[var(--shadow-card)]"
           >
-            <span className="flex items-center gap-2">
-              <NavIcon name={activeItem?.icon} size={16} className="text-ink-faint" />
+            <span className="flex items-center gap-2.5">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+                <NavIcon name={activeItem?.icon} size={14} />
+              </span>
               {activeItem?.label ?? title}
             </span>
             <ChevronDown size={16} className={clsx("shrink-0 text-ink-faint transition-transform", menuOpen && "rotate-180")} />
           </button>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-[220px_1fr]">
-          <aside className="hidden md:flex md:flex-col md:gap-1">
+        <div className="grid gap-8 md:grid-cols-[232px_1fr]">
+          <aside className="hidden md:flex md:flex-col md:gap-1 md:rounded-2xl md:border md:border-rule md:bg-paper-raised md:p-3 md:shadow-[var(--shadow-card)]">
             {nav.map((item) => {
               const active = pathname === item.href;
               const badge = badgeFor(item);
@@ -503,12 +522,14 @@ export default function DashboardShell({
                   key={item.href}
                   href={item.href}
                   className={clsx(
-                    "flex shrink-0 items-center justify-between gap-2 rounded-md px-3 py-2.5 text-sm font-medium",
-                    active ? "bg-brand-strong text-white" : "text-ink-soft hover:bg-paper-raised"
+                    "flex shrink-0 items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    active ? "bg-brand-strong text-white shadow-[var(--shadow-card)]" : "text-ink-soft hover:bg-paper-sunk"
                   )}
                 >
-                  <span className="flex items-center gap-2">
-                    <NavIcon name={item.icon} size={15} />
+                  <span className="flex items-center gap-2.5">
+                    <span className={clsx("grid h-7 w-7 shrink-0 place-items-center rounded-lg", active ? "bg-white/15" : "bg-paper-sunk")}>
+                      <NavIcon name={item.icon} size={14} />
+                    </span>
                     {item.label}
                   </span>
                   {typeof badge === "number" && (
@@ -519,8 +540,14 @@ export default function DashboardShell({
                 </Link>
               );
             })}
-            <Link href={switchHref} className="mt-4 flex shrink-0 items-center gap-2 rounded-md border border-rule-strong px-3 py-2.5 text-sm font-medium text-ink-soft hover:border-brand-strong">
-              <ArrowLeftRight size={14} /> {switchLabel}
+            <Link
+              href={switchHref}
+              className="mt-3 flex shrink-0 items-center gap-2.5 rounded-xl border border-rule-strong px-3 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:border-brand-strong hover:bg-paper-sunk"
+            >
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-paper-sunk">
+                <ArrowLeftRight size={14} />
+              </span>
+              {switchLabel}
             </Link>
           </aside>
 
@@ -538,7 +565,7 @@ export default function DashboardShell({
 
       {/* Mobile-only bottom tab bar */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-30 flex border-t border-rule bg-paper md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex rounded-t-2xl border-t border-rule bg-paper-raised shadow-[var(--shadow-lift)] md:hidden"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {bottomItems.map((item) => {
@@ -548,10 +575,10 @@ export default function DashboardShell({
             <Link
               key={item.href}
               href={item.href}
-              className={clsx("flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[0.65rem] font-medium", active ? "text-brand-strong" : "text-ink-faint")}
+              className={clsx("flex flex-1 flex-col items-center gap-1 py-2.5 text-[0.65rem] font-medium", active ? "text-brand-strong" : "text-ink-faint")}
             >
-              <span className="relative inline-flex">
-                <NavIcon name={item.icon} size={20} />
+              <span className={clsx("relative inline-flex h-7 w-7 items-center justify-center rounded-lg", active && "bg-brand-soft")}>
+                <NavIcon name={item.icon} size={18} />
                 {typeof badge === "number" && (
                   <span className="mono absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-strong px-1 text-[0.6rem] font-bold text-white">
                     {badge}
@@ -567,9 +594,11 @@ export default function DashboardShell({
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
-            className={clsx("flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[0.65rem] font-medium", menuOpen ? "text-brand-strong" : "text-ink-faint")}
+            className={clsx("flex flex-1 flex-col items-center gap-1 py-2.5 text-[0.65rem] font-medium", menuOpen ? "text-brand-strong" : "text-ink-faint")}
           >
-            <MoreHorizontal size={20} />
+            <span className={clsx("flex h-7 w-7 items-center justify-center rounded-lg", menuOpen && "bg-brand-soft")}>
+              <MoreHorizontal size={18} />
+            </span>
             <span>More</span>
           </button>
         )}
@@ -585,7 +614,7 @@ export default function DashboardShell({
           <div
             id="dashboard-mobile-sheet"
             role="menu"
-            className="absolute inset-x-0 bottom-0 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t border-rule bg-paper pb-[env(safe-area-inset-bottom)] shadow-2xl"
+            className="absolute inset-x-0 bottom-0 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t border-rule bg-paper-raised pb-[env(safe-area-inset-bottom)] shadow-[var(--shadow-lift)]"
           >
             <div className="mx-auto mt-2.5 h-1 w-10 rounded-full bg-rule-strong" />
             <p className="px-4 pb-1 pt-3 text-xs font-semibold uppercase tracking-wider text-ink-faint">{title}</p>
