@@ -58,8 +58,13 @@ export default function VerificationPage() {
   }
 
   return (
-    <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <h2 className="mb-2 text-xl">Identity verification</h2>
+    <DashboardShell title="Seller Dashboard" icon="shieldCheck" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+      <div className="mb-2 flex items-center gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+          <ShieldCheck size={15} />
+        </div>
+        <h2 className="text-xl">Identity verification</h2>
+      </div>
       <p className="mb-2 max-w-[60ch] text-sm text-ink-soft">
         Verified sellers get a badge on every listing and rank higher in search. Choose one document to verify - this only needs to be done once.
       </p>
