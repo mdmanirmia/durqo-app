@@ -50,7 +50,15 @@ export default async function AdminValuationLeadsPage({
   const newCount = rows.filter((r) => r.status === "new").length;
 
   return (
-    <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+    // 2026-10-02 design fix ("valuation lead er onektai kete geche" - most
+    // of the table was getting cut off): this table's 8 columns need
+    // min-w-[1040px] (AdminValuationLeadsTable.tsx) to stay readable, which
+    // didn't fit the default 1280px-capped Container once the 220px admin
+    // sidebar and gaps were subtracted - the same cut-off bug the Users
+    // table hit on 2026-09-20 (admin-users-table-width-fix-addendum.md),
+    // fixed there the same way: `wide` raises the Container's cap to
+    // 1600px, which is plenty of room either way, even without scrolling.
+    <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard" wide>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl">Valuation Leads{status ? ` - ${status}` : ""}</h2>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
