@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle, Wallet, Tag, Eye, Store, LayoutList } from "lucide-react";
+import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle, Wallet, Tag, Eye, LayoutList } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORY_MAP } from "@/lib/categories";
@@ -143,7 +143,7 @@ export default function SellerOverview() {
   const publishedCount = (myListings ?? []).filter((l) => l.status === "published").length;
 
   return (
-    <DashboardShell title="Seller Dashboard" icon={Store} nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+    <DashboardShell title="Seller Dashboard" icon="store" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
           <div className="flex items-center gap-3 rounded-2xl border border-rule bg-paper-raised px-4 py-3 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
