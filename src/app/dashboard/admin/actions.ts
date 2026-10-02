@@ -8,6 +8,9 @@ import { sendEmail } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
 import { transferRoomEmailCta, buyerTransferGuidanceHtml, sellerTransferGuidanceHtml } from "@/lib/asset-transfer-room";
 import { sendListingApprovedEvent } from "@/lib/ga4-measurement-protocol";
+import { CATEGORY_MAP } from "@/lib/categories";
+import { getCategoryMetricConfig } from "@/lib/valuation";
+import { replaceAllValuationLeadsInSheet } from "@/lib/google-sheets";
 
 // Shared by every best-effort notification block below — resolves the
 // request's own host so links always point at whatever origin the admin is
@@ -1128,10 +1131,9 @@ export async function setValuationLeadStatus(leadId: string, status: ValuationLe
 // table nothing else in the schema references - unlike the user-delete
 // actions above, there's no listing/order/message history that could get
 // silently orphaned, so this is a plain hard delete with no eligibility
-// checks beyond requireAdmin() itself. One row at a time (the table has no
-// bulk-select UI like AdminUsersTable's), guarded by a confirm dialog on
-// the client the same way every other destructive admin action in this
-// codebase is.
+// checks beyond requireAdmin() itself. One row at a time, guarded by a
+// confirm dialog on the client the same way every other destructive admin
+// action in this codebase is.
 export async function deleteValuationLead(leadId: string) {
   await requireAdmin();
 
@@ -1142,4 +1144,74 @@ export async function deleteValuationLead(leadId: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/dashboard/admin/valuation-leads");
+}
+
+// 2026-10-02 same-day follow-up ("bulk select kore delete korar option
+// koro" — add a bulk-select-and-delete option): same no-eligibility-checks
+// posture as the single-row deleteValuationLead() above (nothing else
+// references valuation_leads), extended to many ids at once — same
+// bulk-select shape as AdminUsersTable's deleteVerifiedUsers()/
+// deleteUnverifiedUsers(), minus the per-id eligibility guards those need
+// (self-account, admin role, live listings) since a lead row has none of
+// that to protect. `.select("id")` on the delete gives back exactly which
+// rows actually existed and were removed, so the client can report an
+// accurate count even if some selected ids were already deleted by another
+// admin tab in the meantime.
+export async function deleteValuationLeads(leadIds: string[]): Promise<{ deleted: number }> {
+  await requireAdmin();
+  if (leadIds.length === 0) return { deleted: 0 };
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const { data, error } = await admin.from("valuation_leads").delete().in("id", leadIds).select("id");
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/valuation-leads");
+  return { deleted: data?.length ?? 0 };
+}
+
+// 2026-10-02 ("lead hisebe ki excel file e auto sync kora jai" — can leads
+// auto-sync to an excel file): one-time (or re-run-whenever) full mirror
+// into the site owner's Google Sheet, triggered by the "Sync all to Google
+// Sheet" button on AdminValuationLeadsTable — backfills everything that
+// existed before the ongoing per-submission sync
+// (appendValuationLeadToSheet(), wired into src/app/valuation/actions.ts)
+// was set up. Re-fetches every lead straight from the database rather than
+// trusting rows the client already has in props, same "never trust more
+// than an id from the client" posture as every other action in this file —
+// this one happens to write to an external, admin-only destination, so it
+// re-derives the full payload server-side rather than letting the client
+// hand over arbitrary row data to be written there.
+export async function syncAllValuationLeadsToSheet(): Promise<{ ok: boolean; error?: string; count: number }> {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, error: "Admin client unavailable", count: 0 };
+
+  const { data: leads, error } = await admin.from("valuation_leads").select("*").order("created_at", { ascending: true });
+  if (error) return { ok: false, error: error.message, count: 0 };
+
+  const rows = (leads ?? []).map((l) => {
+    const categoryName = CATEGORY_MAP[l.category_id]?.name ?? l.category_id;
+    const metricConfig = getCategoryMetricConfig(l.category_id);
+    const metricValue = l.category_metric_value !== null && l.category_metric_value !== undefined ? Number(l.category_metric_value) : null;
+    return {
+      createdAt: l.created_at as string,
+      name: l.name as string,
+      email: l.email as string,
+      phone: (l.phone as string | null) ?? null,
+      categoryName,
+      monthlyRevenue: Number(l.monthly_revenue),
+      monthlyProfit: Number(l.monthly_profit),
+      businessAgeYears: Number(l.business_age_years),
+      categoryMetricLabel: metricConfig && metricValue !== null ? `${metricConfig.label}: ${metricValue.toLocaleString("en-US")}` : null,
+      estimatedLow: Number(l.estimated_low),
+      estimatedHigh: Number(l.estimated_high),
+      status: l.status as string,
+    };
+  });
+
+  const result = await replaceAllValuationLeadsInSheet(rows);
+  return { ...result, count: rows.length };
 }
