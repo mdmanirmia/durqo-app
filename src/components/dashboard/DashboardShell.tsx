@@ -21,7 +21,8 @@ import {
   Users,
   TrendingUp,
   X,
-  type LucideIcon,
+  Store,
+  ShoppingBag,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import { COUNTS_CHANGED_EVENT } from "@/lib/count-events";
@@ -57,6 +58,8 @@ const ICONS = {
   users: Users,
   arrowLeftRight: ArrowLeftRight,
   trendingUp: TrendingUp,
+  store: Store,
+  shoppingBag: ShoppingBag,
 } as const;
 
 export type DashboardIconName = keyof typeof ICONS;
@@ -133,7 +136,7 @@ const MOBILE_BOTTOM_SLOTS = 3;
 
 export default function DashboardShell({
   title,
-  icon: Icon,
+  icon,
   nav,
   switchHref,
   switchLabel,
@@ -145,8 +148,12 @@ export default function DashboardShell({
   // admin/seller/buyer dashboard look premium/professional, no data
   // changes): optional icon chip shown next to the page title. Purely
   // cosmetic and opt-in — every existing call site that doesn't pass it
-  // renders exactly as before.
-  icon?: LucideIcon;
+  // renders exactly as before. A string key into ICONS (not a component
+  // reference) for the same reason DashboardNavItem.icon is one: the Admin
+  // Overview page is a Server Component, and Next.js refuses to pass a
+  // function (a lucide-react icon component) as a prop from a Server
+  // Component into this Client Component — see the ICONS comment above.
+  icon?: DashboardIconName;
   nav: DashboardNavItem[];
   switchHref: string;
   switchLabel: string;
@@ -482,9 +489,9 @@ export default function DashboardShell({
     <main className="py-6 pb-24 md:py-10 md:pb-10">
       <Container maxWidth={wide ? 1600 : undefined}>
         <div className="mb-5 flex items-center gap-3 md:mb-8">
-          {Icon && (
+          {icon && (
             <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover shadow-[var(--shadow-card)]">
-              <Icon size={20} />
+              <NavIcon name={icon} size={20} />
             </div>
           )}
           <div className="min-w-0">
