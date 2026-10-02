@@ -30,6 +30,13 @@ export default function Header() {
   // dashboard from any page, instead of only ever linking to /dashboard/buyer.
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  // Oct 2, 2026 ("admin email diye login korle header menu te admin
+  // dashboard o thakne seller and buyer er sathe. eita only admin er
+  // jonno" — the header's Buyer/Seller Dashboard dropdown should also
+  // offer Admin Dashboard when signed in as an admin, visible only to
+  // admins): read alongside full_name in the same profiles lookup below,
+  // so no extra round trip.
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Wishlist/cart badge counts. Refetched on mount, on auth changes, and
   // whenever any component reports a wishlist/cart mutation via the shared
@@ -79,13 +86,19 @@ export default function Header() {
     let cancelled = false;
 
     async function loadName(userId: string, fallback: string) {
-      const { data: profile } = await supabase!.from("profiles").select("full_name").eq("id", userId).single();
-      if (!cancelled) setName(profile?.full_name ?? fallback);
+      const { data: profile } = await supabase!.from("profiles").select("full_name, role").eq("id", userId).single();
+      if (!cancelled) {
+        setName(profile?.full_name ?? fallback);
+        setIsAdmin(profile?.role === "admin");
+      }
     }
 
     if (!supabase) {
       Promise.resolve().then(() => {
-        if (!cancelled) setName(null);
+        if (!cancelled) {
+          setName(null);
+          setIsAdmin(false);
+        }
       });
       return () => {
         cancelled = true;
@@ -95,12 +108,18 @@ export default function Header() {
     supabase.auth.getUser().then(({ data }) => {
       if (cancelled) return;
       if (data.user) loadName(data.user.id, data.user.email ?? "Account");
-      else setName(null);
+      else {
+        setName(null);
+        setIsAdmin(false);
+      }
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) loadName(session.user.id, session.user.email ?? "Account");
-      else setName(null);
+      else {
+        setName(null);
+        setIsAdmin(false);
+      }
     });
 
     return () => {
@@ -208,6 +227,16 @@ export default function Header() {
                     role="menu"
                     className="absolute right-0 top-full z-50 mt-2 w-48 rounded-lg border border-rule bg-paper-raised py-1.5 shadow-lg"
                   >
+                    {isAdmin && (
+                      <Link
+                        href="/dashboard/admin"
+                        role="menuitem"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="block px-4 py-2 text-sm text-ink-soft hover:bg-paper-sunk hover:text-ink"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
                     <Link
                       href="/dashboard/buyer"
                       role="menuitem"
@@ -277,6 +306,11 @@ export default function Header() {
           {name ? (
             <div className="mt-2 flex flex-col gap-2">
               <p className="px-2 text-sm font-semibold text-ink">Hi, {name}</p>
+              {isAdmin && (
+                <Link href="/dashboard/admin" className="rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold" onClick={() => setOpen(false)}>
+                  Admin Dashboard
+                </Link>
+              )}
               <Link href="/dashboard/buyer" className="rounded-full border border-rule-strong px-4 py-2 text-center text-sm font-semibold" onClick={() => setOpen(false)}>
                 Buyer Dashboard
               </Link>
