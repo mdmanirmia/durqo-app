@@ -1,3 +1,4 @@
+import { ClipboardList } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -65,9 +66,14 @@ export default async function AdminOrders() {
   }
 
   return (
-    <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+    <DashboardShell title="Admin Dashboard" icon="shieldCheck" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl">All Orders</h2>
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+            <ClipboardList size={15} />
+          </div>
+          <h2 className="text-xl">All Orders</h2>
+        </div>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       <AdminOrdersTable rows={rows} />
