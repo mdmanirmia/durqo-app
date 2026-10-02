@@ -79,7 +79,7 @@ export default function AdminMessagesPanel({ conversations }: { conversations: A
         <Eye size={13} /> Viewing as admin - read-only. Nothing here can be sent or replied to on a user&rsquo;s behalf.
       </p>
 
-      <div className="grid h-[70vh] overflow-hidden rounded-xl border border-rule sm:h-[560px] sm:grid-cols-[300px_1fr] sm:grid-rows-[minmax(0,1fr)]">
+      <div className="grid h-[70vh] overflow-hidden rounded-2xl border border-rule shadow-[var(--shadow-card)] sm:h-[560px] sm:grid-cols-[300px_1fr] sm:grid-rows-[minmax(0,1fr)]">
         {/* Conversation list */}
         <div
           className={clsx(
