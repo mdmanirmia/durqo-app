@@ -4,6 +4,7 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { createClient } from "@/lib/supabase/server";
 import { getSellerQuestions } from "@/lib/data/seller-questions.server";
+import { HelpCircle } from "lucide-react";
 import SellerQuestionReply from "@/components/SellerQuestionReply";
 
 // The "seller er dashboard e notification jabe" half of the Sep 9, 2026
@@ -32,8 +33,13 @@ export default async function SellerQuestionsPage() {
   const answered = questions.filter((q) => q.hasSellerReply);
 
   return (
-    <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <h2 className="mb-1 text-xl">Comments</h2>
+    <DashboardShell title="Seller Dashboard" icon="helpCircle" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+      <div className="mb-1 flex items-center gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+          <HelpCircle size={15} />
+        </div>
+        <h2 className="text-xl">Comments</h2>
+      </div>
       <p className="mb-4 text-sm text-ink-faint">
         {unanswered.length === 0
           ? "You're all caught up - no open questions."
@@ -47,7 +53,7 @@ export default async function SellerQuestionsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {unanswered.map((q) => (
-            <div key={q.id} className="rounded-xl border border-rule bg-paper-raised p-5">
+            <div key={q.id} className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)]">
               <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <Link href={`/listing/${q.listingSlug}`} className="text-sm font-semibold text-brand-hover hover:underline">
                   {q.listingTitle}
@@ -77,7 +83,7 @@ export default async function SellerQuestionsPage() {
             <>
               <h3 className="mt-2 text-sm font-semibold text-ink-faint">Already answered</h3>
               {answered.map((q) => (
-                <div key={q.id} className="rounded-xl border border-rule bg-paper-raised p-5 opacity-80">
+                <div key={q.id} className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] opacity-80">
                   <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                     <Link href={`/listing/${q.listingSlug}`} className="text-sm font-semibold text-brand-hover hover:underline">
                       {q.listingTitle}
