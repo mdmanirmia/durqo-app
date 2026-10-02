@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle, Wallet, Tag, Eye } from "lucide-react";
+import { Plus, BarChart3, CheckCircle2, RefreshCw, AlertCircle, Wallet, Tag, Eye, Store, LayoutList } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { CATEGORY_MAP } from "@/lib/categories";
@@ -143,21 +143,21 @@ export default function SellerOverview() {
   const publishedCount = (myListings ?? []).filter((l) => l.status === "published").length;
 
   return (
-    <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+    <DashboardShell title="Seller Dashboard" icon={Store} nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
-          <div className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-strong text-white">
-              <Wallet size={17} />
+          <div className="flex items-center gap-3 rounded-2xl border border-rule bg-paper-raised px-4 py-3 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-strong text-white">
+              <Wallet size={18} />
             </div>
             <div className="min-w-0">
               <div className="mono text-xl font-semibold text-brand-strong">{balance === null ? "…" : fmtUSD(balance)}</div>
               <div className="text-xs text-ink-faint">Available balance</div>
             </div>
           </div>
-          <div className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-              <Tag size={17} />
+          <div className="flex items-center gap-3 rounded-2xl border border-rule bg-paper-raised px-4 py-3 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
+              <Tag size={18} />
             </div>
             <div className="min-w-0">
               <div className="mono text-xl font-semibold">{myListings === null ? "…" : publishedCount}</div>
@@ -187,7 +187,12 @@ export default function SellerOverview() {
         </div>
       )}
 
-      <h2 className="mb-4 text-xl">My Listings</h2>
+      <div className="mb-4 flex items-center gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+          <LayoutList size={15} />
+        </div>
+        <h2 className="text-xl">My Listings</h2>
+      </div>
       {myListings === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : myListings.length === 0 ? (
@@ -195,7 +200,7 @@ export default function SellerOverview() {
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+          <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -252,7 +257,7 @@ export default function SellerOverview() {
               const hasSeoData = CATEGORY_MAP[l.categoryId]?.hasSeoData;
               const ga = gaStatuses[l.id];
               return (
-                <div key={l.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
+                <div key={l.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
                   <div className="mb-3 flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <div className="truncate font-medium text-ink">{l.title}</div>
