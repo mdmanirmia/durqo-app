@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { CATEGORY_MAP } from "@/lib/categories";
 import { estimateValuation, getCategoryMetricConfig, type ValuationResult } from "@/lib/valuation";
+import { appendValuationLeadToSheet } from "@/lib/google-sheets";
 
 export type ValuationLeadFields = {
   name: string;
@@ -89,6 +90,28 @@ export async function submitValuationLead(fields: ValuationLeadFields): Promise<
   } else {
     console.warn("[valuation] admin client unavailable - lead was not stored:", { name, email });
   }
+
+  // 2026-10-02 ("lead hisebe ki excel file e auto sync kora jai" — can
+  // leads auto-sync to an excel file): best-effort, never throws, and never
+  // blocks this submission even if Google Sheets isn't configured or is
+  // temporarily unreachable — see src/lib/google-sheets.ts for the scope
+  // (new leads only, no later status/note sync back) and setup this relies
+  // on.
+  await appendValuationLeadToSheet({
+    createdAt: new Date().toISOString(),
+    name,
+    email,
+    phone,
+    categoryName: category.name,
+    monthlyRevenue,
+    monthlyProfit,
+    businessAgeYears,
+    categoryMetricLabel:
+      metricConfig && categoryMetricValue !== undefined ? `${metricConfig.label}: ${categoryMetricValue.toLocaleString("en-US")}` : null,
+    estimatedLow: result.low,
+    estimatedHigh: result.high,
+    status: "new",
+  });
 
   const rangeLabel = `$${result.low.toLocaleString("en-US")} – $${result.high.toLocaleString("en-US")}`;
 
