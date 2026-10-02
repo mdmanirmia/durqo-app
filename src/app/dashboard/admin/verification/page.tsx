@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -72,9 +73,14 @@ export default async function AdminVerification({
   const pendingCount = rows.filter((r) => r.status === "pending").length;
 
   return (
-    <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+    <DashboardShell title="Admin Dashboard" icon="shieldCheck" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl">Seller Verification</h2>
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+            <ShieldCheck size={15} />
+          </div>
+          <h2 className="text-xl">Seller Verification</h2>
+        </div>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       <div className="mb-4 flex flex-wrap gap-2">
