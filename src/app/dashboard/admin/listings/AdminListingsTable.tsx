@@ -189,7 +189,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
   return (
     <>
       {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+      <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
         <table className="w-full min-w-[820px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -237,7 +237,7 @@ export default function AdminListingsTable({ rows }: { rows: AdminListingRow[] }
         {rows.map((l) => {
           const busy = isPending && pendingId === l.id;
           return (
-            <div key={l.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
+            <div key={l.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <Link href={`/listing/${l.slug}`} className="block truncate font-medium text-ink hover:text-brand-strong">
