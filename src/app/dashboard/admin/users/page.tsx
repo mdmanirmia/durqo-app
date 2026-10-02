@@ -1,3 +1,4 @@
+import { Users } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -72,9 +73,14 @@ export default async function AdminUsers() {
   }
 
   return (
-    <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard" wide>
+    <DashboardShell title="Admin Dashboard" icon="shieldCheck" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard" wide>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl">All Users</h2>
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+            <Users size={15} />
+          </div>
+          <h2 className="text-xl">All Users</h2>
+        </div>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       <AdminUsersTable rows={rows} selfId={me.id} />
