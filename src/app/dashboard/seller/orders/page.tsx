@@ -46,8 +46,13 @@ export default function SellerOrdersPage() {
   }
 
   return (
-    <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <h2 className="mb-4 text-xl">Orders</h2>
+    <DashboardShell title="Seller Dashboard" icon="clipboardList" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+      <div className="mb-4 flex items-center gap-2.5">
+        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+          <ClipboardList size={15} />
+        </div>
+        <h2 className="text-xl">Orders</h2>
+      </div>
       {orders === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : orders.length === 0 ? (
@@ -55,7 +60,7 @@ export default function SellerOrdersPage() {
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+          <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
             <table className="w-full min-w-[560px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -123,7 +128,7 @@ export default function SellerOrdersPage() {
               addendum for the min-w-0 overflow fix this relies on. */}
           <div className="grid gap-3 md:hidden">
             {orders.map((o) => (
-              <div key={o.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
+              <div key={o.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <span className="mono text-xs text-ink-faint">{o.id.slice(0, 8)}</span>
                   <StatusBadge status={o.status} />
