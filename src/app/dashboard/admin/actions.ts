@@ -1122,3 +1122,24 @@ export async function setValuationLeadStatus(leadId: string, status: ValuationLe
 
   revalidatePath("/dashboard/admin/valuation-leads");
 }
+
+// 2026-10-02 ("delete korar o bebostha koro" — add a way to delete these
+// too): valuation_leads (058_valuation_leads.sql) is a standalone lead-gen
+// table nothing else in the schema references - unlike the user-delete
+// actions above, there's no listing/order/message history that could get
+// silently orphaned, so this is a plain hard delete with no eligibility
+// checks beyond requireAdmin() itself. One row at a time (the table has no
+// bulk-select UI like AdminUsersTable's), guarded by a confirm dialog on
+// the client the same way every other destructive admin action in this
+// codebase is.
+export async function deleteValuationLead(leadId: string) {
+  await requireAdmin();
+
+  const admin = createAdminClient();
+  if (!admin) throw new Error("Admin client unavailable");
+
+  const { error } = await admin.from("valuation_leads").delete().eq("id", leadId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/dashboard/admin/valuation-leads");
+}
