@@ -203,7 +203,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
   return (
     <>
       {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
+      <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
         <table className="w-full min-w-[1040px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -289,7 +289,7 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
         {rows.map((r) => {
           const busy = isPending && pendingId === r.id;
           return (
-            <div key={r.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
+            <div key={r.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="truncate font-medium text-ink">{r.sellerName}</div>
