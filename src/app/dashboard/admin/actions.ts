@@ -1189,7 +1189,7 @@ export async function syncAllValuationLeadsToSheet(): Promise<{ ok: boolean; err
   const admin = createAdminClient();
   if (!admin) return { ok: false, error: "Admin client unavailable", count: 0 };
 
-  const { data: leads, error } = await admin.from("valuation_leads").select("*").order("created_at", { ascending: true });
+  const { data: leads, error } = await admin.from("valuation_leads").select("*").order("created_at", { ascending: false });
   if (error) return { ok: false, error: error.message, count: 0 };
 
   const rows = (leads ?? []).map((l) => {
