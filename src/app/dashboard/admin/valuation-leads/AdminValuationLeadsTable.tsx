@@ -1,13 +1,19 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Copy, Mail, Phone, Trash2, TrendingUp } from "lucide-react";
+import { Check, Copy, FileSpreadsheet, Mail, Phone, Trash2, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
 import { fmtUSD } from "@/lib/format";
 import { getCategoryMetricConfig } from "@/lib/valuation";
-import { setValuationLeadStatus, deleteValuationLead, type ValuationLeadStatus } from "../actions";
+import {
+  setValuationLeadStatus,
+  deleteValuationLead,
+  deleteValuationLeads,
+  syncAllValuationLeadsToSheet,
+  type ValuationLeadStatus,
+} from "../actions";
 
 export interface AdminValuationLeadRow {
   id: string;
@@ -139,6 +145,70 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
   const [isDeleting, startDeleteTransition] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
+  // 2026-10-02 same-day follow-up ("bulk select kore delete korar option
+  // koro" — add a bulk-select-and-delete option): same selectedIds/
+  // toggleSelectAll/toggleSelected shape as AdminUsersTable's bulk delete,
+  // kept entirely separate from the single-row deleteTarget flow above
+  // (different confirm copy, different transition/notice state) rather than
+  // routing a one-row delete through the bulk path, since the two already
+  // existed as distinct, independently useful affordances.
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const allSelected = rows.length > 0 && rows.every((r) => selectedIds.has(r.id));
+  const [isBulkDeleting, startBulkDeleteTransition] = useTransition();
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  // Holds either a success summary ("Deleted 3 leads.") or an error message —
+  // same single-notice-string shape as AdminUsersTable's deleteNotice.
+  const [bulkDeleteNotice, setBulkDeleteNotice] = useState<string | null>(null);
+
+  function toggleSelectAll() {
+    setSelectedIds(allSelected ? new Set() : new Set(rows.map((r) => r.id)));
+  }
+
+  function toggleSelected(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  // 2026-10-02 ("lead hisebe ki excel file e auto sync kora jai" — can
+  // leads auto-sync to an excel file): ongoing per-submission sync happens
+  // server-side with no UI at all (see src/app/valuation/actions.ts); this
+  // button only covers the one-time (or re-run-whenever) full backfill into
+  // the sheet, for leads that were already here before that was wired up.
+  const [isSyncing, startSyncTransition] = useTransition();
+  const [syncNotice, setSyncNotice] = useState<string | null>(null);
+
+  function handleSyncToSheet() {
+    setSyncNotice(null);
+    startSyncTransition(async () => {
+      const result = await syncAllValuationLeadsToSheet();
+      setSyncNotice(
+        result.ok
+          ? `Synced ${result.count} lead${result.count === 1 ? "" : "s"} to the Google Sheet.`
+          : (result.error ?? "Couldn't sync to the Google Sheet - try again.")
+      );
+    });
+  }
+
+  function handleBulkDeleteConfirmed() {
+    const ids = Array.from(selectedIds);
+    setBulkDeleteNotice(null);
+    startBulkDeleteTransition(async () => {
+      try {
+        const result = await deleteValuationLeads(ids);
+        setSelectedIds(new Set());
+        setBulkDeleteConfirmOpen(false);
+        setBulkDeleteNotice(`Deleted ${result.deleted} lead${result.deleted === 1 ? "" : "s"}.`);
+      } catch (err) {
+        setBulkDeleteConfirmOpen(false);
+        setBulkDeleteNotice(err instanceof Error ? err.message : "Couldn't delete the selected leads - try again.");
+      }
+    });
+  }
+
   function updateStatus(id: string, status: ValuationLeadStatus, note?: string) {
     setPendingId(id);
     setErrorId(null);
@@ -179,11 +249,51 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
 
   return (
     <>
+      {/* 2026-10-02 same-day follow-up ("bulk select kore delete korar
+          option koro"): select-all + bulk delete toolbar, same shape as
+          AdminUsersTable's. Shown whenever there's at least one row — every
+          lead here is bulk-selectable (no admin/self/listings guard to
+          apply, unlike the Users table). */}
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rule-strong bg-paper-raised p-3">
+        <label className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
+          <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
+          Select all {rows.length}
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={isSyncing}
+            onClick={handleSyncToSheet}
+            title="One-time full backfill into the Google Sheet - new leads sync there automatically going forward"
+            className="flex items-center gap-1.5 rounded-md border border-rule-strong px-3 py-1.5 text-xs font-semibold text-ink-soft hover:bg-paper-sunk disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <FileSpreadsheet size={14} /> {isSyncing ? "Syncing…" : "Sync all to Google Sheet"}
+          </button>
+          <button
+            type="button"
+            disabled={selectedIds.size === 0}
+            onClick={() => setBulkDeleteConfirmOpen(true)}
+            className="flex items-center gap-1.5 rounded-md border border-danger px-3 py-1.5 text-xs font-semibold text-danger hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Trash2 size={14} /> Delete selected{selectedIds.size > 0 ? ` (${selectedIds.size})` : ""}
+          </button>
+        </div>
+      </div>
+      {syncNotice && (
+        <p className="mb-4 rounded-md border border-rule-strong bg-paper-raised px-3 py-2 text-xs text-ink-soft">{syncNotice}</p>
+      )}
+      {bulkDeleteNotice && (
+        <p className="mb-4 rounded-md border border-rule-strong bg-paper-raised px-3 py-2 text-xs text-ink-soft">{bulkDeleteNotice}</p>
+      )}
+
       {/* Desktop table */}
       <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
-        <table className="w-full min-w-[1100px] border-collapse text-sm">
+        <table className="w-full min-w-[1140px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
+              <th className="w-10 px-4 py-3">
+                <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
+              </th>
               <th className="px-4 py-3 font-medium">Lead</th>
               <th className="px-4 py-3 font-medium">Category</th>
               <th className="px-4 py-3 font-medium">Revenue / Profit</th>
@@ -202,6 +312,14 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
               const busy = isPending && pendingId === row.id;
               return (
                 <tr key={row.id} className="border-b border-rule align-top last:border-b-0">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(row.id)}
+                      onChange={() => toggleSelected(row.id)}
+                      className="h-4 w-4 rounded border-rule-strong"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <div className="font-medium text-ink">{row.name}</div>
                     <div className="mt-0.5 flex items-center gap-1 text-xs text-ink-faint">
@@ -265,18 +383,26 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
           return (
             <div key={row.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="truncate font-medium text-ink">{row.name}</div>
-                  <div className="flex items-center gap-1 text-xs text-ink-faint">
-                    <span className="truncate">{row.email}</span>
-                    <CopyButton value={row.email} label="email" />
-                  </div>
-                  {row.phone && (
+                <div className="flex min-w-0 items-start gap-2.5">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(row.id)}
+                    onChange={() => toggleSelected(row.id)}
+                    className="mt-1 h-4 w-4 shrink-0 rounded border-rule-strong"
+                  />
+                  <div className="min-w-0">
+                    <div className="truncate font-medium text-ink">{row.name}</div>
                     <div className="flex items-center gap-1 text-xs text-ink-faint">
-                      <span className="truncate">{row.phone}</span>
-                      <CopyButton value={row.phone} label="phone number" />
+                      <span className="truncate">{row.email}</span>
+                      <CopyButton value={row.email} label="email" />
                     </div>
-                  )}
+                    {row.phone && (
+                      <div className="flex items-center gap-1 text-xs text-ink-faint">
+                        <span className="truncate">{row.phone}</span>
+                        <CopyButton value={row.phone} label="phone number" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <Badge tone={STATUS_TONE[row.status] ?? "neutral"}>{row.status}</Badge>
@@ -344,6 +470,17 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
           setDeleteTarget(null);
           setDeleteError(null);
         }}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleteConfirmOpen}
+        title={`Delete ${selectedIds.size} lead${selectedIds.size === 1 ? "" : "s"}?`}
+        body="This permanently removes the selected valuation submissions - this can't be undone."
+        confirmLabel="Delete leads"
+        danger
+        busy={isBulkDeleting}
+        onConfirm={handleBulkDeleteConfirmed}
+        onCancel={() => setBulkDeleteConfirmOpen(false)}
       />
     </>
   );
