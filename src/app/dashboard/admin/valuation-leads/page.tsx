@@ -1,3 +1,4 @@
+import { TrendingUp } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -58,9 +59,14 @@ export default async function AdminValuationLeadsPage({
     // table hit on 2026-09-20 (admin-users-table-width-fix-addendum.md),
     // fixed there the same way: `wide` raises the Container's cap to
     // 1600px, which is plenty of room either way, even without scrolling.
-    <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard" wide>
+    <DashboardShell title="Admin Dashboard" icon="shieldCheck" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard" wide>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl">Valuation Leads{status ? ` - ${status}` : ""}</h2>
+        <div className="flex items-center gap-2.5">
+          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+            <TrendingUp size={15} />
+          </div>
+          <h2 className="text-xl">Valuation Leads{status ? ` - ${status}` : ""}</h2>
+        </div>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       {!status && newCount > 0 && (
