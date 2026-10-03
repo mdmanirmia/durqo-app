@@ -54,7 +54,7 @@ export default function TransferRoomsTable({
 
   if (rows.length === 0) {
     return (
-      <p className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] text-sm text-ink-faint">
+      <p className="rounded-xl border border-rule bg-paper-raised p-5 text-sm text-ink-faint">
         {viewerSide === "buyer"
           ? "No Transfer Rooms yet - they open automatically once you complete a purchase."
           : "No Transfer Rooms yet - they open automatically once one of your listings sells."}
@@ -65,7 +65,7 @@ export default function TransferRoomsTable({
   return (
     <>
       {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-      <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
+      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
         <table className="w-full min-w-[760px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -106,7 +106,7 @@ export default function TransferRoomsTable({
       {/* Mobile: same data as a stacked card list. */}
       <div className="grid gap-3 md:hidden">
         {rows.map((r) => (
-          <Link key={r.roomId} href={`/dashboard/transfer/${r.orderId}`} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
+          <Link key={r.roomId} href={`/dashboard/transfer/${r.orderId}`} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
             <div className="mb-2 flex items-start justify-between gap-2">
               <div className="min-w-0 truncate font-medium text-ink">{r.listingTitle}</div>
               <StageBadge stage={r.stage} />
