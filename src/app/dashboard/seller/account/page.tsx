@@ -1,4 +1,3 @@
-import { User } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
 import { createClient } from "@/lib/supabase/server";
@@ -51,13 +50,8 @@ export default async function SellerAccountPage() {
   }
 
   return (
-    <DashboardShell title="Seller Dashboard" icon="user" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <div className="mb-4 flex items-center gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-          <User size={15} />
-        </div>
-        <h2 className="text-xl">Account details</h2>
-      </div>
+    <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+      <h2 className="mb-4 text-xl">Account details</h2>
       <AccountForm
         initialFirstName={initialFirstName}
         initialLastName={initialLastName}
