@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Tag } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
@@ -62,14 +61,9 @@ export default async function AdminListings({
   }
 
   return (
-    <DashboardShell title="Admin Dashboard" icon="shieldCheck" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+    <DashboardShell title="Admin Dashboard" nav={ADMIN_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-            <Tag size={15} />
-          </div>
-          <h2 className="text-xl">All Listings</h2>
-        </div>
+        <h2 className="text-xl">All Listings</h2>
         {!admin && <span className="text-sm text-danger">Admin data source unavailable.</span>}
       </div>
       <div className="mb-6 flex flex-wrap gap-2">
