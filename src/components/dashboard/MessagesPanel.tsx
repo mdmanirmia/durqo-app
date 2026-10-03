@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { ArrowLeft, Send, MessageCircle } from "lucide-react";
-import DashboardShell, { DashboardNavItem, type DashboardIconName } from "./DashboardShell";
+import { ArrowLeft, Send } from "lucide-react";
+import DashboardShell, { DashboardNavItem } from "./DashboardShell";
 import { createClient } from "@/lib/supabase/client";
 import {
   getConversations,
@@ -24,13 +24,11 @@ function timeLabel(iso: string) {
 
 export default function MessagesPanel({
   title,
-  icon,
   nav,
   switchHref,
   switchLabel,
 }: {
   title: string;
-  icon?: DashboardIconName;
   nav: DashboardNavItem[];
   switchHref: string;
   switchLabel: string;
@@ -224,20 +222,15 @@ export default function MessagesPanel({
   }
 
   return (
-    <DashboardShell title={title} icon={icon} nav={nav} switchHref={switchHref} switchLabel={switchLabel}>
-      <div className="mb-4 flex items-center gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-          <MessageCircle size={15} />
-        </div>
-        <h2 className="text-xl">Messages</h2>
-      </div>
+    <DashboardShell title={title} nav={nav} switchHref={switchHref} switchLabel={switchLabel}>
+      <h2 className="mb-4 text-xl">Messages</h2>
 
       {conversations === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : conversations.length === 0 && !selected ? (
         <p className="text-sm text-ink-faint">No conversations yet - message a seller from any listing page to start one.</p>
       ) : (
-        <div className="grid h-[70vh] overflow-hidden rounded-2xl border border-rule shadow-[var(--shadow-card)] sm:h-[520px] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
+        <div className="grid h-[70vh] overflow-hidden rounded-xl border border-rule sm:h-[520px] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
           {/* Conversation list — below sm, hidden once a thread is open
               (mobileShowThread); always visible at sm+ regardless. */}
           <div
