@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Landmark, Wallet, Info, Banknote, Percent } from "lucide-react";
+import { Landmark, Wallet, Info } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import Button from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -262,50 +262,24 @@ export default function SellerEarningsPage() {
   const hasBalance = !!balance && balance.netAmount > 0;
 
   return (
-    <DashboardShell title="Seller Dashboard" icon="wallet" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
-      <div className="mb-2 flex items-center gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
-          <Wallet size={15} />
-        </div>
-        <h2 className="text-xl">Earnings &amp; Withdrawals</h2>
-      </div>
+    <DashboardShell title="Seller Dashboard" nav={SELLER_NAV} switchHref="/dashboard/buyer" switchLabel="Go to Buyer Dashboard">
+      <h2 className="mb-2 text-xl">Earnings &amp; Withdrawals</h2>
       <p className="mb-6 max-w-[65ch] text-sm text-ink-soft">
         Your available balance is what&rsquo;s left of your completed orders after any previous withdrawal requests, minus Durqo&rsquo;s Success Fee.
       </p>
 
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="group rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-strong text-white">
-              <Wallet size={18} />
-            </div>
-            <div className="min-w-0">
-              <div className="mono text-2xl font-semibold text-brand-strong">{balance === null ? "…" : fmtUSD(balance.netAmount)}</div>
-              <div className="text-sm text-ink-faint">Available to withdraw</div>
-            </div>
-          </div>
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="mono text-2xl font-semibold text-brand-strong">{balance === null ? "…" : fmtUSD(balance.netAmount)}</div>
+          <div className="text-sm text-ink-faint">Available to withdraw</div>
         </div>
-        <div className="group rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
-              <Banknote size={18} />
-            </div>
-            <div className="min-w-0">
-              <div className="mono text-2xl font-semibold">{balance === null ? "…" : fmtUSD(balance.grossAmount)}</div>
-              <div className="text-sm text-ink-faint">Gross (before Success Fee)</div>
-            </div>
-          </div>
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="mono text-2xl font-semibold">{balance === null ? "…" : fmtUSD(balance.grossAmount)}</div>
+          <div className="text-sm text-ink-faint">Gross (before Success Fee)</div>
         </div>
-        <div className="group rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
-          <div className="flex items-start gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold-soft text-[#92730F]">
-              <Percent size={18} />
-            </div>
-            <div className="min-w-0">
-              <div className="mono text-2xl font-semibold">{balance === null ? "…" : fmtUSD(balance.successFeeAmount)}</div>
-              <div className="text-sm text-ink-faint">Success Fee ({balance === null || balance.orderCount === 0 ? "-" : fmtRate(balance.successFeeAmount / balance.grossAmount)})</div>
-            </div>
-          </div>
+        <div className="rounded-xl border border-rule bg-paper-raised p-5">
+          <div className="mono text-2xl font-semibold">{balance === null ? "…" : fmtUSD(balance.successFeeAmount)}</div>
+          <div className="text-sm text-ink-faint">Success Fee ({balance === null || balance.orderCount === 0 ? "-" : fmtRate(balance.successFeeAmount / balance.grossAmount)})</div>
         </div>
       </div>
 
@@ -341,7 +315,7 @@ export default function SellerEarningsPage() {
         </p>
       )}
 
-      <div className="mb-10 rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)]">
+      <div className="mb-10 rounded-xl border border-rule bg-paper-raised p-5">
         <h3 className="mb-4 flex items-center gap-2 font-semibold text-ink">
           <Wallet size={17} /> Request a withdrawal
         </h3>
@@ -457,7 +431,7 @@ export default function SellerEarningsPage() {
       ) : (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-          <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
+          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -523,7 +497,7 @@ export default function SellerEarningsPage() {
             {withdrawals.map((w) => {
               const eta = estimatePayoutProcessingDate(new Date(w.requestedAtRaw), w.status);
               return (
-              <div key={w.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
+              <div key={w.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
                 <div className="mb-3 flex items-center justify-between gap-2">
                   <span className="mono text-sm text-ink-soft">{w.requestedAt}</span>
                   <Badge tone={STATUS_TONE[w.status]}>{STATUS_LABEL[w.status]}</Badge>
