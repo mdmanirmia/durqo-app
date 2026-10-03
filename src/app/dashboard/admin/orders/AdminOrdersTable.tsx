@@ -290,7 +290,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
           long option, and the wrapper below adds a right-edge fade so a
           screen that still needs the horizontal scrollbar shows one. */}
       <div className="hidden md:block">
-        <div className="scroll-shadow-x overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)]">
+        <div className="scroll-shadow-x overflow-x-auto rounded-xl border border-rule">
           <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -402,7 +402,7 @@ export default function AdminOrdersTable({ rows }: { rows: AdminOrderRow[] }) {
           const hasRoom = o.hasTransferRoom || startedTransferIds.includes(o.id);
           const paymentLanded = o.status === "in_escrow" || o.status === "in_durqo";
           return (
-            <div key={o.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
+            <div key={o.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-2 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <div className="truncate font-medium text-ink">{o.listingTitle}</div>
