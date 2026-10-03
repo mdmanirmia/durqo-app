@@ -76,7 +76,7 @@ function AddUserForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
+    <form onSubmit={handleSubmit} className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border border-rule bg-paper-raised p-4">
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-semibold text-ink-soft">Email</label>
         <input
@@ -316,7 +316,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
       </div>
 
       {selectableIds.length > 0 && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rule-strong bg-paper-raised p-3 shadow-[var(--shadow-card)]">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rule-strong bg-paper-raised p-3">
           <label className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
             <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
             Select all {selectableIds.length}
@@ -347,7 +347,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
       ) : view === "verified" ? (
         <>
           {/* Desktop: unchanged table, horizontal-scroll fallback only. */}
-          <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
+          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
             <table className="w-full min-w-[980px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -403,7 +403,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
               const isSelf = u.id === selfId;
               const isProtected = isSelf || u.role === "admin";
               return (
-                <div key={u.id} className={`min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)] ${!u.isActive ? "opacity-60" : ""}`}>
+                <div key={u.id} className={`min-w-0 rounded-xl border border-rule bg-paper-raised p-4 ${!u.isActive ? "opacity-60" : ""}`}>
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="truncate font-medium text-ink">{u.fullName}</div>
@@ -452,7 +452,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
               Verified, and Purchases/Sales are all meaningless for an
               account that has never been able to log in, so they're left
               out rather than shown as permanent zeroes/No. */}
-          <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
+          <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
             <table className="w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -483,7 +483,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
 
           <div className="grid gap-3 md:hidden">
             {unverifiedRows.map((u) => (
-              <div key={u.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
+              <div key={u.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate font-medium text-ink">{u.fullName}</div>
