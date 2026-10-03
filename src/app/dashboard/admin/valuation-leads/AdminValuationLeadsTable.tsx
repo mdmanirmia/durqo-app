@@ -254,7 +254,7 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
           AdminUsersTable's. Shown whenever there's at least one row — every
           lead here is bulk-selectable (no admin/self/listings guard to
           apply, unlike the Users table). */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rule-strong bg-paper-raised p-3 shadow-[var(--shadow-card)]">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-rule-strong bg-paper-raised p-3">
         <label className="flex items-center gap-2 text-xs font-semibold text-ink-soft">
           <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
           Select all {rows.length}
@@ -287,7 +287,7 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
       )}
 
       {/* Desktop table */}
-      <div className="hidden overflow-x-auto rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)] md:block">
+      <div className="hidden overflow-x-auto rounded-xl border border-rule md:block">
         <table className="w-full min-w-[1140px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-rule bg-paper-raised text-left text-ink-faint">
@@ -381,7 +381,7 @@ export default function AdminValuationLeadsTable({ rows }: { rows: AdminValuatio
         {rows.map((row) => {
           const busy = isPending && pendingId === row.id;
           return (
-            <div key={row.id} className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[var(--shadow-card)]">
+            <div key={row.id} className="min-w-0 rounded-xl border border-rule bg-paper-raised p-4">
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-start gap-2.5">
                   <input
