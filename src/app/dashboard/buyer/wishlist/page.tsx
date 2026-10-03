@@ -23,13 +23,8 @@ export default function WishlistPage() {
   }, []);
 
   return (
-    <DashboardShell title="Buyer Dashboard" icon="heart" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
-      <div className="mb-4 flex items-center gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-          <Heart size={15} />
-        </div>
-        <h2 className="text-xl text-ink">Wishlist</h2>
-      </div>
+    <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
+      <h2 className="mb-4 text-xl text-ink">Wishlist</h2>
       {wishlisted === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : wishlisted.length ? (
