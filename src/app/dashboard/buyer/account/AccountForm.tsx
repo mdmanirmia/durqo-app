@@ -49,7 +49,7 @@ export default function AccountForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg rounded-2xl border border-rule bg-paper-raised p-6 shadow-[var(--shadow-card)]">
+    <form onSubmit={handleSubmit} className="max-w-lg rounded-xl border border-rule bg-paper-raised p-6">
       <div className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1.5">
