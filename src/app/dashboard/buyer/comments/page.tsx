@@ -4,7 +4,6 @@ import DashboardShell from "@/components/dashboard/DashboardShell";
 import { BUYER_NAV } from "@/lib/dashboard-nav";
 import { createClient } from "@/lib/supabase/server";
 import { getBuyerComments } from "@/lib/data/buyer-comments.server";
-import { HelpCircle } from "lucide-react";
 import BuyerCommentReply from "@/components/BuyerCommentReply";
 
 // Sep 10, 2026 request: "Buyer er dashboard e o comments section rakho...
@@ -33,13 +32,8 @@ export default async function BuyerCommentsPage() {
   const questions = await getBuyerComments(user.id);
 
   return (
-    <DashboardShell title="Buyer Dashboard" icon="helpCircle" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
-      <div className="mb-1 flex items-center gap-2.5">
-        <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-          <HelpCircle size={15} />
-        </div>
-        <h2 className="text-xl">Comments</h2>
-      </div>
+    <DashboardShell title="Buyer Dashboard" nav={BUYER_NAV} switchHref="/dashboard/seller" switchLabel="Go to Seller Dashboard">
+      <h2 className="mb-1 text-xl">Comments</h2>
       <p className="mb-4 text-sm text-ink-faint">Questions you&rsquo;ve asked sellers, and their replies.</p>
 
       {questions.length === 0 ? (
@@ -49,7 +43,7 @@ export default async function BuyerCommentsPage() {
       ) : (
         <div className="flex flex-col gap-4">
           {questions.map((q) => (
-            <div key={q.id} className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)]">
+            <div key={q.id} className="rounded-xl border border-rule bg-paper-raised p-5">
               <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
                 <Link href={`/listing/${q.listingSlug}`} className="text-sm font-semibold text-brand-hover hover:underline">
                   {q.listingTitle}
