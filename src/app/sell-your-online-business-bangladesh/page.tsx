@@ -226,6 +226,25 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 // Works, Building Buyer Confidence, Selling from Bangladesh, FAQ and
 // Related Reading all flipped paper-sunk/default) so no two consecutive
 // sections still share a background.
+//
+// Oct 4, 2026 revision (second, same day): merchant asked specifically for
+// the Selling from Bangladesh section to read as a resourceful guide to the
+// concrete problems a Bangladeshi seller faces selling internationally
+// (reaching buyers outside Bangladesh, getting paid in BDT, a transparent
+// process, and not handing over the business before being paid / fraud
+// risk) paired with how Durqo already addresses each one, explicitly
+// naming the Transfer Room. Rebuilt the section's body as a BANGLADESH_
+// CHALLENGES problem/solution card grid (same icon-badge card shape used
+// elsewhere on this page) instead of two generic paragraphs. Every
+// "solution" half restates an already-live, already-documented mechanic -
+// the marketplace's reach, the four local PAYOUT_METHODS below, the
+// listing-review process, and the Transfer Room/escrow payment hold
+// already described in SELLING_STEPS 07-08 and on /after-you-pay - nothing
+// new is claimed, only reframed around this audience's specific concerns.
+// The existing payout-method badges and the BDT resource link card are
+// kept, unchanged, below the new grid. No section was added or removed and
+// no heading or background changed, so background alternation is
+// unaffected.
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
   "A practical guide for entrepreneurs in Bangladesh: how to prepare a website, SaaS, e-commerce, app or other digital business for sale, what buyers look for, and how to list it on Durqo.";
@@ -388,6 +407,38 @@ const PAYOUT_METHODS = [
   { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]" },
   { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]" },
   { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
+];
+
+// Oct 4, 2026 (second revision): the specific obstacles a founder selling
+// from Bangladesh runs into, paired with how Durqo's existing mechanics
+// address each one. Every "solution" half restates a real, already-live
+// mechanic (the marketplace's reach, the four local payout methods above,
+// the listing-review process, the Transfer Room/escrow hold described in
+// SELLING_STEPS 07-08 and /after-you-pay) - nothing new is being claimed
+// here, it is reframed around the problems a Bangladeshi seller specifically
+// faces.
+const BANGLADESH_CHALLENGES = [
+  {
+    icon: Globe,
+    title: "Reaching buyers beyond Bangladesh",
+    body: "Selling privately usually means relying on whoever you already know. A published Durqo listing can be discovered by buyers wherever they are, so your location does not have to limit who sees it.",
+  },
+  {
+    icon: Wallet,
+    title: "Getting paid in BDT",
+    body: "You are not limited to international-only payout rails. Durqo supports local withdrawal methods built for sellers in Bangladesh, alongside PayPal and Wise for buyers or sellers who prefer them.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Knowing what the process actually involves",
+    body: "Every listing goes through the same review before publishing, and every sale follows the same defined steps from offer to final transfer - so you are never guessing what happens next or negotiating the process itself.",
+  },
+  {
+    icon: Lock,
+    title: "Not handing over the business before you are paid",
+    body: "This is usually the biggest worry in an online sale. On Durqo, the buyer's payment is already held by Durqo or by Escrow.com as a neutral third party before you transfer anything in the Transfer Room - it is released to you only after the buyer reviews what you handed over and approves it.",
+    link: { href: "/transfer-room", label: "How the Transfer Room works" },
+  },
 ];
 
 
@@ -1264,23 +1315,42 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       {/* SELLING FROM BANGLADESH */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <Inner className="max-w-[760px]">
-            <DashEyebrow>Selling from Bangladesh</DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">Selling a digital business from Bangladesh.</h2>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Being based in Bangladesh does not complicate selling a digital business. Digital businesses are
-              not tied to one physical location, so yours can potentially attract buyers from anywhere - your
-              location does not have to limit who sees your listing.
-            </p>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Review Durqo&rsquo;s current information on transaction methods, BDT payment and payout options,
-              and verification requirements before proceeding.
-            </p>
+          <Inner>
+            <div className="mb-8 max-w-[70ch]">
+              <DashEyebrow>Selling from Bangladesh</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Selling a digital business from Bangladesh.</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Selling from Bangladesh raises a few questions a seller elsewhere may not have to think about:
+                whether international buyers will ever see the listing, how payment actually arrives in BDT,
+                whether the process is transparent, and whether it is safe to hand over a business before
+                being paid. Here is how Durqo addresses each one.
+              </p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {BANGLADESH_CHALLENGES.map(({ icon: Icon, title, body, link }) => (
+                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
+                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={16} />
+                  </span>
+                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{body}</p>
+                  {link && (
+                    <Link
+                      href={link.href}
+                      className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline"
+                    >
+                      {link.label}
+                      <ArrowRight size={12} />
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
             <InfoNote>
               Presenting a business through a marketplace can give sellers an opportunity to make their listing
               discoverable to a broader audience. This does not guarantee international buyer interest or a sale.
             </InfoNote>
-            <div className="mt-5 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-2">
               {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
                 <span
                   key={label}
@@ -1293,7 +1363,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
             </div>
             <Link
               href="/buy-and-sell-digital-businesses-in-bdt"
-              className="mt-5 flex items-center gap-3.5 rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong hover:shadow-sm"
+              className="mt-5 flex max-w-[760px] items-center gap-3.5 rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong hover:shadow-sm"
             >
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
                 <Wallet size={17} />
