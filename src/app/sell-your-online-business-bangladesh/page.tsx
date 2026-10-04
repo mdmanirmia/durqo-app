@@ -131,6 +131,26 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 //     label, and the grid moved from 5 to 3 columns at desktop width so the
 //     taller cards have room. No copy content changed by this restyle beyond
 //     the wording fixes above.
+//
+// Oct 4, 2026 (seventh revision): removed the hero byline line ("Reviewed by
+// the Durqo Marketplace Team - Updated October 2026").
+//
+// Oct 4, 2026 (eighth revision): design/color polish pass, no copy changes.
+//   - InfoNote recolored from flat gray (bg-paper-sunk/text-ink-faint, which
+//     read as almost invisible) to the sky/sky-soft tokens already defined
+//     in globals.css and already used elsewhere on the site (see
+//     website-due-diligence-checklist-for-buyers/page.tsx) - not a new color.
+//   - Overview section wrapped in a card with an icon badge and an "Overview"
+//     eyebrow instead of a bare unstyled paragraph.
+//   - "Is your business sellable" and "Set an asking price" plain bullet
+//     lists converted to bordered check-icon cards (same pattern already
+//     used by this page's own Seller Checklist section).
+//   - SDE explainer wrapped in a card with an icon-badge heading.
+//   - Marketplace Fees card gained an icon badge on its header and its
+//     footnote recolored to match the InfoNote fix.
+//   - Related Resources links turned from plain text into bordered pill
+//     chips.
+//   - Final CTA footnote given an explicit text-center class.
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
   "Learn how to sell a website or digital business from Bangladesh, reach potential buyers in Bangladesh and other countries, transfer assets through a structured process and receive eligible sale proceeds in BDT.";
@@ -302,9 +322,9 @@ function Dot({ children }: { children: React.ReactNode }) {
 
 function InfoNote({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-paper-sunk px-3.5 py-3">
-      <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
-      <p className="text-xs leading-relaxed text-ink-faint">{children}</p>
+    <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-sky-soft px-3.5 py-3">
+      <Info size={14} className="mt-0.5 shrink-0 text-sky" />
+      <p className="text-xs leading-relaxed text-ink-soft">{children}</p>
     </div>
   );
 }
@@ -887,13 +907,21 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="border-b border-rule py-12 sm:py-14">
         <Container>
           <Inner>
-            <p className="max-w-[80ch] text-[0.95rem] leading-relaxed text-ink-soft">
-              Durqo is built to support founders selling a digital business from Bangladesh and to help them reach
-              potential buyers in Bangladesh and other countries. This guide walks through the obstacles sellers in
-              Bangladesh most often face, how Durqo&rsquo;s marketplace, review process, Transfer Room and local
-              payout options address them, and everything else involved in preparing, listing, pricing and
-              completing a sale.
-            </p>
+            <div className="flex flex-col gap-5 rounded-2xl border border-rule bg-paper-raised p-6 sm:flex-row sm:items-start sm:gap-6 sm:p-7">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-strong">
+                <Compass size={18} />
+              </span>
+              <div>
+                <DashEyebrow>Overview</DashEyebrow>
+                <p className="max-w-[80ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                  Durqo is built to support founders selling a digital business from Bangladesh and to help them reach
+                  potential buyers in Bangladesh and other countries. This guide walks through the obstacles sellers in
+                  Bangladesh most often face, how Durqo&rsquo;s marketplace, review process, Transfer Room and local
+                  payout options address them, and everything else involved in preparing, listing, pricing and
+                  completing a sale.
+                </p>
+              </div>
+            </div>
           </Inner>
         </Container>
       </section>
@@ -964,11 +992,14 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               </p>
               <p className="font-medium text-ink">A stronger sale candidate normally has:</p>
             </SectionIntro>
-            <ul className="grid max-w-[760px] gap-x-8 gap-y-2.5 sm:grid-cols-2">
+            <div className="grid max-w-[760px] gap-3 sm:grid-cols-2">
               {SELLABLE_SIGNS.map((s) => (
-                <Dot key={s}>{s}</Dot>
+                <div key={s} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
+                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
+                  <span className="text-sm leading-relaxed text-ink">{s}</span>
+                </div>
               ))}
-            </ul>
+            </div>
             <InfoNote>
               A listing application does not guarantee publication. Durqo may request clarification, supporting
               information or corrections before approving a listing.
@@ -1097,22 +1128,29 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[760px]">
-            <DashEyebrow>Pricing fundamentals</DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">Understanding Seller&rsquo;s Discretionary Earnings.</h2>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Seller&rsquo;s Discretionary Earnings, commonly called SDE, is often used when evaluating smaller
-              owner-operated businesses. It starts with the business&rsquo;s net profit and may add back certain
-              owner-specific, personal or one-time expenses that a new owner would not reasonably be expected to
-              continue paying.
-            </p>
-            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-              SDE is intended to help a buyer understand the approximate financial benefit the business currently
-              provides to one owner-operator.
-            </p>
-            <WarningNote>
-              SDE is not the same as revenue, and an SDE multiple is not a guaranteed valuation. The appropriate
-              approach depends on the business model, financial records, growth, risk and buyer demand.
-            </WarningNote>
+            <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
+              <DashEyebrow>Pricing fundamentals</DashEyebrow>
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
+                  <DollarSign size={16} />
+                </span>
+                <h2 className="text-2xl sm:text-3xl">Understanding Seller&rsquo;s Discretionary Earnings.</h2>
+              </div>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Seller&rsquo;s Discretionary Earnings, commonly called SDE, is often used when evaluating smaller
+                owner-operated businesses. It starts with the business&rsquo;s net profit and may add back certain
+                owner-specific, personal or one-time expenses that a new owner would not reasonably be expected to
+                continue paying.
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+                SDE is intended to help a buyer understand the approximate financial benefit the business currently
+                provides to one owner-operator.
+              </p>
+              <WarningNote>
+                SDE is not the same as revenue, and an SDE multiple is not a guaranteed valuation. The appropriate
+                approach depends on the business model, financial records, growth, risk and buyer demand.
+              </WarningNote>
+            </div>
           </Inner>
         </Container>
       </section>
@@ -1204,11 +1242,14 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               </p>
               <p className="font-medium text-ink">Before setting your asking price, consider:</p>
             </SectionIntro>
-            <ul className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+            <div className="grid gap-3 sm:grid-cols-2">
               {ASKING_PRICE_FACTORS.map((f) => (
-                <Dot key={f}>{f}</Dot>
+                <div key={f} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
+                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
+                  <span className="text-sm leading-relaxed text-ink">{f}</span>
+                </div>
               ))}
-            </ul>
+            </div>
             <InfoNote>Durqo&rsquo;s valuation tool provides an initial estimate, not a guaranteed sale price.</InfoNote>
           </Inner>
         </Container>
@@ -1541,7 +1582,12 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 </p>
               </div>
               <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
+                <div className="mb-4 flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
+                    <DollarSign size={14} />
+                  </span>
+                  <p className="mono text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
+                </div>
                 <dl className="flex flex-col gap-3">
                   {SUCCESS_FEE_TIERS.map((tier) => (
                     <div key={tier.id} className="flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0">
@@ -1550,9 +1596,9 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                     </div>
                   ))}
                 </dl>
-                <div className="mt-4 flex items-start gap-2">
-                  <Info size={13} className="mt-0.5 shrink-0 text-ink-faint" />
-                  <p className="text-xs leading-relaxed text-ink-faint">
+                <div className="mt-4 flex items-start gap-2 rounded-lg bg-sky-soft px-3 py-2.5">
+                  <Info size={13} className="mt-0.5 shrink-0 text-sky" />
+                  <p className="text-xs leading-relaxed text-ink-soft">
                     The applicable percentage applies to the complete final sale price. See{" "}
                     <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
                       Buy &amp; Sell in BDT
@@ -1580,10 +1626,14 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="border-b border-rule py-10">
         <Container>
           <Inner>
-            <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Related seller resources</p>
-            <div className="flex flex-wrap gap-x-8 gap-y-3">
+            <DashEyebrow>Related seller resources</DashEyebrow>
+            <div className="flex flex-wrap gap-2.5">
               {RELATED_RESOURCES.map(({ href, label }) => (
-                <Link key={href} href={href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
+                <Link
+                  key={href}
+                  href={href}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-rule bg-paper-raised px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-strong"
+                >
                   {label}
                   <ArrowRight size={14} />
                 </Link>
@@ -1614,7 +1664,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 Get a Free Valuation
               </TrackedCta>
             </div>
-            <p className="mono mt-8 text-xs uppercase tracking-wide text-white/40">
+            <p className="mono mt-8 text-center text-xs uppercase tracking-wide text-white/40">
               No upfront listing fee · Seller success fee applies only after a completed sale
             </p>
           </Inner>
