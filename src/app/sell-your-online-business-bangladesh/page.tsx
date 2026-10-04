@@ -4,35 +4,50 @@ import {
   ArrowRight,
   Activity,
   AlertTriangle,
+  ArrowRightLeft,
+  Bitcoin,
   Boxes,
   Calendar,
+  Car,
   CheckCircle2,
-  Clock,
   ClipboardCheck,
+  ClipboardList,
+  Clock,
   Compass,
+  CreditCard,
   DollarSign,
-  FileSearch,
+  Eye,
   FileText,
+  FileWarning,
+  Gamepad2,
   Globe,
   Handshake,
+  HelpCircle,
+  IdCard,
   Info,
   Landmark,
   Layers,
   Link as LinkIcon,
   Lock,
+  Mail,
+  MessagesSquare,
+  Network,
   Package,
+  PlaySquare,
   Repeat,
   Rocket as RocketGlyph,
-  Scale,
+  Send,
   Settings,
-  Share2,
   ShieldCheck,
   ShoppingCart,
+  Share2,
   Smartphone,
+  Sparkles,
   TrendingUp,
+  Unlock,
+  UserPlus,
   Users,
   Wallet,
-  PlaySquare,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import GroupedFaq, { type FaqGroup } from "@/components/GroupedFaq";
@@ -40,214 +55,50 @@ import { BkashIcon } from "@/components/icons/PaymentIcons";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 
-// Sep 27, 2026 build — the Bangladesh seller-acquisition content page from
-// the "DURQO — BANGLADESH SELLER ACQUISITION CONTENT" brief (see claude/
-// bangladesh-seller-acquisition-page-and-ad-copy-addendum.md for the full
-// brief, the analytics wiring this page depends on, and the accompanying
-// Facebook/Instagram ad copy). Built as the landing destination for a
-// Facebook/Instagram ad campaign targeting the funnel: Ad Click -> Article
-// View -> Sell CTA Click -> Listing Started -> Listing Submitted -> Listing
-// Approved.
-//
-// Distinct from two existing pages it sits next to:
-//   - /how-to-sell-a-website-in-bangladesh: Websites category only.
-//   - /how-to-sell: general seller guide, not Bangladesh-specific and not
-//     built for a paid-ad funnel (no CTA-level or article-view tracking).
-// This page covers every digital business category Durqo lists (websites,
-// SaaS, e-commerce, apps, YouTube channels, domains, and more), written for
-// a founder in Bangladesh deciding whether and how to sell.
-//
-// Every claim on this page is either a real, current fact about how Durqo
-// works (its 8-step listing/review/transfer process, its existing BDT
-// payout page, its existing FAQ/valuation/listing-review pages, "free to
-// list with no upfront charge" — the same claim already made on /sell,
-// /how-to-sell and /seller-faq) or a general, unattributed statement about
-// how buyers evaluate businesses — never a specific number, buyer count,
-// transaction count, testimonial, or outcome guarantee. Per the brief's own
-// implementation rules, this page deliberately does NOT: state or imply
-// Durqo guarantees a buyer, a sale, a valuation, a price, or a transaction
-// timeframe; quote fees, BDT payment methods, or verification rules inline
-// (it links to /buy-and-sell-digital-businesses-in-bdt, /seller-payouts and
-// /listing-review instead, so this page never drifts out of sync with
-// those); or invent usage statistics.
-//
-// Sep 27, 2026 revision: redesigned after direct feedback that the first
-// version read as visually flat next to sibling guide pages. Rebuilt the
-// hero as a two-column layout with an "Overview" info panel (matching the
-// pattern already established on /how-to-sell-a-website-in-bangladesh and
-// /sell), converted the flat bullet/number-square sections into icon-carded
-// grids and a connected vertical step timeline (matching /how-to-sell's own
-// 8-step STEPS pattern), and turned the bare BDT internal link into a
-// resource card. No new facts were introduced — every added line (the
-// trust-row items, the overview panel's copy) restates something already
-// said elsewhere on this same page or already established sitewide.
-//
-// Not added to the Footer's "Resources" column, matching how every other
-// page in this same Sep 22, 2026 batch of keyword/campaign-targeted guide
-// pages (how-to-buy-a-website-in-bangladesh, how-to-sell-a-website-in-
-// bangladesh, how-much-is-a-website-worth-in-bangladesh, online-businesses-
-// for-sale-in-bangladesh, website-due-diligence-checklist-for-buyers) was
-// also left out of it — these are meant to be found via search, the
-// sitemap, and contextual internal links, not to permanently widen the
-// sitewide footer. It IS added to sitemap.ts, following that same batch's
-// precedent (see sitemap.ts's own Sep 22, 2026 entries).
-//
-// Oct 3, 2026 revision: merchant asked for more information and an updated
-// design, noting this specific page gets heavy Bangladeshi traffic ("beshi
-// bangladeshi manush eita porteche"). Clarified scope before building (see
-// claude/bangladesh-seller-acquisition-page-and-ad-copy-addendum.md): add a
-// Marketplace Fees section, a Seller FAQ section, a Stats strip + BDT payout
-// showcase, and a Transfer Room walkthrough, plus light design polish
-// (icon-badge headers, hover states, alternating section backgrounds)
-// already proven elsewhere on the site — not a structural redesign. Every
-// new fact is sourced from, and kept in sync with, the same live modules
-// and pages the rest of the site already uses, never invented:
-//   - Marketplace Fees: SUCCESS_FEE_TIERS/fmtRate from src/lib/fees.ts, the
-//     same single source of truth /durqo-bangladesh and /buy-and-sell-
-//     digital-businesses-in-bdt already render. This page previously
-//     deliberately omitted the exact rates in favor of linking out; the
-//     merchant's own "more information" request is read as authorization to
-//     show the schedule now that it's already public on sibling pages.
-//   - Seller FAQ: the new FAQ_GROUPS below are pulled near-verbatim from the
-//     live /seller-faq page's "Fees & getting paid" and "Buyers & disputes"
-//     groups, trimmed to the questions a Bangladeshi seller is most likely
-//     to ask (fees, BDT withdrawal methods and caps, payout timing, the
-//     Transfer Room, disputes) — no new claims.
-//   - Stats strip: "16 digital business categories" and the 7-day buyer
-//     inspection window match src/lib/categories.ts and /transfer-room
-//     (also already cited on /durqo-bangladesh); "4 local BDT payout
-//     methods" and "Free to list" match this page's own existing claims.
-//   - BDT payout showcase: bank transfer/bKash/Nagad/Rocket, same four
-//     seller payout methods and icon/tint treatment already used on
-//     /durqo-bangladesh (BkashIcon from PaymentIcons.tsx, Nagad/Rocket as
-//     tinted lucide glyphs) — this page's own hero and BDT resource link
-//     already named these methods in prose; this only adds the visual badges.
-//   - Transfer Room walkthrough: the four-step sequence (Mark In Progress /
-//     Mark Submitted / Buyer Marks Received / Buyer Approves or Reports an
-//     Issue) is copied from /transfer-room's own real action labels and
-//     TRANSFER_FLOW, the identical steps already used on /durqo-bangladesh's
-//     own "Inside the Transfer Room" section — not new copy.
-// Background alternation was rebalanced after the inserts: "Buyers Outside
-// Bangladesh" moved from paper-sunk to the default background, and "How
-// Durqo Works" moved from the default background to paper-sunk, so no two
-// consecutive sections still share a background.
-//
-// Oct 3, 2026 revision (scope-tightening pass, same day): direct feedback
-// that content had drifted from the page's own title and that the design
-// had become messy with gaps in several places. Three concrete fixes:
-//   - Removed the Stats Strip section outright (merchant pointed at it
-//     specifically and said it was not needed).
-//   - Removed the standalone "Inside the Transfer Room" walkthrough. It
-//     duplicated Step 07 of "How Selling on Durqo Works" below and the
-//     FAQ's own "What exactly is the Transfer Room?" answer, so cutting it
-//     tightens the page without losing any information — the FAQ answer and
-//     the /transfer-room link (now surfaced from Related Reading instead)
-//     still cover it.
-//   - Merged "Your buyer does not have to be in Bangladesh" into "Selling a
-//     digital business from Bangladesh": both were short, Bangladesh-
-//     specific asides (reach, then payments) sitting three sections apart,
-//     and the first read as a thin, mostly-empty section on its own. One
-//     combined section reads as a single BD-specific logistics section
-//     instead of two half-finished ones.
-// Reordered the remaining sections into a single pass that reads start to
-// finish as: is this sellable -> why people sell -> what determines value
-// -> think like a buyer -> prepare -> seller checklist -> (CTA) -> price it
-// -> what it costs -> how the process works -> build buyer trust -> selling
-// from Bangladesh specifically -> FAQ. The Seller Checklist moved up to sit
-// directly after Prepare Your Business (same "getting ready" cluster,
-// instead of being stranded near the bottom of the page), and the mid-page
-// CTA moved with it to mark the break between preparing and pricing/process.
-// No facts changed — only section order, section count, and one bug fix
-// below.
-// Background alternation was recalculated end to end for the new order
-// (Seller Checklist, Asking Price, Marketplace Fees, Building Buyer
-// Confidence, Selling from Bangladesh, and Related Reading all changed
-// which of paper-sunk/default they use) so no two consecutive sections
-// still share a background.
-// Also fixed a real layout bug in the Marketplace Fees footnote: it used
-// `flex` directly on a `<p>` that mixed plain text with an inline `<Link>`,
-// which splits each text/link run into its own flex column instead of
-// letting it wrap as one sentence — this is what rendered as the broken,
-// gappy "Applies to the full final sale price. See / Buy & Sell in BDT /
-// for payout details." layout. Fixed by switching to the same div-wraps-
-// icon-and-paragraph structure the working `InfoNote` component already
-// uses elsewhere on this page.
-//
-// Oct 4, 2026 revision: merchant feedback that the content "wasn't valuable
-// enough" and that the design had visible gaps on the right side in several
-// places. Two kinds of changes:
-//   Content — added substance that teaches something, rather than more
-//   restated generalities, while staying inside this page's own no-invented-
-//   numbers rule:
-//     - New "Common Mistakes to Avoid" section (between What Determines
-//       Value and Think Like a Buyer): six concrete, generalized mistakes
-//       sellers commonly make, ending with a line tying back to Durqo's
-//       listing review process. General M&A/marketplace knowledge, not a
-//       Durqo-specific claim.
-//     - Set a Realistic Asking Price now explains Seller's Discretionary
-//       Earnings (SDE) and how profit multiples are commonly used as a
-//       starting reference point, with explicit, repeated caveats that any
-//       multiple cited is a rough industry reference only — never framed as
-//       what a specific business will sell for, and still points to
-//       /valuation for an actual estimate. General industry knowledge
-//       (commonly cited in M&A/marketplace literature), not a Durqo number.
-//     - Step 07 ("Transfer the Business") and Step 08 ("Complete the
-//       Transaction") now state the real payment-protection mechanic
-//       instead of generic process language: the buyer's payment is held by
-//       Durqo or by Escrow.com as a neutral third party and is not released
-//       until the buyer approves the transfer in the Transfer Room. Sourced
-//       from the live /after-you-pay page and the Transfer Room's own
-//       release logic — not new copy, surfaced here as a concrete "how it
-//       works" answer instead of a duplicate section (the FAQ's "What
-//       exactly is the Transfer Room?" answer already covers the mechanics
-//       in detail and was deliberately not restated here).
-//     - Hero's "Selling Overview" panel gained a third item (payment
-//       protection) restating the same escrow fact, to balance the panel's
-//       height against the left column (see design fixes below).
-//   Design — three concrete right-side-gap defects found via a visual
-//   audit, each fixed directly:
-//     - Hero: the right "Selling Overview" card ended noticeably shorter
-//       than the left column at desktop widths. Fixed by adding the third
-//       item above.
-//     - Seller Checklist: 11 items in a 2-column grid left an orphaned gap
-//       in the last row. Added a 12th item (offering a short handover
-//       period) so the grid is an even 2x6.
-//     - How Selling on Durqo Works: the worst offender. Its 8 steps lived in
-//       a single narrow left-aligned vertical timeline (numbered circle +
-//       connector line + text column) inside the full 1040px container,
-//       leaving the entire right half of a 1200px+ tall section empty.
-//       Rebuilt as a 2-column icon-badge card grid (same card shape as the
-//       Why Founders Sell / Prepare Your Business sections elsewhere on
-//       this page) so all 8 steps fill the full width evenly.
-// Inserting the new Common Mistakes section shifted every later section's
-// background by one position; background alternation was recalculated end
-// to end from that point on (What Buyers Want to Know, Prepare Your
-// Business, Seller Checklist, Asking Price, Marketplace Fees, How Durqo
-// Works, Building Buyer Confidence, Selling from Bangladesh, FAQ and
-// Related Reading all flipped paper-sunk/default) so no two consecutive
-// sections still share a background.
-//
-// Oct 4, 2026 revision (second, same day): merchant asked specifically for
-// the Selling from Bangladesh section to read as a resourceful guide to the
-// concrete problems a Bangladeshi seller faces selling internationally
-// (reaching buyers outside Bangladesh, getting paid in BDT, a transparent
-// process, and not handing over the business before being paid / fraud
-// risk) paired with how Durqo already addresses each one, explicitly
-// naming the Transfer Room. Rebuilt the section's body as a BANGLADESH_
-// CHALLENGES problem/solution card grid (same icon-badge card shape used
-// elsewhere on this page) instead of two generic paragraphs. Every
-// "solution" half restates an already-live, already-documented mechanic -
-// the marketplace's reach, the four local PAYOUT_METHODS below, the
-// listing-review process, and the Transfer Room/escrow payment hold
-// already described in SELLING_STEPS 07-08 and on /after-you-pay - nothing
-// new is claimed, only reframed around this audience's specific concerns.
-// The existing payout-method badges and the BDT resource link card are
-// kept, unchanged, below the new grid. No section was added or removed and
-// no heading or background changed, so background alternation is
-// unaffected.
+// Oct 4, 2026 (fourth revision): the third revision (same day) rebuilt this
+// page to match a visual mockup, but trimmed its text down to the mockup's
+// own placeholder-length copy in the process. That mockup was for layout
+// and component styling only - this revision restores and expands the
+// page's full educational depth (the seller-education content this page
+// carried before, plus the new Bangladesh-specific challenge/solution
+// framing), while keeping this revision's visual system (icon-badge cards,
+// the dark Transfer Room section, the "Durqo solution" callouts). Every
+// factual claim is still checked against the live codebase, not assumed:
+//   - Seller Success Fee tiers (10% / 7% / 5%) - src/lib/fees.ts.
+//   - BDT payout methods/limits - PAYOUT_METHODS in
+//     dashboard/seller/earnings/actions.ts; bKash/Nagad/Rocket each carry an
+//     independent ৳50,000/day, ৳300,000/month cap (supabase/migrations/032,
+//     033); Bank Transfer/PayPal/Wise have none. Same figures already on
+//     /payments and /seller-payouts.
+//   - KYC - Passport, National ID, Driving License and Birth Certificate are
+//     the four document options in dashboard/seller/verification/page.tsx,
+//     all equal standing. KYC is enforced before a first withdrawal at the
+//     database level, not just in copy. Review time ~1-2 business days
+//     (verification page copy); payout processing 3-5 business days
+//     (/payments, /seller-payouts, the earnings dashboard).
+//   - No formal offer/counter-offer feature exists anywhere in the
+//     checkout/listing code - Durqo is direct-purchase-at-listed-price.
+//     Nothing on this page describes negotiating a price.
+//   - Only Escrow.com is ever called an escrow provider (src/lib/escrow.ts,
+//     api/escrow/init); Stripe/SSLCommerz funds are held by Durqo itself
+//     until the buyer approves the transfer (matches /after-you-pay).
+//   - Transfer Room - real action labels, the 7-day inspection window from
+//     the first item marked Received, and "opens only once payment is
+//     confirmed" all come from /transfer-room's own copy and the
+//     asset-transfer-room logic.
+//   - The 16 category tiles are the real CATEGORIES entries in
+//     src/lib/categories.ts.
+//   - Every internal link below is a real route in src/app.
+// No specific SDE multiple ranges are published (only that multiples are
+// commonly referenced, never authoritative), and no guarantee of a buyer, a
+// price, a timeframe, or a scam-free transaction is made anywhere on this
+// page.
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
-  "A practical guide for entrepreneurs in Bangladesh: how to prepare a website, SaaS, e-commerce, app or other digital business for sale, what buyers look for, and how to list it on Durqo.";
+  "Learn how to sell a website or digital business from Bangladesh, reach buyers worldwide, transfer assets securely and receive eligible sale proceeds in BDT.";
+const OG_TITLE = "How to Sell an Online Business from Bangladesh";
+const OG_DESCRIPTION =
+  "A practical guide to preparing, listing, transferring and selling your digital business through Durqo—with international buyer reach and supported BDT payouts.";
 
 export const metadata: Metadata = {
   title: META_TITLE,
@@ -256,8 +107,8 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Durqo",
-    title: META_TITLE,
-    description: META_DESCRIPTION,
+    title: OG_TITLE,
+    description: OG_DESCRIPTION,
     url: "https://www.durqo.com/sell-your-online-business-bangladesh",
   },
   twitter: { card: "summary_large_image", title: META_TITLE, description: META_DESCRIPTION },
@@ -274,7 +125,7 @@ const BREADCRUMB_JSON_LD = {
   "@type": "BreadcrumbList",
   itemListElement: [
     { "@type": "ListItem", position: 1, name: "Home", item: "https://www.durqo.com" },
-    { "@type": "ListItem", position: 2, name: PAGE_TITLE, item: PAGE_URL },
+    { "@type": "ListItem", position: 2, name: "Sell Your Online Business from Bangladesh", item: PAGE_URL },
   ],
 };
 
@@ -293,45 +144,111 @@ const ARTICLE_JSON_LD = {
   url: PAGE_URL,
 };
 
-// Plain-text mirror of FAQ_GROUPS below, for the FAQPage structured-data
-// block (JSON-LD can't hold JSX). Keep both in sync when editing either.
+// Plain-text mirror of every question answered in FAQ_GROUPS below, for the
+// FAQPage structured-data block (JSON-LD can't hold JSX). Keep both in sync.
+const FAQ_PAIRS: { q: string; a: string }[] = [
+  {
+    q: "Can I sell a website from Bangladesh to an international buyer?",
+    a: "Yes. Once a listing is reviewed and published, it can be discovered by buyers browsing Durqo from Bangladesh or elsewhere. Being listed does not guarantee a specific buyer, price or timeframe.",
+  },
+  {
+    q: "What types of digital businesses can I sell?",
+    a: "Websites, e-commerce stores, SaaS products, AI apps and tools, Android and iOS apps, YouTube channels, social media accounts, domains, plugins, themes and extensions, Amazon stores and KDP businesses, service businesses, digital agencies, games, newsletters, startup businesses, and crypto or blockchain projects.",
+  },
+  {
+    q: "Does my business need to generate revenue to be listed?",
+    a: "Follow the category and information requirements shown when you create a listing. If a business does not yet generate revenue, explain its assets, audience, product and growth stage clearly so buyers can still evaluate it.",
+  },
+  {
+    q: "Is it free to create a listing?",
+    a: "Yes. There is no upfront listing fee and no monthly subscription. Durqo deducts a success fee only once your business actually sells.",
+  },
+  {
+    q: "How much does Durqo charge when my business sells?",
+    a: "A tiered success fee applied to the full final sale price: 10% under $50,000, 7% from $50,000 to $250,000, and 5% above $250,000.",
+  },
+  {
+    q: "Will my listing be visible to international buyers?",
+    a: "Yes. Once published, a listing is visible to buyers browsing Durqo from any country, alongside buyers in Bangladesh. Visibility does not guarantee buyer interest.",
+  },
+  {
+    q: "Can buyers submit offers I can negotiate?",
+    a: "Durqo currently uses a direct-purchase model rather than a formal offer-and-counter-offer system. A buyer can message you with questions before deciding whether to purchase at your listed asking price.",
+  },
+  {
+    q: "Can buyers message me before purchasing?",
+    a: "Yes. A buyer can ask questions about the business before deciding to purchase. Avoid sending passwords, identity documents or financial-account credentials through ordinary messages.",
+  },
+  {
+    q: "What happens during listing review?",
+    a: "Durqo checks a submitted listing for completeness, internal consistency and compliance with current listing requirements before it is published, and may request corrections or additional information first.",
+  },
+  {
+    q: "What financial information should I provide?",
+    a: "Accurate, supportable revenue, profit, expense and traffic information. Do not present figures you cannot reasonably support if asked.",
+  },
+  {
+    q: "How is an asking price calculated?",
+    a: "Durqo does not calculate your asking price for you. Base it on your actual revenue, profit, growth, risk, transferable assets and the free valuation tool's estimate, which is a reference, not a guaranteed sale price.",
+  },
+  {
+    q: "What does due diligence involve?",
+    a: "A buyer may review relevant financial, traffic, operational, ownership and asset information before completing a purchase. Share only information that is accurate, relevant and lawful to disclose.",
+  },
+  {
+    q: "When is a sale payment confirmed?",
+    a: "Once the buyer's payment has actually cleared through Stripe, SSLCommerz or Escrow.com and Durqo's systems mark the order as paid - not simply because a buyer says they have paid.",
+  },
+  {
+    q: "When does the Transfer Room become available?",
+    a: "Only after the required payment has been received and verified. A partial payment does not unlock the Transfer Room.",
+  },
+  {
+    q: "How long does the buyer get to inspect delivered assets?",
+    a: "A 7-day inspection window that starts from the first item marked Received, during which the buyer can approve the transfer or report an issue.",
+  },
+  {
+    q: "What if an asset is missing or doesn't match the listing?",
+    a: "The buyer can report an issue instead of approving. Nothing is released automatically - your payout stays on hold while Durqo reviews the available evidence.",
+  },
+  {
+    q: "What happens if the buyer reports an issue?",
+    a: "Your payout remains on hold while Durqo reviews the available transaction records and evidence, and both sides may be asked for more information. Not every dispute is decided in the seller's favor.",
+  },
+  {
+    q: "How can I receive my sale proceeds in Bangladesh?",
+    a: "Once the buyer approves the completed transfer and any required review is finished, eligible earnings appear in your Earnings & Withdrawals dashboard for withdrawal via Bank Transfer, bKash, Nagad or Rocket, alongside PayPal and Wise.",
+  },
+  {
+    q: "Are there limits on bKash, Nagad or Rocket withdrawals?",
+    a: "Yes. Each of the three carries its own independent limit of ৳50,000 per day and ৳300,000 per month. Bank Transfer, PayPal and Wise have no such cap.",
+  },
+  {
+    q: "Is KYC required for sellers?",
+    a: "Yes, before your first withdrawal. You can verify using a Passport, National ID, Driving License or Birth Certificate.",
+  },
+  {
+    q: "What identity documents are accepted?",
+    a: "Passport, National ID, Driving License or Birth Certificate. Upload clear photos of the document along with your legal name exactly as it appears on the ID.",
+  },
+  {
+    q: "Does my payout account name need to match my identity?",
+    a: "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification, and Durqo's team checks this by hand before approving a withdrawal.",
+  },
+  {
+    q: "How long does a payout take once requested?",
+    a: "Durqo normally reviews and processes eligible payout requests within 3-5 business days. Your bank or mobile financial service provider may need additional time to credit the funds.",
+  },
+  {
+    q: "Does Durqo guarantee my business will sell?",
+    a: "No. Durqo provides a structured listing process, marketplace visibility and a tracked transaction process, but it does not guarantee a buyer, a sale, a specific price, or how long a sale will take.",
+  },
+];
+
 const FAQ_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  mainEntity: [
-    {
-      q: "Is it free to list my business?",
-      a: "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells.",
-    },
-    {
-      q: "How much does Durqo charge when my business sells?",
-      a: "A tiered success fee based on your final sale price, shown in the Marketplace Fees section above. It is deducted only when your business sells.",
-    },
-    {
-      q: "What withdrawal methods can I use as a seller in Bangladesh?",
-      a: "Bank Transfer, bKash, Rocket or Nagad, alongside PayPal and Wise. bKash, Rocket and Nagad each have their own independent limit of ৳50,000 per day and ৳300,000 per month; the other methods have no such cap.",
-    },
-    {
-      q: "When can I withdraw my earnings?",
-      a: "Once the buyer approves the transfer and any required review is complete, you can request a withdrawal from your Earnings dashboard. Before your very first withdrawal, you'll also need to have completed identity verification (KYC). Durqo normally reviews and processes eligible payout requests within 3-5 business days.",
-    },
-    {
-      q: "Does my payout account name need to match my verified identity?",
-      a: "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification (KYC).",
-    },
-    {
-      q: "What exactly is the Transfer Room?",
-      a: "It's the shared space, separate from checkout, where you hand a sold business over to its buyer. Every order gets one, also listed under Asset Transfers in your dashboard. You submit each asset one at a time; once the buyer approves the transfer, the sale is final and your payout becomes eligible.",
-    },
-    {
-      q: "What happens if a buyer reports an issue instead of approving?",
-      a: "Nothing is released automatically. Your payout stays on hold while Durqo's team reviews the evidence and decides what happens next.",
-    },
-    {
-      q: "What if a buyer disputes a completed sale?",
-      a: "Disputes must be reported to Durqo within 7 days of the transaction completing. Where a dispute can't be resolved directly between buyer and seller, Durqo will review the evidence and help mediate a resolution.",
-    },
-  ].map(({ q, a }) => ({
+  mainEntity: FAQ_PAIRS.map(({ q, a }) => ({
     "@type": "Question",
     name: q,
     acceptedAnswer: { "@type": "Answer", text: a },
@@ -359,15 +276,6 @@ function DashEyebrow({
   );
 }
 
-// Sep 27, 2026, second revision: narrowed the shared full-width cap from
-// 1200px to 1040px after direct feedback that the page felt too wide.
-// Several of this page's grids hold short items (a business-type chip, a
-// one-line buyer question) rather than the longer-copy cards its sibling
-// guide pages use at 1200px, so the extra width mostly showed up as empty
-// space inside each card rather than as content. Sections that were
-// already narrower than 1040px (the 760/700/900px text columns) are
-// unaffected — this only tightens the sections that used the bare
-// default.
 function Inner({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`mx-auto max-w-[1040px] ${className}`}>{children}</div>;
 }
@@ -390,286 +298,260 @@ function InfoNote({ children }: { children: React.ReactNode }) {
   );
 }
 
+function WarningNote({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-gold-soft px-3.5 py-3">
+      <AlertTriangle size={14} className="mt-0.5 shrink-0 text-[#92730F]" />
+      <p className="text-xs leading-relaxed text-[#6b5610]">{children}</p>
+    </div>
+  );
+}
+
+function SectionIntro({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: React.ReactNode;
+  title: React.ReactNode;
+  children?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-8 max-w-[70ch]">
+      <DashEyebrow>{eyebrow}</DashEyebrow>
+      <h2 className="text-2xl sm:text-3xl">{title}</h2>
+      {children && <div className="mt-3 flex flex-col gap-3 text-[0.95rem] leading-relaxed text-ink-soft">{children}</div>}
+    </div>
+  );
+}
+
+const GUIDE_NAV = [
+  { href: "#challenges", label: "Challenges" },
+  { href: "#preparing", label: "Preparing to Sell" },
+  { href: "#valuation", label: "Valuation" },
+  { href: "#process", label: "Selling Process" },
+  { href: "#transfer-room", label: "Transfer Room" },
+  { href: "#payouts", label: "Getting Paid" },
+  { href: "#fees", label: "Fees" },
+  { href: "#faq", label: "FAQ" },
+];
 
 const HERO_TRUST_ROW = [
-  { icon: Globe, label: "Every digital business category" },
-  { icon: ShieldCheck, label: "Listings reviewed before publishing" },
-  { icon: Compass, label: "Present to buyers in Bangladesh and beyond" },
+  { icon: Globe, label: "Reach buyers in Bangladesh and worldwide" },
+  { icon: ShieldCheck, label: "Transfer every agreed asset through the Transfer Room" },
+  { icon: Wallet, label: "Request eligible sale proceeds through supported BDT payout methods" },
 ];
 
-
-// Same four seller payout methods, icons and brand tints as /durqo-bangladesh's
-// PAYOUT_METHODS (BkashIcon from PaymentIcons.tsx; Nagad/Rocket as tinted
-// lucide glyphs, since neither brand publishes an inline vector mark — see
-// PaymentIcons.tsx's own comment on why).
-const PAYOUT_METHODS = [
-  { icon: Landmark, label: "Bank Transfer", tint: "text-brand-strong" },
-  { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]" },
-  { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]" },
-  { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
-];
-
-// Oct 4, 2026 (second revision): the specific obstacles a founder selling
-// from Bangladesh runs into, paired with how Durqo's existing mechanics
-// address each one. Every "solution" half restates a real, already-live
-// mechanic (the marketplace's reach, the four local payout methods above,
-// the listing-review process, the Transfer Room/escrow hold described in
-// SELLING_STEPS 07-08 and /after-you-pay) - nothing new is being claimed
-// here, it is reframed around the problems a Bangladeshi seller specifically
-// faces.
-const BANGLADESH_CHALLENGES = [
+const HERO_PANEL_ITEMS = [
   {
     icon: Globe,
-    title: "Reaching buyers beyond Bangladesh",
-    body: "Selling privately usually means relying on whoever you already know. A published Durqo listing can be discovered by buyers wherever they are, so your location does not have to limit who sees it.",
-  },
-  {
-    icon: Wallet,
-    title: "Getting paid in BDT",
-    body: "You are not limited to international-only payout rails. Durqo supports local withdrawal methods built for sellers in Bangladesh, alongside PayPal and Wise for buyers or sellers who prefer them.",
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Knowing what the process actually involves",
-    body: "Every listing goes through the same review before publishing, and every sale follows the same defined steps from offer to final transfer - so you are never guessing what happens next or negotiating the process itself.",
-  },
-  {
-    icon: Lock,
-    title: "Not handing over the business before you are paid",
-    body: "This is usually the biggest worry in an online sale. On Durqo, the buyer's payment is already held by Durqo or by Escrow.com as a neutral third party before you transfer anything in the Transfer Room - it is released to you only after the buyer reviews what you handed over and approves it.",
-    link: { href: "/transfer-room", label: "How the Transfer Room works" },
-  },
-];
-
-
-// Pulled near-verbatim from the live /seller-faq page's "Fees & getting
-// paid" and "Buyers & disputes" groups, trimmed to what a Bangladeshi seller
-// is most likely to ask. Keep FAQ_JSON_LD above in sync when editing this.
-const FAQ_GROUPS: FaqGroup[] = [
-  {
-    heading: "Listing and fees",
-    items: [
-      {
-        question: "Is it free to list my business?",
-        answer:
-          "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells.",
-      },
-      {
-        question: "How much does Durqo charge when my business sells?",
-        answer: (
-          <>
-            A tiered success fee based on your final sale price, shown in the Marketplace Fees section above. It
-            is deducted only when your business sells. See the full breakdown on the{" "}
-            <Link href="/payments" className="font-semibold text-brand-strong hover:underline">
-              Payment &amp; Withdrawal
-            </Link>{" "}
-            page.
-          </>
-        ),
-      },
-    ],
-  },
-  {
-    heading: "Getting paid in BDT",
-    items: [
-      {
-        question: "What withdrawal methods can I use as a seller in Bangladesh?",
-        answer: (
-          <>
-            Bank Transfer, bKash, Rocket or Nagad, alongside PayPal and Wise for sellers who prefer them. bKash,
-            Rocket and Nagad each have their own independent limit of ৳50,000 per day and ৳300,000 per month; the
-            other methods have no such cap. See{" "}
-            <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
-              Buy and Sell Digital Businesses in BDT
-            </Link>{" "}
-            for the exact BDT conversion rate applied to payouts.
-          </>
-        ),
-      },
-      {
-        question: "When can I withdraw my earnings?",
-        answer:
-          "Once the buyer approves the transfer and any required review is complete, you can request a withdrawal from your Earnings dashboard. Before your very first withdrawal, you'll also need to have completed identity verification (KYC). Durqo normally reviews and processes eligible payout requests within 3-5 business days; your bank or payout provider may require additional time to credit the funds.",
-      },
-      {
-        question: "Does my payout account name need to match my verified identity?",
-        answer:
-          "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification (KYC). Durqo's team checks this by hand as part of reviewing every payout request.",
-      },
-    ],
-  },
-  {
-    heading: "Completing the sale",
-    items: [
-      {
-        question: "What exactly is the Transfer Room?",
-        answer: (
-          <>
-            It&rsquo;s the shared space, separate from checkout, where you actually hand a sold business over to
-            its buyer. Every order gets one, also listed under <strong>Asset Transfers</strong> in your dashboard.
-            You submit each asset there one at a time; once the buyer inspects everything and clicks{" "}
-            <strong>Approve Transfer</strong>, the sale is final and your payout becomes eligible.
-          </>
-        ),
-      },
-      {
-        question: "What happens if a buyer reports an issue instead of approving?",
-        answer: (
-          <>
-            <strong>Nothing is released automatically.</strong> Your payout stays on hold while Durqo&rsquo;s team
-            reviews the evidence and decides what happens next, the same way any other dispute is handled.
-          </>
-        ),
-      },
-      {
-        question: "What if a buyer disputes a completed sale?",
-        answer: (
-          <>
-            Disputes must be reported to Durqo within <strong>7 days</strong> of the transaction completing. Where
-            a dispute can&rsquo;t be resolved directly between buyer and seller, Durqo will review the available
-            evidence and help mediate a resolution.
-          </>
-        ),
-      },
-    ],
-  },
-];
-
-const BUSINESS_TYPES = [
-  { icon: Globe, label: "Content websites" },
-  { icon: Layers, label: "SaaS businesses" },
-  { icon: ShoppingCart, label: "E-commerce businesses" },
-  { icon: Smartphone, label: "Mobile and web apps" },
-  { icon: PlaySquare, label: "YouTube channels" },
-  { icon: LinkIcon, label: "Domains" },
-  { icon: Share2, label: "Social media businesses" },
-  { icon: Boxes, label: "Other digital businesses" },
-];
-
-const WHY_FOUNDERS_SELL = [
-  { icon: Compass, text: "Move on to another project" },
-  { icon: DollarSign, text: "Free up capital for a new venture" },
-  { icon: Layers, text: "Reduce the number of businesses you operate" },
-  { icon: Clock, text: "Step away from day-to-day operations" },
-  { icon: TrendingUp, text: "Realize some of the value you have created" },
-  { icon: Users, text: "Find a buyer who can take the business to its next stage" },
-];
-
-const VALUE_FACTORS = [
-  { icon: DollarSign, title: "Revenue", body: "How much revenue does the business generate?" },
-  { icon: Wallet, title: "Profit", body: "How much remains after operating expenses?" },
-  { icon: Repeat, title: "Revenue Consistency", body: "Is revenue stable, growing, declining, recurring, or seasonal?" },
-  { icon: Activity, title: "Traffic", body: "Where does the business's traffic come from?" },
-  { icon: Calendar, title: "Business Age", body: "How long has the business been operating?" },
-  { icon: TrendingUp, title: "Growth", body: "Is revenue, profit, traffic, or the customer base growing?" },
-  { icon: Clock, title: "Owner Involvement", body: "How much time does the current owner need to spend on it?" },
-  { icon: Users, title: "Customer Concentration", body: "Does revenue depend heavily on one or a few customers?" },
-  { icon: Package, title: "Transferable Assets", body: "What exactly will transfer to the new owner?" },
-  { icon: Compass, title: "Growth Opportunities", body: "Are there realistic opportunities a new owner could pursue?" },
-];
-
-// General, generalized mistakes commonly cited in digital-business M&A and
-// marketplace guidance — not Durqo-specific claims, no invented numbers.
-const COMMON_MISTAKES = [
-  {
-    icon: Clock,
-    title: "Starting too late",
-    body: "Organizing financials, traffic data and documentation only after deciding to sell, instead of months in advance, leaves little time to fix anything buyers flag.",
+    title: "Global buyer reach",
+    body: "Get your listing in front of international buyers looking for quality online businesses.",
   },
   {
     icon: DollarSign,
-    title: "Pricing on hope, not data",
-    body: "Anchoring an asking price to what you want to receive, rather than to the business's actual performance and comparable sales, turns serious buyers away early.",
+    title: "No upfront listing fee",
+    body: "List your business for free. You only pay a success fee once your business sells.",
   },
   {
-    icon: AlertTriangle,
-    title: "Hiding or downplaying risk",
-    body: "Issues that surface during due diligence anyway almost always cost more trust than the same issue disclosed upfront.",
+    icon: ShieldCheck,
+    title: "Tracked asset transfer",
+    body: "Use the Transfer Room to securely share and transfer your assets after payment is confirmed.",
   },
   {
-    icon: Handshake,
-    title: "No clear transfer plan",
-    body: "Not thinking through, in advance, exactly how domains, accounts, source code, customer data and supplier relationships will move to a new owner.",
-  },
-  {
-    icon: Scale,
-    title: "No walk-away number",
-    body: "Entering buyer conversations without a minimum acceptable price and terms in mind makes it easy to accept a worse deal under pressure.",
-  },
-  {
-    icon: Users,
-    title: "Mistaking interest for commitment",
-    body: "Early enthusiasm from a prospective buyer is not a sale. Treat a deal as real once there is a serious offer and due diligence is actually underway.",
+    icon: Wallet,
+    title: "BDT payout options",
+    body: "Request your sale proceeds in BDT via Bank Transfer, bKash, Nagad or Rocket.",
   },
 ];
 
-const BUYER_QUESTIONS = [
-  "How does the business make money?",
-  "How consistent are revenue and profit?",
-  "Where does traffic come from?",
-  "Why is the owner selling?",
-  "How much time does the business require?",
-  "What are the main operating expenses?",
-  "What assets are included?",
-  "How dependent is the business on the current owner?",
-  "What are the biggest risks?",
-  "What opportunities exist for future growth?",
+// The specific obstacles a founder selling from Bangladesh runs into,
+// paired with how Durqo's existing mechanics address each one. Every
+// "Durqo solution" half restates a real, already-live mechanic - nothing
+// new is being claimed here.
+const SELLER_CHALLENGES = [
+  {
+    icon: Globe,
+    title: "Reaching international buyers",
+    problem: "It can be difficult to find serious international buyers on your own, outside a handful of personal contacts or local groups.",
+    solution: "Your listing is visible to a global pool of buyers once it is reviewed and published on the marketplace.",
+  },
+  {
+    icon: Users,
+    title: "Building buyer confidence",
+    problem: "Buyers need clear information and some proof of legitimacy before they feel confident purchasing from a seller they have never met.",
+    solution: "A structured listing format and review process before it goes live help buyers evaluate your business on real information.",
+  },
+  {
+    icon: Wallet,
+    title: "Receiving payouts in BDT",
+    problem: "International payments can be complex to receive for sellers based in Bangladesh, without a suitable local method.",
+    solution: "Multiple BDT payout options - Bank Transfer, bKash, Nagad and Rocket - give you a direct way to receive your funds.",
+  },
+  {
+    icon: Lock,
+    title: "Transferring assets safely",
+    problem: "Sharing logins, code and other assets can be risky without a secure, tracked process - and before you know payment is confirmed.",
+    solution: "Use the Transfer Room, which only opens once payment is confirmed, to track and complete the asset transfer securely.",
+    link: { href: "#transfer-room", label: "How the Transfer Room works" },
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Keeping the deal recorded",
+    problem: "Important details can get lost or disputed in informal chats spread across email, WhatsApp or Messenger.",
+    solution: "Buyer communication, payment status, the agreed asset list and delivery confirmation stay connected to the same order.",
+  },
+];
+
+const SELLABLE_SIGNS = [
+  "Clearly identified ownership",
+  "Transferable digital assets",
+  "Understandable operations",
+  "Accurate financial or audience information",
+  "A realistic asking price",
+  "A practical asset-transfer plan",
+  "No undisclosed ownership dispute",
+  "No platform restriction that prevents transfer",
+];
+
+// The 16 live listing categories from src/lib/categories.ts, verbatim.
+const BUSINESS_TYPES = [
+  { icon: Globe, label: "Websites" },
+  { icon: ShoppingCart, label: "E-commerce" },
+  { icon: PlaySquare, label: "YouTube Channels" },
+  { icon: Share2, label: "Social Media Accounts" },
+  { icon: Layers, label: "SaaS" },
+  { icon: Sparkles, label: "AI Apps & Tools" },
+  { icon: Smartphone, label: "Android & iOS Apps" },
+  { icon: RocketGlyph, label: "Startup Business" },
+  { icon: Boxes, label: "Plugins, Themes & Extensions" },
+  { icon: LinkIcon, label: "Domains" },
+  { icon: Package, label: "Amazon Stores & KDP" },
+  { icon: Handshake, label: "Service Business" },
+  { icon: Users, label: "Digital Agencies" },
+  { icon: Gamepad2, label: "Games" },
+  { icon: Mail, label: "Newsletters" },
+  { icon: Bitcoin, label: "Crypto & Blockchain" },
+];
+
+const WHY_FOUNDERS_SELL = [
+  { icon: Compass, text: "Start or fund another project" },
+  { icon: Layers, text: "Reduce the number of businesses being managed" },
+  { icon: Clock, text: "Step away from daily operations" },
+  { icon: DollarSign, text: "Free up capital" },
+  { icon: ArrowRightLeft, text: "Change career or business direction" },
+  { icon: Users, text: "Find an owner with the resources to expand it" },
+  { icon: TrendingUp, text: "Realize value from years of work" },
+];
+
+const BUYER_EVALUATION = [
+  { icon: DollarSign, title: "Revenue", body: "How much revenue does the business generate, and where does it come from?" },
+  { icon: Wallet, title: "Profit", body: "What remains after hosting, advertising, contractors, tools, fulfilment and other operating costs?" },
+  { icon: Repeat, title: "Revenue consistency", body: "Is revenue stable, growing, declining, recurring or seasonal?" },
+  { icon: Activity, title: "Traffic and audience", body: "Where do visitors, users, subscribers or customers come from?" },
+  { icon: Calendar, title: "Business age", body: "How long has the business been operating, and how much history can be reviewed?" },
+  { icon: TrendingUp, title: "Growth history", body: "How have revenue, profit, traffic, users or customers changed over time?" },
+  { icon: Clock, title: "Owner involvement", body: "How many hours does the current owner spend operating the business?" },
+  { icon: Users, title: "Customer concentration", body: "Does a large percentage of revenue depend on one customer or client?" },
+  { icon: Network, title: "Platform dependency", body: "Does the business depend heavily on Google, Amazon, Meta, YouTube, Shopify or another platform?" },
+  { icon: Package, title: "Transferable assets", body: "Which domains, files, accounts, content, code, contracts and operating materials will transfer?" },
+  { icon: AlertTriangle, title: "Risk", body: "What could reduce revenue, traffic, access or future performance?" },
+  { icon: Compass, title: "Growth opportunities", body: "What realistic opportunities could a new owner pursue?" },
+];
+
+const VALUE_FACTORS = [
+  "Historical revenue",
+  "Net profit",
+  "Revenue consistency",
+  "Growth trend",
+  "Business age",
+  "Traffic quality",
+  "Customer retention",
+  "Recurring revenue",
+  "Customer concentration",
+  "Platform dependency",
+  "Owner workload",
+  "Transferability",
+  "Documented processes",
+  "Business risk",
+  "Future opportunity",
+];
+
+// General, generalized mistakes commonly cited in digital-business M&A and
+// marketplace guidance - not Durqo-specific claims, no invented numbers.
+const COMMON_MISTAKES = [
+  { icon: Clock, title: "Preparing too late", body: "Waiting until the listing is created to organize financial records, analytics and ownership information can delay review and reduce buyer confidence." },
+  { icon: DollarSign, title: "Pricing on personal expectations", body: "A price that cannot be supported by profit, growth, assets or comparable performance may discourage serious buyers." },
+  { icon: AlertTriangle, title: "Hiding business risks", body: "A known problem that appears later during buyer review can cause more damage than disclosing it clearly from the beginning." },
+  { icon: FileWarning, title: "Unsupported financial claims", body: "Revenue and profit information should be accurate and reasonably supportable if a buyer asks for evidence." },
+  { icon: Boxes, title: "Mixing personal and business assets", body: "Personal email accounts, payment accounts and files can make a business more difficult to transfer cleanly." },
+  { icon: ClipboardList, title: "Not preparing an asset list", body: "Know exactly which domains, files, accounts, content, intellectual property and operating resources are included." },
+  { icon: Lock, title: "Sharing credentials too early", body: "Do not hand over passwords or control of the business before the required payment is confirmed and the Transfer Room opens." },
+  { icon: MessagesSquare, title: "Moving the deal outside Durqo", body: "Important communications and asset-delivery records may be lost when a transaction moves to unrecorded personal channels." },
+  { icon: HelpCircle, title: "Treating interest as a completed sale", body: "Questions or expressions of interest do not mean a purchase has been completed - follow the order and payment status shown by Durqo." },
+  { icon: Handshake, title: "Failing to plan the handover", body: "Consider how the buyer will receive the domain, hosting, code, analytics and operating knowledge before the purchase occurs." },
 ];
 
 const PREPARE_CATEGORIES = [
   {
     icon: DollarSign,
     title: "Financial Information",
-    intro: "Prepare accurate information about:",
-    items: ["Revenue", "Operating expenses", "Profit", "Major recurring expenses", "Revenue sources"],
-    note: "Avoid presenting financial claims that cannot be reasonably supported.",
+    intro: "Include:",
+    items: ["Monthly and annual revenue", "Operating expenses", "Net profit", "Recurring expenses", "Revenue sources", "Refunds or chargebacks", "Seasonal changes", "Supporting records"],
   },
   {
     icon: Activity,
-    title: "Traffic and Analytics",
-    intro: "For websites and other traffic-dependent businesses, buyers may want to understand:",
-    items: ["Monthly traffic", "Traffic trends", "Traffic sources", "Geographic distribution", "Organic vs. paid traffic"],
-    note: "Where available, analytics verification can help support traffic information presented to buyers.",
+    title: "Traffic and Audience",
+    intro: "Include:",
+    items: ["Monthly visitors", "Traffic history", "Traffic sources", "Geographic distribution", "Organic and paid traffic", "Subscriber data", "Customer-acquisition channels", "Connected analytics where available"],
   },
   {
     icon: Settings,
-    title: "Operations",
-    intro: "Explain:",
-    items: [
-      "How the business operates",
-      "Your responsibilities",
-      "Required weekly/monthly workload",
-      "Employees or contractors involved",
-      "Important suppliers or service providers",
-      "Key operational processes",
-    ],
+    title: "Business Operations",
+    intro: "Include:",
+    items: ["Owner responsibilities", "Weekly and monthly workload", "Employees or contractors", "Suppliers", "Content process", "Customer support", "Marketing process", "Required software and tools"],
   },
   {
-    icon: Boxes,
-    title: "Assets Included",
-    intro: "Depending on the business, this could include:",
-    items: [
-      "Domain names",
-      "Website files, source code, or the application",
-      "Content and brand assets",
-      "Social accounts",
-      "Customer relationships or records where legally transferable",
-      "Supplier relationships and documentation",
-    ],
-    note: "Only include assets that you have the legal right and practical ability to transfer.",
+    icon: Package,
+    title: "Ownership and Assets",
+    intro: "Include:",
+    items: ["Domain ownership", "Website files", "Source code", "Brand assets", "Content", "Social accounts", "Analytics", "Advertising accounts", "Customer information, where legally transferable", "Supplier information", "Operating documentation"],
+    note: "Only include assets that you own or have the legal and practical right to transfer.",
+  },
+  {
+    icon: AlertTriangle,
+    title: "Risks and Dependencies",
+    intro: "Include:",
+    items: ["Platform dependency", "Customer concentration", "Traffic concentration", "Supplier dependency", "Licensing restrictions", "Intellectual-property concerns", "Revenue decline", "Pending disputes", "Accounts that cannot legally be transferred"],
   },
 ];
 
-const PRICE_FACTORS = [
-  "Historical revenue",
-  "Historical profit",
-  "Growth trends",
+const CHECKLIST_ITEMS = [
+  "I have the legal right to sell this business.",
+  "I can clearly explain how it operates and generates revenue.",
+  "My revenue, profit and traffic information is accurate and supportable.",
+  "My asking price is based on real business information, not just what I hope to receive.",
+  "I have listed every asset included in the sale.",
+  "I know exactly how the domain, files, accounts and other assets will be transferred.",
+  "I have removed personal or confidential information from the public listing.",
+  "I have disclosed significant risks or dependencies rather than hiding them.",
+  "I understand the buyer will inspect everything before approving the transfer.",
+  "I will not share credentials before payment is confirmed and the Transfer Room opens.",
+  "I understand KYC is required before my first withdrawal, and my payout account must match my verified name.",
+];
+
+const ASKING_PRICE_FACTORS = [
+  "Recent revenue and profit",
   "Revenue stability",
-  "Business risks",
-  "Owner involvement",
-  "Quality of traffic",
+  "Growth or decline",
+  "Recurring income",
+  "Traffic quality",
   "Customer concentration",
-  "Transferability",
+  "Owner workload",
+  "Business age",
+  "Transferable assets",
+  "Platform and operational risks",
+  "Quality of financial records",
   "Future opportunities",
 ];
 
@@ -681,83 +563,208 @@ type SellingStep = {
   link?: { href: string; label: string };
 };
 
+// Every step is phrased against the direct-purchase model Durqo actually
+// runs today - no "offer," "counter-offer" or negotiation language, since
+// no such feature exists in the checkout/listing code.
 const SELLING_STEPS: SellingStep[] = [
-  {
-    n: "01",
-    icon: FileText,
-    title: "Create Your Listing",
-    body: "Provide information about your business, performance, operations, asking price, and the assets included in the proposed sale.",
-  },
-  {
-    n: "02",
-    icon: ClipboardCheck,
-    title: "Listing Review",
-    body: "Durqo reviews submitted listings before publication according to its current listing-review process.",
-    link: { href: "/listing-review", label: "How listings are reviewed" },
-  },
-  {
-    n: "03",
-    icon: Globe,
-    title: "Present the Opportunity",
-    body: "Once approved and published, your business can be discovered by prospective buyers using Durqo.",
-  },
-  {
-    n: "04",
-    icon: Users,
-    title: "Receive Buyer Interest",
-    body: "Interested buyers can review the opportunity and communicate through the available marketplace process.",
-  },
-  {
-    n: "05",
-    icon: Scale,
-    title: "Evaluate Offers",
-    body: "Review potential offers and determine whether the proposed price and terms are acceptable.",
-  },
-  {
-    n: "06",
-    icon: FileSearch,
-    title: "Complete Due Diligence",
-    body: "The buyer may review relevant business, financial, operational, traffic, and ownership information.",
-  },
-  {
-    n: "07",
-    icon: Handshake,
-    title: "Transfer the Business",
-    body: "Once an agreement is reached, you submit the sold assets through Durqo's Transfer Room. The buyer's payment is already held by Durqo or by Escrow.com as a neutral third party - not released to you yet - while the buyer reviews what you have handed over.",
-    link: { href: "/transfer-room", label: "How the Transfer Room works" },
-  },
-  {
-    n: "08",
-    icon: CheckCircle2,
-    title: "Complete the Transaction",
-    body: "The buyer marks each asset received and approves the transfer. Only then does the sale become final and your payout eligible, following Durqo's current withdrawal process.",
-  },
+  { n: "01", icon: UserPlus, title: "Create your seller account", body: "Register with your email address and confirm your account. Creating an account and submitting a listing does not require an upfront fee." },
+  { n: "02", icon: DollarSign, title: "Estimate your business value", body: "Use Durqo's free valuation tool as a starting reference, then choose an asking price you can explain using the business's revenue, profit, traffic and transferable assets.", link: { href: "/valuation", label: "Get a free valuation" } },
+  { n: "03", icon: FileText, title: "Build your listing", body: "Add the business description, category, financial information, traffic data, operating requirements, asking price and everything included in the sale." },
+  { n: "04", icon: ClipboardCheck, title: "Submit it for review", body: "Durqo reviews the listing for completeness, clarity and compliance with its current listing requirements, and may request corrections before publishing.", link: { href: "/listing-review", label: "How listings are reviewed" } },
+  { n: "05", icon: Globe, title: "Reach potential buyers", body: "Once approved, the listing becomes visible to buyers in Bangladesh and other countries. Interested buyers can review it and message you before deciding to purchase." },
+  { n: "06", icon: ShoppingCart, title: "Buyer completes the purchase", body: "The buyer pays the listed price through one of Durqo's supported payment methods. The required payment must be received and verified before the asset-transfer stage begins.", link: { href: "/payments", label: "View payment & withdrawal details" } },
+  { n: "07", icon: Handshake, title: "Transfer the agreed assets", body: "Once payment is confirmed, the order's private Transfer Room opens. Submit each agreed asset separately so the buyer can inspect and confirm what they have received.", link: { href: "#transfer-room", label: "How the Transfer Room works" } },
+  { n: "08", icon: Wallet, title: "Complete the sale and request payout", body: "After the buyer approves the completed transfer and any required review is finished, eligible earnings become available. Complete identity verification before your first withdrawal, then request payment." },
 ];
 
-const TRUST_ITEMS = [
-  "Revenue",
-  "Profit",
-  "Traffic",
-  "Customers",
-  "Business ownership",
-  "Business assets",
-  "Performance",
-  "Verification status",
+const LISTING_REVIEW_OUTCOMES = [
+  { icon: CheckCircle2, text: "Approved for publication" },
+  { icon: ArrowRightLeft, text: "Returned for corrections" },
+  { icon: HelpCircle, text: "Additional information requested" },
+  { icon: AlertTriangle, text: "Not approved under current listing requirements" },
 ];
 
-const CHECKLIST_ITEMS = [
-  "What the business does",
-  "How the business generates revenue",
-  "Revenue and profit information",
-  "Major operating expenses",
-  "Traffic and acquisition sources, where relevant",
-  "Your reason for selling",
-  "How much owner involvement is required",
-  "What assets are included",
-  "Your asking price",
-  "What information can be provided during due diligence",
-  "How the relevant assets can be transferred",
-  "Whether you can offer a short handover or transition period after the sale",
+const BUYER_QUESTIONS = [
+  "Why are you selling?",
+  "How does the business generate revenue?",
+  "What are the largest expenses?",
+  "How much time does it require?",
+  "What assets are included?",
+  "Where does traffic come from?",
+  "Are any contractors or suppliers required?",
+  "What are the main risks?",
+  "How will the assets be transferred?",
+  "Will transition assistance be provided?",
+];
+
+const DUE_DILIGENCE_ITEMS = [
+  "Remove unnecessary personal information",
+  "Protect customer privacy",
+  "Use read-only or limited access where possible",
+  "Avoid sharing passwords",
+  "Follow applicable platform rules",
+  "Keep important communication connected to the transaction",
+];
+
+const PAYMENT_STATUS_STEPS = [
+  { icon: CheckCircle2, title: "Payment confirmed", body: "Buyer's payment is held on Durqo or Escrow.com." },
+  { icon: Unlock, title: "Transfer Room opens", body: "You can share your assets once the payment is confirmed." },
+  { icon: Send, title: "Seller delivers", body: "Complete the asset transfer through the Transfer Room." },
+];
+
+const TRANSFER_ROOM_STEPS = [
+  { n: "01", icon: Send, title: "Seller submits assets", body: "Share each agreed asset - domains, website files, source code, accounts and more - one at a time, inside the order's Transfer Room." },
+  { n: "02", icon: Eye, title: "Buyer reviews", body: "The buyer inspects what has been delivered during a 7-day inspection window that starts from the first item marked Received." },
+  { n: "03", icon: CheckCircle2, title: "Transfer completed", body: "Once satisfied, the buyer approves the transfer. If something is missing or does not match, they can report an issue instead." },
+];
+
+const TRANSFER_ROOM_DETAILS = [
+  "The Transfer Room opens only after the required payment has been received and verified - a partial payment does not unlock it.",
+  "The seller sees exactly which assets are included in the transaction.",
+  "The seller submits each agreed asset separately, with enough detail for the buyer to identify and access it.",
+  "The buyer confirms each item as it arrives by marking it Received.",
+  "The buyer gets a 7-day inspection window from the first item marked Received.",
+  "The buyer can approve the completed transfer once satisfied.",
+  "The buyer can report an issue instead if something is missing or doesn't match.",
+  "A reported issue keeps the seller's payout on hold while Durqo reviews the evidence.",
+  "Every submission, confirmation and report stays connected to the same order.",
+];
+
+const TRANSFER_ROOM_PREVIEW_ROWS = [
+  { n: "1", label: "Assets submitted", status: "Completed", tone: "done" as const },
+  { n: "2", label: "Buyer reviewing", status: "In progress", tone: "active" as const },
+  { n: "3", label: "Transfer completed", status: "Pending", tone: "pending" as const },
+];
+
+// The full seller-payout journey, from sale to funds in hand - a partial
+// payment never creates a withdrawable balance, and KYC is a required step
+// before the first request, not an optional one.
+const PAYOUT_JOURNEY = [
+  "Sale payment is confirmed.",
+  "Transfer Room opens.",
+  "Seller submits the agreed assets.",
+  "Buyer inspects the assets.",
+  "Buyer approves, or reports an issue.",
+  "Any required review is completed.",
+  "Earnings become available in the dashboard.",
+  "Seller completes KYC before the first withdrawal.",
+  "Seller selects Bank Transfer, bKash, Nagad or Rocket.",
+  "Verified name is matched with the payout account.",
+  "Seller reviews the displayed payout information.",
+  "Withdrawal request is submitted.",
+  "Durqo reviews and processes the request (normally 3-5 business days).",
+  "The receiving bank or mobile financial service credits the account.",
+];
+
+const PAYOUT_METHODS = [
+  { icon: Landmark, label: "Bank Transfer", tint: "text-brand-strong", cap: "No daily or monthly cap" },
+  { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]", cap: "Up to ৳50,000/day · ৳300,000/month" },
+  { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]", cap: "Up to ৳50,000/day · ৳300,000/month" },
+  { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]", cap: "Up to ৳50,000/day · ৳300,000/month" },
+];
+
+const KYC_FACTS = [
+  "KYC is required before your first withdrawal, not before creating a listing.",
+  "Passport, National ID, Driving License or Birth Certificate can each be submitted as your verification document.",
+  "Upload clear photos of the document (front and back if applicable) along with your legal name as it appears on the ID.",
+  "Submissions are reviewed by hand, usually within 1-2 business days.",
+  "The verified legal or business name must match the payout account.",
+  "Sensitive identity documents are never shown publicly on your listing.",
+];
+
+const RELATED_RESOURCES = [
+  { href: "/how-to-sell", label: "How Selling on Durqo Works" },
+  { href: "/valuation", label: "Free Business Valuation" },
+  { href: "/seller-faq", label: "Full Seller FAQ" },
+  { href: "/listing-review", label: "How Listings Are Reviewed" },
+  { href: "/transfer-room", label: "The Transfer Room" },
+  { href: "/payments", label: "Payments & Withdrawals" },
+  { href: "/buy-and-sell-digital-businesses-in-bdt", label: "Buy & Sell in BDT" },
+  { href: "/report-an-issue", label: "Reporting an Issue" },
+];
+
+// Grouped for the FAQ accordion; kept in sync with FAQ_PAIRS above for the
+// FAQPage structured data. Facts corrected against the codebase research
+// cited in the top-of-file comment: no offer system, the real 7-day
+// inspection window, Escrow.com described accurately, PayPal/Wise included
+// since they are real supported payout methods.
+const FAQ_GROUPS: FaqGroup[] = [
+  {
+    heading: "Listing and eligibility",
+    items: [
+      { question: "Can I sell a website from Bangladesh to an international buyer?", answer: "Yes. Once a listing is reviewed and published, it can be discovered by buyers browsing Durqo from Bangladesh or elsewhere. Being listed does not guarantee a specific buyer, price or timeframe." },
+      { question: "What types of digital businesses can I sell?", answer: "Websites, e-commerce stores, SaaS products, AI apps and tools, Android and iOS apps, YouTube channels, social media accounts, domains, plugins, themes and extensions, Amazon stores and KDP businesses, service businesses, digital agencies, games, newsletters, startup businesses, and crypto or blockchain projects." },
+      { question: "Does my business need to generate revenue?", answer: "Follow the category and information requirements shown when you create a listing. If a business does not yet generate revenue, explain its assets, audience, product and growth stage clearly so buyers can still evaluate it." },
+      { question: "Is it free to create a listing?", answer: "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells." },
+    ],
+  },
+  {
+    heading: "Buyers, offers and listing review",
+    items: [
+      { question: "Will international buyers actually see my listing?", answer: "A published listing is visible to buyers browsing Durqo from any country, alongside buyers in Bangladesh. Visibility does not guarantee buyer interest or a sale." },
+      { question: "Can buyers submit offers I can negotiate?", answer: "Durqo currently uses a direct-purchase model rather than a formal offer-and-counter-offer system. A buyer can message you with questions before deciding whether to purchase at your listed asking price." },
+      { question: "What happens during listing review?", answer: "Durqo checks a submitted listing for completeness, internal consistency and compliance with current requirements before publishing, and may request corrections or additional information first." },
+      { question: "What does due diligence involve?", answer: "A buyer may review relevant financial, traffic, operational, ownership and asset information before completing a purchase. Share only what is accurate, relevant and lawful to disclose." },
+    ],
+  },
+  {
+    heading: "Payment, Transfer Room and disputes",
+    items: [
+      {
+        question: "When should I begin transferring the business?",
+        answer: (
+          <>
+            Only once the buyer&rsquo;s payment has been received and confirmed and the order&rsquo;s Transfer Room
+            has opened. <strong>Do not hand over a domain, source code or accounts before that stage</strong>, even
+            if a buyer says payment has been sent.
+          </>
+        ),
+      },
+      {
+        question: "What exactly is the Transfer Room?",
+        answer: (
+          <>
+            It&rsquo;s the private, order-specific space where you submit each agreed asset and the buyer reviews
+            what&rsquo;s been delivered. The buyer gets a <strong>7-day inspection window</strong> from the first
+            item marked Received, then either approves the transfer or reports an issue.
+          </>
+        ),
+      },
+      {
+        question: "What happens if the buyer reports an issue instead of approving?",
+        answer: (
+          <>
+            <strong>Nothing is released automatically.</strong> Your payout stays on hold while Durqo&rsquo;s team
+            reviews the available evidence and decides what happens next, and both sides may be asked for more
+            information.
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    heading: "Payouts and verification",
+    items: [
+      {
+        question: "How can I receive my sale proceeds in Bangladesh?",
+        answer: (
+          <>
+            Once the buyer approves the completed transfer and any required review is finished, eligible earnings
+            appear in your Earnings &amp; Withdrawals dashboard. You can request a withdrawal via Bank Transfer,
+            bKash, Nagad or Rocket, alongside PayPal and Wise. See{" "}
+            <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+              Buy and Sell Digital Businesses in BDT
+            </Link>{" "}
+            for the current conversion and limit details.
+          </>
+        ),
+      },
+      { question: "Is KYC required for sellers?", answer: "Yes, before your first withdrawal. You can verify using a Passport, National ID, Driving License or Birth Certificate." },
+      { question: "Does my payout account name need to match my identity?", answer: "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification, and Durqo's team checks this by hand before approving a withdrawal." },
+      { question: "How long does a payout take?", answer: "Durqo normally reviews and processes eligible payout requests within 3-5 business days. Your bank or mobile financial service provider may need additional time beyond that to credit the funds." },
+      { question: "Does Durqo guarantee my business will sell?", answer: "No. Durqo provides a structured listing process and marketplace visibility, but it does not guarantee a buyer, a sale, a specific price, or how long a sale will take." },
+    ],
+  },
 ];
 
 export default function SellYourOnlineBusinessBangladeshPage() {
@@ -774,30 +781,31 @@ export default function SellYourOnlineBusinessBangladeshPage() {
           <Inner>
             <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:items-start lg:gap-16">
               <div className="min-w-0">
-                <DashEyebrow>Seller guide · Bangladesh</DashEyebrow>
+                <DashEyebrow>Sell from Bangladesh</DashEyebrow>
                 <h1 className="max-w-[24ch] text-4xl leading-[1.1] sm:text-5xl lg:text-[3.2rem]">
                   How to Sell an Online Business from <span className="text-brand">Bangladesh</span>
                 </h1>
                 <div className="mt-5 flex flex-col gap-4 text-lg leading-relaxed text-ink-soft">
                   <p>
-                    Whether it&rsquo;s a website, SaaS product, e-commerce business, app, or YouTube channel, many
-                    founders eventually ask the same question: what would it take to sell it, and to whom?
+                    Selling a digital business from Bangladesh can be challenging when you need to reach serious
+                    buyers, present reliable business information, transfer digital assets and receive your sale
+                    proceeds securely.
                   </p>
                   <p className="text-[1.05rem]">
-                    This guide covers how to prepare your business, what buyers look for, and how to list it on
-                    Durqo.
+                    Durqo brings the listing, buyer communication, payment status, asset handover and payout process
+                    into one structured marketplace.
                   </p>
                 </div>
                 <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint">
-                  Reviewed by the Durqo Marketplace Team · Updated September 2026
+                  Reviewed by the Durqo Marketplace Team · Updated October 2026
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <TrackedCta href="/sell" cta="hero_primary" size="lg">
                     List Your Business
                     <ArrowRight size={16} />
                   </TrackedCta>
-                  <TrackedCta href="/how-to-sell" cta="hero_secondary" variant="secondary" size="lg">
-                    Explore Selling on Durqo
+                  <TrackedCta href="/valuation" cta="hero_secondary" variant="secondary" size="lg">
+                    Get a Free Valuation
                   </TrackedCta>
                 </div>
                 <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-rule pt-6">
@@ -812,105 +820,142 @@ export default function SellYourOnlineBusinessBangladeshPage() {
 
               <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
                 <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                  Selling Overview
+                  Selling from Bangladesh
                 </p>
-
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <DollarSign size={16} />
-                  </span>
-                  <div>
-                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">
-                      What buyers weigh
-                    </p>
-                    <h3 className="text-sm font-semibold text-ink">Revenue, traffic and growth history</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      Buyers commonly evaluate revenue, profit, traffic, growth trends and how the business operates
-                      before making an offer.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {["Revenue", "Profit", "Traffic"].map((label) => (
-                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
-                          {label}
-                        </span>
-                      ))}
+                {HERO_PANEL_ITEMS.map(({ icon: Icon, title, body }, i) => (
+                  <div key={title}>
+                    {i > 0 && <div className="my-5 h-px bg-rule" aria-hidden />}
+                    <div className="flex items-start gap-3">
+                      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                        <Icon size={16} />
+                      </span>
+                      <div>
+                        <h3 className="text-sm font-semibold text-ink">{title}</h3>
+                        <p className="mt-1 text-xs leading-relaxed text-ink-soft">{body}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-
-                <div className="my-5 h-px bg-rule" aria-hidden />
-
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
-                    <ShieldCheck size={16} />
-                  </span>
-                  <div>
-                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">
-                      Structured listing process
-                    </p>
-                    <h3 className="text-sm font-semibold text-ink">Reviewed before it goes live</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      Every submitted listing goes through Durqo&rsquo;s review process, then can be discovered by
-                      buyers on the marketplace.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {["Free to list", "Reviewed", "Any category"].map((label) => (
-                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="my-5 h-px bg-rule" aria-hidden />
-
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Lock size={16} />
-                  </span>
-                  <div>
-                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">
-                      Payment protection
-                    </p>
-                    <h3 className="text-sm font-semibold text-ink">Payment held until you deliver</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      A buyer&rsquo;s payment is held by Durqo or by Escrow.com, not released to you until the
-                      buyer approves the transfer in the Transfer Room.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {["Escrow option", "Payment held", "Transfer Room"].map((label) => (
-                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <InfoNote>
-                  This guide does not estimate your specific value or guarantee a buyer, price, or sale. See
-                  &ldquo;What Could Your Online Business Be Worth?&rdquo; below.
-                </InfoNote>
+                ))}
+                <InfoNote>A success fee applies only after a completed sale. See Marketplace Fees below.</InfoNote>
               </div>
             </div>
           </Inner>
         </Container>
       </section>
 
+      {/* IN THIS GUIDE - anchor nav */}
+      <nav aria-label="In this guide" className="border-b border-rule bg-paper-sunk">
+        <Container>
+          <Inner>
+            <div className="scrollbar-none flex items-center gap-1 overflow-x-auto py-3">
+              <span className="mono mr-2 shrink-0 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
+                In this guide
+              </span>
+              {GUIDE_NAV.map(({ href, label }) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-paper-raised hover:text-ink"
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+          </Inner>
+        </Container>
+      </nav>
+
+      {/* OVERVIEW */}
+      <section className="border-b border-rule py-12 sm:py-14">
+        <Container>
+          <Inner>
+            <p className="max-w-[80ch] text-[0.95rem] leading-relaxed text-ink-soft">
+              Durqo is built to support founders selling a digital business from Bangladesh to buyers anywhere in the
+              world. This guide walks through the obstacles sellers in Bangladesh most often face, how Durqo&rsquo;s
+              marketplace, review process, Transfer Room and local payout options address them, and everything else
+              involved in preparing, listing, pricing and completing a sale.
+            </p>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* BANGLADESH SELLER CHALLENGES */}
+      <section id="challenges" className="scroll-mt-16 border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
+        <Container>
+          <Inner>
+            <SectionIntro eyebrow="The challenge" title="Why selling a digital business from Bangladesh can be difficult.">
+              <p>
+                Bangladeshi founders can build valuable websites, e-commerce stores, SaaS products, apps and online
+                brands. The difficult part is often finding the right buyer and completing the transaction through a
+                process both sides can understand and trust.
+              </p>
+            </SectionIntro>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              {SELLER_CHALLENGES.map(({ icon: Icon, title, problem, solution, link }) => (
+                <div key={title} className="flex flex-col rounded-xl border border-rule bg-paper-raised p-5">
+                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={16} />
+                  </span>
+                  <p className="mono text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">Challenge</p>
+                  <h3 className="mt-0.5 text-sm font-semibold text-ink">{title}</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{problem}</p>
+                  <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-brand-soft/60 p-2.5">
+                    <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-brand-strong" />
+                    <div>
+                      <p className="mono text-[0.6rem] font-semibold uppercase tracking-wider text-brand-strong">
+                        Durqo solution
+                      </p>
+                      <p className="mt-0.5 text-xs leading-relaxed text-ink">{solution}</p>
+                    </div>
+                  </div>
+                  {link && (
+                    <a href={link.href} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline">
+                      {link.label}
+                      <ArrowRight size={12} />
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
       {/* IS YOUR BUSINESS SELLABLE */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <SectionIntro eyebrow="Where to start" title="Is your online business ready to sell?">
+              <p>
+                A digital business may be sellable when you have the legal right and practical ability to transfer
+                its essential assets to a new owner. The business does not need to be large, but a potential buyer
+                must be able to understand what is being sold, how it operates and what ownership will include.
+              </p>
+              <p className="font-medium text-ink">A stronger sale candidate normally has:</p>
+            </SectionIntro>
+            <ul className="grid max-w-[760px] gap-x-8 gap-y-2.5 sm:grid-cols-2">
+              {SELLABLE_SIGNS.map((s) => (
+                <Dot key={s}>{s}</Dot>
+              ))}
+            </ul>
+            <InfoNote>
+              A listing application does not guarantee publication. Durqo may request clarification, supporting
+              information or corrections before approving a listing.
+            </InfoNote>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* WHAT YOU CAN SELL */}
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Where to start</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Is your online business sellable?</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                If you can transfer ownership of what you have built, your business is a candidate - no
-                matter its size or track record. What matters most is clarity: can a buyer understand what
-                it does, how it makes money, and what is included.
+            <SectionIntro eyebrow="What you can list" title="Sell different types of digital businesses.">
+              <p>
+                You can list a digital business when you have the legal right and practical ability to transfer the
+                included assets to a buyer. Durqo supports:
               </p>
-            </div>
+            </SectionIntro>
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {BUSINESS_TYPES.map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised p-4">
@@ -921,12 +966,10 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-8">
-              <TrackedCta href="/sell" cta="sellable_cta">
-                Have a digital business? List your business
-                <ArrowRight size={16} />
-              </TrackedCta>
-            </div>
+            <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
+              A business does not necessarily need to be large, but the seller must accurately explain what is being
+              sold, what is included, and how ownership can be transferred. Not every submitted listing is approved.
+            </p>
           </Inner>
         </Container>
       </section>
@@ -935,13 +978,13 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Why founders sell</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Selling doesn&rsquo;t mean the business failed.</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Owners consider selling for many reasons - none of them mean the business failed:
+            <SectionIntro eyebrow="Why founders sell" title="Selling does not mean the business failed.">
+              <p>
+                Founders sell digital businesses for many legitimate reasons. Some want to fund a new project, reduce
+                their workload or realize part of the value they have created. Others may no longer have enough time
+                to operate the business, or believe a new owner can take it to its next stage.
               </p>
-            </div>
+            </SectionIntro>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {WHY_FOUNDERS_SELL.map(({ icon: Icon, text }) => (
                 <div key={text} className="flex items-start gap-3.5 rounded-xl border border-rule bg-paper-raised p-5">
@@ -953,26 +996,25 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               ))}
             </div>
             <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
-              Whatever your reason, preparing properly keeps the process organized and transparent.
+              Whatever the reason, a clear explanation helps buyers understand the seller&rsquo;s decision and
+              evaluate the opportunity more confidently.
             </p>
           </Inner>
         </Container>
       </section>
 
-      {/* WHAT DETERMINES VALUE */}
+      {/* WHAT BUYERS EVALUATE */}
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
         <Container>
           <Inner>
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Valuation</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">What could your online business be worth?</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                There is no single formula - different buyers weigh things differently. Here is what buyers
-                commonly consider:
+            <SectionIntro eyebrow="Buyer's perspective" title="Understand what buyers will review.">
+              <p>
+                A buyer is not purchasing only a website or account. They are evaluating the income, assets, risks,
+                workload and future potential connected to the complete business.
               </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-              {VALUE_FACTORS.map(({ icon: Icon, title, body }) => (
+            </SectionIntro>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {BUYER_EVALUATION.map(({ icon: Icon, title, body }) => (
                 <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
                   <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
                     <Icon size={16} />
@@ -982,10 +1024,64 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 </div>
               ))}
             </div>
-            <p className="mt-8 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
-              A credible asking price is backed by your business&rsquo;s actual performance, not just what you
-              hope to receive.
+            <InfoNote>
+              Do not present future growth as guaranteed. Clearly separate current, verified performance from
+              opportunities that have not yet been implemented.
+            </InfoNote>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* VALUATION */}
+      <section id="valuation" className="scroll-mt-16 border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner className="max-w-[880px]">
+            <SectionIntro eyebrow="Valuation" title="What could your online business be worth?">
+              <p>
+                There is no single price formula that applies to every digital business. Buyers usually consider
+                profit, revenue quality, growth, risk, transferability and the amount of work required from the
+                owner.
+              </p>
+            </SectionIntro>
+            <ul className="grid gap-x-8 gap-y-2.5 sm:grid-cols-3">
+              {VALUE_FACTORS.map((f) => (
+                <Dot key={f}>{f}</Dot>
+              ))}
+            </ul>
+            <p className="mt-6 text-sm leading-relaxed text-ink-soft">
+              A credible asking price should be explainable using real business information. The amount a seller
+              hopes to receive is not, by itself, evidence of market value.
             </p>
+            <div className="mt-6">
+              <TrackedCta href="/valuation" cta="valuation_cta">
+                Get a Free Valuation
+                <ArrowRight size={16} />
+              </TrackedCta>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* SDE EXPLANATION */}
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+        <Container>
+          <Inner className="max-w-[760px]">
+            <DashEyebrow>Pricing fundamentals</DashEyebrow>
+            <h2 className="text-2xl sm:text-3xl">Understanding Seller&rsquo;s Discretionary Earnings.</h2>
+            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+              Seller&rsquo;s Discretionary Earnings, commonly called SDE, is often used when evaluating smaller
+              owner-operated businesses. It starts with the business&rsquo;s net profit and may add back certain
+              owner-specific, personal or one-time expenses that a new owner would not reasonably be expected to
+              continue paying.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              SDE is intended to help a buyer understand the approximate financial benefit the business currently
+              provides to one owner-operator.
+            </p>
+            <WarningNote>
+              SDE is not the same as revenue, and an SDE multiple is not a guaranteed valuation. The appropriate
+              approach depends on the business model, financial records, growth, risk and buyer demand.
+            </WarningNote>
           </Inner>
         </Container>
       </section>
@@ -994,14 +1090,9 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Learn from others</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Common mistakes to avoid.</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                These mistakes come up repeatedly across digital-business sales, regardless of the platform used
-                to sell:
-              </p>
-            </div>
+            <SectionIntro eyebrow="Learn from others" title="Common mistakes that can weaken a sale.">
+              <p>These mistakes come up repeatedly across digital-business sales, regardless of the platform used to sell:</p>
+            </SectionIntro>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {COMMON_MISTAKES.map(({ icon: Icon, title, body }) => (
                 <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
@@ -1013,58 +1104,23 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 </div>
               ))}
             </div>
-            <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
-              Durqo&rsquo;s listing review process is designed to catch inconsistencies in a draft listing before
-              it goes live - but it is not a substitute for preparing well in advance.
-            </p>
           </Inner>
         </Container>
       </section>
 
-      {/* WHAT BUYERS WANT TO KNOW */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[880px]">
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Buyer&rsquo;s perspective</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Think like a buyer before you list.</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Before making an offer, buyers want to understand both the opportunity and the risks. Expect
-                questions such as:
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {BUYER_QUESTIONS.map((q, i) => (
-                <div key={q} className="flex items-start gap-3 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
-                  <span className="mono mt-0.5 shrink-0 text-xs font-semibold text-brand-strong">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-sm font-medium text-ink">{q}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 text-sm leading-relaxed text-ink-soft">
-              Clear answers, ready in advance, make for stronger conversations with buyers.
-            </p>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* PREPARE YOUR BUSINESS */}
-      <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
+      {/* SELLER PREPARATION GUIDE */}
+      <section id="preparing" className="scroll-mt-16 border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
         <Container>
           <Inner>
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Preparation</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Prepare your business before going to market.</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Good preparation makes it easier for buyers to evaluate your business. Start by organizing
-                information in these four areas.
+            <SectionIntro eyebrow="Before you list" title="Prepare your business before you list.">
+              <p>
+                A clear and well-supported listing helps buyers understand the opportunity and reduces avoidable
+                questions during the transaction.
               </p>
-            </div>
+            </SectionIntro>
             <div className="grid gap-5 sm:grid-cols-2">
-              {PREPARE_CATEGORIES.map(({ icon: Icon, title, intro, items, note }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-6">
+              {PREPARE_CATEGORIES.map(({ icon: Icon, title, intro, items, note }, i) => (
+                <div key={title} className={`rounded-xl border border-rule bg-paper-raised p-6 ${i === PREPARE_CATEGORIES.length - 1 ? "sm:col-span-2" : ""}`}>
                   <div className="mb-3 flex items-center gap-2.5">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
                       <Icon size={16} />
@@ -1072,7 +1128,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                     <h3 className="text-base font-semibold text-ink">{title}</h3>
                   </div>
                   <p className="text-sm text-ink-soft">{intro}</p>
-                  <ul className="mt-3 flex flex-col gap-1.5">
+                  <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
                     {items.map((it) => (
                       <Dot key={it}>{it}</Dot>
                     ))}
@@ -1086,17 +1142,13 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       </section>
 
       {/* SELLER CHECKLIST */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <Inner className="max-w-[900px]">
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Before you list</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Seller checklist.</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Before listing, make sure you can clearly explain each of the following.
-              </p>
-            </div>
-            <ul className="grid gap-3 sm:grid-cols-2">
+          <Inner className="max-w-[760px]">
+            <SectionIntro eyebrow="Final check" title="Seller pre-listing checklist.">
+              <p>Before listing, make sure you can clearly answer yes to each of the following.</p>
+            </SectionIntro>
+            <ul className="flex flex-col gap-3">
               {CHECKLIST_ITEMS.map((item) => (
                 <li key={item} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
                   <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
@@ -1104,150 +1156,38 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 </li>
               ))}
             </ul>
-            <p className="mt-6 flex items-start gap-2 rounded-lg border border-rule bg-paper-raised p-4 text-xs leading-relaxed text-ink-faint">
-              <ShieldCheck size={14} className="mt-0.5 shrink-0 text-ink-faint" />
-              Do not make unsupported financial or performance claims.
-            </p>
           </Inner>
         </Container>
       </section>
 
-      {/* MID-PAGE CTA */}
-      <section className="border-b border-rule bg-brand-strong py-14 text-center sm:py-16">
-        <Container>
-          <Inner className="max-w-[720px]">
-            <DashEyebrow onDark center>
-              Ready when you are
-            </DashEyebrow>
-            <h2 className="text-2xl text-white sm:text-3xl">Built something valuable?</h2>
-            <p className="mx-auto mt-3 max-w-[56ch] text-[0.95rem] leading-relaxed text-white/70">
-              List your website, SaaS product, e-commerce business, app, or other digital business on Durqo to
-              reach buyers wherever they are based.
-            </p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <TrackedCta href="/sell" cta="mid_page_primary" size="lg">
-                List Your Business
-                <ArrowRight size={16} />
-              </TrackedCta>
-              <TrackedCta href="/how-to-sell" cta="mid_page_secondary" variant="on-dark" size="lg">
-                Learn How Selling Works
-              </TrackedCta>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* ASKING PRICE */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      {/* REALISTIC ASKING PRICE */}
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[760px]">
-            <DashEyebrow>Pricing</DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">Set a realistic asking price.</h2>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              An unrealistic price can turn buyers away - an overly cautious one can cost you. Consider:
-            </p>
-            <ul className="mt-5 grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
-              {PRICE_FACTORS.map((f) => (
+            <SectionIntro eyebrow="Pricing" title="Set an asking price you can support.">
+              <p>
+                An asking price should reflect the business&rsquo;s actual performance, assets, transferability and
+                risk. An unrealistically high price may reduce buyer interest, while a price set without reviewing
+                the business&rsquo;s value may result in the seller accepting less than the business could
+                reasonably justify.
+              </p>
+              <p className="font-medium text-ink">Before setting your asking price, consider:</p>
+            </SectionIntro>
+            <ul className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+              {ASKING_PRICE_FACTORS.map((f) => (
                 <Dot key={f}>{f}</Dot>
               ))}
             </ul>
-            <p className="mt-6 text-sm leading-relaxed text-ink-soft">
-              Aim for a price you can explain and support with real business information.
-            </p>
-            <InfoNote>
-              An asking price is not a guarantee of the final transaction price - the eventual price may depend on
-              buyer interest, due diligence, negotiations, transaction terms, and other factors.
-            </InfoNote>
-
-            <div className="mt-8 rounded-xl border border-rule bg-paper-raised p-6">
-              <p className="mono mb-2 text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                How buyers commonly think about price
-              </p>
-              <h3 className="text-base font-semibold text-ink">Seller&rsquo;s Discretionary Earnings (SDE)</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                Most small digital businesses are priced around a multiple of SDE, not raw revenue. SDE is the
-                profit the business generates for a single owner-operator: net profit with the current
-                owner&rsquo;s own compensation and any one-time or personal expenses run through the business
-                added back in. It is meant to show a buyer what the business could realistically pay them if
-                they ran it themselves.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                Buyers and marketplaces commonly reference SDE multiples as a rough starting point - content and
-                affiliate sites have often traded at the lower end of typical ranges, established e-commerce
-                businesses somewhat higher, and SaaS businesses with recurring revenue frequently higher still.
-                Within every category, the actual multiple a business commands still depends heavily on its
-                growth trend, revenue consistency, customer concentration, and how much the business depends on
-                the current owner.
-              </p>
-              <InfoNote>
-                These are widely cited reference ranges, not a formula and not an estimate of your business.
-                Treat any multiple you see - here or elsewhere - as a rough starting point for a conversation,
-                never as what your specific business will sell for.
-              </InfoNote>
-            </div>
-
-            <p className="mt-6 text-sm leading-relaxed text-ink-soft">
-              Not sure where to start?{" "}
-              <Link href="/valuation" className="font-semibold text-brand-strong hover:underline">
-                Get a free estimate of what your business could be worth
-              </Link>
-              .
-            </p>
+            <InfoNote>Durqo&rsquo;s valuation tool provides an initial estimate, not a guaranteed sale price.</InfoNote>
           </Inner>
         </Container>
       </section>
 
-      {/* MARKETPLACE FEES */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      {/* COMPLETE SELLING PROCESS */}
+      <section id="process" className="scroll-mt-16 border-b border-rule py-14 sm:py-16 lg:py-20">
         <Container>
           <Inner>
-            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
-              <div className="max-w-[60ch]">
-                <DashEyebrow>What it costs</DashEyebrow>
-                <h2 className="text-2xl sm:text-3xl">Marketplace fees.</h2>
-                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                  There is no upfront charge to list your business, and no monthly subscription. Durqo charges
-                  sellers a tiered success fee based on the final sale price, deducted only after a successful
-                  sale.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
-                <dl className="flex flex-col gap-3">
-                  {SUCCESS_FEE_TIERS.map((tier) => (
-                    <div
-                      key={tier.id}
-                      className="flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0"
-                    >
-                      <dt className="text-sm text-ink-soft">{tier.label}</dt>
-                      <dd className="mono text-lg font-bold text-brand-strong">{fmtRate(tier.rate)}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <div className="mt-4 flex items-start gap-2">
-                  <Info size={13} className="mt-0.5 shrink-0 text-ink-faint" />
-                  <p className="text-xs leading-relaxed text-ink-faint">
-                    Applies to the full final sale price. See{" "}
-                    <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
-                      Buy &amp; Sell in BDT
-                    </Link>{" "}
-                    for payout details.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* HOW DURQO WORKS */}
-      <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
-        <Container>
-          <Inner>
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>The process</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">How selling on Durqo works.</h2>
-            </div>
+            <SectionIntro eyebrow="Step by step" title="How to sell through Durqo from Bangladesh." />
             <div className="grid gap-5 sm:grid-cols-2">
               {SELLING_STEPS.map(({ n, icon: Icon, title, body, link }) => (
                 <div key={n} className="rounded-xl border border-rule bg-paper-raised p-6">
@@ -1262,13 +1202,10 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                   </div>
                   <p className="text-sm leading-relaxed text-ink-soft">{body}</p>
                   {link && (
-                    <Link
-                      href={link.href}
-                      className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline"
-                    >
+                    <a href={link.href} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline">
                       {link.label}
                       <ArrowRight size={12} />
-                    </Link>
+                    </a>
                   )}
                 </div>
               ))}
@@ -1283,129 +1220,332 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         </Container>
       </section>
 
-      {/* BUILDING BUYER CONFIDENCE */}
+      {/* LISTING REVIEW */}
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[760px]">
-            <DashEyebrow>Trust</DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">Give buyers information they can evaluate.</h2>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Trust matters when buying a digital business. A strong listing clearly distinguishes information
-              that can be supported from information simply provided by the seller. Where applicable, Durqo
-              may offer verification or review features.
-            </p>
-            <p className="mt-4 text-sm font-semibold text-ink">
-              Sellers should provide accurate information and should never intentionally misrepresent:
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {TRUST_ITEMS.map((item) => (
-                <span key={item} className="rounded-full border border-rule bg-paper-raised px-3 py-1.5 text-xs font-medium text-ink-soft">
-                  {item}
-                </span>
-              ))}
-            </div>
-            <p className="mt-5 text-sm leading-relaxed text-ink-soft">
-              A transparent listing helps buyers evaluate an opportunity - and often gets more serious
-              attention.
-            </p>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* SELLING FROM BANGLADESH */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Selling from Bangladesh</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Selling a digital business from Bangladesh.</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Selling from Bangladesh raises a few questions a seller elsewhere may not have to think about:
-                whether international buyers will ever see the listing, how payment actually arrives in BDT,
-                whether the process is transparent, and whether it is safe to hand over a business before
-                being paid. Here is how Durqo addresses each one.
+            <SectionIntro eyebrow="Before you go live" title="What happens before your listing is published?">
+              <p>
+                After the seller submits a listing, Durqo reviews it according to its current listing requirements.
+                The review may consider whether the information is complete, internally consistent, understandable
+                and suitable for the marketplace.
               </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {BANGLADESH_CHALLENGES.map(({ icon: Icon, title, body, link }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
-                  </span>
-                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{body}</p>
-                  {link && (
-                    <Link
-                      href={link.href}
-                      className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline"
-                    >
-                      {link.label}
-                      <ArrowRight size={12} />
-                    </Link>
-                  )}
-                </div>
+            </SectionIntro>
+            <ul className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
+              {LISTING_REVIEW_OUTCOMES.map(({ icon: Icon, text }) => (
+                <li key={text} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
+                  <Icon size={14} className="mt-0.5 shrink-0 text-brand-strong" />
+                  {text}
+                </li>
               ))}
-            </div>
-            <InfoNote>
-              Presenting a business through a marketplace can give sellers an opportunity to make their listing
-              discoverable to a broader audience. This does not guarantee international buyer interest or a sale.
-            </InfoNote>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
-                <span
-                  key={label}
-                  className="mono flex items-center gap-1.5 rounded-full border border-rule bg-paper-raised px-3 py-1.5 text-xs text-ink-soft"
-                >
-                  <Icon size={14} className={tint} />
-                  {label}
-                </span>
-              ))}
-            </div>
-            <Link
-              href="/buy-and-sell-digital-businesses-in-bdt"
-              className="mt-5 flex max-w-[760px] items-center gap-3.5 rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong hover:shadow-sm"
-            >
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                <Wallet size={17} />
-              </span>
-              <span className="flex-1">
-                <span className="block text-sm font-semibold text-ink">BDT payments and payouts</span>
-                <span className="mt-0.5 block text-xs leading-relaxed text-ink-soft">
-                  Payment methods, payouts and transaction details for sellers in Bangladesh.
-                </span>
-              </span>
-              <ArrowRight size={16} className="shrink-0 text-ink-faint" />
+            </ul>
+            <Link href="/listing-review" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
+              How Durqo reviews listings
+              <ArrowRight size={14} />
             </Link>
           </Inner>
         </Container>
       </section>
 
-      {/* FAQ */}
+      {/* BUYER COMMUNICATION AND DUE DILIGENCE */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <SectionIntro eyebrow="Before the sale completes" title="Buyer communication and due diligence." />
+            <div className="grid gap-8 sm:grid-cols-2">
+              <div>
+                <h3 className="text-base font-semibold text-ink">Answer buyer questions clearly</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                  Potential buyers may contact the seller to understand the business before purchasing. Keep answers
+                  accurate, professional and consistent with the published listing. Buyers may ask:
+                </p>
+                <ul className="mt-3 flex flex-col gap-1.5">
+                  {BUYER_QUESTIONS.map((q) => (
+                    <Dot key={q}>{q}</Dot>
+                  ))}
+                </ul>
+                <WarningNote>
+                  Do not send passwords, identity documents, financial-account credentials or sensitive customer data
+                  through ordinary messages.
+                </WarningNote>
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-ink">Be ready for buyer review</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                  Before completing a purchase, a buyer may review relevant financial, traffic, operational,
+                  ownership and asset information. Provide only information that is accurate, relevant and lawful to
+                  share. Where sensitive records are required:
+                </p>
+                <ul className="mt-3 flex flex-col gap-1.5">
+                  {DUE_DILIGENCE_ITEMS.map((it) => (
+                    <Dot key={it}>{it}</Dot>
+                  ))}
+                </ul>
+                <InfoNote>
+                  Durqo&rsquo;s listing review is not a guarantee of the business&rsquo;s future performance and does
+                  not replace the buyer&rsquo;s own evaluation.
+                </InfoNote>
+              </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* PAYMENT STATUS */}
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
-          <Inner className="max-w-[760px]">
-            <div className="mb-10 max-w-[70ch]">
-              <DashEyebrow>Common questions</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Seller questions, answered.</h2>
+          <Inner>
+            <SectionIntro eyebrow="A structured transaction" title="Know the payment status before transferring assets.">
+              <p>
+                Do not begin the formal asset handover simply because a buyer says payment has been made. The
+                Transfer Room becomes available only after the required payment has been received and verified. For
+                payments made through Stripe or SSLCommerz, funds are held by Durqo itself until you approve the
+                transfer. Where Escrow.com is selected and available, it acts as an independent escrow provider, and
+                its own transaction terms and verification requirements apply.
+              </p>
+            </SectionIntro>
+            <WarningNote>You can check the payment status on your order&rsquo;s deal page before sharing any assets.</WarningNote>
+            <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              {PAYMENT_STATUS_STEPS.map(({ icon: Icon, title, body }) => (
+                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
+                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={16} />
+                  </span>
+                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
+                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">{body}</p>
+                </div>
+              ))}
             </div>
+            <div className="mt-8 rounded-xl border border-rule bg-paper-raised p-6">
+              <h3 className="text-base font-semibold text-ink">What happens if the buyer reports a problem?</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+                If the buyer reports that an agreed asset is missing, inaccessible or materially different, your
+                payout remains on hold while the available transaction records and evidence are reviewed. You and the
+                buyer may be asked to provide additional information. Not every dispute is decided in the
+                seller&rsquo;s favor.
+              </p>
+              <Link href="/report-an-issue" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
+                Learn about reporting an issue
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* TRANSFER ROOM */}
+      <section id="transfer-room" className="scroll-mt-16 border-b border-rule bg-ink py-14 text-white sm:py-16 lg:py-20">
+        <Container>
+          <Inner>
+            <div className="grid gap-10 lg:grid-cols-[55fr_45fr] lg:items-start lg:gap-16">
+              <div className="min-w-0">
+                <DashEyebrow onDark>Tracked asset handover</DashEyebrow>
+                <h2 className="text-2xl sm:text-3xl">Transfer the business through the Transfer Room.</h2>
+                <p className="mt-3 text-[0.95rem] leading-relaxed text-white/70">
+                  The Transfer Room connects the asset handover to the order. It provides a clear record of what the
+                  seller submits, what the buyer receives, and whether the transfer is approved or reported for
+                  review.
+                </p>
+                <div className="mt-7 flex flex-col gap-5">
+                  {TRANSFER_ROOM_STEPS.map(({ n, icon: Icon, title, body }) => (
+                    <div key={n} className="flex items-start gap-3.5">
+                      <span className="mono grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/10 text-sm font-bold text-white">
+                        {n}
+                      </span>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Icon size={14} className="text-white/70" />
+                          <h3 className="text-sm font-semibold text-white">{title}</h3>
+                        </div>
+                        <p className="mt-1 text-xs leading-relaxed text-white/70">{body}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <ul className="mt-7 flex flex-col gap-2 border-t border-white/10 pt-6">
+                  {TRANSFER_ROOM_DETAILS.map((d) => (
+                    <li key={d} className="flex items-start gap-2.5 text-xs leading-relaxed text-white/70">
+                      <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-white/50" />
+                      {d}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6 flex items-start gap-2.5 rounded-lg bg-white/10 px-3.5 py-3">
+                  <AlertTriangle size={14} className="mt-0.5 shrink-0 text-[#F2C94C]" />
+                  <p className="text-xs leading-relaxed text-white/70">
+                    Do not transfer the business only through personal email, WhatsApp, Facebook Messenger or another
+                    unrecorded channel. Keep the agreed asset handover and confirmation connected to the Durqo order.
+                  </p>
+                </div>
+                <Link href="/transfer-room" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-white hover:underline">
+                  Read the full Transfer Room guide
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+
+              <div className="min-w-0 rounded-2xl bg-paper-raised p-6 text-ink shadow-lg sm:p-7">
+                <p className="mono mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-faint">
+                  <Lock size={13} />
+                  Transfer Room
+                </p>
+                <div className="flex flex-col gap-3">
+                  {TRANSFER_ROOM_PREVIEW_ROWS.map(({ n, label, status, tone }) => (
+                    <div key={n} className="flex items-center justify-between gap-3 rounded-lg border border-rule px-3.5 py-3">
+                      <div className="flex items-center gap-3">
+                        <span className="mono grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
+                          {n}
+                        </span>
+                        <span className="text-sm font-medium text-ink">{label}</span>
+                      </div>
+                      <span
+                        className={`mono rounded-full px-2.5 py-1 text-[0.65rem] font-semibold ${
+                          tone === "done" ? "bg-brand-soft text-brand-strong" : tone === "active" ? "bg-gold-soft text-[#92730F]" : "bg-paper-sunk text-ink-faint"
+                        }`}
+                      >
+                        {status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-faint">
+                  Example transfer for illustration - every real order gets its own Transfer Room with live status.
+                </p>
+              </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* SELLER PAYOUT IN BANGLADESH */}
+      <section id="payouts" className="scroll-mt-16 border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <SectionIntro eyebrow="Get paid in Bangladesh" title="Receiving sale proceeds in Bangladesh.">
+              <p>
+                A confirmed buyer payment does not immediately create a withdrawable seller balance - it moves
+                through the Transfer Room, inspection and review before becoming eligible. The full journey from sale
+                to funds in hand:
+              </p>
+            </SectionIntro>
+            <ol className="grid gap-2.5 sm:grid-cols-2">
+              {PAYOUT_JOURNEY.map((step, i) => (
+                <li key={step} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
+                  <span className="mono mt-0.5 shrink-0 text-xs font-semibold text-brand-strong">{String(i + 1).padStart(2, "0")}</span>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {PAYOUT_METHODS.map(({ icon: Icon, label, tint, cap }) => (
+                <div key={label} className="rounded-xl border border-rule bg-paper-raised p-4">
+                  <Icon size={18} className={tint} />
+                  <p className="mt-2 text-sm font-semibold text-ink">{label}</p>
+                  <p className="mt-0.5 text-[0.7rem] leading-snug text-ink-faint">{cap}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 text-xs leading-relaxed text-ink-faint">
+              Sellers can also withdraw via PayPal or Wise. The seller&rsquo;s verified legal name or verified
+              business name must match the payout account holder&rsquo;s name.
+            </p>
+            <Link href="/buy-and-sell-digital-businesses-in-bdt" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
+              View BDT payment and payout details
+              <ArrowRight size={14} />
+            </Link>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* SELLER IDENTITY VERIFICATION */}
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+        <Container>
+          <Inner className="max-w-[880px]">
+            <SectionIntro eyebrow="Before your first withdrawal" title="Seller KYC and payout-name verification.">
+              <p>
+                KYC identity verification is required before a seller&rsquo;s first withdrawal. This helps protect
+                seller earnings, prevent unauthorized payouts, and confirm that funds are sent to the correct
+                recipient. Durqo normally reviews submitted documents within 1-2 business days.
+              </p>
+            </SectionIntro>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[{ icon: IdCard, label: "Passport" }, { icon: CreditCard, label: "National ID" }, { icon: Car, label: "Driving License" }, { icon: FileText, label: "Birth Certificate" }].map(({ icon: Icon, label }) => (
+                <div key={label} className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised p-4">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+                    <Icon size={16} />
+                  </span>
+                  <span className="text-sm font-medium text-ink">{label}</span>
+                </div>
+              ))}
+            </div>
+            <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
+              {KYC_FACTS.map((f) => (
+                <Dot key={f}>{f}</Dot>
+              ))}
+            </ul>
+            <Link href="/payments" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
+              Learn about payments and withdrawals
+              <ArrowRight size={14} />
+            </Link>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* MARKETPLACE FEES */}
+      <section id="fees" className="scroll-mt-16 border-b border-rule py-14 sm:py-16">
+        <Container>
+          <Inner>
+            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
+              <div className="max-w-[60ch]">
+                <DashEyebrow>Clear pricing</DashEyebrow>
+                <h2 className="text-2xl sm:text-3xl">Pay a success fee only after a sale.</h2>
+                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                  There is no upfront charge to list your business, and no monthly subscription. Durqo deducts the
+                  applicable seller success fee only after a completed sale.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
+                <dl className="flex flex-col gap-3">
+                  {SUCCESS_FEE_TIERS.map((tier) => (
+                    <div key={tier.id} className="flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0">
+                      <dt className="text-sm text-ink-soft">{tier.label}</dt>
+                      <dd className="mono text-lg font-bold text-brand-strong">{fmtRate(tier.rate)}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-4 flex items-start gap-2">
+                  <Info size={13} className="mt-0.5 shrink-0 text-ink-faint" />
+                  <p className="text-xs leading-relaxed text-ink-faint">
+                    The applicable percentage applies to the complete final sale price. See{" "}
+                    <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+                      Buy &amp; Sell in BDT
+                    </Link>{" "}
+                    for payout details.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="scroll-mt-16 border-b border-rule bg-paper-sunk py-14 sm:py-16">
+        <Container>
+          <Inner className="max-w-[760px]">
+            <SectionIntro eyebrow="Frequently asked questions" title="Seller questions, answered." />
             <GroupedFaq groups={FAQ_GROUPS} />
           </Inner>
         </Container>
       </section>
 
-      {/* RELATED READING */}
+      {/* RELATED RESOURCES */}
       <section className="border-b border-rule py-10">
         <Container>
           <Inner>
-            <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Keep exploring</p>
+            <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Related seller resources</p>
             <div className="flex flex-wrap gap-x-8 gap-y-3">
-              {[
-                { href: "/how-to-sell", label: "How Selling on Durqo Works" },
-                { href: "/valuation", label: "Free Business Valuation" },
-                { href: "/seller-faq", label: "Seller’s FAQ" },
-                { href: "/listing-review", label: "How Listings Are Reviewed" },
-                { href: "/transfer-room", label: "The Transfer Room" },
-              ].map(({ href, label }) => (
+              {RELATED_RESOURCES.map(({ href, label }) => (
                 <Link key={href} href={href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
                   {label}
                   <ArrowRight size={14} />
@@ -1420,22 +1560,25 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="bg-ink py-16 text-white sm:py-20">
         <Container>
           <Inner className="max-w-[700px] text-center">
-            <h2 className="text-2xl sm:text-3xl">Built the business. Ready for what comes next?</h2>
+            <DashEyebrow onDark center>
+              Ready to sell?
+            </DashEyebrow>
+            <h2 className="text-2xl sm:text-3xl">Turn what you built into your next opportunity.</h2>
             <p className="mx-auto mt-3 max-w-[54ch] text-sm text-white/70">
-              Create your Durqo listing, provide the relevant business information, and make your business
-              available for potential buyers to discover.
+              Prepare your business information, create your listing, and reach potential buyers through a structured
+              marketplace built for digital-business transactions.
             </p>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
               <TrackedCta href="/sell" cta="final_primary" size="lg">
                 List Your Business
                 <ArrowRight size={16} />
               </TrackedCta>
-              <TrackedCta href="/how-to-sell" cta="final_secondary" variant="on-dark" size="lg">
-                How Selling Works
+              <TrackedCta href="/valuation" cta="final_secondary" variant="on-dark" size="lg">
+                Get a Free Valuation
               </TrackedCta>
             </div>
             <p className="mono mt-8 text-xs uppercase tracking-wide text-white/40">
-              Websites · SaaS · E-commerce · Apps · YouTube · Domains · Other Digital Businesses
+              No upfront listing fee · Seller success fee applies only after a completed sale
             </p>
           </Inner>
         </Container>
