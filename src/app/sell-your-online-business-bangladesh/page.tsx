@@ -102,12 +102,41 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 // commonly referenced, never authoritative), and no guarantee of a buyer, a
 // price, a timeframe, or a scam-free transaction is made anywhere on this
 // page.
+//
+// Oct 2026 (sixth revision): wording-consistency pass on top of the fifth
+// revision - no layout/section change except restyling the existing
+// Challenges grid (below) for clearer problem/solution contrast.
+//   - Every "payment is/was confirmed" phrasing replaced sitewide with the
+//     more precise "the required (full) payment has been received and
+//     verified" / "a partial or initial payment does not unlock asset
+//     transfer" - matches TRANSFER_ROOM_DETAILS' and the payment-status
+//     section's existing wording, now used consistently in the Challenges
+//     "Transferring assets safely" card, Step 07 of the selling process, the
+//     payment-status step cards, the pre-transfer checklist, the common-
+//     mistakes list, the payout journey and the Getting Paid section intro.
+//   - "...track and complete the asset transfer securely" (Challenges card)
+//     no longer implies an absolute security guarantee - reworded to
+//     "submit and track the agreed asset transfer through a structured
+//     process".
+//   - Remaining "worldwide" / "anywhere in the world" / "global buyer reach"
+//     phrasing (meta description, OG description, hero trust row, hero panel
+//     title, overview paragraph) replaced with the same "potential buyers in
+//     Bangladesh and other countries" framing already used in the hero panel
+//     body and the Challenges/FAQ sections, so the reach claim is consistent
+//     and no broader anywhere else on the page.
+//   - SELLER_CHALLENGES card grid (Challenges section) restyled only: each
+//     card now separates its problem (amber/gold tint, reusing WarningNote's
+//     existing bg-gold-soft token) from the Durqo solution (brand-green
+//     tint) as two distinct callouts instead of a single faint "Challenge"
+//     label, and the grid moved from 5 to 3 columns at desktop width so the
+//     taller cards have room. No copy content changed by this restyle beyond
+//     the wording fixes above.
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
-  "Learn how to sell a website or digital business from Bangladesh, reach buyers worldwide, transfer assets securely and receive eligible sale proceeds in BDT.";
+  "Learn how to sell a website or digital business from Bangladesh, reach potential buyers in Bangladesh and other countries, transfer assets through a structured process and receive eligible sale proceeds in BDT.";
 const OG_TITLE = "How to Sell an Online Business from Bangladesh";
 const OG_DESCRIPTION =
-  "A practical guide to preparing, listing, transferring and selling your digital business through Durqo—with international buyer reach and supported BDT payouts.";
+  "A practical guide to preparing, listing, transferring and selling your digital business through Durqo—with buyer reach in Bangladesh and other countries and supported BDT payouts.";
 
 export const metadata: Metadata = {
   title: META_TITLE,
@@ -319,7 +348,7 @@ const GUIDE_NAV = [
 ];
 
 const HERO_TRUST_ROW = [
-  { icon: Globe, label: "Reach buyers in Bangladesh and worldwide" },
+  { icon: Globe, label: "Reach potential buyers in Bangladesh and other countries" },
   { icon: ShieldCheck, label: "Transfer every agreed asset through the Transfer Room" },
   { icon: Wallet, label: "Request eligible sale proceeds through supported BDT payout methods" },
 ];
@@ -327,7 +356,7 @@ const HERO_TRUST_ROW = [
 const HERO_PANEL_ITEMS = [
   {
     icon: Globe,
-    title: "Global buyer reach",
+    title: "Reach beyond Bangladesh",
     body: "Make your approved listing available to potential buyers in Bangladesh and other countries.",
   },
   {
@@ -338,7 +367,7 @@ const HERO_PANEL_ITEMS = [
   {
     icon: ShieldCheck,
     title: "Tracked asset transfer",
-    body: "Use the Transfer Room to submit and track the agreed asset handover after payment is confirmed.",
+    body: "Use the Transfer Room to submit and track the agreed asset handover after the required payment has been received and verified.",
   },
   {
     icon: Wallet,
@@ -373,8 +402,8 @@ const SELLER_CHALLENGES = [
   {
     icon: Lock,
     title: "Transferring assets safely",
-    problem: "Sharing logins, code and other assets can be risky without a secure, tracked process - and before you know payment is confirmed.",
-    solution: "Use the Transfer Room, which only opens once payment is confirmed, to track and complete the asset transfer securely.",
+    problem: "Sharing logins, code and other assets can be risky without a secure, tracked process - and before the required payment has been received and verified.",
+    solution: "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer. Use it to submit and track the agreed asset transfer through a structured process.",
     link: { href: "#transfer-room", label: "How the Transfer Room works" },
   },
   {
@@ -468,7 +497,7 @@ const COMMON_MISTAKES = [
   { icon: FileWarning, title: "Unsupported financial claims", body: "Revenue and profit information should be accurate and reasonably supportable if a buyer asks for evidence." },
   { icon: Boxes, title: "Mixing personal and business assets", body: "Personal email accounts, payment accounts and files can make a business more difficult to transfer cleanly." },
   { icon: ClipboardList, title: "Not preparing an asset list", body: "Know exactly which domains, files, accounts, content, intellectual property and operating resources are included." },
-  { icon: Lock, title: "Sharing credentials too early", body: "Do not hand over passwords or control of the business before the required payment is confirmed and the Transfer Room opens." },
+  { icon: Lock, title: "Sharing credentials too early", body: "Do not hand over passwords or control of the business before the required payment has been received and verified and the Transfer Room opens." },
   { icon: MessagesSquare, title: "Moving the deal outside Durqo", body: "Important communications and asset-delivery records may be lost when a transaction moves to unrecorded personal channels." },
   { icon: HelpCircle, title: "Treating interest as a completed sale", body: "Questions or expressions of interest do not mean a purchase has been completed - follow the order and payment status shown by Durqo." },
   { icon: Handshake, title: "Failing to plan the handover", body: "Consider how the buyer will receive the domain, hosting, code, analytics and operating knowledge before the purchase occurs." },
@@ -518,7 +547,7 @@ const CHECKLIST_ITEMS = [
   "I have removed personal or confidential information from the public listing.",
   "I have disclosed significant risks or dependencies rather than hiding them.",
   "I understand the buyer will inspect everything before approving the transfer.",
-  "I will not share credentials before payment is confirmed and the Transfer Room opens.",
+  "I will not share credentials before the required payment has been received and verified and the Transfer Room opens.",
   "I understand KYC is required before my first withdrawal, and my payout account must match my verified name.",
 ];
 
@@ -555,7 +584,7 @@ const SELLING_STEPS: SellingStep[] = [
   { n: "04", icon: ClipboardCheck, title: "Submit it for review", body: "Durqo reviews the listing for completeness, clarity and compliance with its current listing requirements, and may request corrections before publishing.", link: { href: "/listing-review", label: "How listings are reviewed" } },
   { n: "05", icon: Globe, title: "Reach potential buyers", body: "Once approved, the listing becomes visible to buyers in Bangladesh and other countries. Interested buyers can review it and message you before deciding to purchase." },
   { n: "06", icon: ShoppingCart, title: "Buyer completes the purchase", body: "The buyer pays the listed price through one of Durqo's supported payment methods. The required payment must be received and verified before the asset-transfer stage begins.", link: { href: "/payments", label: "View payment & withdrawal details" } },
-  { n: "07", icon: Handshake, title: "Transfer the agreed assets", body: "Once payment is confirmed, the order's private Transfer Room opens. Submit each agreed asset separately so the buyer can inspect and confirm what they have received.", link: { href: "#transfer-room", label: "How the Transfer Room works" } },
+  { n: "07", icon: Handshake, title: "Transfer the agreed assets", body: "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer. Submit each agreed asset separately so the buyer can inspect and confirm what they have received.", link: { href: "#transfer-room", label: "How the Transfer Room works" } },
   { n: "08", icon: Wallet, title: "Complete the sale and request payout", body: "After the buyer approves the completed transfer and any required review is finished, eligible earnings become available. Complete identity verification before your first withdrawal, then request payment." },
 ];
 
@@ -589,8 +618,8 @@ const DUE_DILIGENCE_ITEMS = [
 ];
 
 const PAYMENT_STATUS_STEPS = [
-  { icon: CheckCircle2, title: "Payment confirmed", body: "Required payment has been received and verified through the selected transaction method." },
-  { icon: Unlock, title: "Transfer Room opens", body: "You can share your assets once the payment is confirmed." },
+  { icon: CheckCircle2, title: "Payment received and verified", body: "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer." },
+  { icon: Unlock, title: "Transfer Room opens", body: "You can share your assets once the required payment has been received and verified in full." },
   { icon: Send, title: "Seller delivers", body: "Complete the asset transfer through the Transfer Room." },
 ];
 
@@ -601,7 +630,7 @@ const TRANSFER_ROOM_STEPS = [
 ];
 
 const TRANSFER_ROOM_DETAILS = [
-  "The Transfer Room opens only after the required payment has been received and verified - a partial payment does not unlock it.",
+  "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer.",
   "The seller sees exactly which assets are included in the transaction.",
   "The seller submits each agreed asset separately, with enough detail for the buyer to identify and access it.",
   "The buyer confirms each item as it arrives by marking it Received.",
@@ -622,7 +651,7 @@ const TRANSFER_ROOM_PREVIEW_ROWS = [
 // payment never creates a withdrawable balance, and KYC is a required step
 // before the first request, not an optional one.
 const PAYOUT_JOURNEY = [
-  "Sale payment is confirmed.",
+  "Sale payment is received and verified.",
   "Transfer Room opens.",
   "Seller submits the agreed assets.",
   "Buyer inspects the assets.",
@@ -862,10 +891,11 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         <Container>
           <Inner>
             <p className="max-w-[80ch] text-[0.95rem] leading-relaxed text-ink-soft">
-              Durqo is built to support founders selling a digital business from Bangladesh to buyers anywhere in the
-              world. This guide walks through the obstacles sellers in Bangladesh most often face, how Durqo&rsquo;s
-              marketplace, review process, Transfer Room and local payout options address them, and everything else
-              involved in preparing, listing, pricing and completing a sale.
+              Durqo is built to support founders selling a digital business from Bangladesh and to help them reach
+              potential buyers in Bangladesh and other countries. This guide walks through the obstacles sellers in
+              Bangladesh most often face, how Durqo&rsquo;s marketplace, review process, Transfer Room and local
+              payout options address them, and everything else involved in preparing, listing, pricing and
+              completing a sale.
             </p>
           </Inner>
         </Container>
@@ -882,22 +912,34 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 process both sides can understand and trust.
               </p>
             </SectionIntro>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {SELLER_CHALLENGES.map(({ icon: Icon, title, problem, solution, link }) => (
-                <div key={title} className="flex flex-col rounded-xl border border-rule bg-paper-raised p-5">
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
+                <div
+                  key={title}
+                  className="group flex flex-col rounded-2xl border border-rule bg-paper-raised p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand-strong transition-transform group-hover:scale-105">
+                    <Icon size={17} />
                   </span>
-                  <p className="mono text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">Challenge</p>
-                  <h3 className="mt-0.5 text-sm font-semibold text-ink">{title}</h3>
-                  <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{problem}</p>
-                  <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-brand-soft/60 p-2.5">
-                    <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-brand-strong" />
-                    <div>
-                      <p className="mono text-[0.6rem] font-semibold uppercase tracking-wider text-brand-strong">
-                        Durqo solution
-                      </p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-ink">{solution}</p>
+                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
+                  <div className="mt-3 flex flex-1 flex-col gap-2.5">
+                    <div className="flex items-start gap-1.5 rounded-lg bg-gold-soft/70 p-2.5">
+                      <AlertTriangle size={13} className="mt-0.5 shrink-0 text-[#92730F]" />
+                      <div>
+                        <p className="mono text-[0.6rem] font-semibold uppercase tracking-wider text-[#92730F]">
+                          Challenge
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-[#6b5610]">{problem}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-1.5 rounded-lg bg-brand-soft/70 p-2.5">
+                      <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-brand-strong" />
+                      <div>
+                        <p className="mono text-[0.6rem] font-semibold uppercase tracking-wider text-brand-strong">
+                          Durqo solution
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-ink">{solution}</p>
+                      </div>
                     </div>
                   </div>
                   {link && (
@@ -1417,9 +1459,9 @@ export default function SellYourOnlineBusinessBangladeshPage() {
           <Inner>
             <SectionIntro eyebrow="Get paid in Bangladesh" title="Receiving sale proceeds in Bangladesh.">
               <p>
-                A confirmed buyer payment does not immediately create a withdrawable seller balance - it moves
-                through the Transfer Room, inspection and review before becoming eligible. The full journey from sale
-                to funds in hand:
+                A buyer&rsquo;s payment being received and verified does not immediately create a withdrawable seller
+                balance - it moves through the Transfer Room, inspection and review before becoming eligible. The
+                full journey from sale to funds in hand:
               </p>
             </SectionIntro>
             <ol className="grid gap-2.5 sm:grid-cols-2">
