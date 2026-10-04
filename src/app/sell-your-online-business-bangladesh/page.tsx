@@ -55,37 +55,46 @@ import { BkashIcon } from "@/components/icons/PaymentIcons";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 
-// Oct 4, 2026 (fourth revision): the third revision (same day) rebuilt this
-// page to match a visual mockup, but trimmed its text down to the mockup's
-// own placeholder-length copy in the process. That mockup was for layout
-// and component styling only - this revision restores and expands the
-// page's full educational depth (the seller-education content this page
-// carried before, plus the new Bangladesh-specific challenge/solution
-// framing), while keeping this revision's visual system (icon-badge cards,
-// the dark Transfer Room section, the "Durqo solution" callouts). Every
-// factual claim is still checked against the live codebase, not assumed:
+// Oct 4, 2026 (fifth revision): accuracy/safety/consistency pass requested
+// after the fourth revision. Keeps that revision's design, section order,
+// anchor nav and content depth - this pass only corrects specific claims
+// against verified production behavior, not layout:
 //   - Seller Success Fee tiers (10% / 7% / 5%) - src/lib/fees.ts.
-//   - BDT payout methods/limits - PAYOUT_METHODS in
-//     dashboard/seller/earnings/actions.ts; bKash/Nagad/Rocket each carry an
-//     independent ৳50,000/day, ৳300,000/month cap (supabase/migrations/032,
-//     033); Bank Transfer/PayPal/Wise have none. Same figures already on
-//     /payments and /seller-payouts.
+//   - BDT payout methods - PAYOUT_METHODS in dashboard/seller/earnings/
+//     actions.ts and page.tsx; Bank Transfer, bKash, Nagad, Rocket, PayPal
+//     and Wise are all genuinely implemented and accepted by
+//     create_withdrawal_request() (supabase/migrations/053). Exact per-method
+//     caps are intentionally NOT hardcoded on this page - they live only in
+//     the Seller Dashboard, which reads the same production config this page
+//     would otherwise have to duplicate and could drift from.
 //   - KYC - Passport, National ID, Driving License and Birth Certificate are
-//     the four document options in dashboard/seller/verification/page.tsx,
-//     all equal standing. KYC is enforced before a first withdrawal at the
-//     database level, not just in copy. Review time ~1-2 business days
-//     (verification page copy); payout processing 3-5 business days
-//     (/payments, /seller-payouts, the earnings dashboard).
+//     the four document options in dashboard/seller/verification/page.tsx's
+//     METHODS array (UI-equal standing), but this page intentionally uses
+//     more conservative copy for Birth Certificate (supporting document
+//     only, where permitted) as a legal/compliance choice, not a claim about
+//     the UI. KYC is enforced before a first withdrawal at the database
+//     level. The "reviewed within 1-2 business days" claim was checked
+//     against its actual operational backing (private, non-public storage
+//     bucket: confirmed, supabase/migrations/007; admin-only access via
+//     requireAdmin() + 1-hour signed URLs: confirmed; but NO audit trail of
+//     who viewed/approved a submission, and NO document-specific retention/
+//     deletion rule: both unconfirmed/not implemented) - so this page now
+//     points to the Seller Dashboard for current status instead of
+//     asserting a turnaround time the system doesn't track or enforce.
 //   - No formal offer/counter-offer feature exists anywhere in the
 //     checkout/listing code - Durqo is direct-purchase-at-listed-price.
 //     Nothing on this page describes negotiating a price.
 //   - Only Escrow.com is ever called an escrow provider (src/lib/escrow.ts,
-//     api/escrow/init); Stripe/SSLCommerz funds are held by Durqo itself
-//     until the buyer approves the transfer (matches /after-you-pay).
-//   - Transfer Room - real action labels, the 7-day inspection window from
-//     the first item marked Received, and "opens only once payment is
-//     confirmed" all come from /transfer-room's own copy and the
-//     asset-transfer-room logic.
+//     api/escrow/init); Stripe and SSLCommerz are payment processors, and
+//     their funds are held by Durqo itself until the buyer approves the
+//     transfer (matches /after-you-pay). Neither is ever called an escrow
+//     provider on this page.
+//   - Transfer Room inspection window - verified directly against the
+//     server-authoritative RPC (supabase/migrations/037, function
+//     transfer_item_mark_received): the 7-day window starts only once every
+//     agreed asset has been marked Received by the buyer, not on the first
+//     item. The page previously said "first item" - that was inaccurate to
+//     production and has been corrected everywhere it appeared on this page.
 //   - The 16 category tiles are the real CATEGORIES entries in
 //     src/lib/categories.ts.
 //   - Every internal link below is a real route in src/app.
@@ -144,8 +153,13 @@ const ARTICLE_JSON_LD = {
   url: PAGE_URL,
 };
 
-// Plain-text mirror of every question answered in FAQ_GROUPS below, for the
-// FAQPage structured-data block (JSON-LD can't hold JSX). Keep both in sync.
+// Plain-text mirror of EVERY question answered in FAQ_GROUPS below, and only
+// those questions - for the FAQPage structured-data block (JSON-LD can't
+// hold JSX). This was previously a larger, independently-maintained list
+// that had drifted from the visible accordion (some JSON-LD questions
+// weren't shown on the page at all, and some visible questions weren't in
+// the schema) - corrected so the two are exactly 1:1, same order, same
+// count. Keep both in sync on every future edit.
 const FAQ_PAIRS: { q: string; a: string }[] = [
   {
     q: "Can I sell a website from Bangladesh to an international buyer?",
@@ -156,92 +170,60 @@ const FAQ_PAIRS: { q: string; a: string }[] = [
     a: "Websites, e-commerce stores, SaaS products, AI apps and tools, Android and iOS apps, YouTube channels, social media accounts, domains, plugins, themes and extensions, Amazon stores and KDP businesses, service businesses, digital agencies, games, newsletters, startup businesses, and crypto or blockchain projects.",
   },
   {
-    q: "Does my business need to generate revenue to be listed?",
+    q: "Does my business need to generate revenue?",
     a: "Follow the category and information requirements shown when you create a listing. If a business does not yet generate revenue, explain its assets, audience, product and growth stage clearly so buyers can still evaluate it.",
   },
   {
     q: "Is it free to create a listing?",
-    a: "Yes. There is no upfront listing fee and no monthly subscription. Durqo deducts a success fee only once your business actually sells.",
+    a: "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells.",
   },
   {
-    q: "How much does Durqo charge when my business sells?",
-    a: "A tiered success fee applied to the full final sale price: 10% under $50,000, 7% from $50,000 to $250,000, and 5% above $250,000.",
-  },
-  {
-    q: "Will my listing be visible to international buyers?",
-    a: "Yes. Once published, a listing is visible to buyers browsing Durqo from any country, alongside buyers in Bangladesh. Visibility does not guarantee buyer interest.",
+    q: "Will international buyers actually see my listing?",
+    a: "A published listing is visible to buyers browsing Durqo from any country, alongside buyers in Bangladesh. Visibility does not guarantee buyer interest or a sale.",
   },
   {
     q: "Can buyers submit offers I can negotiate?",
-    a: "Durqo currently uses a direct-purchase model rather than a formal offer-and-counter-offer system. A buyer can message you with questions before deciding whether to purchase at your listed asking price.",
-  },
-  {
-    q: "Can buyers message me before purchasing?",
-    a: "Yes. A buyer can ask questions about the business before deciding to purchase. Avoid sending passwords, identity documents or financial-account credentials through ordinary messages.",
+    a: "Durqo currently uses a direct-purchase model rather than a formal offer and counter-offer system. Buyers can review the listing and contact the seller with relevant questions before deciding whether to purchase at the displayed price.",
   },
   {
     q: "What happens during listing review?",
-    a: "Durqo checks a submitted listing for completeness, internal consistency and compliance with current listing requirements before it is published, and may request corrections or additional information first.",
-  },
-  {
-    q: "What financial information should I provide?",
-    a: "Accurate, supportable revenue, profit, expense and traffic information. Do not present figures you cannot reasonably support if asked.",
-  },
-  {
-    q: "How is an asking price calculated?",
-    a: "Durqo does not calculate your asking price for you. Base it on your actual revenue, profit, growth, risk, transferable assets and the free valuation tool's estimate, which is a reference, not a guaranteed sale price.",
+    a: "Durqo checks a submitted listing for completeness, internal consistency and compliance with current requirements before publishing, and may request corrections or additional information first.",
   },
   {
     q: "What does due diligence involve?",
-    a: "A buyer may review relevant financial, traffic, operational, ownership and asset information before completing a purchase. Share only information that is accurate, relevant and lawful to disclose.",
+    a: "A buyer may review relevant financial, traffic, operational, ownership and asset information before completing a purchase. Share only what is accurate, relevant and lawful to disclose.",
   },
   {
-    q: "When is a sale payment confirmed?",
-    a: "Once the buyer's payment has actually cleared through Stripe, SSLCommerz or Escrow.com and Durqo's systems mark the order as paid - not simply because a buyer says they have paid.",
+    q: "When should I begin transferring the business?",
+    a: "Only once the buyer's payment has been received and confirmed and the order's Transfer Room has opened. Do not hand over a domain, source code or accounts before that stage, even if a buyer says payment has been sent.",
   },
   {
-    q: "When does the Transfer Room become available?",
-    a: "Only after the required payment has been received and verified. A partial payment does not unlock the Transfer Room.",
+    q: "What exactly is the Transfer Room?",
+    a: "It's the private, order-specific space where you submit each agreed asset and the buyer reviews what's been delivered. Once every agreed asset has been marked Received, the buyer gets a 7-day inspection window to approve the transfer or report an issue.",
   },
   {
-    q: "How long does the buyer get to inspect delivered assets?",
-    a: "A 7-day inspection window that starts from the first item marked Received, during which the buyer can approve the transfer or report an issue.",
-  },
-  {
-    q: "What if an asset is missing or doesn't match the listing?",
-    a: "The buyer can report an issue instead of approving. Nothing is released automatically - your payout stays on hold while Durqo reviews the available evidence.",
-  },
-  {
-    q: "What happens if the buyer reports an issue?",
-    a: "Your payout remains on hold while Durqo reviews the available transaction records and evidence, and both sides may be asked for more information. Not every dispute is decided in the seller's favor.",
+    q: "What happens if the buyer reports an issue instead of approving?",
+    a: "Nothing is released automatically. Your payout stays on hold while Durqo's team reviews the available evidence and decides what happens next, and both sides may be asked for more information.",
   },
   {
     q: "How can I receive my sale proceeds in Bangladesh?",
-    a: "Once the buyer approves the completed transfer and any required review is finished, eligible earnings appear in your Earnings & Withdrawals dashboard for withdrawal via Bank Transfer, bKash, Nagad or Rocket, alongside PayPal and Wise.",
-  },
-  {
-    q: "Are there limits on bKash, Nagad or Rocket withdrawals?",
-    a: "Yes. Each of the three carries its own independent limit of ৳50,000 per day and ৳300,000 per month. Bank Transfer, PayPal and Wise have no such cap.",
+    a: "Once the buyer approves the completed transfer and any required review is finished, eligible earnings appear in your Earnings & Withdrawals dashboard. You can request a withdrawal via Bank Transfer, bKash, Nagad or Rocket, alongside PayPal and Wise. See Buy and Sell Digital Businesses in BDT for the current conversion and limit details.",
   },
   {
     q: "Is KYC required for sellers?",
-    a: "Yes, before your first withdrawal. You can verify using a Passport, National ID, Driving License or Birth Certificate.",
-  },
-  {
-    q: "What identity documents are accepted?",
-    a: "Passport, National ID, Driving License or Birth Certificate. Upload clear photos of the document along with your legal name exactly as it appears on the ID.",
+    a: "Yes, before your first withdrawal. Depending on your country and the verification provider's requirements, you may be able to verify using a Passport, National Identity Card or Driving Licence. A Birth Certificate may be accepted only as a supporting document where permitted.",
   },
   {
     q: "Does my payout account name need to match my identity?",
     a: "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification, and Durqo's team checks this by hand before approving a withdrawal.",
   },
   {
-    q: "How long does a payout take once requested?",
-    a: "Durqo normally reviews and processes eligible payout requests within 3-5 business days. Your bank or mobile financial service provider may need additional time to credit the funds.",
+    q: "How long does a payout take?",
+    a: "Durqo normally reviews and processes eligible payout requests within 3-5 business days. Your bank or mobile financial service provider may need additional time beyond that to credit the funds.",
   },
   {
     q: "Does Durqo guarantee my business will sell?",
-    a: "No. Durqo provides a structured listing process, marketplace visibility and a tracked transaction process, but it does not guarantee a buyer, a sale, a specific price, or how long a sale will take.",
+    a: "No. Durqo provides a structured listing process and marketplace visibility, but it does not guarantee a buyer, a sale, a specific price, or how long a sale will take.",
   },
 ];
 
@@ -346,7 +328,7 @@ const HERO_PANEL_ITEMS = [
   {
     icon: Globe,
     title: "Global buyer reach",
-    body: "Get your listing in front of international buyers looking for quality online businesses.",
+    body: "Make your approved listing available to potential buyers in Bangladesh and other countries.",
   },
   {
     icon: DollarSign,
@@ -356,7 +338,7 @@ const HERO_PANEL_ITEMS = [
   {
     icon: ShieldCheck,
     title: "Tracked asset transfer",
-    body: "Use the Transfer Room to securely share and transfer your assets after payment is confirmed.",
+    body: "Use the Transfer Room to submit and track the agreed asset handover after payment is confirmed.",
   },
   {
     icon: Wallet,
@@ -374,7 +356,7 @@ const SELLER_CHALLENGES = [
     icon: Globe,
     title: "Reaching international buyers",
     problem: "It can be difficult to find serious international buyers on your own, outside a handful of personal contacts or local groups.",
-    solution: "Your listing is visible to a global pool of buyers once it is reviewed and published on the marketplace.",
+    solution: "Once reviewed and published, your listing can be viewed by users browsing Durqo from Bangladesh and other countries.",
   },
   {
     icon: Users,
@@ -607,14 +589,14 @@ const DUE_DILIGENCE_ITEMS = [
 ];
 
 const PAYMENT_STATUS_STEPS = [
-  { icon: CheckCircle2, title: "Payment confirmed", body: "Buyer's payment is held on Durqo or Escrow.com." },
+  { icon: CheckCircle2, title: "Payment confirmed", body: "Required payment has been received and verified through the selected transaction method." },
   { icon: Unlock, title: "Transfer Room opens", body: "You can share your assets once the payment is confirmed." },
   { icon: Send, title: "Seller delivers", body: "Complete the asset transfer through the Transfer Room." },
 ];
 
 const TRANSFER_ROOM_STEPS = [
   { n: "01", icon: Send, title: "Seller submits assets", body: "Share each agreed asset - domains, website files, source code, accounts and more - one at a time, inside the order's Transfer Room." },
-  { n: "02", icon: Eye, title: "Buyer reviews", body: "The buyer inspects what has been delivered during a 7-day inspection window that starts from the first item marked Received." },
+  { n: "02", icon: Eye, title: "Buyer reviews", body: "The buyer inspects what has been delivered. Once every agreed asset has been marked Received, a 7-day inspection window begins." },
   { n: "03", icon: CheckCircle2, title: "Transfer completed", body: "Once satisfied, the buyer approves the transfer. If something is missing or does not match, they can report an issue instead." },
 ];
 
@@ -623,7 +605,7 @@ const TRANSFER_ROOM_DETAILS = [
   "The seller sees exactly which assets are included in the transaction.",
   "The seller submits each agreed asset separately, with enough detail for the buyer to identify and access it.",
   "The buyer confirms each item as it arrives by marking it Received.",
-  "The buyer gets a 7-day inspection window from the first item marked Received.",
+  "The buyer gets a 7-day inspection window once every agreed asset has been marked Received.",
   "The buyer can approve the completed transfer once satisfied.",
   "The buyer can report an issue instead if something is missing or doesn't match.",
   "A reported issue keeps the seller's payout on hold while Durqo reviews the evidence.",
@@ -656,20 +638,30 @@ const PAYOUT_JOURNEY = [
   "The receiving bank or mobile financial service credits the account.",
 ];
 
+// Limits are intentionally not hardcoded here - they live only in the
+// Seller Dashboard, which reads the same production withdrawal config this
+// page would otherwise have to duplicate and could drift from.
 const PAYOUT_METHODS = [
-  { icon: Landmark, label: "Bank Transfer", tint: "text-brand-strong", cap: "No daily or monthly cap" },
-  { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]", cap: "Up to ৳50,000/day · ৳300,000/month" },
-  { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]", cap: "Up to ৳50,000/day · ৳300,000/month" },
-  { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]", cap: "Up to ৳50,000/day · ৳300,000/month" },
+  { icon: Landmark, label: "Bank Transfer", tint: "text-brand-strong" },
+  { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]" },
+  { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]" },
+  { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
 ];
 
 const KYC_FACTS = [
   "KYC is required before your first withdrawal, not before creating a listing.",
-  "Passport, National ID, Driving License or Birth Certificate can each be submitted as your verification document.",
+  "Depending on your country and the verification provider's requirements, you may be able to use a valid Passport, National Identity Card or Driving Licence. A Birth Certificate may be accepted only as a supporting document where permitted.",
   "Upload clear photos of the document (front and back if applicable) along with your legal name as it appears on the ID.",
-  "Submissions are reviewed by hand, usually within 1-2 business days.",
+  "Verification requirements and processing times depend on the selected verification method and whether additional review is required. The current status and any required action will appear in the Seller Dashboard.",
   "The verified legal or business name must match the payout account.",
   "Sensitive identity documents are never shown publicly on your listing.",
+];
+
+const KYC_METHODS = [
+  { icon: IdCard, label: "Passport", note: "Primary identity document" },
+  { icon: CreditCard, label: "National Identity Card", note: "Primary identity document" },
+  { icon: Car, label: "Driving Licence", note: "Primary identity document where supported" },
+  { icon: FileText, label: "Birth Certificate", note: "Supporting document where permitted" },
 ];
 
 const RELATED_RESOURCES = [
@@ -699,10 +691,10 @@ const FAQ_GROUPS: FaqGroup[] = [
     ],
   },
   {
-    heading: "Buyers, offers and listing review",
+    heading: "Buyer communication and listing review",
     items: [
       { question: "Will international buyers actually see my listing?", answer: "A published listing is visible to buyers browsing Durqo from any country, alongside buyers in Bangladesh. Visibility does not guarantee buyer interest or a sale." },
-      { question: "Can buyers submit offers I can negotiate?", answer: "Durqo currently uses a direct-purchase model rather than a formal offer-and-counter-offer system. A buyer can message you with questions before deciding whether to purchase at your listed asking price." },
+      { question: "Can buyers submit offers I can negotiate?", answer: "Durqo currently uses a direct-purchase model rather than a formal offer and counter-offer system. Buyers can review the listing and contact the seller with relevant questions before deciding whether to purchase at the displayed price." },
       { question: "What happens during listing review?", answer: "Durqo checks a submitted listing for completeness, internal consistency and compliance with current requirements before publishing, and may request corrections or additional information first." },
       { question: "What does due diligence involve?", answer: "A buyer may review relevant financial, traffic, operational, ownership and asset information before completing a purchase. Share only what is accurate, relevant and lawful to disclose." },
     ],
@@ -725,8 +717,8 @@ const FAQ_GROUPS: FaqGroup[] = [
         answer: (
           <>
             It&rsquo;s the private, order-specific space where you submit each agreed asset and the buyer reviews
-            what&rsquo;s been delivered. The buyer gets a <strong>7-day inspection window</strong> from the first
-            item marked Received, then either approves the transfer or reports an issue.
+            what&rsquo;s been delivered. Once every agreed asset has been marked Received, the buyer gets a{" "}
+            <strong>7-day inspection window</strong> to approve the transfer or report an issue.
           </>
         ),
       },
@@ -759,7 +751,7 @@ const FAQ_GROUPS: FaqGroup[] = [
           </>
         ),
       },
-      { question: "Is KYC required for sellers?", answer: "Yes, before your first withdrawal. You can verify using a Passport, National ID, Driving License or Birth Certificate." },
+      { question: "Is KYC required for sellers?", answer: "Yes, before your first withdrawal. Depending on your country and the verification provider's requirements, you may be able to verify using a Passport, National Identity Card or Driving Licence. A Birth Certificate may be accepted only as a supporting document where permitted." },
       { question: "Does my payout account name need to match my identity?", answer: "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification, and Durqo's team checks this by hand before approving a withdrawal." },
       { question: "How long does a payout take?", answer: "Durqo normally reviews and processes eligible payout requests within 3-5 business days. Your bank or mobile financial service provider may need additional time beyond that to credit the funds." },
       { question: "Does Durqo guarantee my business will sell?", answer: "No. Durqo provides a structured listing process and marketplace visibility, but it does not guarantee a buyer, a sale, a specific price, or how long a sale will take." },
@@ -1025,8 +1017,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               ))}
             </div>
             <InfoNote>
-              Do not present future growth as guaranteed. Clearly separate current, verified performance from
-              opportunities that have not yet been implemented.
+              Do not present future growth as guaranteed. Clearly separate current performance that can be reasonably
+              supported from opportunities that have not yet been implemented.
             </InfoNote>
           </Inner>
         </Container>
@@ -1297,14 +1289,17 @@ export default function SellYourOnlineBusinessBangladeshPage() {
           <Inner>
             <SectionIntro eyebrow="A structured transaction" title="Know the payment status before transferring assets.">
               <p>
-                Do not begin the formal asset handover simply because a buyer says payment has been made. The
-                Transfer Room becomes available only after the required payment has been received and verified. For
-                payments made through Stripe or SSLCommerz, funds are held by Durqo itself until you approve the
-                transfer. Where Escrow.com is selected and available, it acts as an independent escrow provider, and
-                its own transaction terms and verification requirements apply.
+                Once the required payment has been received and verified, the order&rsquo;s Transfer Room becomes
+                available. For transactions processed through Stripe or SSLCommerz, the seller&rsquo;s payout remains
+                unavailable until the buyer approves the completed transfer or any reported issue is resolved. Stripe
+                and SSLCommerz are payment processors, not escrow providers. When Escrow.com is selected and
+                available, Escrow.com holds and releases the funds according to its own transaction terms.
               </p>
             </SectionIntro>
-            <WarningNote>You can check the payment status on your order&rsquo;s deal page before sharing any assets.</WarningNote>
+            <WarningNote>
+              Do not begin the asset handover simply because a buyer says payment has been made - check the payment
+              status on your order&rsquo;s deal page before sharing any assets.
+            </WarningNote>
             <div className="mt-6 grid gap-4 sm:grid-cols-3">
               {PAYMENT_STATUS_STEPS.map(({ icon: Icon, title, body }) => (
                 <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
@@ -1436,17 +1431,17 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               ))}
             </ol>
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {PAYOUT_METHODS.map(({ icon: Icon, label, tint, cap }) => (
+              {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
                 <div key={label} className="rounded-xl border border-rule bg-paper-raised p-4">
                   <Icon size={18} className={tint} />
                   <p className="mt-2 text-sm font-semibold text-ink">{label}</p>
-                  <p className="mt-0.5 text-[0.7rem] leading-snug text-ink-faint">{cap}</p>
                 </div>
               ))}
             </div>
             <p className="mt-4 text-xs leading-relaxed text-ink-faint">
-              Sellers can also withdraw via PayPal or Wise. The seller&rsquo;s verified legal name or verified
-              business name must match the payout account holder&rsquo;s name.
+              Sellers can also withdraw via PayPal or Wise. Available payout methods, limits and processing
+              requirements are shown in the Seller Dashboard and may vary by method. The seller&rsquo;s verified legal
+              name or verified business name must match the payout account holder&rsquo;s name.
             </p>
             <Link href="/buy-and-sell-digital-businesses-in-bdt" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
               View BDT payment and payout details
@@ -1464,16 +1459,19 @@ export default function SellYourOnlineBusinessBangladeshPage() {
               <p>
                 KYC identity verification is required before a seller&rsquo;s first withdrawal. This helps protect
                 seller earnings, prevent unauthorized payouts, and confirm that funds are sent to the correct
-                recipient. Durqo normally reviews submitted documents within 1-2 business days.
+                recipient. Accepted documents and review requirements can vary by country and verification provider.
               </p>
             </SectionIntro>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[{ icon: IdCard, label: "Passport" }, { icon: CreditCard, label: "National ID" }, { icon: Car, label: "Driving License" }, { icon: FileText, label: "Birth Certificate" }].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised p-4">
+              {KYC_METHODS.map(({ icon: Icon, label, note }) => (
+                <div key={label} className="flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-4">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
                     <Icon size={16} />
                   </span>
-                  <span className="text-sm font-medium text-ink">{label}</span>
+                  <div>
+                    <span className="block text-sm font-medium text-ink">{label}</span>
+                    <span className="block text-[0.7rem] leading-snug text-ink-faint">{note}</span>
+                  </div>
                 </div>
               ))}
             </div>
