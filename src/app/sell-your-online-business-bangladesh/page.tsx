@@ -154,6 +154,16 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 //
 // Oct 4, 2026 (ninth revision): centered the Overview card's icon, eyebrow
 // and paragraph (previously left-aligned in a left-icon/right-text row).
+//
+// Oct 4, 2026 (tenth revision): premium redesign of the Overview card's icon
+// and typography (the plain small badge and flat 0.95rem gray paragraph read
+// as generic). The icon is now a larger (56px) rounded-2xl badge with a
+// soft brand-tinted glow behind it, a subtle gradient fill and a brand ring
+// - all built from the existing brand/brand-soft tokens, not new colors.
+// The paragraph is set larger/darker (text-base/text-ink instead of
+// 0.95rem/text-ink-soft) for a more premium reading weight, with "Durqo"
+// highlighted in brand-strong on first mention, mirroring the hero H1's own
+// highlighted-word pattern.
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
   "Learn how to sell a website or digital business from Bangladesh, reach potential buyers in Bangladesh and other countries, transfer assets through a structured process and receive eligible sale proceeds in BDT.";
@@ -910,20 +920,21 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="border-b border-rule py-12 sm:py-14">
         <Container>
           <Inner>
-            <div className="flex flex-col items-center gap-4 rounded-2xl border border-rule bg-paper-raised p-6 text-center sm:p-7">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-strong">
-                <Compass size={18} />
-              </span>
-              <div>
-                <DashEyebrow center>Overview</DashEyebrow>
-                <p className="mx-auto max-w-[70ch] text-[0.95rem] leading-relaxed text-ink-soft">
-                  Durqo is built to support founders selling a digital business from Bangladesh and to help them reach
-                  potential buyers in Bangladesh and other countries. This guide walks through the obstacles sellers in
-                  Bangladesh most often face, how Durqo&rsquo;s marketplace, review process, Transfer Room and local
-                  payout options address them, and everything else involved in preparing, listing, pricing and
-                  completing a sale.
-                </p>
+            <div className="rounded-2xl border border-rule bg-paper-raised p-8 text-center shadow-[var(--shadow-card)] sm:p-10">
+              <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center">
+                <span className="absolute inset-0 rounded-full bg-brand/15 blur-lg" aria-hidden />
+                <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-soft to-paper-raised text-brand-strong shadow-[var(--shadow-lift)] ring-1 ring-brand/15">
+                  <Compass size={24} strokeWidth={1.75} />
+                </span>
               </div>
+              <DashEyebrow center>Overview</DashEyebrow>
+              <p className="mx-auto max-w-[65ch] text-base leading-relaxed text-ink sm:text-[1.05rem]">
+                <span className="font-semibold text-brand-strong">Durqo</span> is built to support founders selling a
+                digital business from Bangladesh and to help them reach potential buyers in Bangladesh and other
+                countries. This guide walks through the obstacles sellers in Bangladesh most often face, how
+                Durqo&rsquo;s marketplace, review process, Transfer Room and local payout options address them, and
+                everything else involved in preparing, listing, pricing and completing a sale.
+              </p>
             </div>
           </Inner>
         </Container>
