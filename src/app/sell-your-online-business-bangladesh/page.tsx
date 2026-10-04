@@ -21,6 +21,7 @@ import {
   FileWarning,
   Gamepad2,
   Globe,
+  Globe2,
   Handshake,
   HelpCircle,
   IdCard,
@@ -164,6 +165,22 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 // 0.95rem/text-ink-soft) for a more premium reading weight, with "Durqo"
 // highlighted in brand-strong on first mention, mirroring the hero H1's own
 // highlighted-word pattern.
+//
+// Oct 4, 2026 (eleventh revision): full rebuild of the Overview section to
+// an exact approved mockup - a fixed-appearance (non-theme-reactive) split
+// card, max-w-1200px, rounded-[22px], border+shadow. Left panel is a fixed
+// navy (#0B1426) intro block (Globe2 icon in emerald #10B981, "Overview"
+// eyebrow, "A clearer way to sell from Bangladesh." heading, faint CSS-only
+// decorative circles at low opacity) occupying ~36% on desktop and stacking
+// above the right panel below 768px. Right panel is fixed white, the exact
+// approved paragraph, and three equal non-interactive benefit cards (Reach
+// potential buyers / Tracked asset transfer / Local BDT payouts) using
+// already-imported Users/ShieldCheck/Landmark icons on a soft-emerald
+// (#E3F7EF) fill with a white icon roundel. Colors are literal hex per the
+// mockup rather than the sitewide theme tokens, since this card is meant to
+// render identically regardless of light/dark site theme; contrast verified
+// AA (navy/white, navy-text-on-mint, emerald-on-white icon >=3:1). No other
+// section of the page was touched.
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
   "Learn how to sell a website or digital business from Bangladesh, reach potential buyers in Bangladesh and other countries, transfer assets through a structured process and receive eligible sale proceeds in BDT.";
@@ -917,26 +934,54 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       </nav>
 
       {/* OVERVIEW */}
-      <section className="border-b border-rule py-12 sm:py-14">
+      <section className="border-b border-rule py-10 sm:py-12">
         <Container>
-          <Inner>
-            <div className="rounded-2xl border border-rule bg-paper-raised p-8 text-center shadow-[var(--shadow-card)] sm:p-10">
-              <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center">
-                <span className="absolute inset-0 rounded-full bg-brand/15 blur-lg" aria-hidden />
-                <span className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-soft to-paper-raised text-brand-strong shadow-[var(--shadow-lift)] ring-1 ring-brand/15">
-                  <Compass size={24} strokeWidth={1.75} />
-                </span>
+          <div className="mx-auto max-w-[1200px] overflow-hidden rounded-[22px] border border-rule shadow-[var(--shadow-card)]">
+            <div className="flex flex-col md:flex-row md:items-stretch">
+              {/* Left: fixed-navy intro panel - 36% on desktop */}
+              <div className="relative overflow-hidden bg-[#0B1426] p-7 sm:p-10 md:flex md:w-[36%] md:shrink-0 md:flex-col md:justify-center lg:p-12">
+                <div className="pointer-events-none absolute inset-0" aria-hidden>
+                  <div className="absolute -right-14 -top-16 h-56 w-56 rounded-full border border-white/10" />
+                  <div className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border border-white/10" />
+                  <div className="absolute right-16 top-10 h-2 w-2 rounded-full border border-white/20" />
+                </div>
+                <div className="relative">
+                  <Globe2 size={28} strokeWidth={2} className="text-[#10B981]" />
+                  <p className="mono mb-3 mt-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70">
+                    <span className="h-px w-6 bg-[#10B981]" aria-hidden />
+                    Overview
+                  </p>
+                  <h2 className="text-[32px] font-bold leading-[1.15] text-white sm:text-[36px] lg:text-[40px]">
+                    A clearer way to sell from Bangladesh.
+                  </h2>
+                </div>
               </div>
-              <DashEyebrow center>Overview</DashEyebrow>
-              <p className="mx-auto max-w-[65ch] text-base leading-relaxed text-ink sm:text-[1.05rem]">
-                <span className="font-semibold text-brand-strong">Durqo</span> is built to support founders selling a
-                digital business from Bangladesh and to help them reach potential buyers in Bangladesh and other
-                countries. This guide walks through the obstacles sellers in Bangladesh most often face, how
-                Durqo&rsquo;s marketplace, review process, Transfer Room and local payout options address them, and
-                everything else involved in preparing, listing, pricing and completing a sale.
-              </p>
+
+              {/* Right: fixed-white description + benefit cards - 64% on desktop */}
+              <div className="bg-white p-7 sm:p-10 md:flex md:w-[64%] md:flex-1 md:flex-col md:justify-center lg:p-12">
+                <p className="text-base leading-relaxed text-[#64748B] sm:text-[1.05rem]">
+                  Durqo is built to support founders selling a digital business from Bangladesh and to help them
+                  reach potential buyers in Bangladesh and other countries. This guide explains the challenges
+                  sellers often face and how Durqo&rsquo;s marketplace, review process, Transfer Room and local
+                  payout options support each stage&mdash;from preparation and listing to transfer and payout.
+                </p>
+                <div className="mt-6 grid gap-3 md:grid-cols-3">
+                  {[
+                    { icon: Users, label: "Reach potential buyers" },
+                    { icon: ShieldCheck, label: "Tracked asset transfer" },
+                    { icon: Landmark, label: "Local BDT payouts" },
+                  ].map(({ icon: Icon, label }) => (
+                    <div key={label} className="flex items-center gap-3 rounded-xl bg-[#E3F7EF] p-4">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#10B981]">
+                        <Icon size={18} strokeWidth={2} />
+                      </span>
+                      <span className="text-sm font-semibold text-[#0B1426]">{label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </Inner>
+          </div>
         </Container>
       </section>
 
