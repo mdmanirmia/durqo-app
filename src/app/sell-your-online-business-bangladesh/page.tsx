@@ -10,8 +10,6 @@ import {
   ClipboardCheck,
   Compass,
   DollarSign,
-  Edit3,
-  Eye,
   FileSearch,
   FileText,
   Globe,
@@ -24,7 +22,6 @@ import {
   Repeat,
   Rocket as RocketGlyph,
   Scale,
-  Send,
   Settings,
   Share2,
   ShieldCheck,
@@ -132,6 +129,47 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 // Bangladesh" moved from paper-sunk to the default background, and "How
 // Durqo Works" moved from the default background to paper-sunk, so no two
 // consecutive sections still share a background.
+//
+// Oct 3, 2026 revision (scope-tightening pass, same day): direct feedback
+// that content had drifted from the page's own title and that the design
+// had become messy with gaps in several places. Three concrete fixes:
+//   - Removed the Stats Strip section outright (merchant pointed at it
+//     specifically and said it was not needed).
+//   - Removed the standalone "Inside the Transfer Room" walkthrough. It
+//     duplicated Step 07 of "How Selling on Durqo Works" below and the
+//     FAQ's own "What exactly is the Transfer Room?" answer, so cutting it
+//     tightens the page without losing any information — the FAQ answer and
+//     the /transfer-room link (now surfaced from Related Reading instead)
+//     still cover it.
+//   - Merged "Your buyer does not have to be in Bangladesh" into "Selling a
+//     digital business from Bangladesh": both were short, Bangladesh-
+//     specific asides (reach, then payments) sitting three sections apart,
+//     and the first read as a thin, mostly-empty section on its own. One
+//     combined section reads as a single BD-specific logistics section
+//     instead of two half-finished ones.
+// Reordered the remaining sections into a single pass that reads start to
+// finish as: is this sellable -> why people sell -> what determines value
+// -> think like a buyer -> prepare -> seller checklist -> (CTA) -> price it
+// -> what it costs -> how the process works -> build buyer trust -> selling
+// from Bangladesh specifically -> FAQ. The Seller Checklist moved up to sit
+// directly after Prepare Your Business (same "getting ready" cluster,
+// instead of being stranded near the bottom of the page), and the mid-page
+// CTA moved with it to mark the break between preparing and pricing/process.
+// No facts changed — only section order, section count, and one bug fix
+// below.
+// Background alternation was recalculated end to end for the new order
+// (Seller Checklist, Asking Price, Marketplace Fees, Building Buyer
+// Confidence, Selling from Bangladesh, and Related Reading all changed
+// which of paper-sunk/default they use) so no two consecutive sections
+// still share a background.
+// Also fixed a real layout bug in the Marketplace Fees footnote: it used
+// `flex` directly on a `<p>` that mixed plain text with an inline `<Link>`,
+// which splits each text/link run into its own flex column instead of
+// letting it wrap as one sentence — this is what rendered as the broken,
+// gappy "Applies to the full final sale price. See / Buy & Sell in BDT /
+// for payout details." layout. Fixed by switching to the same div-wraps-
+// icon-and-paragraph structure the working `InfoNote` component already
+// uses elsewhere on this page.
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
   "A practical guide for entrepreneurs in Bangladesh: how to prepare a website, SaaS, e-commerce, app or other digital business for sale, what buyers look for, and how to list it on Durqo.";
@@ -277,55 +315,6 @@ function InfoNote({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Same numbered-flow pattern already used on /durqo-bangladesh's own
-// Transfer Room zoom-in section (page-scoped here too, per this project's
-// "no shared-component churn" convention for one-off marketing pages).
-function NumberedFlow({ steps }: { steps: { title: string; body?: string; icon?: typeof Wallet }[] }) {
-  const n = steps.length;
-  const inset = (0.5 / n) * 100;
-  return (
-    <div>
-      <ol className="flex flex-col gap-6 md:hidden">
-        {steps.map((step, i) => (
-          <li key={step.title} className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">
-                {i + 1}
-              </span>
-              {i < n - 1 && <span className="mt-2 w-px flex-1 bg-rule" aria-hidden />}
-            </div>
-            <div className={step.body ? "pb-1" : "pb-1 pt-2"}>
-              <h4 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
-                {step.icon && <step.icon size={14} className="shrink-0 text-brand-strong" />}
-                {step.title}
-              </h4>
-              {step.body && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <div className="relative hidden md:block">
-        <div className="absolute top-6 h-px bg-rule" style={{ left: `${inset}%`, right: `${inset}%` }} aria-hidden />
-        <ol className="flex gap-4">
-          {steps.map((step, i) => (
-            <li key={step.title} className="flex flex-1 flex-col items-center gap-3 text-center">
-              <span className="mono relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">
-                {i + 1}
-              </span>
-              <div>
-                <h4 className="flex items-center justify-center gap-1.5 text-sm font-semibold text-ink">
-                  {step.icon && <step.icon size={14} className="shrink-0 text-brand-strong" />}
-                  {step.title}
-                </h4>
-                {step.body && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </div>
-  );
-}
 
 const HERO_TRUST_ROW = [
   { icon: Globe, label: "Every digital business category" },
@@ -333,17 +322,6 @@ const HERO_TRUST_ROW = [
   { icon: Compass, label: "Present to buyers in Bangladesh and beyond" },
 ];
 
-// Every count here matches an already-published, verifiable fact elsewhere
-// on the site: 16 categories (src/lib/categories.ts), the 4 local BDT
-// payout methods and 7-day inspection window (both also on /durqo-bangladesh
-// and /transfer-room), and "Free to list" (already claimed in this page's
-// own hero tags and on /sell, /how-to-sell, /seller-faq).
-const STATS = [
-  { value: "16", label: "Digital business categories", icon: Layers },
-  { value: "4", label: "Local BDT payout methods", icon: Landmark },
-  { value: "7-Day", label: "Buyer inspection window", icon: ClipboardCheck },
-  { value: "Free", label: "To list, no upfront fee", icon: DollarSign },
-];
 
 // Same four seller payout methods, icons and brand tints as /durqo-bangladesh's
 // PAYOUT_METHODS (BkashIcon from PaymentIcons.tsx; Nagad/Rocket as tinted
@@ -356,27 +334,6 @@ const PAYOUT_METHODS = [
   { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
 ];
 
-// Traced to /transfer-room's own real action labels and TRANSFER_FLOW
-// (SELLER_STEPS/BUYER_STEPS in that same file) — the identical sequence
-// already used on /durqo-bangladesh's "Inside the Transfer Room" section.
-const TRANSFER_ROOM_STEPS = [
-  { title: "Mark In Progress", body: "As you start preparing each asset on the checklist for handover.", icon: Edit3 },
-  {
-    title: "Mark Submitted",
-    body: "Once it's handed over, with an optional reference note, such as a transfer code or login details.",
-    icon: Send,
-  },
-  {
-    title: "Buyer Marks Received",
-    body: "After checking the asset against what was agreed, inside the 7-day inspection window.",
-    icon: Eye,
-  },
-  {
-    title: "Buyer Approves, or Reports an Issue",
-    body: "Approving releases payment for that asset. Reporting an issue keeps payment held until Durqo's team reviews it.",
-    icon: CheckCircle2,
-  },
-];
 
 // Pulled near-verbatim from the live /seller-faq page's "Fees & getting
 // paid" and "Buyers & disputes" groups, trimmed to what a Bangladeshi seller
@@ -772,28 +729,6 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         </Container>
       </section>
 
-      {/* STATS STRIP */}
-      <section className="border-b border-rule bg-paper-raised py-10 sm:py-12">
-        <Container>
-          <Inner>
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-4">
-              {STATS.map(({ value, label, icon: Icon }, i) => (
-                <div
-                  key={label}
-                  className={`flex flex-col items-center px-2 text-center sm:items-start sm:border-l sm:border-rule sm:px-4 sm:text-left ${i === 0 ? "sm:border-l-0 sm:px-0" : ""}`}
-                >
-                  <span className="mb-2 grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={15} />
-                  </span>
-                  <p className="mono text-3xl font-bold tabular-nums text-brand-strong sm:text-4xl">{value}</p>
-                  <p className="mt-1 text-xs leading-snug text-ink-soft">{label}</p>
-                </div>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
       {/* IS YOUR BUSINESS SELLABLE */}
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
@@ -950,6 +885,33 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         </Container>
       </section>
 
+      {/* SELLER CHECKLIST */}
+      <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
+        <Container>
+          <Inner className="max-w-[900px]">
+            <div className="mb-8 max-w-[70ch]">
+              <DashEyebrow>Before you list</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Seller checklist.</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                Before listing, make sure you can clearly explain each of the following.
+              </p>
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-2">
+              {CHECKLIST_ITEMS.map((item) => (
+                <li key={item} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
+                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
+                  <span className="text-sm text-ink">{item}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-6 flex items-start gap-2 rounded-lg border border-rule bg-paper-raised p-4 text-xs leading-relaxed text-ink-faint">
+              <ShieldCheck size={14} className="mt-0.5 shrink-0 text-ink-faint" />
+              Do not make unsupported financial or performance claims.
+            </p>
+          </Inner>
+        </Container>
+      </section>
+
       {/* MID-PAGE CTA */}
       <section className="border-b border-rule bg-brand-strong py-14 text-center sm:py-16">
         <Container>
@@ -976,7 +938,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       </section>
 
       {/* ASKING PRICE */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[760px]">
             <DashEyebrow>Pricing</DashEyebrow>
@@ -1008,7 +970,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       </section>
 
       {/* MARKETPLACE FEES */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
             <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
@@ -1034,35 +996,18 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                     </div>
                   ))}
                 </dl>
-                <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
-                  <Info size={13} className="mt-0.5 shrink-0" />
-                  Applies to the full final sale price. See{" "}
-                  <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
-                    Buy &amp; Sell in BDT
-                  </Link>{" "}
-                  for payout details.
-                </p>
+                <div className="mt-4 flex items-start gap-2">
+                  <Info size={13} className="mt-0.5 shrink-0 text-ink-faint" />
+                  <p className="text-xs leading-relaxed text-ink-faint">
+                    Applies to the full final sale price. See{" "}
+                    <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+                      Buy &amp; Sell in BDT
+                    </Link>{" "}
+                    for payout details.
+                  </p>
+                </div>
               </div>
             </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* BUYERS OUTSIDE BANGLADESH */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[760px]">
-            <DashEyebrow>Reach</DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">Your buyer does not have to be in Bangladesh.</h2>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Digital businesses are not tied to one physical location, so a business built in Bangladesh can
-              potentially attract buyers from anywhere - your location does not have to limit who sees your
-              listing.
-            </p>
-            <InfoNote>
-              Presenting a business through a marketplace can give sellers an opportunity to make their listing
-              discoverable to a broader audience. This does not guarantee international buyer interest or a sale.
-            </InfoNote>
           </Inner>
         </Container>
       </section>
@@ -1113,30 +1058,8 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         </Container>
       </section>
 
-      {/* INSIDE THE TRANSFER ROOM */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[900px]">
-            <div className="mb-10 text-center">
-              <DashEyebrow center>Step 07, zoomed in</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">What happens inside the Transfer Room.</h2>
-              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
-                Every asset on the checklist, such as the domain, code, accounts or documents, moves through this
-                same handover sequence before the sale can close.
-              </p>
-            </div>
-            <NumberedFlow steps={TRANSFER_ROOM_STEPS} />
-            <div className="mt-8 text-center">
-              <Link href="/transfer-room" className="text-sm font-semibold text-brand-strong hover:underline">
-                See the full Transfer Room walkthrough
-              </Link>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
       {/* BUILDING BUYER CONFIDENCE */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[760px]">
             <DashEyebrow>Trust</DashEyebrow>
@@ -1164,17 +1087,25 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         </Container>
       </section>
 
-      {/* SELLING FROM BANGLADESH / BDT LINK */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      {/* SELLING FROM BANGLADESH */}
+      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[760px]">
             <DashEyebrow>Selling from Bangladesh</DashEyebrow>
             <h2 className="text-2xl sm:text-3xl">Selling a digital business from Bangladesh.</h2>
             <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-              Being based in Bangladesh does not complicate selling a digital business. Review Durqo&rsquo;s
-              current information on transaction methods, BDT payment and payout options, and verification
-              requirements before proceeding.
+              Being based in Bangladesh does not complicate selling a digital business. Digital businesses are
+              not tied to one physical location, so yours can potentially attract buyers from anywhere - your
+              location does not have to limit who sees your listing.
             </p>
+            <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+              Review Durqo&rsquo;s current information on transaction methods, BDT payment and payout options,
+              and verification requirements before proceeding.
+            </p>
+            <InfoNote>
+              Presenting a business through a marketplace can give sellers an opportunity to make their listing
+              discoverable to a broader audience. This does not guarantee international buyer interest or a sale.
+            </InfoNote>
             <div className="mt-5 flex flex-wrap gap-2">
               {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
                 <span
@@ -1205,33 +1136,6 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         </Container>
       </section>
 
-      {/* SELLER CHECKLIST */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
-        <Container>
-          <Inner className="max-w-[900px]">
-            <div className="mb-8 max-w-[70ch]">
-              <DashEyebrow>Before you list</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Seller checklist.</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Before listing, make sure you can clearly explain each of the following.
-              </p>
-            </div>
-            <ul className="grid gap-3 sm:grid-cols-2">
-              {CHECKLIST_ITEMS.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
-                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
-                  <span className="text-sm text-ink">{item}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-6 flex items-start gap-2 rounded-lg border border-rule bg-paper-raised p-4 text-xs leading-relaxed text-ink-faint">
-              <ShieldCheck size={14} className="mt-0.5 shrink-0 text-ink-faint" />
-              Do not make unsupported financial or performance claims.
-            </p>
-          </Inner>
-        </Container>
-      </section>
-
       {/* FAQ */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
@@ -1246,7 +1150,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       </section>
 
       {/* RELATED READING */}
-      <section className="border-b border-rule py-10">
+      <section className="border-b border-rule bg-paper-sunk py-10">
         <Container>
           <Inner>
             <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Keep exploring</p>
@@ -1256,6 +1160,7 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                 { href: "/valuation", label: "Free Business Valuation" },
                 { href: "/seller-faq", label: "Seller’s FAQ" },
                 { href: "/listing-review", label: "How Listings Are Reviewed" },
+                { href: "/transfer-room", label: "The Transfer Room" },
               ].map(({ href, label }) => (
                 <Link key={href} href={href} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
                   {label}
