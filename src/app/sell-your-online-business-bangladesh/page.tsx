@@ -151,6 +151,9 @@ import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
 //   - Related Resources links turned from plain text into bordered pill
 //     chips.
 //   - Final CTA footnote given an explicit text-center class.
+//
+// Oct 4, 2026 (ninth revision): centered the Overview card's icon, eyebrow
+// and paragraph (previously left-aligned in a left-icon/right-text row).
 const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
 const META_DESCRIPTION =
   "Learn how to sell a website or digital business from Bangladesh, reach potential buyers in Bangladesh and other countries, transfer assets through a structured process and receive eligible sale proceeds in BDT.";
@@ -907,13 +910,13 @@ export default function SellYourOnlineBusinessBangladeshPage() {
       <section className="border-b border-rule py-12 sm:py-14">
         <Container>
           <Inner>
-            <div className="flex flex-col gap-5 rounded-2xl border border-rule bg-paper-raised p-6 sm:flex-row sm:items-start sm:gap-6 sm:p-7">
+            <div className="flex flex-col items-center gap-4 rounded-2xl border border-rule bg-paper-raised p-6 text-center sm:p-7">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-strong">
                 <Compass size={18} />
               </span>
               <div>
-                <DashEyebrow>Overview</DashEyebrow>
-                <p className="max-w-[80ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                <DashEyebrow center>Overview</DashEyebrow>
+                <p className="mx-auto max-w-[70ch] text-[0.95rem] leading-relaxed text-ink-soft">
                   Durqo is built to support founders selling a digital business from Bangladesh and to help them reach
                   potential buyers in Bangladesh and other countries. This guide walks through the obstacles sellers in
                   Bangladesh most often face, how Durqo&rsquo;s marketplace, review process, Transfer Room and local
