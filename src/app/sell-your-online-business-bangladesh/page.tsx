@@ -817,8 +817,6 @@ export default function SellYourOnlineBusinessBangladeshPage() {
                     into one structured marketplace.
                   </p>
                 </div>
-                <p className="mt-3 text-xs font-medium uppercase tracking-wide text-ink-faint"
-                </p>
                 <div className="mt-8 flex flex-wrap gap-3">
                   <TrackedCta href="/sell" cta="hero_primary" size="lg">
                     List Your Business
