@@ -1,321 +1,110 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import type { Metadata } from "next";
 import {
-  ArrowRight,
-  Activity,
-  AlertTriangle,
-  ArrowRightLeft,
-  Bitcoin,
-  Boxes,
-  Calendar,
-  Car,
-  CheckCircle2,
-  ClipboardCheck,
-  ClipboardList,
-  Clock,
-  Compass,
-  CreditCard,
-  DollarSign,
-  Eye,
-  FileText,
-  FileWarning,
-  Gamepad2,
-  Globe,
-  Globe2,
-  Handshake,
-  HelpCircle,
-  IdCard,
-  Info,
-  Landmark,
-  Layers,
-  Link as LinkIcon,
-  Lock,
-  Mail,
-  MessagesSquare,
-  Network,
-  Package,
-  PlaySquare,
-  Repeat,
-  Rocket as RocketGlyph,
-  Send,
-  Settings,
   ShieldCheck,
-  ShoppingCart,
-  Share2,
-  Smartphone,
-  Sparkles,
-  TrendingUp,
-  Unlock,
-  UserPlus,
+  LineChart,
+  UserCheck,
+  MessageSquare,
+  ArrowRight,
+  CheckCircle2,
+  Search,
+  Package,
+  Coins,
+  LayoutGrid,
   Users,
-  Wallet,
 } from "lucide-react";
-import Container from "@/components/ui/Container";
-import GroupedFaq, { type FaqGroup } from "@/components/GroupedFaq";
-import { BkashIcon } from "@/components/icons/PaymentIcons";
+import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
+import { CATEGORY_ICONS } from "@/lib/category-icons";
+import { getPublishedListings, getSellerAndBuyerCount } from "@/lib/data/listings.server";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
-import TrackedCta, { ArticleViewTracker } from "./CtaTracking";
+import ListingCard from "@/components/ListingCard";
+import WishlistButton from "@/components/WishlistButton";
+import Container from "@/components/ui/Container";
+import Button from "@/components/ui/Button";
+import { fmtUSD } from "@/lib/format";
 
-// Oct 4, 2026 (fifth revision): accuracy/safety/consistency pass requested
-// after the fourth revision. Keeps that revision's design, section order,
-// anchor nav and content depth - this pass only corrects specific claims
-// against verified production behavior, not layout:
-//   - Seller Success Fee tiers (10% / 7% / 5%) - src/lib/fees.ts.
-//   - BDT payout methods - PAYOUT_METHODS in dashboard/seller/earnings/
-//     actions.ts and page.tsx; Bank Transfer, bKash, Nagad, Rocket, PayPal
-//     and Wise are all genuinely implemented and accepted by
-//     create_withdrawal_request() (supabase/migrations/053). Exact per-method
-//     caps are intentionally NOT hardcoded on this page - they live only in
-//     the Seller Dashboard, which reads the same production config this page
-//     would otherwise have to duplicate and could drift from.
-//   - KYC - Passport, National ID, Driving License and Birth Certificate are
-//     the four document options in dashboard/seller/verification/page.tsx's
-//     METHODS array (UI-equal standing), but this page intentionally uses
-//     more conservative copy for Birth Certificate (supporting document
-//     only, where permitted) as a legal/compliance choice, not a claim about
-//     the UI. KYC is enforced before a first withdrawal at the database
-//     level. The "reviewed within 1-2 business days" claim was checked
-//     against its actual operational backing (private, non-public storage
-//     bucket: confirmed, supabase/migrations/007; admin-only access via
-//     requireAdmin() + 1-hour signed URLs: confirmed; but NO audit trail of
-//     who viewed/approved a submission, and NO document-specific retention/
-//     deletion rule: both unconfirmed/not implemented) - so this page now
-//     points to the Seller Dashboard for current status instead of
-//     asserting a turnaround time the system doesn't track or enforce.
-//   - No formal offer/counter-offer feature exists anywhere in the
-//     checkout/listing code - Durqo is direct-purchase-at-listed-price.
-//     Nothing on this page describes negotiating a price.
-//   - Only Escrow.com is ever called an escrow provider (src/lib/escrow.ts,
-//     api/escrow/init); Stripe and SSLCommerz are payment processors, and
-//     their funds are held by Durqo itself until the buyer approves the
-//     transfer (matches /after-you-pay). Neither is ever called an escrow
-//     provider on this page.
-//   - Transfer Room inspection window - verified directly against the
-//     server-authoritative RPC (supabase/migrations/037, function
-//     transfer_item_mark_received): the 7-day window starts only once every
-//     agreed asset has been marked Received by the buyer, not on the first
-//     item. The page previously said "first item" - that was inaccurate to
-//     production and has been corrected everywhere it appeared on this page.
-//   - The 16 category tiles are the real CATEGORIES entries in
-//     src/lib/categories.ts.
-//   - Every internal link below is a real route in src/app.
-// No specific SDE multiple ranges are published (only that multiples are
-// commonly referenced, never authoritative), and no guarantee of a buyer, a
-// price, a timeframe, or a scam-free transaction is made anywhere on this
-// page.
-//
-// Oct 2026 (sixth revision): wording-consistency pass on top of the fifth
-// revision - no layout/section change except restyling the existing
-// Challenges grid (below) for clearer problem/solution contrast.
-//   - Every "payment is/was confirmed" phrasing replaced sitewide with the
-//     more precise "the required (full) payment has been received and
-//     verified" / "a partial or initial payment does not unlock asset
-//     transfer" - matches TRANSFER_ROOM_DETAILS' and the payment-status
-//     section's existing wording, now used consistently in the Challenges
-//     "Transferring assets safely" card, Step 07 of the selling process, the
-//     payment-status step cards, the pre-transfer checklist, the common-
-//     mistakes list, the payout journey and the Getting Paid section intro.
-//   - "...track and complete the asset transfer securely" (Challenges card)
-//     no longer implies an absolute security guarantee - reworded to
-//     "submit and track the agreed asset transfer through a structured
-//     process".
-//   - Remaining "worldwide" / "anywhere in the world" / "global buyer reach"
-//     phrasing (meta description, OG description, hero trust row, hero panel
-//     title, overview paragraph) replaced with the same "potential buyers in
-//     Bangladesh and other countries" framing already used in the hero panel
-//     body and the Challenges/FAQ sections, so the reach claim is consistent
-//     and no broader anywhere else on the page.
-//   - SELLER_CHALLENGES card grid (Challenges section) restyled only: each
-//     card now separates its problem (amber/gold tint, reusing WarningNote's
-//     existing bg-gold-soft token) from the Durqo solution (brand-green
-//     tint) as two distinct callouts instead of a single faint "Challenge"
-//     label, and the grid moved from 5 to 3 columns at desktop width so the
-//     taller cards have room. No copy content changed by this restyle beyond
-//     the wording fixes above.
-//
-// Oct 4, 2026 (seventh revision): removed the hero byline line ("Reviewed by
-// the Durqo Marketplace Team - Updated October 2026").
-//
-// Oct 4, 2026 (eighth revision): design/color polish pass, no copy changes.
-//   - InfoNote recolored from flat gray (bg-paper-sunk/text-ink-faint, which
-//     read as almost invisible) to the sky/sky-soft tokens already defined
-//     in globals.css and already used elsewhere on the site (see
-//     website-due-diligence-checklist-for-buyers/page.tsx) - not a new color.
-//   - Overview section wrapped in a card with an icon badge and an "Overview"
-//     eyebrow instead of a bare unstyled paragraph.
-//   - "Is your business sellable" and "Set an asking price" plain bullet
-//     lists converted to bordered check-icon cards (same pattern already
-//     used by this page's own Seller Checklist section).
-//   - SDE explainer wrapped in a card with an icon-badge heading.
-//   - Marketplace Fees card gained an icon badge on its header and its
-//     footnote recolored to match the InfoNote fix.
-//   - Related Resources links turned from plain text into bordered pill
-//     chips.
-//   - Final CTA footnote given an explicit text-center class.
-//
-// Oct 4, 2026 (ninth revision): centered the Overview card's icon, eyebrow
-// and paragraph (previously left-aligned in a left-icon/right-text row).
-//
-// Oct 4, 2026 (tenth revision): premium redesign of the Overview card's icon
-// and typography (the plain small badge and flat 0.95rem gray paragraph read
-// as generic). The icon is now a larger (56px) rounded-2xl badge with a
-// soft brand-tinted glow behind it, a subtle gradient fill and a brand ring
-// - all built from the existing brand/brand-soft tokens, not new colors.
-// The paragraph is set larger/darker (text-base/text-ink instead of
-// 0.95rem/text-ink-soft) for a more premium reading weight, with "Durqo"
-// highlighted in brand-strong on first mention, mirroring the hero H1's own
-// highlighted-word pattern.
-//
-// Oct 4, 2026 (eleventh revision): full rebuild of the Overview section to
-// an exact approved mockup - a fixed-appearance (non-theme-reactive) split
-// card, max-w-1200px, rounded-[22px], border+shadow. Left panel is a fixed
-// navy (#0B1426) intro block (Globe2 icon in emerald #10B981, "Overview"
-// eyebrow, "A clearer way to sell from Bangladesh." heading, faint CSS-only
-// decorative circles at low opacity) occupying ~36% on desktop and stacking
-// above the right panel below 768px. Right panel is fixed white, the exact
-// approved paragraph, and three equal non-interactive benefit cards (Reach
-// potential buyers / Tracked asset transfer / Local BDT payouts) using
-// already-imported Users/ShieldCheck/Landmark icons on a soft-emerald
-// (#E3F7EF) fill with a white icon roundel. Colors are literal hex per the
-// mockup rather than the sitewide theme tokens, since this card is meant to
-// render identically regardless of light/dark site theme; contrast verified
-// AA (navy/white, navy-text-on-mint, emerald-on-white icon >=3:1). No other
-// section of the page was touched.
-const META_TITLE = "How to Sell an Online Business from Bangladesh | Durqo";
-const META_DESCRIPTION =
-  "Learn how to sell a website or digital business from Bangladesh, reach potential buyers in Bangladesh and other countries, transfer assets through a structured process and receive eligible sale proceeds in BDT.";
-const OG_TITLE = "How to Sell an Online Business from Bangladesh";
-const OG_DESCRIPTION =
-  "A practical guide to preparing, listing, transferring and selling your digital business through Durqo—with buyer reach in Bangladesh and other countries and supported BDT payouts.";
-
+// Sep 8, 2026 (technical SEO pass, Section 3): explicit homepage metadata
+// rather than relying on the root layout's fallback title/description —
+// this is the one page whose title must match the spec's exact string
+// (a plain hyphen, not the layout's em dash), so it needs its own
+// unconditional `metadata` export instead of the layout's `title.template`
+// merging in. Visible content (the H1, Sep 16 2026: "Buy what's next. Sell
+// what you've built.") is unchanged here — this only affects the <head>
+// tag and the browser tab / link-preview text.
 export const metadata: Metadata = {
-  title: META_TITLE,
-  description: META_DESCRIPTION,
-  robots: { index: true, follow: true },
+  title: "Durqo - Buy and Sell Digital Businesses",
+  description:
+    "Discover reviewed websites, SaaS products, apps, e-commerce stores and other digital businesses for sale. Buy confidently or list your business on Durqo.",
+  alternates: { canonical: "https://www.durqo.com/" },
+  robots: { index: true, follow: true, "max-image-preview": "large" },
   openGraph: {
     type: "website",
     siteName: "Durqo",
-    title: OG_TITLE,
-    description: OG_DESCRIPTION,
-    url: "https://www.durqo.com/sell-your-online-business-bangladesh",
+    title: "Durqo - Buy and Sell Digital Businesses",
+    description: "Discover reviewed websites, SaaS products, apps, e-commerce stores and other digital businesses for sale.",
+    url: "https://www.durqo.com/",
+    images: [
+      {
+        url: "/og/durqo-home.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Durqo marketplace for buying and selling digital businesses",
+      },
+    ],
   },
-  twitter: { card: "summary_large_image", title: META_TITLE, description: META_DESCRIPTION },
-  alternates: { canonical: "https://www.durqo.com/sell-your-online-business-bangladesh" },
+  twitter: {
+    card: "summary_large_image",
+    title: "Durqo - Buy and Sell Digital Businesses",
+    description: "Discover reviewed digital businesses or list your business for sale on Durqo.",
+    images: ["/og/durqo-home.jpg"],
+  },
 };
 
-const PAGE_URL = "https://www.durqo.com/sell-your-online-business-bangladesh";
-const PAGE_TITLE = "How to Sell an Online Business from Bangladesh";
-const PUBLISHED_DATE = "2026-09-27";
-const MODIFIED_DATE = "2026-10-04";
-
-const BREADCRUMB_JSON_LD = {
+// Organization + WebSite JSON-LD (Section 13) — server-rendered on the
+// homepage only, using only information that's already publicly visible
+// elsewhere on the site: the support email appears on /contact, and the
+// Facebook/Instagram links are the same official, already-live ones in the
+// site footer. No private data, no invented fields. SearchAction points at
+// /buy?q=..., which is a real, stable, crawlable URL
+// (src/lib/marketplace-filters.ts reads the `q` param).
+//
+// Sep 14, 2026 (SEO fix): deliberately no `address` field. Durqo is an
+// online marketplace with no physical storefront — declaring a
+// schema.org PostalAddress here is exactly the kind of signal Google can
+// use to auto-generate an unwanted "local business" Knowledge Panel /
+// Business Profile entry (this is what produced the stray "Durqo Limited"
+// / "Durqo Marketplace Inc." Google Maps listings that had to be manually
+// removed). The correspondence address still appears as plain text on
+// /contact — that's fine; it's the structured-data declaration of a
+// physical place that caused the problem, not the address being visible
+// on the page.
+const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Home", item: "https://www.durqo.com" },
-    { "@type": "ListItem", position: 2, name: "Sell Your Online Business from Bangladesh", item: PAGE_URL },
-  ],
+  "@type": "Organization",
+  name: "Durqo",
+  url: "https://www.durqo.com",
+  logo: "https://www.durqo.com/android-chrome-512x512.png",
+  email: "support@durqo.com",
+  sameAs: ["https://www.facebook.com/Durqo", "https://www.instagram.com/durqomarketplace/"],
 };
 
-const DURQO_ORG = { "@type": "Organization", name: "Durqo Marketplace Team", url: "https://www.durqo.com" };
-
-const ARTICLE_JSON_LD = {
+const WEBSITE_JSON_LD = {
   "@context": "https://schema.org",
-  "@type": "Article",
-  headline: PAGE_TITLE,
-  description: META_DESCRIPTION,
-  author: DURQO_ORG,
-  publisher: DURQO_ORG,
-  datePublished: PUBLISHED_DATE,
-  dateModified: MODIFIED_DATE,
-  mainEntityOfPage: { "@type": "WebPage", "@id": PAGE_URL },
-  url: PAGE_URL,
+  "@type": "WebSite",
+  name: "Durqo",
+  url: "https://www.durqo.com",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://www.durqo.com/buy?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
 };
 
-// Plain-text mirror of EVERY question answered in FAQ_GROUPS below, and only
-// those questions - for the FAQPage structured-data block (JSON-LD can't
-// hold JSX). This was previously a larger, independently-maintained list
-// that had drifted from the visible accordion (some JSON-LD questions
-// weren't shown on the page at all, and some visible questions weren't in
-// the schema) - corrected so the two are exactly 1:1, same order, same
-// count. Keep both in sync on every future edit.
-const FAQ_PAIRS: { q: string; a: string }[] = [
-  {
-    q: "Can I sell a website from Bangladesh to an international buyer?",
-    a: "Yes. Once a listing is reviewed and published, it can be discovered by buyers browsing Durqo from Bangladesh or elsewhere. Being listed does not guarantee a specific buyer, price or timeframe.",
-  },
-  {
-    q: "What types of digital businesses can I sell?",
-    a: "Websites, e-commerce stores, SaaS products, AI apps and tools, Android and iOS apps, YouTube channels, social media accounts, domains, plugins, themes and extensions, Amazon stores and KDP businesses, service businesses, digital agencies, games, newsletters, startup businesses, and crypto or blockchain projects.",
-  },
-  {
-    q: "Does my business need to generate revenue?",
-    a: "Follow the category and information requirements shown when you create a listing. If a business does not yet generate revenue, explain its assets, audience, product and growth stage clearly so buyers can still evaluate it.",
-  },
-  {
-    q: "Is it free to create a listing?",
-    a: "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells.",
-  },
-  {
-    q: "Will international buyers actually see my listing?",
-    a: "A published listing is visible to buyers browsing Durqo from any country, alongside buyers in Bangladesh. Visibility does not guarantee buyer interest or a sale.",
-  },
-  {
-    q: "Can buyers submit offers I can negotiate?",
-    a: "Durqo currently uses a direct-purchase model rather than a formal offer and counter-offer system. Buyers can review the listing and contact the seller with relevant questions before deciding whether to purchase at the displayed price.",
-  },
-  {
-    q: "What happens during listing review?",
-    a: "Durqo checks a submitted listing for completeness, internal consistency and compliance with current requirements before publishing, and may request corrections or additional information first.",
-  },
-  {
-    q: "What does due diligence involve?",
-    a: "A buyer may review relevant financial, traffic, operational, ownership and asset information before completing a purchase. Share only what is accurate, relevant and lawful to disclose.",
-  },
-  {
-    q: "When should I begin transferring the business?",
-    a: "Only once the buyer's payment has been received and confirmed and the order's Transfer Room has opened. Do not hand over a domain, source code or accounts before that stage, even if a buyer says payment has been sent.",
-  },
-  {
-    q: "What exactly is the Transfer Room?",
-    a: "It's the private, order-specific space where you submit each agreed asset and the buyer reviews what's been delivered. Once every agreed asset has been marked Received, the buyer gets a 7-day inspection window to approve the transfer or report an issue.",
-  },
-  {
-    q: "What happens if the buyer reports an issue instead of approving?",
-    a: "Nothing is released automatically. Your payout stays on hold while Durqo's team reviews the available evidence and decides what happens next, and both sides may be asked for more information.",
-  },
-  {
-    q: "How can I receive my sale proceeds in Bangladesh?",
-    a: "Once the buyer approves the completed transfer and any required review is finished, eligible earnings appear in your Earnings & Withdrawals dashboard. You can request a withdrawal via Bank Transfer, bKash, Nagad or Rocket, alongside PayPal and Wise. See Buy and Sell Digital Businesses in BDT for the current conversion and limit details.",
-  },
-  {
-    q: "Is KYC required for sellers?",
-    a: "Yes, before your first withdrawal. Depending on your country and the verification provider's requirements, you may be able to verify using a Passport, National Identity Card or Driving Licence. A Birth Certificate may be accepted only as a supporting document where permitted.",
-  },
-  {
-    q: "Does my payout account name need to match my identity?",
-    a: "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification, and Durqo's team checks this by hand before approving a withdrawal.",
-  },
-  {
-    q: "How long does a payout take?",
-    a: "Durqo normally reviews and processes eligible payout requests within 3-5 business days. Your bank or mobile financial service provider may need additional time beyond that to credit the funds.",
-  },
-  {
-    q: "Does Durqo guarantee my business will sell?",
-    a: "No. Durqo provides a structured listing process and marketplace visibility, but it does not guarantee a buyer, a sale, a specific price, or how long a sale will take.",
-  },
-];
-
-const FAQ_JSON_LD = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: FAQ_PAIRS.map(({ q, a }) => ({
-    "@type": "Question",
-    name: q,
-    acceptedAnswer: { "@type": "Answer", text: a },
-  })),
-};
-
+// Small dash-prefixed eyebrow used throughout this redesign (Sep 6 2026),
+// distinct from the shared pill-style `.eyebrow` class (globals.css) that
+// SectionHeader still renders elsewhere in the app (e.g. /about) — kept as
+// a local, page-scoped helper rather than changing that shared component/
+// class, so no other page's heading style shifts as a side effect.
 function DashEyebrow({
   children,
   onDark = false,
@@ -337,646 +126,609 @@ function DashEyebrow({
   );
 }
 
-function Inner({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`mx-auto max-w-[1040px] ${className}`}>{children}</div>;
+// Compact "$1.4M" style formatter for the stats bar — deliberately without
+// a trailing "+" (unlike the design reference): rounding to one decimal
+// already makes this an approximation, and adding "+" on top would imply
+// "at least this much" when a listed value can just as easily round down.
+function fmtCompactUSD(n: number): string {
+  if (n >= 1_000_000) return "$" + (n / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (n >= 1_000) return "$" + (n / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  return fmtUSD(n);
 }
 
-function Dot({ children }: { children: React.ReactNode }) {
-  return (
-    <li className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
-      <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-ink-faint" aria-hidden />
-      {children}
-    </li>
-  );
-}
-
-function InfoNote({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-sky-soft px-3.5 py-3">
-      <Info size={14} className="mt-0.5 shrink-0 text-sky" />
-      <p className="text-xs leading-relaxed text-ink-soft">{children}</p>
-    </div>
-  );
-}
-
-function WarningNote({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-gold-soft px-3.5 py-3">
-      <AlertTriangle size={14} className="mt-0.5 shrink-0 text-[#92730F]" />
-      <p className="text-xs leading-relaxed text-[#6b5610]">{children}</p>
-    </div>
-  );
-}
-
-function SectionIntro({
-  eyebrow,
-  title,
-  children,
-}: {
-  eyebrow: React.ReactNode;
-  title: React.ReactNode;
-  children?: React.ReactNode;
-}) {
-  return (
-    <div className="mb-8 max-w-[70ch]">
-      <DashEyebrow>{eyebrow}</DashEyebrow>
-      <h2 className="text-2xl sm:text-3xl">{title}</h2>
-      {children && <div className="mt-3 flex flex-col gap-3 text-[0.95rem] leading-relaxed text-ink-soft">{children}</div>}
-    </div>
-  );
-}
-
-const GUIDE_NAV = [
-  { href: "#challenges", label: "Challenges" },
-  { href: "#preparing", label: "Preparing to Sell" },
-  { href: "#valuation", label: "Valuation" },
-  { href: "#process", label: "Selling Process" },
-  { href: "#transfer-room", label: "Transfer Room" },
-  { href: "#payouts", label: "Getting Paid" },
-  { href: "#fees", label: "Fees" },
-  { href: "#faq", label: "FAQ" },
-];
-
-const HERO_TRUST_ROW = [
-  { icon: Globe, label: "Reach potential buyers in Bangladesh and other countries" },
-  { icon: ShieldCheck, label: "Transfer every agreed asset through the Transfer Room" },
-  { icon: Wallet, label: "Request eligible sale proceeds through supported BDT payout methods" },
-];
-
-const HERO_PANEL_ITEMS = [
-  {
-    icon: Globe,
-    title: "Reach beyond Bangladesh",
-    body: "Make your approved listing available to potential buyers in Bangladesh and other countries.",
-  },
-  {
-    icon: DollarSign,
-    title: "No upfront listing fee",
-    body: "List your business for free. You only pay a success fee once your business sells.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Tracked asset transfer",
-    body: "Use the Transfer Room to submit and track the agreed asset handover after the required payment has been received and verified.",
-  },
-  {
-    icon: Wallet,
-    title: "BDT payout options",
-    body: "Request your sale proceeds in BDT via Bank Transfer, bKash, Nagad or Rocket.",
-  },
-];
-
-// The specific obstacles a founder selling from Bangladesh runs into,
-// paired with how Durqo's existing mechanics address each one. Every
-// "Durqo solution" half restates a real, already-live mechanic - nothing
-// new is being claimed here.
-const SELLER_CHALLENGES = [
-  {
-    icon: Globe,
-    title: "Reaching international buyers",
-    problem: "It can be difficult to find serious international buyers on your own, outside a handful of personal contacts or local groups.",
-    solution: "Once reviewed and published, your listing can be viewed by users browsing Durqo from Bangladesh and other countries.",
-  },
-  {
-    icon: Users,
-    title: "Building buyer confidence",
-    problem: "Buyers need clear information and some proof of legitimacy before they feel confident purchasing from a seller they have never met.",
-    solution: "A structured listing format and review process before it goes live help buyers evaluate your business on real information.",
-  },
-  {
-    icon: Wallet,
-    title: "Receiving payouts in BDT",
-    problem: "International payments can be complex to receive for sellers based in Bangladesh, without a suitable local method.",
-    solution: "Multiple BDT payout options - Bank Transfer, bKash, Nagad and Rocket - give you a direct way to receive your funds.",
-  },
-  {
-    icon: Lock,
-    title: "Transferring assets safely",
-    problem: "Sharing logins, code and other assets can be risky without a secure, tracked process - and before the required payment has been received and verified.",
-    solution: "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer. Use it to submit and track the agreed asset transfer through a structured process.",
-    link: { href: "#transfer-room", label: "How the Transfer Room works" },
-  },
-  {
-    icon: ClipboardCheck,
-    title: "Keeping the deal recorded",
-    problem: "Important details can get lost or disputed in informal chats spread across email, WhatsApp or Messenger.",
-    solution: "Buyer communication, payment status, the agreed asset list and delivery confirmation stay connected to the same order.",
-  },
-];
-
-const SELLABLE_SIGNS = [
-  "Clearly identified ownership",
-  "Transferable digital assets",
-  "Understandable operations",
-  "Accurate financial or audience information",
-  "A realistic asking price",
-  "A practical asset-transfer plan",
-  "No undisclosed ownership dispute",
-  "No platform restriction that prevents transfer",
-];
-
-// The 16 live listing categories from src/lib/categories.ts, verbatim.
-const BUSINESS_TYPES = [
-  { icon: Globe, label: "Websites" },
-  { icon: ShoppingCart, label: "E-commerce" },
-  { icon: PlaySquare, label: "YouTube Channels" },
-  { icon: Share2, label: "Social Media Accounts" },
-  { icon: Layers, label: "SaaS" },
-  { icon: Sparkles, label: "AI Apps & Tools" },
-  { icon: Smartphone, label: "Android & iOS Apps" },
-  { icon: RocketGlyph, label: "Startup Business" },
-  { icon: Boxes, label: "Plugins, Themes & Extensions" },
-  { icon: LinkIcon, label: "Domains" },
-  { icon: Package, label: "Amazon Stores & KDP" },
-  { icon: Handshake, label: "Service Business" },
-  { icon: Users, label: "Digital Agencies" },
-  { icon: Gamepad2, label: "Games" },
-  { icon: Mail, label: "Newsletters" },
-  { icon: Bitcoin, label: "Crypto & Blockchain" },
-];
-
-const WHY_FOUNDERS_SELL = [
-  { icon: Compass, text: "Start or fund another project" },
-  { icon: Layers, text: "Reduce the number of businesses being managed" },
-  { icon: Clock, text: "Step away from daily operations" },
-  { icon: DollarSign, text: "Free up capital" },
-  { icon: ArrowRightLeft, text: "Change career or business direction" },
-  { icon: Users, text: "Find an owner with the resources to expand it" },
-  { icon: TrendingUp, text: "Realize value from years of work" },
-];
-
-const BUYER_EVALUATION = [
-  { icon: DollarSign, title: "Revenue", body: "How much revenue does the business generate, and where does it come from?" },
-  { icon: Wallet, title: "Profit", body: "What remains after hosting, advertising, contractors, tools, fulfilment and other operating costs?" },
-  { icon: Repeat, title: "Revenue consistency", body: "Is revenue stable, growing, declining, recurring or seasonal?" },
-  { icon: Activity, title: "Traffic and audience", body: "Where do visitors, users, subscribers or customers come from?" },
-  { icon: Calendar, title: "Business age", body: "How long has the business been operating, and how much history can be reviewed?" },
-  { icon: TrendingUp, title: "Growth history", body: "How have revenue, profit, traffic, users or customers changed over time?" },
-  { icon: Clock, title: "Owner involvement", body: "How many hours does the current owner spend operating the business?" },
-  { icon: Users, title: "Customer concentration", body: "Does a large percentage of revenue depend on one customer or client?" },
-  { icon: Network, title: "Platform dependency", body: "Does the business depend heavily on Google, Amazon, Meta, YouTube, Shopify or another platform?" },
-  { icon: Package, title: "Transferable assets", body: "Which domains, files, accounts, content, code, contracts and operating materials will transfer?" },
-  { icon: AlertTriangle, title: "Risk", body: "What could reduce revenue, traffic, access or future performance?" },
-  { icon: Compass, title: "Growth opportunities", body: "What realistic opportunities could a new owner pursue?" },
-];
-
-const VALUE_FACTORS = [
-  "Historical revenue",
-  "Net profit",
-  "Revenue consistency",
-  "Growth trend",
-  "Business age",
-  "Traffic quality",
-  "Customer retention",
-  "Recurring revenue",
-  "Customer concentration",
-  "Platform dependency",
-  "Owner workload",
-  "Transferability",
-  "Documented processes",
-  "Business risk",
-  "Future opportunity",
-];
-
-// General, generalized mistakes commonly cited in digital-business M&A and
-// marketplace guidance - not Durqo-specific claims, no invented numbers.
-const COMMON_MISTAKES = [
-  { icon: Clock, title: "Preparing too late", body: "Waiting until the listing is created to organize financial records, analytics and ownership information can delay review and reduce buyer confidence." },
-  { icon: DollarSign, title: "Pricing on personal expectations", body: "A price that cannot be supported by profit, growth, assets or comparable performance may discourage serious buyers." },
-  { icon: AlertTriangle, title: "Hiding business risks", body: "A known problem that appears later during buyer review can cause more damage than disclosing it clearly from the beginning." },
-  { icon: FileWarning, title: "Unsupported financial claims", body: "Revenue and profit information should be accurate and reasonably supportable if a buyer asks for evidence." },
-  { icon: Boxes, title: "Mixing personal and business assets", body: "Personal email accounts, payment accounts and files can make a business more difficult to transfer cleanly." },
-  { icon: ClipboardList, title: "Not preparing an asset list", body: "Know exactly which domains, files, accounts, content, intellectual property and operating resources are included." },
-  { icon: Lock, title: "Sharing credentials too early", body: "Do not hand over passwords or control of the business before the required payment has been received and verified and the Transfer Room opens." },
-  { icon: MessagesSquare, title: "Moving the deal outside Durqo", body: "Important communications and asset-delivery records may be lost when a transaction moves to unrecorded personal channels." },
-  { icon: HelpCircle, title: "Treating interest as a completed sale", body: "Questions or expressions of interest do not mean a purchase has been completed - follow the order and payment status shown by Durqo." },
-  { icon: Handshake, title: "Failing to plan the handover", body: "Consider how the buyer will receive the domain, hosting, code, analytics and operating knowledge before the purchase occurs." },
-];
-
-const PREPARE_CATEGORIES = [
-  {
-    icon: DollarSign,
-    title: "Financial Information",
-    intro: "Include:",
-    items: ["Monthly and annual revenue", "Operating expenses", "Net profit", "Recurring expenses", "Revenue sources", "Refunds or chargebacks", "Seasonal changes", "Supporting records"],
-  },
-  {
-    icon: Activity,
-    title: "Traffic and Audience",
-    intro: "Include:",
-    items: ["Monthly visitors", "Traffic history", "Traffic sources", "Geographic distribution", "Organic and paid traffic", "Subscriber data", "Customer-acquisition channels", "Connected analytics where available"],
-  },
-  {
-    icon: Settings,
-    title: "Business Operations",
-    intro: "Include:",
-    items: ["Owner responsibilities", "Weekly and monthly workload", "Employees or contractors", "Suppliers", "Content process", "Customer support", "Marketing process", "Required software and tools"],
-  },
-  {
-    icon: Package,
-    title: "Ownership and Assets",
-    intro: "Include:",
-    items: ["Domain ownership", "Website files", "Source code", "Brand assets", "Content", "Social accounts", "Analytics", "Advertising accounts", "Customer information, where legally transferable", "Supplier information", "Operating documentation"],
-    note: "Only include assets that you own or have the legal and practical right to transfer.",
-  },
-  {
-    icon: AlertTriangle,
-    title: "Risks and Dependencies",
-    intro: "Include:",
-    items: ["Platform dependency", "Customer concentration", "Traffic concentration", "Supplier dependency", "Licensing restrictions", "Intellectual-property concerns", "Revenue decline", "Pending disputes", "Accounts that cannot legally be transferred"],
-  },
-];
-
-const CHECKLIST_ITEMS = [
-  "I have the legal right to sell this business.",
-  "I can clearly explain how it operates and generates revenue.",
-  "My revenue, profit and traffic information is accurate and supportable.",
-  "My asking price is based on real business information, not just what I hope to receive.",
-  "I have listed every asset included in the sale.",
-  "I know exactly how the domain, files, accounts and other assets will be transferred.",
-  "I have removed personal or confidential information from the public listing.",
-  "I have disclosed significant risks or dependencies rather than hiding them.",
-  "I understand the buyer will inspect everything before approving the transfer.",
-  "I will not share credentials before the required payment has been received and verified and the Transfer Room opens.",
-  "I understand KYC is required before my first withdrawal, and my payout account must match my verified name.",
-];
-
-const ASKING_PRICE_FACTORS = [
-  "Recent revenue and profit",
-  "Revenue stability",
-  "Growth or decline",
-  "Recurring income",
-  "Traffic quality",
-  "Customer concentration",
-  "Owner workload",
-  "Business age",
-  "Transferable assets",
-  "Platform and operational risks",
-  "Quality of financial records",
-  "Future opportunities",
-];
-
-type SellingStep = {
-  n: string;
-  icon: typeof FileText;
-  title: string;
-  body: string;
-  link?: { href: string; label: string };
+// A small number of hand-written, honest excerpts for specific listings
+// whose full overview reads awkwardly once cut to two lines — keyed by
+// title, and only ever used as an override of the real overview text, never
+// invented content. Anything not in this map falls back to `excerpt()`
+// below, which trims the listing's own real overview to a clean word
+// boundary (with CSS line-clamp-2 kept as a defensive fallback in the JSX
+// in case a browser renders the trimmed text wider than expected).
+const SPOTLIGHT_EXCERPTS: Record<string, string> = {
+  "PixelMind AI Design Studio": "AI-powered platform for creating on-brand marketing and social media assets.",
 };
 
-// Every step is phrased against the direct-purchase model Durqo actually
-// runs today - no "offer," "counter-offer" or negotiation language, since
-// no such feature exists in the checkout/listing code.
-const SELLING_STEPS: SellingStep[] = [
-  { n: "01", icon: UserPlus, title: "Create your seller account", body: "Register with your email address and confirm your account. Creating an account and submitting a listing does not require an upfront fee." },
-  { n: "02", icon: DollarSign, title: "Estimate your business value", body: "Use Durqo's free valuation tool as a starting reference, then choose an asking price you can explain using the business's revenue, profit, traffic and transferable assets.", link: { href: "/valuation", label: "Get a free valuation" } },
-  { n: "03", icon: FileText, title: "Build your listing", body: "Add the business description, category, financial information, traffic data, operating requirements, asking price and everything included in the sale." },
-  { n: "04", icon: ClipboardCheck, title: "Submit it for review", body: "Durqo reviews the listing for completeness, clarity and compliance with its current listing requirements, and may request corrections before publishing.", link: { href: "/listing-review", label: "How listings are reviewed" } },
-  { n: "05", icon: Globe, title: "Reach potential buyers", body: "Once approved, the listing becomes visible to buyers in Bangladesh and other countries. Interested buyers can review it and message you before deciding to purchase." },
-  { n: "06", icon: ShoppingCart, title: "Buyer completes the purchase", body: "The buyer pays the listed price through one of Durqo's supported payment methods. The required payment must be received and verified before the asset-transfer stage begins.", link: { href: "/payments", label: "View payment & withdrawal details" } },
-  { n: "07", icon: Handshake, title: "Transfer the agreed assets", body: "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer. Submit each agreed asset separately so the buyer can inspect and confirm what they have received.", link: { href: "#transfer-room", label: "How the Transfer Room works" } },
-  { n: "08", icon: Wallet, title: "Complete the sale and request payout", body: "After the buyer approves the completed transfer and any required review is finished, eligible earnings become available. Complete identity verification before your first withdrawal, then request payment." },
+function excerpt(text: string, maxChars = 108): string {
+  if (text.length <= maxChars) return text;
+  const cut = text.slice(0, maxChars);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut).trimEnd() + "…";
+}
+
+// The hero's review-process summary — one honest line describing Durqo's
+// marketplace-wide policy (see CONFIDENCE below), rendered as a single
+// nowrap line on wider screens and as an intentional 2-column grid (never
+// a lone wrapped item) below that, per the Sep 6 2026 refinement pass.
+const REVIEW_ITEMS = ["Listing reviewed", "Performance checked", "Seller verification available"];
+
+// Sep 13, 2026: "Complete the transfer" now names the real Asset Transfer
+// Room system (live for every payment channel — see
+// claude/asset-transfer-room-feasibility-addendum.md) instead of the vague
+// "move assets through our secure process" placeholder, so this homepage
+// summary stays consistent with /how-to-buy, /how-to-sell, /payments and
+// /terms.
+const STEPS = [
+  { icon: Search, title: "Explore or list", body: "Browse reviewed listings by category, or submit your own business for review." },
+  { icon: LineChart, title: "Review and connect", body: "Evaluate performance data, ask questions and connect directly with the seller." },
+  { icon: CheckCircle2, title: "Complete the transfer", body: "Once payment is made, buyer and seller move through a shared Transfer Room, where each asset is handed over, confirmed, and approved before ownership changes hands." },
 ];
 
-const LISTING_REVIEW_OUTCOMES = [
-  { icon: CheckCircle2, text: "Approved for publication" },
-  { icon: ArrowRightLeft, text: "Returned for corrections" },
-  { icon: HelpCircle, text: "Additional information requested" },
-  { icon: AlertTriangle, text: "Not approved under current listing requirements" },
+const CONFIDENCE = [
+  { icon: ShieldCheck, title: "Listing review", body: "Every listing is manually reviewed for accuracy, completeness and legitimacy before it goes live." },
+  { icon: UserCheck, title: "Seller verification", body: "Sellers can complete identity verification and earn a Verified badge on their profile." },
+  { icon: LineChart, title: "Performance data", body: "Revenue, traffic and SEO figures can be independently checked against Google Analytics, Search Console, SEMrush and Ahrefs." },
+  { icon: MessageSquare, title: "Secure communication", body: "Negotiate and share information directly through Durqo's private messaging, so nothing moves to unrecorded channels." },
 ];
 
-const BUYER_QUESTIONS = [
-  "Why are you selling?",
-  "How does the business generate revenue?",
-  "What are the largest expenses?",
-  "How much time does it require?",
-  "What assets are included?",
-  "Where does traffic come from?",
-  "Are any contractors or suppliers required?",
-  "What are the main risks?",
-  "How will the assets be transferred?",
-  "Will transition assistance be provided?",
-];
+// The assurance panel's bottom row deliberately says "Identity verification"
+// (the available process) rather than "Seller verified" (a completed-status
+// claim) — this is a general marketing panel, not scoped to any one logged-in
+// seller's actual verification status, so it must never imply every seller
+// on the marketplace already carries a Verified badge.
+const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Data checked"];
 
-const DUE_DILIGENCE_ITEMS = [
-  "Remove unnecessary personal information",
-  "Protect customer privacy",
-  "Use read-only or limited access where possible",
-  "Avoid sharing passwords",
-  "Follow applicable platform rules",
-  "Keep important communication connected to the transaction",
-];
+// Sep 2026: the stats bar (Active listings / Listed value / Sellers & Buyers)
+// and the featured spotlight below were silently going stale — `next build`
+// was prerendering "/" as a fully static route (no `searchParams`/other
+// dynamic API forced it dynamic the way `/buy` and `/listing/[slug]` already
+// are), so every visitor saw whatever numbers existed at the last deploy
+// until one of the handful of `revalidatePath("/")` calls elsewhere in the
+// app happened to fire. Forcing this route dynamic makes it recompute from
+// the live database on every request instead, matching `/buy` and
+// `/listing/[slug]`'s existing behavior — the safer fix than trying to find
+// and patch every mutation path that can change these counts.
+export const dynamic = "force-dynamic";
 
-const PAYMENT_STATUS_STEPS = [
-  { icon: CheckCircle2, title: "Payment received and verified", body: "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer." },
-  { icon: Unlock, title: "Transfer Room opens", body: "You can share your assets once the required payment has been received and verified in full." },
-  { icon: Send, title: "Seller delivers", body: "Complete the asset transfer through the Transfer Room." },
-];
+export default async function Home() {
+  const [listings, sellerAndBuyerCount] = await Promise.all([getPublishedListings(), getSellerAndBuyerCount()]);
 
-const TRANSFER_ROOM_STEPS = [
-  { n: "01", icon: Send, title: "Seller submits assets", body: "Share each agreed asset - domains, website files, source code, accounts and more - one at a time, inside the order's Transfer Room." },
-  { n: "02", icon: Eye, title: "Buyer reviews", body: "The buyer inspects what has been delivered. Once every agreed asset has been marked Received, a 7-day inspection window begins." },
-  { n: "03", icon: CheckCircle2, title: "Transfer completed", body: "Once satisfied, the buyer approves the transfer. If something is missing or does not match, they can report an issue instead." },
-];
+  // "Businesses gaining attention" — Sep 16 2026 change ("jei gulor price or
+  // profit sob theke beshi": show the listings whose price or profit is
+  // highest, not just whichever 3 were published most recently). Ranked by
+  // monthly profit first, since that's the stronger buyer-attention signal,
+  // falling back to price when profit is tied or unrecorded (e.g. a bare
+  // Domains listing) — same profit formula ListingCard/the hero spotlight
+  // already use, so "Profit/mo" on these cards matches this ranking.
+  const featuredProfit = (l: (typeof listings)[number]) => {
+    const revenue = l.quickStats.monthly_income as number | undefined;
+    if (revenue === undefined) return undefined;
+    const expenseTotal = l.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    return l.monthlyExpenses.length > 0 ? revenue - expenseTotal : revenue;
+  };
+  const featured = [...listings]
+    .sort((a, b) => {
+      const profitDiff = (featuredProfit(b) ?? -1) - (featuredProfit(a) ?? -1);
+      if (profitDiff !== 0) return profitDiff;
+      return (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price);
+    })
+    .slice(0, 3);
 
-const TRANSFER_ROOM_DETAILS = [
-  "The Transfer Room opens only after the required full payment has been received and verified. A partial or initial payment does not unlock asset transfer.",
-  "The seller sees exactly which assets are included in the transaction.",
-  "The seller submits each agreed asset separately, with enough detail for the buyer to identify and access it.",
-  "The buyer confirms each item as it arrives by marking it Received.",
-  "The buyer gets a 7-day inspection window once every agreed asset has been marked Received.",
-  "The buyer can approve the completed transfer once satisfied.",
-  "The buyer can report an issue instead if something is missing or doesn't match.",
-  "A reported issue keeps the seller's payout on hold while Durqo reviews the evidence.",
-  "Every submission, confirmation and report stays connected to the same order.",
-];
+  // getPublishedListings() intentionally includes sold listings too (so
+  // Sold badges/social proof can render on cards/tables sitewide — see that
+  // function's own comment). But every stats-bar number below is meant to
+  // describe the catalog a visitor can actually buy from right now, which
+  // is exactly what /buy's default "Available" filter shows (Sep 2026: a
+  // seller reported the homepage's "14 Active listings" not matching /buy's
+  // "11 listings" — the gap was these 3 already-sold rows). So every count
+  // and sum below is computed from `activeListings`, not the raw fetch —
+  // "Active listings," per-category tallies, listed value, and verified
+  // sellers all stay consistent with what /buy itself shows.
+  const activeListings = listings.filter((l) => l.status !== "sold");
 
-const TRANSFER_ROOM_PREVIEW_ROWS = [
-  { n: "1", label: "Assets submitted", status: "Completed", tone: "done" as const },
-  { n: "2", label: "Buyer reviewing", status: "In progress", tone: "active" as const },
-  { n: "3", label: "Transfer completed", status: "Pending", tone: "pending" as const },
-];
+  // Real per-category counts, computed from the same active set as the
+  // stats bar — no placeholder numbers, per the design brief, and no
+  // "3 listings" tile that turns into 2 the moment you click through to
+  // /buy's (published-only-by-default) category view.
+  const categoryCounts = new Map<string, number>();
+  for (const l of activeListings) {
+    categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
+  }
+  const totalListedValue = activeListings.reduce((sum, l) => sum + (l.discountedPrice ?? l.price), 0);
 
-// The full seller-payout journey, from sale to funds in hand - a partial
-// payment never creates a withdrawable balance, and KYC is a required step
-// before the first request, not an optional one.
-const PAYOUT_JOURNEY = [
-  "Sale payment is received and verified.",
-  "Transfer Room opens.",
-  "Seller submits the agreed assets.",
-  "Buyer inspects the assets.",
-  "Buyer approves, or reports an issue.",
-  "Any required review is completed.",
-  "Earnings become available in the dashboard.",
-  "Seller completes KYC before the first withdrawal.",
-  "Seller selects Bank Transfer, bKash, Nagad or Rocket.",
-  "Verified name is matched with the payout account.",
-  "Seller reviews the displayed payout information.",
-  "Withdrawal request is submitted.",
-  "Durqo reviews and processes the request (normally 3-5 business days).",
-  "The receiving bank or mobile financial service credits the account.",
-];
+  // Categories sorted by how much real inventory they carry — both the
+  // "Find your kind of opportunity" row (top 6) and the swap-in stat below
+  // lean on this real ordering rather than a fixed/declared order.
+  const categoriesByActivity = [...CATEGORIES].sort(
+    (a, b) => (categoryCounts.get(b.id) ?? 0) - (categoryCounts.get(a.id) ?? 0)
+  );
+  const topCategories = categoriesByActivity.slice(0, 6);
+  const activeCategoryCount = categoriesByActivity.filter((c) => (categoryCounts.get(c.id) ?? 0) > 0).length;
 
-// Limits are intentionally not hardcoded here - they live only in the
-// Seller Dashboard, which reads the same production withdrawal config this
-// page would otherwise have to duplicate and could drift from.
-const PAYOUT_METHODS = [
-  { icon: Landmark, label: "Bank Transfer", tint: "text-brand-strong" },
-  { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]" },
-  { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]" },
-  { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
-];
+  // Stats-bar 4th slot: Sep 17 2026 change ("Eita hobe Active Sellers and
+  // eitar value hobe marketplace e total seller er soman" — this tile
+  // should read "Active Sellers" and its value should equal the
+  // marketplace's total seller count). Replaced the old "Verified
+  // sellers" tile (which only counted `is_verified = true` profiles, often
+  // 0 since verification is opt-in) with a platform-wide registered-user
+  // count, regardless of verification status or whether they have a live
+  // listing yet — shown as-is, with no zero-count fallback, since it's now
+  // an honest headline number rather than a rare-to-be-zero trust stat.
+  //
+  // Sep 21 2026 follow-up ("eitar name change kore Sellers & Buyers diba.
+  // eita total buyer and seller er soman hobe" — rename the tile to
+  // "Sellers & Buyers" and its value should equal the combined total of
+  // buyers and sellers): swapped the seller-only count for
+  // `sellerAndBuyerCount` (`getSellerAndBuyerCount()`, profiles.role in
+  // ("buyer","seller")) and dropped the singular "Active Seller" form —
+  // the combined total realistically never lands on exactly 1.
+  const activeSellersStat = {
+    value: String(sellerAndBuyerCount),
+    label: "Sellers & Buyers",
+  };
 
-const KYC_FACTS = [
-  "KYC is required before your first withdrawal, not before creating a listing.",
-  "Depending on your country and the verification provider's requirements, you may be able to use a valid Passport, National Identity Card or Driving Licence. A Birth Certificate may be accepted only as a supporting document where permitted.",
-  "Upload clear photos of the document (front and back if applicable) along with your legal name as it appears on the ID.",
-  "Verification requirements and processing times depend on the selected verification method and whether additional review is required. The current status and any required action will appear in the Seller Dashboard.",
-  "The verified legal or business name must match the payout account.",
-  "Sensitive identity documents are never shown publicly on your listing.",
-];
+  // Featured opportunity (hero spotlight): Sep 16 2026 change ("emon list
+  // dekhabe jeitar revenue growth sob theke beshi but not sold, or income
+  // sob theke beshi but not sold" — never spotlight a listing that's
+  // already sold; among the live ones, prefer whichever is growing
+  // fastest, using the same real percentage from a listing's own recorded
+  // monthly income history that the trend badge below computes). Falls
+  // back to highest recorded income when no live listing has enough
+  // monthly history yet to compute a growth trend, and to price only as a
+  // last tiebreak so the pick stays deterministic.
+  const liveListings = listings.filter((l) => l.status !== "sold");
+  const spotlightGrowth = (l: (typeof listings)[number]) => {
+    const series = l.monthlyStats.map((m) => m.income).filter((v): v is number => typeof v === "number");
+    return series.length >= 2 && series[0] > 0 ? (series[series.length - 1] - series[0]) / series[0] : undefined;
+  };
+  const spotlightIncome = (l: (typeof listings)[number]) => {
+    const income = l.quickStats.monthly_income;
+    return typeof income === "number" && income > 0 ? income : undefined;
+  };
+  const spotlightPool = liveListings.length > 0 ? liveListings : listings;
+  const spotlight = [...spotlightPool].sort((a, b) => {
+    const growthDiff = (spotlightGrowth(b) ?? -Infinity) - (spotlightGrowth(a) ?? -Infinity);
+    if (growthDiff !== 0) return growthDiff;
+    const incomeDiff = (spotlightIncome(b) ?? -Infinity) - (spotlightIncome(a) ?? -Infinity);
+    if (incomeDiff !== 0) return incomeDiff;
+    return (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price);
+  })[0];
 
-const KYC_METHODS = [
-  { icon: IdCard, label: "Passport", note: "Primary identity document" },
-  { icon: CreditCard, label: "National Identity Card", note: "Primary identity document" },
-  { icon: Car, label: "Driving Licence", note: "Primary identity document where supported" },
-  { icon: FileText, label: "Birth Certificate", note: "Supporting document where permitted" },
-];
+  const spotlightRevenue = (spotlight?.quickStats.monthly_income as number | undefined) ?? 0;
+  const spotlightExpenseTotal = spotlight
+    ? spotlight.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+    : 0;
+  const spotlightProfit =
+    spotlight && spotlight.monthlyExpenses.length > 0 ? spotlightRevenue - spotlightExpenseTotal : spotlightRevenue;
 
-const RELATED_RESOURCES = [
-  { href: "/how-to-sell", label: "How Selling on Durqo Works" },
-  { href: "/valuation", label: "Free Business Valuation" },
-  { href: "/seller-faq", label: "Full Seller FAQ" },
-  { href: "/listing-review", label: "How Listings Are Reviewed" },
-  { href: "/transfer-room", label: "The Transfer Room" },
-  { href: "/payments", label: "Payments & Withdrawals" },
-  { href: "/buy-and-sell-digital-businesses-in-bdt", label: "Buy & Sell in BDT" },
-  { href: "/report-an-issue", label: "Reporting an Issue" },
-];
+  // Revenue-trend badge: a real percentage computed from the spotlight
+  // listing's own monthly stats (first vs. most recent data point) — never
+  // shown when there isn't enough real data to compute it honestly.
+  const spotlightSeries = (spotlight?.monthlyStats ?? [])
+    .map((m) => m.income)
+    .filter((v): v is number => typeof v === "number");
+  const spotlightTrendPercent =
+    spotlightSeries.length >= 2 && spotlightSeries[0] > 0
+      ? Math.round(((spotlightSeries[spotlightSeries.length - 1] - spotlightSeries[0]) / spotlightSeries[0]) * 100)
+      : null;
+  const sparkPoints = spotlightSeries.slice(-8);
+  const sparkMax = sparkPoints.length ? Math.max(...sparkPoints, 1) : 1;
+  // Proof of Income is entered as a 12-month series across this project's
+  // seller forms, so "Last 12 months" is accurate for a normal listing —
+  // but if a listing has a shorter recorded history for any reason, say so
+  // honestly instead of claiming a span that isn't really there.
+  const spotlightPeriodLabel = spotlightSeries.length >= 10 ? "Last 12 months" : "Recorded history";
 
-// Grouped for the FAQ accordion; kept in sync with FAQ_PAIRS above for the
-// FAQPage structured data. Facts corrected against the codebase research
-// cited in the top-of-file comment: no offer system, the real 7-day
-// inspection window, Escrow.com described accurately, PayPal/Wise included
-// since they are real supported payout methods.
-const FAQ_GROUPS: FaqGroup[] = [
-  {
-    heading: "Listing and eligibility",
-    items: [
-      { question: "Can I sell a website from Bangladesh to an international buyer?", answer: "Yes. Once a listing is reviewed and published, it can be discovered by buyers browsing Durqo from Bangladesh or elsewhere. Being listed does not guarantee a specific buyer, price or timeframe." },
-      { question: "What types of digital businesses can I sell?", answer: "Websites, e-commerce stores, SaaS products, AI apps and tools, Android and iOS apps, YouTube channels, social media accounts, domains, plugins, themes and extensions, Amazon stores and KDP businesses, service businesses, digital agencies, games, newsletters, startup businesses, and crypto or blockchain projects." },
-      { question: "Does my business need to generate revenue?", answer: "Follow the category and information requirements shown when you create a listing. If a business does not yet generate revenue, explain its assets, audience, product and growth stage clearly so buyers can still evaluate it." },
-      { question: "Is it free to create a listing?", answer: "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells." },
-    ],
-  },
-  {
-    heading: "Buyer communication and listing review",
-    items: [
-      { question: "Will international buyers actually see my listing?", answer: "A published listing is visible to buyers browsing Durqo from any country, alongside buyers in Bangladesh. Visibility does not guarantee buyer interest or a sale." },
-      { question: "Can buyers submit offers I can negotiate?", answer: "Durqo currently uses a direct-purchase model rather than a formal offer and counter-offer system. Buyers can review the listing and contact the seller with relevant questions before deciding whether to purchase at the displayed price." },
-      { question: "What happens during listing review?", answer: "Durqo checks a submitted listing for completeness, internal consistency and compliance with current requirements before publishing, and may request corrections or additional information first." },
-      { question: "What does due diligence involve?", answer: "A buyer may review relevant financial, traffic, operational, ownership and asset information before completing a purchase. Share only what is accurate, relevant and lawful to disclose." },
-    ],
-  },
-  {
-    heading: "Payment, Transfer Room and disputes",
-    items: [
-      {
-        question: "When should I begin transferring the business?",
-        answer: (
-          <>
-            Only once the buyer&rsquo;s payment has been received and confirmed and the order&rsquo;s Transfer Room
-            has opened. <strong>Do not hand over a domain, source code or accounts before that stage</strong>, even
-            if a buyer says payment has been sent.
-          </>
-        ),
-      },
-      {
-        question: "What exactly is the Transfer Room?",
-        answer: (
-          <>
-            It&rsquo;s the private, order-specific space where you submit each agreed asset and the buyer reviews
-            what&rsquo;s been delivered. Once every agreed asset has been marked Received, the buyer gets a{" "}
-            <strong>7-day inspection window</strong> to approve the transfer or report an issue.
-          </>
-        ),
-      },
-      {
-        question: "What happens if the buyer reports an issue instead of approving?",
-        answer: (
-          <>
-            <strong>Nothing is released automatically.</strong> Your payout stays on hold while Durqo&rsquo;s team
-            reviews the available evidence and decides what happens next, and both sides may be asked for more
-            information.
-          </>
-        ),
-      },
-    ],
-  },
-  {
-    heading: "Payouts and verification",
-    items: [
-      {
-        question: "How can I receive my sale proceeds in Bangladesh?",
-        answer: (
-          <>
-            Once the buyer approves the completed transfer and any required review is finished, eligible earnings
-            appear in your Earnings &amp; Withdrawals dashboard. You can request a withdrawal via Bank Transfer,
-            bKash, Nagad or Rocket, alongside PayPal and Wise. See{" "}
-            <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
-              Buy and Sell Digital Businesses in BDT
-            </Link>{" "}
-            for the current conversion and limit details.
-          </>
-        ),
-      },
-      { question: "Is KYC required for sellers?", answer: "Yes, before your first withdrawal. Depending on your country and the verification provider's requirements, you may be able to verify using a Passport, National Identity Card or Driving Licence. A Birth Certificate may be accepted only as a supporting document where permitted." },
-      { question: "Does my payout account name need to match my identity?", answer: "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification, and Durqo's team checks this by hand before approving a withdrawal." },
-      { question: "How long does a payout take?", answer: "Durqo normally reviews and processes eligible payout requests within 3-5 business days. Your bank or mobile financial service provider may need additional time beyond that to credit the funds." },
-      { question: "Does Durqo guarantee my business will sell?", answer: "No. Durqo provides a structured listing process and marketplace visibility, but it does not guarantee a buyer, a sale, a specific price, or how long a sale will take." },
-    ],
-  },
-];
+  // Sep 6 2026: "Business types" used to be CATEGORIES.length (every category
+  // the app supports in code, currently 16) regardless of whether any of
+  // them actually had real listings — which read as inflated/misleading on
+  // a catalog where only Websites and E-commerce have real inventory so far.
+  // Switched to activeCategoryCount (computed above, same real per-category
+  // tallies the "Find your kind of opportunity" row already uses), so this
+  // number honestly reflects how many categories a visitor can actually buy
+  // from right now, and grows on its own as more categories get listings.
+  const statsBar = [
+    { icon: Package, value: String(activeListings.length), label: "Active listings" },
+    { icon: Coins, value: fmtCompactUSD(totalListedValue), label: "Listed value" },
+    { icon: LayoutGrid, value: String(activeCategoryCount), label: "Business types" },
+    { icon: Users, value: activeSellersStat.value, label: activeSellersStat.label },
+  ];
 
-export default function SellYourOnlineBusinessBangladeshPage() {
+  const spotlightDescription = spotlight
+    ? SPOTLIGHT_EXCERPTS[spotlight.title] ?? excerpt(spotlight.overview || "Not disclosed")
+    : "";
+
   return (
     <main>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(BREADCRUMB_JSON_LD) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ARTICLE_JSON_LD) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }} />
-      <ArticleViewTracker />
+      {/* Structured data only — no visible output. See Section 13. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
+      />
 
       {/* HERO */}
-      <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
-        <Container>
-          <Inner>
-            <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:items-start lg:gap-16">
-              <div className="min-w-0">
-                <DashEyebrow>Sell from Bangladesh</DashEyebrow>
-                <h1 className="max-w-[24ch] text-4xl leading-[1.1] sm:text-5xl lg:text-[3.2rem]">
-                  How to Sell an Online Business from <span className="text-brand">Bangladesh</span>
-                </h1>
-                <div className="mt-5 flex flex-col gap-4 text-lg leading-relaxed text-ink-soft">
-                  <p>
-                    Selling a digital business from Bangladesh can be challenging when you need to reach serious
-                    buyers, present reliable business information, transfer digital assets and receive your sale
-                    proceeds securely.
-                  </p>
-                  <p className="text-[1.05rem]">
-                    Durqo brings the listing, buyer communication, payment status, asset handover and payout process
-                    into one structured marketplace.
-                  </p>
-                </div>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <TrackedCta href="/sell" cta="hero_primary" size="lg">
-                    List Your Business
-                    <ArrowRight size={16} />
-                  </TrackedCta>
-                  <TrackedCta href="/valuation" cta="hero_secondary" variant="secondary" size="lg">
-                    Get a Free Valuation
-                  </TrackedCta>
-                </div>
-                <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-rule pt-6">
-                  {HERO_TRUST_ROW.map(({ icon: Icon, label }) => (
-                    <span key={label} className="flex items-center gap-2 text-sm text-ink-soft">
-                      <Icon size={15} className="text-brand" />
-                      {label}
-                    </span>
-                  ))}
-                </div>
+      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-20">
+        <div
+          className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
+          aria-hidden
+        />
+        <Container className="relative">
+          <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
+            <div>
+              <DashEyebrow>The marketplace for digital businesses</DashEyebrow>
+
+              <h1 className="text-4xl leading-[1.1] sm:text-5xl">
+                Buy what&rsquo;s next.
+                <br />
+                <span className="text-brand">Sell what you&rsquo;ve built.</span>
+              </h1>
+
+              <p className="mt-5 max-w-[50ch] text-lg leading-relaxed text-ink-soft">
+                Discover reviewed websites, SaaS products, apps and digital brands with the performance data you need
+                to move confidently.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button href="/buy" size="lg">
+                  Explore businesses
+                  <ArrowRight size={16} />
+                </Button>
+                <Button href="/sell" variant="secondary" size="lg">
+                  Sell your business
+                </Button>
               </div>
 
-              <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
-                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                  Selling from Bangladesh
-                </p>
-                {HERO_PANEL_ITEMS.map(({ icon: Icon, title, body }, i) => (
-                  <div key={title}>
-                    {i > 0 && <div className="my-5 h-px bg-rule" aria-hidden />}
+              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-rule pt-6">
+                {["Verified Listings", "Clear performance data", "Guided deal process"].map((label) => (
+                  <span key={label} className="flex items-center gap-1.5 text-xs font-medium text-ink-soft">
+                    <CheckCircle2 size={14} className="text-brand" />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Featured opportunity — loaded live from the same fetch as
+                the rest of the page; the two small badges below are real
+                data too (a computed revenue trend, and this marketplace's
+                actual review/verification process) rather than decorative
+                marketing numbers. */}
+            <div className="relative">
+              <div
+                className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-brand/10 blur-3xl sm:h-72 sm:w-72"
+                aria-hidden
+              />
+              <svg
+                className="pointer-events-none absolute -right-6 -top-6 hidden h-40 w-40 text-brand/20 sm:block"
+                viewBox="0 0 100 100"
+                fill="none"
+                aria-hidden
+              >
+                <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" />
+              </svg>
+
+              {spotlight ? (
+                <div className="relative lg:pr-5 lg:pt-4">
+                  <div className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.3)] sm:p-6 lg:mr-8">
+                    <span className="eyebrow mb-4">Featured opportunity</span>
                     <div className="flex items-start gap-3">
-                      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                        <Icon size={16} />
+                      <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand text-base font-bold text-white">
+                        {spotlight.title.charAt(0).toUpperCase()}
                       </span>
+                      <div className="min-w-0">
+                        <h3 className="truncate text-base font-semibold text-ink">{spotlight.title}</h3>
+                        <p className="mono text-xs uppercase tracking-wide text-ink-faint">
+                          {CATEGORY_MAP[spotlight.categoryId]?.name ?? spotlight.categoryId}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-soft">
+                      {spotlightDescription}
+                    </p>
+
+                    <div className="mono mt-4 grid grid-cols-3 gap-3 border-t border-rule pt-4 text-sm">
                       <div>
-                        <h3 className="text-sm font-semibold text-ink">{title}</h3>
-                        <p className="mt-1 text-xs leading-relaxed text-ink-soft">{body}</p>
+                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Revenue/mo</span>
+                        {fmtUSD(spotlightRevenue)}
+                      </div>
+                      <div>
+                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Profit/mo</span>
+                        {fmtUSD(spotlightProfit)}
+                      </div>
+                      <div>
+                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Age</span>
+                        {spotlight.businessAgeYears
+                          ? `${spotlight.businessAgeYears} ${spotlight.businessAgeYears <= 1 ? "Year" : "Years"}`
+                          : "New"}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between border-t border-rule pt-4">
+                      <span className="mono text-lg font-bold text-ink">
+                        {fmtUSD(spotlight.discountedPrice ?? spotlight.price)}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <WishlistButton listingId={spotlight.id} />
+                        <Link
+                          href={`/listing/${spotlight.slug}`}
+                          className="flex min-h-11 items-center rounded-lg bg-brand-strong px-3.5 py-2 text-xs font-semibold text-white hover:bg-navy-secondary"
+                        >
+                          View Listing
+                        </Link>
                       </div>
                     </div>
                   </div>
-                ))}
-                <InfoNote>A success fee applies only after a completed sale. See Marketplace Fees below.</InfoNote>
-              </div>
+
+                  {/* Revenue trend — computed from the spotlight listing's
+                      own monthly stats. The percentage only ever shows when
+                      there are at least two real recorded data points to
+                      compare; with a sparkline but no clean comparison, or
+                      with no history at all, this falls back to an honest
+                      label rather than a fabricated number. */}
+                  {(spotlightTrendPercent !== null || sparkPoints.length > 0) && (
+                    <div className="mt-4 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:absolute lg:-right-2 lg:-top-2 lg:mt-0">
+                      <div>
+                        {spotlightTrendPercent !== null ? (
+                          <>
+                            <p className="mono text-lg font-bold text-brand">
+                              {spotlightTrendPercent > 0 ? "+" : ""}
+                              {spotlightTrendPercent}%
+                            </p>
+                            <p className="text-[0.65rem] text-ink-faint">Revenue growth</p>
+                            <p className="text-[0.6rem] text-ink-faint">{spotlightPeriodLabel}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-[0.78rem] font-semibold leading-snug text-ink-soft">Revenue history</p>
+                            <p className="text-[0.65rem] text-ink-faint">{spotlightPeriodLabel}</p>
+                          </>
+                        )}
+                      </div>
+                      {sparkPoints.length > 0 && (
+                        <div className="flex h-8 items-end gap-0.5" aria-hidden>
+                          {sparkPoints.map((v, i) => (
+                            <span
+                              key={i}
+                              className="w-1 rounded-sm bg-brand"
+                              style={{ height: `${Math.max(15, (v / sparkMax) * 100)}%` }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Our review process — describes Durqo's actual policy
+                      (see "Confidence is built into every step" below), not
+                      a claim that this specific listing has completed every
+                      check, per the no-fake-verification brief. Renders as a
+                      single balanced line on lg+ screens (where the card has
+                      room) and as an intentional 2-column grid below that —
+                      never a lone item left to wrap by itself, per the
+                      Sep 6 2026 refinement pass. */}
+                  <div className="mt-4 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:mr-8">
+                    <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
+                      <ShieldCheck size={14} className="shrink-0 text-brand" />
+                      Our review process
+                    </p>
+                    <div className="mt-2.5 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:mt-2 lg:flex lg:flex-nowrap lg:items-center lg:gap-0">
+                      {REVIEW_ITEMS.map((t, i) => (
+                        <span
+                          key={t}
+                          className={`flex items-center gap-1.5 whitespace-nowrap text-[0.8rem] font-medium text-ink ${
+                            i === 2 ? "sm:col-span-2 lg:col-span-1" : ""
+                          }`}
+                        >
+                          <CheckCircle2 size={12} className="shrink-0 text-brand lg:hidden" aria-hidden />
+                          {i > 0 && (
+                            <span className="hidden text-ink-soft lg:mx-2.5 lg:inline" aria-hidden>
+                              ·
+                            </span>
+                          )}
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative rounded-2xl border border-dashed border-rule-strong bg-paper-raised p-10 text-center text-sm text-ink-faint">
+                  New listings are on their way. Check back soon.
+                </div>
+              )}
             </div>
-          </Inner>
+          </div>
         </Container>
       </section>
 
-      {/* IN THIS GUIDE - anchor nav */}
-      <nav aria-label="In this guide" className="border-b border-rule bg-paper-sunk">
+      {/* STATS BAR */}
+      <section className="bg-brand-strong py-7 sm:py-9">
         <Container>
-          <Inner>
-            <div className="scrollbar-none flex items-center gap-1 overflow-x-auto py-3">
-              <span className="mono mr-2 shrink-0 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
-                In this guide
-              </span>
-              {GUIDE_NAV.map(({ href, label }) => (
-                <a
-                  key={href}
-                  href={href}
-                  className="shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-ink-soft hover:bg-paper-raised hover:text-ink"
-                >
-                  {label}
-                </a>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </nav>
-
-      {/* OVERVIEW */}
-      <section className="border-b border-rule py-10 sm:py-12">
-        <Container>
-          <div className="mx-auto max-w-[1200px] overflow-hidden rounded-[22px] border border-rule shadow-[var(--shadow-card)]">
-            <div className="flex flex-col md:flex-row md:items-stretch">
-              {/* Left: fixed-navy intro panel - 36% on desktop */}
-              <div className="relative overflow-hidden bg-[#0B1426] p-7 sm:p-10 md:flex md:w-[36%] md:shrink-0 md:flex-col md:justify-center lg:p-12">
-                <div className="pointer-events-none absolute inset-0" aria-hidden>
-                  <div className="absolute -right-14 -top-16 h-56 w-56 rounded-full border border-white/10" />
-                  <div className="absolute -bottom-20 -left-12 h-44 w-44 rounded-full border border-white/10" />
-                  <div className="absolute right-16 top-10 h-2 w-2 rounded-full border border-white/20" />
-                </div>
-                <div className="relative">
-                  <Globe2 size={28} strokeWidth={2} className="text-[#10B981]" />
-                  <p className="mono mb-3 mt-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70">
-                    <span className="h-px w-6 bg-[#10B981]" aria-hidden />
-                    Overview
-                  </p>
-                  <h2 className="text-[32px] font-bold leading-[1.15] text-white sm:text-[36px] lg:text-[40px]">
-                    A clearer way to sell from Bangladesh.
-                  </h2>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
+            {statsBar.map(({ icon: Icon, value, label }) => (
+              <div key={label} className="flex items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
+                  <Icon size={19} />
+                </span>
+                <div className="min-w-0">
+                  <div className="mono truncate text-xl font-bold text-white sm:text-2xl">{value}</div>
+                  <div className="text-xs leading-snug text-white/60">{label}</div>
                 </div>
               </div>
+            ))}
+          </div>
+        </Container>
+      </section>
 
-              {/* Right: fixed-white description + benefit cards - 64% on desktop */}
-              <div className="bg-white p-7 sm:p-10 md:flex md:w-[64%] md:flex-1 md:flex-col md:justify-center lg:p-12">
-                <p className="text-base leading-relaxed text-[#64748B] sm:text-[1.05rem]">
-                  Durqo is built to support founders selling a digital business from Bangladesh and to help them
-                  reach potential buyers in Bangladesh and other countries. This guide explains the challenges
-                  sellers often face and how Durqo&rsquo;s marketplace, review process, Transfer Room and local
-                  payout options support each stage&mdash;from preparation and listing to transfer and payout.
+      {/* CATEGORIES */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <DashEyebrow>Explore</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Find your kind of opportunity</h2>
+            </div>
+            <Link href="/buy" className="flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-hover">
+              View all categories
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+            {topCategories.map((c, i) => {
+              const Icon = CATEGORY_ICONS[c.id];
+              const count = categoryCounts.get(c.id) ?? 0;
+              // Every tile shares the same default appearance now — the
+              // green border/background only ever appears on hover or
+              // keyboard focus. The leading tile is real inventory's most
+              // active category (topCategories is sorted by live listing
+              // count), so it earns a "Popular" label instead of looking
+              // pre-selected by default — and only when it genuinely has
+              // listings, never on an empty catalog.
+              const isPopular = i === 0 && count > 0;
+              return (
+                <Link
+                  key={c.id}
+                  href={`/buy/${c.id}`}
+                  data-reveal
+                  className="group relative flex flex-col items-center gap-2.5 rounded-xl border border-rule bg-paper-raised p-5 text-center transition hover:-translate-y-0.5 hover:border-brand hover:bg-brand-soft/40 hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:-translate-y-0.5 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+                >
+                  {isPopular && (
+                    <span className="absolute -top-2 right-3 rounded-full bg-brand px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide text-white">
+                      Popular
+                    </span>
+                  )}
+                  <span className="grid h-11 w-11 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand group-hover:text-white group-focus-visible:bg-brand group-focus-visible:text-white">
+                    <Icon size={19} />
+                  </span>
+                  <span className="text-sm font-semibold text-ink">{c.name}</span>
+                  <span className={`mono text-xs ${count > 0 ? "text-brand-hover" : "text-ink-faint"}`}>
+                    {count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "Coming soon"}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </Container>
+      </section>
+
+      {/* BUSINESSES GAINING ATTENTION */}
+      <section className="border-b border-rule py-14 sm:py-16">
+        <Container>
+          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <DashEyebrow>Featured listings</DashEyebrow>
+              <h2 className="text-2xl sm:text-3xl">Businesses gaining attention</h2>
+              <p className="mt-2 max-w-[60ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                A selection of opportunities currently drawing buyer interest.
+              </p>
+            </div>
+            <Button href="/buy" variant="secondary" className="min-h-11">
+              View all listings
+              <ArrowRight size={15} />
+            </Button>
+          </div>
+          {featured.length > 0 ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {featured.map((l) => (
+                <div key={l.id} data-reveal>
+                  <ListingCard listing={l} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="rounded-xl border border-dashed border-rule-strong py-16 text-center text-sm text-ink-faint">
+              No listings are published yet.
+            </p>
+          )}
+        </Container>
+      </section>
+
+      {/* FOR BUYERS / FOR SELLERS — kept compact and balanced (Sep 6 2026
+          refinement pass): both panels now carry the same content density
+          (a headline, one line of copy, a CTA, and a 3-4 line checklist),
+          rather than the buyer panel alone also carrying a decorative
+          chart card. The seller panel's checklist states Durqo's real,
+          published fee policy (see /sell and /terms — Success Fee section)
+          rather than a generic reassurance line. */}
+      <section className="py-12 sm:py-16">
+        <Container>
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="relative overflow-hidden rounded-2xl bg-brand-strong p-6 sm:p-8">
+              <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-brand/10 blur-3xl" aria-hidden />
+              <div className="relative">
+                <DashEyebrow onDark>For buyers</DashEyebrow>
+                <h3 className="text-3xl text-white">Acquire with a clearer picture.</h3>
+                <p className="mt-3 max-w-[42ch] text-white/70">
+                  Make smarter decisions with reviewed listings, transparent data and direct seller communication.
                 </p>
-                <div className="mt-6 grid gap-3 md:grid-cols-3">
+                <Button href="/buy" size="lg" className="mt-6">
+                  Browse opportunities
+                  <ArrowRight size={16} />
+                </Button>
+                <div className="mt-6 flex flex-col gap-2.5">
+                  {["Reviewed listings", "Performance data", "Direct seller communication"].map((t) => (
+                    <span key={t} className="flex items-center gap-2 text-sm text-white/80">
+                      <CheckCircle2 size={15} className="text-brand" />
+                      {t}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-[0.7rem] uppercase tracking-wide text-white/50">Better data. Smarter acquisitions.</p>
+                  <svg viewBox="0 0 200 56" className="mt-3 h-12 w-full text-brand" fill="none" aria-hidden>
+                    <polyline
+                      points="0,44 28,38 56,40 84,26 112,30 140,14 168,18 200,4"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl bg-brand-soft p-6 sm:p-8">
+              <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-brand/15 blur-3xl" aria-hidden />
+              <div className="pointer-events-none absolute -left-8 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-brand/10 blur-2xl" aria-hidden />
+              <div className="relative">
+                <DashEyebrow>For sellers</DashEyebrow>
+                <h3 className="text-3xl text-ink">Turn your business into an opportunity.</h3>
+                <p className="mt-3 max-w-[42ch] text-ink-soft">
+                  Reach qualified buyers and get a fair valuation for your digital business.
+                </p>
+                <Button href="/valuation" size="lg" className="mt-6">
+                  Get a free valuation
+                  <ArrowRight size={16} />
+                </Button>
+                <div className="mt-6 flex flex-col gap-2.5">
                   {[
-                    { icon: Users, label: "Reach potential buyers" },
-                    { icon: ShieldCheck, label: "Tracked asset transfer" },
-                    { icon: Landmark, label: "Local BDT payouts" },
-                  ].map(({ icon: Icon, label }) => (
-                    <div key={label} className="flex items-center gap-3 rounded-xl bg-[#E3F7EF] p-4">
-                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-[#10B981]">
-                        <Icon size={18} strokeWidth={2} />
-                      </span>
-                      <span className="text-sm font-semibold text-[#0B1426]">{label}</span>
-                    </div>
+                    "Free valuation",
+                    "No upfront listing fee",
+                    // Sourced from src/lib/fees.ts (the top tier is always
+                    // the highest Success Fee rate) rather than a hardcoded
+                    // "10%" literal, so this line can't drift from /sell,
+                    // /terms, and /contact if the schedule ever changes.
+                    `Success fee starting at ${fmtRate(SUCCESS_FEE_TIERS[0].rate)}, only when sold`,
+                    "Professional support from listing to close",
+                  ].map((t) => (
+                    <span key={t} className="flex items-center gap-2 text-sm text-ink-soft">
+                      <CheckCircle2 size={15} className="shrink-0 text-brand" />
+                      {t}
+                    </span>
                   ))}
                 </div>
               </div>
@@ -985,748 +737,147 @@ export default function SellYourOnlineBusinessBangladeshPage() {
         </Container>
       </section>
 
-      {/* BANGLADESH SELLER CHALLENGES */}
-      <section id="challenges" className="scroll-mt-16 border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
+      {/* HOW IT WORKS */}
+      <section id="how-it-works" className="scroll-mt-20 border-b border-rule py-14 sm:py-16">
         <Container>
-          <Inner>
-            <SectionIntro eyebrow="The challenge" title="Why selling a digital business from Bangladesh can be difficult.">
-              <p>
-                Bangladeshi founders can build valuable websites, e-commerce stores, SaaS products, apps and online
-                brands. The difficult part is often finding the right buyer and completing the transaction through a
-                process both sides can understand and trust.
-              </p>
-            </SectionIntro>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {SELLER_CHALLENGES.map(({ icon: Icon, title, problem, solution, link }) => (
-                <div
-                  key={title}
-                  className="group flex flex-col rounded-2xl border border-rule bg-paper-raised p-5 transition-all hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <span className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand-soft text-brand-strong transition-transform group-hover:scale-105">
-                    <Icon size={17} />
-                  </span>
-                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
-                  <div className="mt-3 flex flex-1 flex-col gap-2.5">
-                    <div className="flex items-start gap-1.5 rounded-lg bg-gold-soft/70 p-2.5">
-                      <AlertTriangle size={13} className="mt-0.5 shrink-0 text-[#92730F]" />
-                      <div>
-                        <p className="mono text-[0.6rem] font-semibold uppercase tracking-wider text-[#92730F]">
-                          Challenge
-                        </p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-[#6b5610]">{problem}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-1.5 rounded-lg bg-brand-soft/70 p-2.5">
-                      <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-brand-strong" />
-                      <div>
-                        <p className="mono text-[0.6rem] font-semibold uppercase tracking-wider text-brand-strong">
-                          Durqo solution
-                        </p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-ink">{solution}</p>
-                      </div>
-                    </div>
-                  </div>
-                  {link && (
-                    <a href={link.href} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline">
-                      {link.label}
-                      <ArrowRight size={12} />
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* IS YOUR BUSINESS SELLABLE */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="Where to start" title="Is your online business ready to sell?">
-              <p>
-                A digital business may be sellable when you have the legal right and practical ability to transfer
-                its essential assets to a new owner. The business does not need to be large, but a potential buyer
-                must be able to understand what is being sold, how it operates and what ownership will include.
-              </p>
-              <p className="font-medium text-ink">A stronger sale candidate normally has:</p>
-            </SectionIntro>
-            <div className="grid max-w-[760px] gap-3 sm:grid-cols-2">
-              {SELLABLE_SIGNS.map((s) => (
-                <div key={s} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
-                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
-                  <span className="text-sm leading-relaxed text-ink">{s}</span>
-                </div>
-              ))}
-            </div>
-            <InfoNote>
-              A listing application does not guarantee publication. Durqo may request clarification, supporting
-              information or corrections before approving a listing.
-            </InfoNote>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* WHAT YOU CAN SELL */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="What you can list" title="Sell different types of digital businesses.">
-              <p>
-                You can list a digital business when you have the legal right and practical ability to transfer the
-                included assets to a buyer. Durqo supports:
-              </p>
-            </SectionIntro>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {BUSINESS_TYPES.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-3 rounded-xl border border-rule bg-paper-raised p-4">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
-                  </span>
-                  <span className="text-sm font-medium text-ink">{label}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
-              A business does not necessarily need to be large, but the seller must accurately explain what is being
-              sold, what is included, and how ownership can be transferred. Not every submitted listing is approved.
-            </p>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* WHY FOUNDERS SELL */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="Why founders sell" title="Selling does not mean the business failed.">
-              <p>
-                Founders sell digital businesses for many legitimate reasons. Some want to fund a new project, reduce
-                their workload or realize part of the value they have created. Others may no longer have enough time
-                to operate the business, or believe a new owner can take it to its next stage.
-              </p>
-            </SectionIntro>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {WHY_FOUNDERS_SELL.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-start gap-3.5 rounded-xl border border-rule bg-paper-raised p-5">
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
-                  </span>
-                  <p className="text-sm font-medium leading-relaxed text-ink">{text}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-6 max-w-[70ch] text-sm leading-relaxed text-ink-soft">
-              Whatever the reason, a clear explanation helps buyers understand the seller&rsquo;s decision and
-              evaluate the opportunity more confidently.
-            </p>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* WHAT BUYERS EVALUATE */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="Buyer's perspective" title="Understand what buyers will review.">
-              <p>
-                A buyer is not purchasing only a website or account. They are evaluating the income, assets, risks,
-                workload and future potential connected to the complete business.
-              </p>
-            </SectionIntro>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {BUYER_EVALUATION.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
-                  </span>
-                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">{body}</p>
-                </div>
-              ))}
-            </div>
-            <InfoNote>
-              Do not present future growth as guaranteed. Clearly separate current performance that can be reasonably
-              supported from opportunities that have not yet been implemented.
-            </InfoNote>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* VALUATION */}
-      <section id="valuation" className="scroll-mt-16 border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[880px]">
-            <SectionIntro eyebrow="Valuation" title="What could your online business be worth?">
-              <p>
-                There is no single price formula that applies to every digital business. Buyers usually consider
-                profit, revenue quality, growth, risk, transferability and the amount of work required from the
-                owner.
-              </p>
-            </SectionIntro>
-            <ul className="grid gap-x-8 gap-y-2.5 sm:grid-cols-3">
-              {VALUE_FACTORS.map((f) => (
-                <Dot key={f}>{f}</Dot>
-              ))}
-            </ul>
-            <p className="mt-6 text-sm leading-relaxed text-ink-soft">
-              A credible asking price should be explainable using real business information. The amount a seller
-              hopes to receive is not, by itself, evidence of market value.
-            </p>
-            <div className="mt-6">
-              <TrackedCta href="/valuation" cta="valuation_cta">
-                Get a Free Valuation
-                <ArrowRight size={16} />
-              </TrackedCta>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* SDE EXPLANATION */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[760px]">
-            <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
-              <DashEyebrow>Pricing fundamentals</DashEyebrow>
-              <div className="flex items-center gap-2.5">
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-                  <DollarSign size={16} />
+          <div className="mb-10 text-center">
+            <DashEyebrow center>How it works</DashEyebrow>
+            <h2 className="text-2xl sm:text-3xl">A clearer path from discovery to transfer</h2>
+          </div>
+          <div className="relative grid gap-8 sm:grid-cols-3">
+            <div className="pointer-events-none absolute left-[8%] right-[8%] top-6 hidden h-px bg-rule sm:block" aria-hidden />
+            {STEPS.map(({ title, body }, i) => (
+              <div key={title} data-reveal className="relative flex flex-col items-start">
+                <span className="mono relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong ring-8 ring-paper">
+                  0{i + 1}
                 </span>
-                <h2 className="text-2xl sm:text-3xl">Understanding Seller&rsquo;s Discretionary Earnings.</h2>
+                <h4 className="text-base font-semibold text-ink">{title}</h4>
+                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
               </div>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Seller&rsquo;s Discretionary Earnings, commonly called SDE, is often used when evaluating smaller
-                owner-operated businesses. It starts with the business&rsquo;s net profit and may add back certain
-                owner-specific, personal or one-time expenses that a new owner would not reasonably be expected to
-                continue paying.
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-                SDE is intended to help a buyer understand the approximate financial benefit the business currently
-                provides to one owner-operator.
-              </p>
-              <WarningNote>
-                SDE is not the same as revenue, and an SDE multiple is not a guaranteed valuation. The appropriate
-                approach depends on the business model, financial records, growth, risk and buyer demand.
-              </WarningNote>
-            </div>
-          </Inner>
+            ))}
+          </div>
         </Container>
       </section>
 
-      {/* COMMON MISTAKES */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="Learn from others" title="Common mistakes that can weaken a sale.">
-              <p>These mistakes come up repeatedly across digital-business sales, regardless of the platform used to sell:</p>
-            </SectionIntro>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {COMMON_MISTAKES.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-gold-soft text-[#92730F]">
-                    <Icon size={16} />
-                  </span>
-                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">{body}</p>
-                </div>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
+      {/* CONFIDENCE / TRUST — left column carries its own visual weight now
+          via "The Durqo Review Standard" assurance panel (Sep 6 2026
+          refinement pass), instead of leaving a large empty area next to
+          the four detailed rows on the right. Desktop uses an explicit
+          42/58 split (via fr units, not percent, so the 64px column gap
+          doesn't push the two columns past 100% width); tablet drops to an
+          even 2-column split with a tighter gap; mobile stacks to one
+          column in document order (heading/paragraph, then the panel, then
+          the four rows).
 
-      {/* SELLER PREPARATION GUIDE */}
-      <section id="preparing" className="scroll-mt-16 border-b border-rule bg-paper-sunk py-14 sm:py-16 lg:py-20">
+          Oct 5, 2026: icon badges and the four right-column rows redesigned
+          for a more premium feel, on direct feedback that this section's
+          icons/design looked plain compared to the rest of the site. The
+          assurance panel's shield icon gained a gradient-filled ring badge
+          with a soft glow (reusing only the existing `brand` token already
+          used by the concentric rings), and the four CONFIDENCE rows moved
+          from flat `bg-white/10` icon squares separated by thin dividers to
+          individually bordered cards (`border-white/10 bg-white/[0.03]`)
+          with matching gradient/glow icon badges and a hover highlight.
+          Copy, section order and the 42/58 desktop split are unchanged. */}
+      <section className="relative overflow-hidden bg-brand-strong py-14 sm:py-16 lg:py-20">
         <Container>
-          <Inner>
-            <SectionIntro eyebrow="Before you list" title="Prepare your business before you list.">
-              <p>
-                A clear and well-supported listing helps buyers understand the opportunity and reduces avoidable
-                questions during the transaction.
-              </p>
-            </SectionIntro>
-            <div className="grid gap-5 sm:grid-cols-2">
-              {PREPARE_CATEGORIES.map(({ icon: Icon, title, intro, items, note }, i) => (
-                <div key={title} className={`rounded-xl border border-rule bg-paper-raised p-6 ${i === PREPARE_CATEGORIES.length - 1 ? "sm:col-span-2" : ""}`}>
-                  <div className="mb-3 flex items-center gap-2.5">
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-                      <Icon size={16} />
+          <div className="mx-auto max-w-[1240px]">
+            <div className="grid items-start gap-8 md:grid-cols-2 md:gap-x-8 lg:grid-cols-[0.42fr_0.58fr] lg:gap-x-16">
+              <div>
+                <DashEyebrow onDark>Our commitment</DashEyebrow>
+                <h2 className="text-2xl text-white sm:text-3xl">Confidence is built into every step.</h2>
+                <p className="mt-3 max-w-[46ch] text-[0.95rem] leading-relaxed text-white/65">
+                  Clear checks, verified signals and secure communication help buyers and sellers make informed
+                  decisions.
+                </p>
+
+                {/* Assurance panel — describes Durqo's real, available review
+                    process (see CONFIDENCE below for the fuller writeups),
+                    never a guarantee that every listing/seller has already
+                    completed every check. */}
+                <div className="relative mt-6 flex h-[240px] flex-col items-center justify-between gap-3 overflow-hidden rounded-xl border border-[rgba(148,163,184,0.25)] bg-white/[0.04] px-6 py-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-24px_40px_-28px_rgba(0,0,0,0.35)] lg:h-[310px] lg:py-8">
+                  <svg
+                    className="pointer-events-none absolute -bottom-10 -left-12 h-40 w-60 text-brand/10"
+                    viewBox="0 0 220 160"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path d="M-10 138 Q 40 98 90 138 T 230 128" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M-10 154 Q 50 118 100 154 T 230 144" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M-10 108 Q 30 78 80 113 T 230 98" stroke="currentColor" strokeWidth="1.5" />
+                  </svg>
+
+                  <p className="mono relative text-[0.68rem] font-semibold uppercase tracking-wider text-white/60">
+                    The Durqo review standard
+                  </p>
+
+                  <div className="relative flex h-24 w-24 shrink-0 items-center justify-center lg:h-28 lg:w-28">
+                    <span
+                      className="absolute inset-0 rounded-full bg-brand/15 blur-xl"
+                      aria-hidden
+                    />
+                    <span className="absolute inset-0 rounded-full border border-brand/30" aria-hidden />
+                    <span className="absolute inset-2 rounded-full border border-brand/22" aria-hidden />
+                    <span className="absolute inset-4 rounded-full border border-brand/16" aria-hidden />
+                    <span className="relative grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-brand/25 to-transparent ring-1 ring-inset ring-brand/30 lg:h-16 lg:w-16">
+                      <ShieldCheck size={32} strokeWidth={2} className="text-brand" />
                     </span>
-                    <h3 className="text-base font-semibold text-ink">{title}</h3>
                   </div>
-                  <p className="text-sm text-ink-soft">{intro}</p>
-                  <ul className="mt-3 grid gap-1.5 sm:grid-cols-2">
-                    {items.map((it) => (
-                      <Dot key={it}>{it}</Dot>
+
+                  <div className="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
+                    {REVIEW_STANDARD_ITEMS.map((t) => (
+                      <span key={t} className="flex items-center gap-1.5 text-sm font-medium text-white/80">
+                        <CheckCircle2 size={13} className="shrink-0 text-brand" />
+                        {t}
+                      </span>
                     ))}
-                  </ul>
-                  {note && <p className="mt-4 text-xs leading-relaxed text-ink-faint">{note}</p>}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
+              </div>
 
-      {/* SELLER CHECKLIST */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[760px]">
-            <SectionIntro eyebrow="Final check" title="Seller pre-listing checklist.">
-              <p>Before listing, make sure you can clearly answer yes to each of the following.</p>
-            </SectionIntro>
-            <ul className="flex flex-col gap-3">
-              {CHECKLIST_ITEMS.map((item) => (
-                <li key={item} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
-                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
-                  <span className="text-sm text-ink">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* REALISTIC ASKING PRICE */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[760px]">
-            <SectionIntro eyebrow="Pricing" title="Set an asking price you can support.">
-              <p>
-                An asking price should reflect the business&rsquo;s actual performance, assets, transferability and
-                risk. An unrealistically high price may reduce buyer interest, while a price set without reviewing
-                the business&rsquo;s value may result in the seller accepting less than the business could
-                reasonably justify.
-              </p>
-              <p className="font-medium text-ink">Before setting your asking price, consider:</p>
-            </SectionIntro>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {ASKING_PRICE_FACTORS.map((f) => (
-                <div key={f} className="flex items-start gap-2.5 rounded-lg border border-rule bg-paper-raised px-4 py-3.5">
-                  <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-brand-strong" />
-                  <span className="text-sm leading-relaxed text-ink">{f}</span>
-                </div>
-              ))}
-            </div>
-            <InfoNote>Durqo&rsquo;s valuation tool provides an initial estimate, not a guaranteed sale price.</InfoNote>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* COMPLETE SELLING PROCESS */}
-      <section id="process" className="scroll-mt-16 border-b border-rule py-14 sm:py-16 lg:py-20">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="Step by step" title="How to sell through Durqo from Bangladesh." />
-            <div className="grid gap-5 sm:grid-cols-2">
-              {SELLING_STEPS.map(({ n, icon: Icon, title, body, link }) => (
-                <div key={n} className="rounded-xl border border-rule bg-paper-raised p-6">
-                  <div className="mb-3 flex items-center gap-3">
-                    <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-sm font-bold text-brand-strong">
-                      {n}
+              <div className="flex flex-col gap-4">
+                {CONFIDENCE.map(({ icon: Icon, title, body }) => (
+                  <div
+                    key={title}
+                    data-reveal
+                    className="group flex gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors duration-200 hover:border-brand/30 hover:bg-white/[0.06]"
+                  >
+                    <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand/25 via-brand/10 to-transparent text-brand ring-1 ring-inset ring-white/10 shadow-[0_0_20px_-6px_rgba(16,185,129,0.5)] transition-transform duration-200 group-hover:scale-105">
+                      <Icon size={20} strokeWidth={2} />
                     </span>
-                    <div className="flex items-center gap-2">
-                      <Icon size={16} className="text-brand" />
-                      <h3 className="text-base font-semibold text-ink">{title}</h3>
+                    <div>
+                      <h4 className="text-sm font-semibold text-white">{title}</h4>
+                      <p className="mt-1 text-sm leading-relaxed text-white/65">{body}</p>
                     </div>
                   </div>
-                  <p className="text-sm leading-relaxed text-ink-soft">{body}</p>
-                  {link && (
-                    <a href={link.href} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-brand-strong hover:underline">
-                      {link.label}
-                      <ArrowRight size={12} />
-                    </a>
-                  )}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-            <div className="mt-10">
-              <TrackedCta href="/sell" cta="how_it_works_cta" size="lg">
-                Start Your Listing
+          </div>
+        </Container>
+      </section>
+
+      {/* FINAL CTA — trimmed to a compact ~280-320px band on desktop
+          (Sep 6 2026 refinement pass); content and both buttons unchanged. */}
+      <section className="relative overflow-hidden py-10 sm:py-11">
+        <div className="pointer-events-none absolute -bottom-20 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-brand/5 blur-3xl" aria-hidden />
+        <Container className="relative">
+          <div className="mx-auto max-w-[620px] text-center">
+            <span className="eyebrow mx-auto">Digital businesses. Real opportunities.</span>
+            <h2 className="mt-4 text-3xl sm:text-4xl">Ready to find your next opportunity?</h2>
+            <p className="mt-3 text-ink-soft">
+              Browse reviewed listings, or get a free valuation on the business you&rsquo;re ready to sell.
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <Button href="/buy" size="lg">
+                Explore businesses
                 <ArrowRight size={16} />
-              </TrackedCta>
+              </Button>
+              <Button href="/valuation" variant="secondary" size="lg">
+                Get a free valuation
+              </Button>
             </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* LISTING REVIEW */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[760px]">
-            <SectionIntro eyebrow="Before you go live" title="What happens before your listing is published?">
-              <p>
-                After the seller submits a listing, Durqo reviews it according to its current listing requirements.
-                The review may consider whether the information is complete, internally consistent, understandable
-                and suitable for the marketplace.
-              </p>
-            </SectionIntro>
-            <ul className="grid gap-x-8 gap-y-2.5 sm:grid-cols-2">
-              {LISTING_REVIEW_OUTCOMES.map(({ icon: Icon, text }) => (
-                <li key={text} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
-                  <Icon size={14} className="mt-0.5 shrink-0 text-brand-strong" />
-                  {text}
-                </li>
-              ))}
-            </ul>
-            <Link href="/listing-review" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
-              How Durqo reviews listings
-              <ArrowRight size={14} />
-            </Link>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* BUYER COMMUNICATION AND DUE DILIGENCE */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="Before the sale completes" title="Buyer communication and due diligence." />
-            <div className="grid gap-8 sm:grid-cols-2">
-              <div>
-                <h3 className="text-base font-semibold text-ink">Answer buyer questions clearly</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Potential buyers may contact the seller to understand the business before purchasing. Keep answers
-                  accurate, professional and consistent with the published listing. Buyers may ask:
-                </p>
-                <ul className="mt-3 flex flex-col gap-1.5">
-                  {BUYER_QUESTIONS.map((q) => (
-                    <Dot key={q}>{q}</Dot>
-                  ))}
-                </ul>
-                <WarningNote>
-                  Do not send passwords, identity documents, financial-account credentials or sensitive customer data
-                  through ordinary messages.
-                </WarningNote>
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-ink">Be ready for buyer review</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Before completing a purchase, a buyer may review relevant financial, traffic, operational,
-                  ownership and asset information. Provide only information that is accurate, relevant and lawful to
-                  share. Where sensitive records are required:
-                </p>
-                <ul className="mt-3 flex flex-col gap-1.5">
-                  {DUE_DILIGENCE_ITEMS.map((it) => (
-                    <Dot key={it}>{it}</Dot>
-                  ))}
-                </ul>
-                <InfoNote>
-                  Durqo&rsquo;s listing review is not a guarantee of the business&rsquo;s future performance and does
-                  not replace the buyer&rsquo;s own evaluation.
-                </InfoNote>
-              </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* PAYMENT STATUS */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="A structured transaction" title="Know the payment status before transferring assets.">
-              <p>
-                Once the required payment has been received and verified, the order&rsquo;s Transfer Room becomes
-                available. For transactions processed through Stripe or SSLCommerz, the seller&rsquo;s payout remains
-                unavailable until the buyer approves the completed transfer or any reported issue is resolved. Stripe
-                and SSLCommerz are payment processors, not escrow providers. When Escrow.com is selected and
-                available, Escrow.com holds and releases the funds according to its own transaction terms.
-              </p>
-            </SectionIntro>
-            <WarningNote>
-              Do not begin the asset handover simply because a buyer says payment has been made - check the payment
-              status on your order&rsquo;s deal page before sharing any assets.
-            </WarningNote>
-            <div className="mt-6 grid gap-4 sm:grid-cols-3">
-              {PAYMENT_STATUS_STEPS.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-5">
-                  <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
-                  </span>
-                  <h3 className="text-sm font-semibold text-ink">{title}</h3>
-                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">{body}</p>
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 rounded-xl border border-rule bg-paper-raised p-6">
-              <h3 className="text-base font-semibold text-ink">What happens if the buyer reports a problem?</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                If the buyer reports that an agreed asset is missing, inaccessible or materially different, your
-                payout remains on hold while the available transaction records and evidence are reviewed. You and the
-                buyer may be asked to provide additional information. Not every dispute is decided in the
-                seller&rsquo;s favor.
-              </p>
-              <Link href="/report-an-issue" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
-                Learn about reporting an issue
-                <ArrowRight size={14} />
-              </Link>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* TRANSFER ROOM */}
-      <section id="transfer-room" className="scroll-mt-16 border-b border-rule bg-ink py-14 text-white sm:py-16 lg:py-20">
-        <Container>
-          <Inner>
-            <div className="grid gap-10 lg:grid-cols-[55fr_45fr] lg:items-start lg:gap-16">
-              <div className="min-w-0">
-                <DashEyebrow onDark>Tracked asset handover</DashEyebrow>
-                <h2 className="text-2xl sm:text-3xl">Transfer the business through the Transfer Room.</h2>
-                <p className="mt-3 text-[0.95rem] leading-relaxed text-white/70">
-                  The Transfer Room connects the asset handover to the order. It provides a clear record of what the
-                  seller submits, what the buyer receives, and whether the transfer is approved or reported for
-                  review.
-                </p>
-                <div className="mt-7 flex flex-col gap-5">
-                  {TRANSFER_ROOM_STEPS.map(({ n, icon: Icon, title, body }) => (
-                    <div key={n} className="flex items-start gap-3.5">
-                      <span className="mono grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white/10 text-sm font-bold text-white">
-                        {n}
-                      </span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Icon size={14} className="text-white/70" />
-                          <h3 className="text-sm font-semibold text-white">{title}</h3>
-                        </div>
-                        <p className="mt-1 text-xs leading-relaxed text-white/70">{body}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <ul className="mt-7 flex flex-col gap-2 border-t border-white/10 pt-6">
-                  {TRANSFER_ROOM_DETAILS.map((d) => (
-                    <li key={d} className="flex items-start gap-2.5 text-xs leading-relaxed text-white/70">
-                      <CheckCircle2 size={13} className="mt-0.5 shrink-0 text-white/50" />
-                      {d}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-6 flex items-start gap-2.5 rounded-lg bg-white/10 px-3.5 py-3">
-                  <AlertTriangle size={14} className="mt-0.5 shrink-0 text-[#F2C94C]" />
-                  <p className="text-xs leading-relaxed text-white/70">
-                    Do not transfer the business only through personal email, WhatsApp, Facebook Messenger or another
-                    unrecorded channel. Keep the agreed asset handover and confirmation connected to the Durqo order.
-                  </p>
-                </div>
-                <Link href="/transfer-room" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-white hover:underline">
-                  Read the full Transfer Room guide
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
-
-              <div className="min-w-0 rounded-2xl bg-paper-raised p-6 text-ink shadow-lg sm:p-7">
-                <p className="mono mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                  <Lock size={13} />
-                  Transfer Room
-                </p>
-                <div className="flex flex-col gap-3">
-                  {TRANSFER_ROOM_PREVIEW_ROWS.map(({ n, label, status, tone }) => (
-                    <div key={n} className="flex items-center justify-between gap-3 rounded-lg border border-rule px-3.5 py-3">
-                      <div className="flex items-center gap-3">
-                        <span className="mono grid h-7 w-7 shrink-0 place-items-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
-                          {n}
-                        </span>
-                        <span className="text-sm font-medium text-ink">{label}</span>
-                      </div>
-                      <span
-                        className={`mono rounded-full px-2.5 py-1 text-[0.65rem] font-semibold ${
-                          tone === "done" ? "bg-brand-soft text-brand-strong" : tone === "active" ? "bg-gold-soft text-[#92730F]" : "bg-paper-sunk text-ink-faint"
-                        }`}
-                      >
-                        {status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-4 text-[0.7rem] leading-relaxed text-ink-faint">
-                  Example transfer for illustration - every real order gets its own Transfer Room with live status.
-                </p>
-              </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* SELLER PAYOUT IN BANGLADESH */}
-      <section id="payouts" className="scroll-mt-16 border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <SectionIntro eyebrow="Get paid in Bangladesh" title="Receiving sale proceeds in Bangladesh.">
-              <p>
-                A buyer&rsquo;s payment being received and verified does not immediately create a withdrawable seller
-                balance - it moves through the Transfer Room, inspection and review before becoming eligible. The
-                full journey from sale to funds in hand:
-              </p>
-            </SectionIntro>
-            <ol className="grid gap-2.5 sm:grid-cols-2">
-              {PAYOUT_JOURNEY.map((step, i) => (
-                <li key={step} className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-soft">
-                  <span className="mono mt-0.5 shrink-0 text-xs font-semibold text-brand-strong">{String(i + 1).padStart(2, "0")}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
-                <div key={label} className="rounded-xl border border-rule bg-paper-raised p-4">
-                  <Icon size={18} className={tint} />
-                  <p className="mt-2 text-sm font-semibold text-ink">{label}</p>
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 text-xs leading-relaxed text-ink-faint">
-              Sellers can also withdraw via PayPal or Wise. Available payout methods, limits and processing
-              requirements are shown in the Seller Dashboard and may vary by method. The seller&rsquo;s verified legal
-              name or verified business name must match the payout account holder&rsquo;s name.
-            </p>
-            <Link href="/buy-and-sell-digital-businesses-in-bdt" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
-              View BDT payment and payout details
-              <ArrowRight size={14} />
-            </Link>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* SELLER IDENTITY VERIFICATION */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[880px]">
-            <SectionIntro eyebrow="Before your first withdrawal" title="Seller KYC and payout-name verification.">
-              <p>
-                KYC identity verification is required before a seller&rsquo;s first withdrawal. This helps protect
-                seller earnings, prevent unauthorized payouts, and confirm that funds are sent to the correct
-                recipient. Accepted documents and review requirements can vary by country and verification provider.
-              </p>
-            </SectionIntro>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {KYC_METHODS.map(({ icon: Icon, label, note }) => (
-                <div key={label} className="flex items-start gap-3 rounded-xl border border-rule bg-paper-raised p-4">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
-                  </span>
-                  <div>
-                    <span className="block text-sm font-medium text-ink">{label}</span>
-                    <span className="block text-[0.7rem] leading-snug text-ink-faint">{note}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
-              {KYC_FACTS.map((f) => (
-                <Dot key={f}>{f}</Dot>
-              ))}
-            </ul>
-            <Link href="/payments" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-strong hover:underline">
-              Learn about payments and withdrawals
-              <ArrowRight size={14} />
-            </Link>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* MARKETPLACE FEES */}
-      <section id="fees" className="scroll-mt-16 border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
-              <div className="max-w-[60ch]">
-                <DashEyebrow>Clear pricing</DashEyebrow>
-                <h2 className="text-2xl sm:text-3xl">Pay a success fee only after a sale.</h2>
-                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                  There is no upfront charge to list your business, and no monthly subscription. Durqo deducts the
-                  applicable seller success fee only after a completed sale.
-                </p>
-              </div>
-              <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <div className="mb-4 flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-                    <DollarSign size={14} />
-                  </span>
-                  <p className="mono text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
-                </div>
-                <dl className="flex flex-col gap-3">
-                  {SUCCESS_FEE_TIERS.map((tier) => (
-                    <div key={tier.id} className="flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0">
-                      <dt className="text-sm text-ink-soft">{tier.label}</dt>
-                      <dd className="mono text-lg font-bold text-brand-strong">{fmtRate(tier.rate)}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <div className="mt-4 flex items-start gap-2 rounded-lg bg-sky-soft px-3 py-2.5">
-                  <Info size={13} className="mt-0.5 shrink-0 text-sky" />
-                  <p className="text-xs leading-relaxed text-ink-soft">
-                    The applicable percentage applies to the complete final sale price. See{" "}
-                    <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
-                      Buy &amp; Sell in BDT
-                    </Link>{" "}
-                    for payout details.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* FAQ */}
-      <section id="faq" className="scroll-mt-16 border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[760px]">
-            <SectionIntro eyebrow="Frequently asked questions" title="Seller questions, answered." />
-            <GroupedFaq groups={FAQ_GROUPS} />
-          </Inner>
-        </Container>
-      </section>
-
-      {/* RELATED RESOURCES */}
-      <section className="border-b border-rule py-10">
-        <Container>
-          <Inner>
-            <DashEyebrow>Related seller resources</DashEyebrow>
-            <div className="flex flex-wrap gap-2.5">
-              {RELATED_RESOURCES.map(({ href, label }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-rule bg-paper-raised px-4 py-2 text-sm font-semibold text-ink transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand-strong"
-                >
-                  {label}
-                  <ArrowRight size={14} />
-                </Link>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* FINAL CTA */}
-      <section className="bg-ink py-16 text-white sm:py-20">
-        <Container>
-          <Inner className="max-w-[700px] text-center">
-            <DashEyebrow onDark center>
-              Ready to sell?
-            </DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">Turn what you built into your next opportunity.</h2>
-            <p className="mx-auto mt-3 max-w-[54ch] text-sm text-white/70">
-              Prepare your business information, create your listing, and reach potential buyers through a structured
-              marketplace built for digital-business transactions.
-            </p>
-            <div className="mt-7 flex flex-wrap justify-center gap-3">
-              <TrackedCta href="/sell" cta="final_primary" size="lg">
-                List Your Business
-                <ArrowRight size={16} />
-              </TrackedCta>
-              <TrackedCta href="/valuation" cta="final_secondary" variant="on-dark" size="lg">
-                Get a Free Valuation
-              </TrackedCta>
-            </div>
-            <p className="mono mt-8 text-center text-xs uppercase tracking-wide text-white/40">
-              No upfront listing fee · Seller success fee applies only after a completed sale
-            </p>
-          </Inner>
+          </div>
         </Container>
       </section>
     </main>
