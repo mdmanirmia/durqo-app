@@ -7,6 +7,7 @@ import {
   MessageSquare,
   ArrowRight,
   CheckCircle2,
+  Check,
   Search,
   Package,
   Coins,
@@ -172,11 +173,20 @@ const STEPS = [
   { icon: CheckCircle2, title: "Complete the transfer", body: "Once payment is made, buyer and seller move through a shared Transfer Room, where each asset is handed over, confirmed, and approved before ownership changes hands." },
 ];
 
+// Oct 5, 2026 copy revision (mockup-matched redesign): titles/bodies
+// rewritten to match the approved mockup. Every claim stays hedged to a
+// real, available process rather than a completed-status guarantee —
+// "Supported listings can display..." (not every listing has analytics
+// connected; see the real GA-connect flow at
+// /dashboard/seller/listings/ga-connect), and "Identity and payout
+// verification help protect..." describes the real KYC + payout
+// name-match checks (see /dashboard/seller/verification) without implying
+// every seller has completed them.
 const CONFIDENCE = [
-  { icon: ShieldCheck, title: "Listing review", body: "Every listing is manually reviewed for accuracy, completeness and legitimacy before it goes live." },
-  { icon: UserCheck, title: "Seller verification", body: "Sellers can complete identity verification and earn a Verified badge on their profile." },
-  { icon: LineChart, title: "Performance data", body: "Revenue, traffic and SEO figures can be independently checked against Google Analytics, Search Console, SEMrush and Ahrefs." },
-  { icon: MessageSquare, title: "Secure communication", body: "Negotiate and share information directly through Durqo's private messaging, so nothing moves to unrecorded channels." },
+  { icon: ShieldCheck, title: "Listing review", body: "Listings are reviewed for completeness, clarity and compliance before publication." },
+  { icon: UserCheck, title: "Seller verification", body: "Identity and payout verification help protect seller accounts and withdrawals." },
+  { icon: LineChart, title: "Connected performance data", body: "Supported listings can display data verified through connected analytics sources." },
+  { icon: MessageSquare, title: "Private communication", body: "Buyers and sellers can ask questions and keep important deal discussions connected to Durqo." },
 ];
 
 // The assurance panel's bottom row deliberately says "Identity verification"
@@ -184,7 +194,7 @@ const CONFIDENCE = [
 // claim) — this is a general marketing panel, not scoped to any one logged-in
 // seller's actual verification status, so it must never imply every seller
 // on the marketplace already carries a Verified badge.
-const REVIEW_STANDARD_ITEMS = ["Listing reviewed", "Identity verification", "Data checked"];
+const REVIEW_STANDARD_ITEMS = ["Listings reviewed", "Identity verification", "Connected data"];
 
 // Sep 2026: the stats bar (Active listings / Listed value / Sellers & Buyers)
 // and the featured spotlight below were silently going stale — `next build`
@@ -759,96 +769,113 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* CONFIDENCE / TRUST — left column carries its own visual weight now
-          via "The Durqo Review Standard" assurance panel (Sep 6 2026
-          refinement pass), instead of leaving a large empty area next to
-          the four detailed rows on the right. Desktop uses an explicit
-          42/58 split (via fr units, not percent, so the 64px column gap
-          doesn't push the two columns past 100% width); tablet drops to an
-          even 2-column split with a tighter gap; mobile stacks to one
-          column in document order (heading/paragraph, then the panel, then
-          the four rows).
-
-          Oct 5, 2026: icon badges and the four right-column rows redesigned
-          for a more premium feel, on direct feedback that this section's
-          icons/design looked plain compared to the rest of the site. The
-          assurance panel's shield icon gained a gradient-filled ring badge
-          with a soft glow (reusing only the existing `brand` token already
-          used by the concentric rings), and the four CONFIDENCE rows moved
-          from flat `bg-white/10` icon squares separated by thin dividers to
-          individually bordered cards (`border-white/10 bg-white/[0.03]`)
-          with matching gradient/glow icon badges and a hover highlight.
-          Copy, section order and the 42/58 desktop split are unchanged. */}
+      {/* CONFIDENCE / TRUST — Oct 5, 2026 rebuild to match an exact
+          user-supplied mockup: a dotted grid + arc decoration on the dark
+          navy background, a document-stack illustration (replacing the
+          prior concentric-ring shield badge) in "The Durqo Review
+          Standard" panel, and the four right-column items as a 2x2 card
+          grid (replacing the previous single-column stacked rows) with
+          bordered/outlined icon badges (replacing the solid-fill badges
+          from the two prior passes, both rejected on feedback). Desktop
+          keeps the established 42/58 split (fr units, not percent, so the
+          column gap doesn't push past 100% width); mobile stacks to one
+          column, with the card grid dropping to a single column below the
+          `sm` breakpoint so nothing feels cramped. */}
       <section className="relative overflow-hidden bg-brand-strong py-14 sm:py-16 lg:py-20">
-        <Container>
+        {/* Decorative background — purely cosmetic, kept at very low
+            opacity so it never competes with the real content above it. */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden>
+          <svg className="absolute left-0 top-0 h-40 w-40 text-white/10" aria-hidden>
+            <pattern id="confidence-dots" width="16" height="16" patternUnits="userSpaceOnUse">
+              <circle cx="1.5" cy="1.5" r="1.5" fill="currentColor" />
+            </pattern>
+            <rect width="100%" height="100%" fill="url(#confidence-dots)" />
+          </svg>
+          <svg
+            className="absolute -right-10 -top-10 h-56 w-56 text-white/10 sm:h-64 sm:w-64"
+            viewBox="0 0 200 200"
+            fill="none"
+          >
+            <path d="M200 100A100 100 0 0 1 100 0" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+          <span className="absolute right-16 top-6 h-1.5 w-1.5 rounded-full bg-brand sm:right-20 sm:top-8" />
+          <span className="absolute bottom-10 left-6 h-1 w-1 rounded-full bg-white/20" />
+          <span className="absolute bottom-24 left-16 h-1 w-1 rounded-full bg-white/15" />
+        </div>
+
+        <Container className="relative">
           <div className="mx-auto max-w-[1240px]">
-            <div className="grid items-start gap-8 md:grid-cols-2 md:gap-x-8 lg:grid-cols-[0.42fr_0.58fr] lg:gap-x-16">
+            <div className="grid items-start gap-10 md:grid-cols-2 md:gap-x-10 lg:grid-cols-[0.42fr_0.58fr] lg:gap-x-16">
               <div>
                 <DashEyebrow onDark>Our commitment</DashEyebrow>
-                <h2 className="text-2xl text-white sm:text-3xl">Confidence is built into every step.</h2>
-                <p className="mt-3 max-w-[46ch] text-[0.95rem] leading-relaxed text-white/65">
-                  Clear checks, verified signals and secure communication help buyers and sellers make informed
-                  decisions.
+                <h2 className="text-4xl font-extrabold leading-[1.1] text-white sm:text-[2.75rem]">
+                  Confidence at every step.
+                </h2>
+                <p className="mt-4 max-w-[46ch] text-[0.95rem] leading-relaxed text-white/65">
+                  Clear review steps, verified signals and a tracked deal process help buyers and sellers make
+                  informed decisions.
                 </p>
 
                 {/* Assurance panel — describes Durqo's real, available review
                     process (see CONFIDENCE below for the fuller writeups),
                     never a guarantee that every listing/seller has already
                     completed every check. */}
-                <div className="relative mt-6 flex h-[240px] flex-col items-center justify-between gap-3 overflow-hidden rounded-xl border border-[rgba(148,163,184,0.25)] bg-white/[0.04] px-6 py-6 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-24px_40px_-28px_rgba(0,0,0,0.35)] lg:h-[310px] lg:py-8">
-                  <svg
-                    className="pointer-events-none absolute -bottom-10 -left-12 h-40 w-60 text-brand/10"
-                    viewBox="0 0 220 160"
-                    fill="none"
-                    aria-hidden
-                  >
-                    <path d="M-10 138 Q 40 98 90 138 T 230 128" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M-10 154 Q 50 118 100 154 T 230 144" stroke="currentColor" strokeWidth="1.5" />
-                    <path d="M-10 108 Q 30 78 80 113 T 230 98" stroke="currentColor" strokeWidth="1.5" />
-                  </svg>
-
-                  <p className="mono relative text-[0.68rem] font-semibold uppercase tracking-wider text-white/60">
+                <div className="relative mt-6 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                  <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-white/50">
                     The Durqo review standard
                   </p>
 
-                  <div className="relative flex h-24 w-24 shrink-0 items-center justify-center lg:h-28 lg:w-28">
-                    <span
-                      className="absolute inset-0 rounded-full bg-brand/15 blur-xl"
-                      aria-hidden
-                    />
-                    <span className="absolute inset-0 rounded-full border border-brand/30" aria-hidden />
-                    <span className="absolute inset-2 rounded-full border border-brand/22" aria-hidden />
-                    <span className="absolute inset-4 rounded-full border border-brand/16" aria-hidden />
-                    <span className="relative grid h-14 w-14 place-items-center rounded-full bg-gradient-to-br from-brand/25 to-transparent ring-1 ring-inset ring-brand/30 lg:h-16 lg:w-16">
-                      <ShieldCheck size={32} strokeWidth={2} className="text-brand" />
-                    </span>
-                  </div>
-
-                  <div className="relative flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-                    {REVIEW_STANDARD_ITEMS.map((t) => (
-                      <span key={t} className="flex items-center gap-1.5 text-sm font-medium text-white/80">
-                        <CheckCircle2 size={13} className="shrink-0 text-brand" />
-                        {t}
+                  <div className="mt-6 flex items-center gap-6">
+                    {/* Document-stack illustration — two offset "listing"
+                        cards with a checkmark badge overlapping the front
+                        one, standing in for a reviewed/approved document. */}
+                    <div className="relative h-20 w-20 shrink-0 sm:h-24 sm:w-24">
+                      <div
+                        className="absolute left-0 top-3 h-16 w-14 -rotate-6 rounded-lg border border-white/15 bg-white/[0.04] sm:h-20 sm:w-16"
+                        aria-hidden
+                      />
+                      <div className="absolute left-3 top-0 h-16 w-14 rounded-lg border border-white/15 bg-white/[0.07] p-2.5 sm:h-20 sm:w-16">
+                        <span className="block h-1 w-7 rounded-full bg-white/25 sm:w-8" />
+                        <span className="mt-1.5 block h-1 w-9 rounded-full bg-white/25 sm:w-10" />
+                        <span className="mt-1.5 block h-1 w-5 rounded-full bg-white/25 sm:w-6" />
+                      </div>
+                      <span className="absolute left-2 top-1 h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />
+                      <span className="absolute -bottom-1 right-0 grid h-8 w-8 place-items-center rounded-full bg-brand text-white shadow-[0_8px_16px_-6px_rgba(16,185,129,0.65)] sm:h-9 sm:w-9">
+                        <Check size={16} strokeWidth={2.5} />
                       </span>
-                    ))}
+                    </div>
+
+                    <div className="h-16 w-px shrink-0 bg-white/10 sm:h-20" aria-hidden />
+
+                    <div className="min-w-0 flex-1">
+                      {REVIEW_STANDARD_ITEMS.map((t, i) => (
+                        <div
+                          key={t}
+                          className={`flex items-center gap-2.5 py-2 ${
+                            i < REVIEW_STANDARD_ITEMS.length - 1 ? "border-b border-white/10" : ""
+                          }`}
+                        >
+                          <CheckCircle2 size={16} className="shrink-0 text-brand" />
+                          <span className="text-sm font-medium text-white/80">{t}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
                 {CONFIDENCE.map(({ icon: Icon, title, body }) => (
                   <div
                     key={title}
                     data-reveal
-                    className="group flex gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors duration-200 hover:border-brand/30 hover:bg-white/[0.06]"
+                    className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors duration-200 hover:border-white/20 hover:bg-white/[0.05]"
                   >
-                    <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand/25 via-brand/10 to-transparent text-brand ring-1 ring-inset ring-white/10 shadow-[0_0_20px_-6px_rgba(16,185,129,0.5)] transition-transform duration-200 group-hover:scale-105">
-                      <Icon size={20} strokeWidth={2} />
+                    <span className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-brand">
+                      <Icon size={20} strokeWidth={1.75} />
                     </span>
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">{title}</h4>
-                      <p className="mt-1 text-sm leading-relaxed text-white/65">{body}</p>
-                    </div>
+                    <h4 className="mt-4 text-base font-bold text-white">{title}</h4>
+                    <p className="mt-1.5 text-sm leading-relaxed text-white/60">{body}</p>
                   </div>
                 ))}
               </div>
