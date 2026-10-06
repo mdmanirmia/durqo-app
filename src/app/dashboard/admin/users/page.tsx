@@ -16,7 +16,7 @@ export default async function AdminUsers() {
     // show "—" for email here. listAllAuthUsers() (src/lib/notifications.ts)
     // pages through the full auth user list instead.
     const [{ data: profiles }, authUsers] = await Promise.all([
-      admin.from("profiles").select("id, full_name, role, is_verified, is_active, total_purchases, total_sales, created_at"),
+      admin.from("profiles").select("id, full_name, role, country, is_verified, is_active, total_purchases, total_sales, created_at"),
       listAllAuthUsers(admin),
     ]);
 
@@ -61,6 +61,7 @@ export default async function AdminUsers() {
         fullName: p.full_name ?? "-",
         role: p.role,
         joinedAs: joinedAsById.get(p.id) ?? null,
+        country: (p.country as string | null) ?? null,
         emailVerified: emailVerifiedById.get(p.id) ?? false,
         isVerified: p.is_verified,
         isActive: p.is_active ?? true,

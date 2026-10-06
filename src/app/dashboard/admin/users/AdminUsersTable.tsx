@@ -5,6 +5,7 @@ import { Trash2, UserPlus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
+import { countryFlagEmoji, countryName } from "@/lib/countries";
 import { setUserRole, setUserActive, inviteUser, deleteUnverifiedUsers, deleteVerifiedUsers } from "../actions";
 
 export interface AdminUserRow {
@@ -27,6 +28,11 @@ export interface AdminUserRow {
   // (see `view` below) instead of the main list, with their own bulk
   // delete rather than being treated as real accounts.
   emailVerified: boolean;
+  // Oct 6, 2026 ("admin portal e seller and buyer der country dekhar o
+  // bebostah koro"): profiles.country, ISO 3166-1 alpha-2 (migration 060),
+  // captured at signup since migration 061 or set later on Account Details.
+  // null for older accounts that never picked one.
+  country: string | null;
   isVerified: boolean;
   isActive: boolean;
   totalPurchases: number;
@@ -140,6 +146,26 @@ function roleSelect(
       {isSelf && <div className="mt-1 text-xs text-ink-faint">This is you</div>}
       {errorId === u.id && <div className="mt-1 text-xs text-danger">Couldn&rsquo;t update - try again.</div>}
     </>
+  );
+}
+
+// Country with its flag, shared by the desktop tables and mobile cards.
+function countryCell(u: AdminUserRow) {
+  const name = countryName(u.country);
+  if (!name) {
+    return (
+      <span className="text-xs text-ink-faint" title="No country on this profile yet">
+        Not set
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-ink-soft">
+      <span aria-hidden className="text-base leading-none">
+        {countryFlagEmoji(u.country)}
+      </span>
+      {name}
+    </span>
   );
 }
 
@@ -356,6 +382,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   </th>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">Country</th>
                   <th className="px-4 py-3 font-medium">Role</th>
                   <th className="px-4 py-3 font-medium">Joined As</th>
                   <th className="px-4 py-3 font-medium">Verified</th>
@@ -383,6 +410,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                       </td>
                       <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
                       <td className="px-4 py-3 text-ink-soft">{u.email}</td>
+                      <td className="px-4 py-3">{countryCell(u)}</td>
                       <td className="px-4 py-3">{roleSelect(u, busy, isSelf, errorId, changeRole)}</td>
                       <td className="px-4 py-3">{joinedAsBadge(u)}</td>
                       <td className="px-4 py-3 text-ink-soft">{u.isVerified ? "Yes" : "No"}</td>
@@ -428,6 +456,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                       {joinedAsBadge(u)}
                     </div>
                     <div>
+                      <div className="text-xs text-ink-faint">Country</div>
+                      <div>{countryCell(u)}</div>
+                    </div>
+                    <div>
                       <div className="text-xs text-ink-faint">Verified</div>
                       <div>{u.isVerified ? "Yes" : "No"}</div>
                     </div>
@@ -461,6 +493,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   </th>
                   <th className="px-4 py-3 font-medium">Name</th>
                   <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">Country</th>
                   <th className="px-4 py-3 font-medium">Joined As</th>
                   <th className="px-4 py-3 font-medium">Joined</th>
                 </tr>
@@ -473,6 +506,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                     </td>
                     <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
                     <td className="px-4 py-3 text-ink-soft">{u.email}</td>
+                    <td className="px-4 py-3">{countryCell(u)}</td>
                     <td className="px-4 py-3">{joinedAsBadge(u)}</td>
                     <td className="mono px-4 py-3 text-ink-faint">{u.createdAt}</td>
                   </tr>
@@ -500,6 +534,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   <div>
                     <div className="mb-1 text-xs text-ink-faint">Joined As</div>
                     {joinedAsBadge(u)}
+                  </div>
+                  <div>
+                    <div className="text-xs text-ink-faint">Country</div>
+                    <div>{countryCell(u)}</div>
                   </div>
                   <div>
                     <div className="text-xs text-ink-faint">Joined</div>
