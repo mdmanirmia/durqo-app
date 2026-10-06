@@ -36,7 +36,9 @@ const NAV = [
 //   gained a signed-in header, icons per dashboard, and Log out moved inside
 //   it (it was a separate bordered button next to the pill).
 // - Wishlist/cart icon buttons are round, 40px, with a softer hover.
-// - The bar gains a soft shadow once the page is scrolled.
+// - The bar gains a soft shadow once the page is scrolled. Background is
+//   fully opaque (a translucent/blurred version let dark sections show
+//   through while scrolling).
 function initials(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
@@ -219,7 +221,7 @@ export default function Header() {
   return (
     <header
       className={clsx(
-        "sticky top-0 z-40 border-b bg-paper-raised/85 backdrop-blur-md backdrop-saturate-150 transition-[box-shadow,border-color] duration-200",
+        "sticky top-0 z-40 border-b bg-paper-raised transition-[box-shadow,border-color] duration-200",
         scrolled ? "border-rule shadow-[0_4px_20px_-12px_rgba(15,23,42,0.18)]" : "border-rule/70"
       )}
     >
