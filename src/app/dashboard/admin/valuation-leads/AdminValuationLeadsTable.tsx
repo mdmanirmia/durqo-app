@@ -1,7 +1,8 @@
 "use client";
 
+import CopyButton from "@/components/ui/CopyButton";
 import { useState, useTransition } from "react";
-import { Check, Copy, FileSpreadsheet, Mail, Phone, Trash2, TrendingUp } from "lucide-react";
+import { FileSpreadsheet, Mail, Phone, Trash2, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import EmptyState from "@/components/ui/EmptyState";
@@ -73,35 +74,8 @@ function statusSelect(row: AdminValuationLeadRow, busy: boolean, onChange: (stat
   );
 }
 
-// 2026-10-02 ("email gulo jeno copy kora jai sei besbostah koro" - arrange
-// it so the emails can be copied): a one-click copy affordance for the
-// lead's email/phone, which were previously plain unselectable-looking text
-// next to their icon. navigator.clipboard can reject in rare contexts
-// (non-HTTPS, permissions) - caught and ignored rather than surfaced, since
-// the value is still right there in the row to select and copy by hand.
-function CopyButton({ value, label }: { value: string; label: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      type="button"
-      onClick={async (e) => {
-        e.stopPropagation();
-        try {
-          await navigator.clipboard.writeText(value);
-          setCopied(true);
-          setTimeout(() => setCopied(false), 1500);
-        } catch {
-          // Clipboard unavailable - nothing to do; the text is still visible.
-        }
-      }}
-      title={copied ? "Copied" : `Copy ${label}`}
-      aria-label={`Copy ${label}`}
-      className="shrink-0 rounded p-0.5 text-ink-faint hover:bg-paper-sunk hover:text-brand-strong"
-    >
-      {copied ? <Check size={11} className="text-brand-strong" /> : <Copy size={11} />}
-    </button>
-  );
-}
+// CopyButton (email/phone one-click copy) now lives in
+// src/components/ui/CopyButton.tsx, shared with the admin Users table.
 
 // A real component (not a plain helper function like statusSelect above) —
 // it needs its own per-row useState for the in-progress note text, and a

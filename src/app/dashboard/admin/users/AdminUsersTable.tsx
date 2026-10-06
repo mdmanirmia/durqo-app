@@ -4,6 +4,7 @@ import { useMemo, useState, useTransition } from "react";
 import { Trash2, UserPlus, Users } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
+import CopyButton from "@/components/ui/CopyButton";
 import EmptyState from "@/components/ui/EmptyState";
 import { countryFlagEmoji, countryName } from "@/lib/countries";
 import { setUserRole, setUserActive, inviteUser, deleteUnverifiedUsers, deleteVerifiedUsers } from "../actions";
@@ -411,7 +412,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                       </td>
                       <td className="max-w-[260px] px-4 py-3">
                         <div className="truncate font-medium text-ink">{u.fullName}</div>
-                        <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                        <div className="flex min-w-0 items-center gap-1 text-xs text-ink-faint">
+                        <span className="truncate">{u.email}</span>
+                        {u.email !== "-" && <CopyButton value={u.email} label="email" />}
+                      </div>
                       </td>
                       <td className="px-4 py-3">{countryCell(u)}</td>
                       <td className="px-4 py-3">{roleSelect(u, busy, isSelf, errorId, changeRole)}</td>
@@ -438,7 +442,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   <div className="mb-3 flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="truncate font-medium text-ink">{u.fullName}</div>
-                      <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                      <div className="flex min-w-0 items-center gap-1 text-xs text-ink-faint">
+                        <span className="truncate">{u.email}</span>
+                        {u.email !== "-" && <CopyButton value={u.email} label="email" />}
+                      </div>
                     </div>
                     <input
                       type="checkbox"
@@ -508,7 +515,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                     </td>
                     <td className="max-w-[260px] px-4 py-3">
                       <div className="truncate font-medium text-ink">{u.fullName}</div>
-                      <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                      <div className="flex min-w-0 items-center gap-1 text-xs text-ink-faint">
+                        <span className="truncate">{u.email}</span>
+                        {u.email !== "-" && <CopyButton value={u.email} label="email" />}
+                      </div>
                     </td>
                     <td className="px-4 py-3">{countryCell(u)}</td>
                     <td className="px-4 py-3">{joinedAsBadge(u)}</td>
@@ -525,7 +535,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                 <div className="mb-3 flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="truncate font-medium text-ink">{u.fullName}</div>
-                    <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                    <div className="flex min-w-0 items-center gap-1 text-xs text-ink-faint">
+                        <span className="truncate">{u.email}</span>
+                        {u.email !== "-" && <CopyButton value={u.email} label="email" />}
+                      </div>
                   </div>
                   <input
                     type="checkbox"
