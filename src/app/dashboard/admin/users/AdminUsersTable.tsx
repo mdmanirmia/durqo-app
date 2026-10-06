@@ -31,7 +31,9 @@ export interface AdminUserRow {
   // Oct 6, 2026 ("admin portal e seller and buyer der country dekhar o
   // bebostah koro"): profiles.country, ISO 3166-1 alpha-2 (migration 060),
   // captured at signup since migration 061 or set later on Account Details.
-  // null for older accounts that never picked one.
+  // null for older accounts that never picked one. To make room for the
+  // extra column, the desktop tables show email under the name in one
+  // "User" cell instead of a separate Email column.
   country: string | null;
   isVerified: boolean;
   isActive: boolean;
@@ -137,7 +139,7 @@ function roleSelect(
         value={u.role}
         disabled={busy || isSelf}
         onChange={(e) => changeRole(u.id, e.target.value)}
-        className="mono block w-full rounded-md border border-rule-strong bg-paper px-2 py-1.5 text-xs disabled:opacity-60"
+        className="mono block w-full min-w-[92px] rounded-md border border-rule-strong bg-paper px-2 py-1.5 text-xs disabled:opacity-60"
       >
         {ROLES.map((r) => (
           <option key={r} value={r}>{r}</option>
@@ -380,8 +382,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   <th className="w-10 px-4 py-3">
                     <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
                   </th>
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">User</th>
                   <th className="px-4 py-3 font-medium">Country</th>
                   <th className="px-4 py-3 font-medium">Role</th>
                   <th className="px-4 py-3 font-medium">Joined As</th>
@@ -408,8 +409,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                           className="h-4 w-4 rounded border-rule-strong disabled:opacity-30"
                         />
                       </td>
-                      <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
-                      <td className="px-4 py-3 text-ink-soft">{u.email}</td>
+                      <td className="max-w-[260px] px-4 py-3">
+                        <div className="truncate font-medium text-ink">{u.fullName}</div>
+                        <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                      </td>
                       <td className="px-4 py-3">{countryCell(u)}</td>
                       <td className="px-4 py-3">{roleSelect(u, busy, isSelf, errorId, changeRole)}</td>
                       <td className="px-4 py-3">{joinedAsBadge(u)}</td>
@@ -491,8 +494,7 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                   <th className="w-10 px-4 py-3">
                     <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="h-4 w-4 rounded border-rule-strong" />
                   </th>
-                  <th className="px-4 py-3 font-medium">Name</th>
-                  <th className="px-4 py-3 font-medium">Email</th>
+                  <th className="px-4 py-3 font-medium">User</th>
                   <th className="px-4 py-3 font-medium">Country</th>
                   <th className="px-4 py-3 font-medium">Joined As</th>
                   <th className="px-4 py-3 font-medium">Joined</th>
@@ -504,8 +506,10 @@ export default function AdminUsersTable({ rows, selfId }: { rows: AdminUserRow[]
                     <td className="px-4 py-3">
                       <input type="checkbox" checked={selectedIds.has(u.id)} onChange={() => toggleSelected(u.id)} className="h-4 w-4 rounded border-rule-strong" />
                     </td>
-                    <td className="px-4 py-3 font-medium text-ink">{u.fullName}</td>
-                    <td className="px-4 py-3 text-ink-soft">{u.email}</td>
+                    <td className="max-w-[260px] px-4 py-3">
+                      <div className="truncate font-medium text-ink">{u.fullName}</div>
+                      <div className="truncate text-xs text-ink-faint">{u.email}</div>
+                    </td>
                     <td className="px-4 py-3">{countryCell(u)}</td>
                     <td className="px-4 py-3">{joinedAsBadge(u)}</td>
                     <td className="mono px-4 py-3 text-ink-faint">{u.createdAt}</td>
