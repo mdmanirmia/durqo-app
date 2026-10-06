@@ -222,7 +222,7 @@ export default function Header() {
     <header
       className={clsx(
         "sticky top-0 z-40 border-b bg-paper-raised transition-[box-shadow,border-color] duration-200",
-        scrolled ? "border-rule shadow-[0_4px_20px_-12px_rgba(15,23,42,0.18)]" : "border-rule/70"
+        scrolled ? "border-rule shadow-[0_2px_10px_-6px_rgba(15,23,42,0.08)]" : "border-rule/70"
       )}
     >
       {/* Fixed height lives on this row, not on <header>, so the mobile
