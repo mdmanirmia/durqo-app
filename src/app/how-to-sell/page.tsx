@@ -260,8 +260,8 @@ export default function HowToSellPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[60ch]">
-              <DashEyebrow>The selling process</DashEyebrow>
+            <div className="mx-auto mb-10 max-w-[62ch] text-center">
+              <DashEyebrow center>The selling process</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Eight steps, start to finish.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Nothing is charged until your business actually sells, and every listing goes through a real,
@@ -272,21 +272,26 @@ export default function HowToSellPage() {
                 before you list.
               </p>
             </div>
-            <div className="flex flex-col gap-8">
-              {STEPS.map(({ n, icon: Icon, title, body }, i) => (
-                <div key={n} data-reveal className="flex gap-5 sm:gap-6">
-                  <div className="flex flex-col items-center">
-                    <span className="mono grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong">
-                      {n}
-                    </span>
-                    {i < STEPS.length - 1 && <span className="mt-2 w-px flex-1 bg-rule" aria-hidden />}
-                  </div>
-                  <div className="pb-2">
+            {/* Oct 5, 2026: was a single left-aligned vertical timeline that
+                left the right half of the section empty on desktop; now a
+                2-column card grid (same pattern as the Bangladesh selling
+                guide's "How Durqo Works" fix), stacking to 1 column on mobile. */}
+            <div className="grid gap-5 sm:grid-cols-2">
+              {STEPS.map(({ n, icon: Icon, title, body }) => (
+                <div
+                  key={n}
+                  data-reveal
+                  className="flex gap-4 rounded-xl border border-rule bg-paper-raised p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-shadow hover:shadow-sm sm:p-6"
+                >
+                  <span className="mono grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong">
+                    {n}
+                  </span>
+                  <div>
                     <div className="mb-1.5 flex items-center gap-2">
-                      <Icon size={16} className="text-brand" />
+                      <Icon size={16} className="shrink-0 text-brand" />
                       <h4 className="text-base font-semibold text-ink">{title}</h4>
                     </div>
-                    <p className="max-w-[62ch] text-sm leading-relaxed text-ink-soft">{body}</p>
+                    <p className="text-sm leading-relaxed text-ink-soft">{body}</p>
                   </div>
                 </div>
               ))}
