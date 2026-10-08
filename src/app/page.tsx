@@ -296,7 +296,7 @@ export default async function Home() {
   // last tiebreak so the pick stays deterministic.
   const liveListings = listings.filter((l) => l.status !== "sold");
   const spotlightGrowth = (l: (typeof listings)[number]) => {
-    const series = l.monthlyStats.map((m) => m.income).filter((v): v is number => typeof v === "number");
+    const series = l.monthlyStats.slice(-12).map((m) => m.income).filter((v): v is number => typeof v === "number");
     return series.length >= 2 && series[0] > 0 ? (series[series.length - 1] - series[0]) / series[0] : undefined;
   };
   const spotlightIncome = (l: (typeof listings)[number]) => {
@@ -323,6 +323,7 @@ export default async function Home() {
   // listing's own monthly stats (first vs. most recent data point) — never
   // shown when there isn't enough real data to compute it honestly.
   const spotlightSeries = (spotlight?.monthlyStats ?? [])
+    .slice(-12)
     .map((m) => m.income)
     .filter((v): v is number => typeof v === "number");
   const spotlightTrendPercent =

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { lastTwelveIncomeMonths } from "@/lib/income-months";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Plus, Trash2, Upload, X } from "lucide-react";
@@ -27,8 +28,14 @@ import QaListEditor, { type QaRow } from "@/components/listings/QaListEditor";
 // (dashboard/seller/listings/new/page.tsx) — deliberately duplicated rather
 // than imported, so this edit form can't accidentally change behavior on
 // the already-working create flow.
-const MONTHS = ["Sep 2025","Oct 2025","Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026"];
-const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01-01","2026-02-01","2026-03-01","2026-04-01","2026-05-01","2026-06-01","2026-07-01","2026-08-01"];
+//
+// Oct 8, 2026: both forms now share src/lib/income-months.ts, so the window
+// is always the last 12 completed months. On edit, saved values for months
+// still inside the window are pre-filled; a month that has rolled out of the
+// window is no longer shown but stays saved in the database (the edit
+// action only replaces the months this form sends). Computed inside the
+// component (this page is dynamic), not at module load, so a long-lived
+// server process never serves a stale window.
 
 // "business_type" (E-commerce only) is a comma-separated string of ids
 // built by the checkbox grid below, not a single typed value — see the
@@ -270,6 +277,9 @@ export default function ListingEditForm({
   }
   const [quickStats, setQuickStats] = useState<Record<string, string>>(initialQuickStats(categoryId));
 
+  const [incomeMonths] = useState(() => lastTwelveIncomeMonths());
+  const MONTHS = incomeMonths.map((m) => m.label);
+  const MONTH_KEYS = incomeMonths.map((m) => m.key);
   const monthlyByKey = new Map(monthlyStats.map((r) => [String(r.month).slice(0, 10), r.income]));
   const [monthlyIncome, setMonthlyIncome] = useState<string[]>(
     MONTH_KEYS.map((key) => {

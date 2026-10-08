@@ -318,7 +318,9 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
   // free-text `location` line already shown above it.
   const sellerCountryName = countryName(listing.seller.country);
   const sellerFlag = countryFlagEmoji(listing.seller.country);
-  const incomeSeries = listing.monthlyStats.map((m) => ({ month: m.month, income: m.income }));
+  // Most recent 12 months only; older months can remain stored after an
+  // edit (Oct 8, 2026), and the panel is labelled "last 12 months".
+  const incomeSeries = listing.monthlyStats.slice(-12).map((m) => ({ month: m.month, income: m.income }));
 
   // Websites/E-commerce Quick Stat label overrides (Business Page Layout
   // .docx, Sep 1, 2026 revision): "Monthly Income"/"Monthly Views" are

@@ -383,7 +383,13 @@ function computeAutoQuickStats(
 ) {
   const has = (key: QuickStatKey) => quickStatKeys.includes(key);
 
-  const incomeValues = monthlyStats.map((m) => m.income).filter((v): v is number => typeof v === "number");
+  // Most recent 12 months only (monthlyStats is sorted oldest first). Older
+  // months are kept in the database when a seller edits a listing (Oct 8,
+  // 2026), so the average must not drift past the 12-month window.
+  const incomeValues = monthlyStats
+    .map((m) => m.income)
+    .filter((v): v is number => typeof v === "number")
+    .slice(-12);
   const avgMonthlyIncome = incomeValues.length > 0 ? Math.round(incomeValues.reduce((a, b) => a + b, 0) / incomeValues.length) : undefined;
 
   if (has("monthly_income")) {

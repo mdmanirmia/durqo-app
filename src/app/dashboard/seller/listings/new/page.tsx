@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useIncomeMonths } from "@/lib/income-months";
 import { BarChart3, CheckCircle2, Plus, Trash2, Upload } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { SELLER_NAV } from "@/lib/dashboard-nav";
@@ -33,9 +34,6 @@ import { sanitizeFileName } from "@/lib/sanitize-filename";
 // createdListingId screen below) — long enough to read the two options,
 // short enough that a seller who ignores it still lands on the dashboard.
 const GA_SCREEN_AUTOREDIRECT_SECONDS = 12;
-
-const MONTHS = ["Sep 2025","Oct 2025","Nov 2025","Dec 2025","Jan 2026","Feb 2026","Mar 2026","Apr 2026","May 2026","Jun 2026","Jul 2026","Aug 2026"];
-const MONTH_KEYS = ["2025-09-01","2025-10-01","2025-11-01","2025-12-01","2026-01-01","2026-02-01","2026-03-01","2026-04-01","2026-05-01","2026-06-01","2026-07-01","2026-08-01"];
 
 // Which quick-stat columns are text/date vs numeric, so form values get
 // converted to the right type before hitting Postgres. "business_type"
@@ -199,6 +197,12 @@ export default function AddNewBusinessPage() {
   const [quickStats, setQuickStats] = useState<Record<string, string>>({});
   const [niches, setNiches] = useState<string[]>([]);
   const [monthlyIncome, setMonthlyIncome] = useState<string[]>(Array(12).fill(""));
+  // Proof of Income window: always the last 12 completed months, computed in
+  // the browser (this page is statically prerendered, so a module-level list
+  // would freeze at build time). null only for the first hydration pass.
+  const incomeMonths = useIncomeMonths();
+  const MONTHS = incomeMonths?.map((m) => m.label) ?? [];
+  const MONTH_KEYS = incomeMonths?.map((m) => m.key) ?? [];
   const [loomVideoUrl, setLoomVideoUrl] = useState("");
   const [expenses, setExpenses] = useState([{ label: "", amount: "" }]);
   const [monetization, setMonetization] = useState<string[]>([]);

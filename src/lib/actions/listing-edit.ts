@@ -242,10 +242,22 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
     }
   }
 
-  // Monthly income: full replace, since the form always sends all 12 slots
-  // (blank ones included) rather than only the ones that changed.
-  const { error: deleteMonthlyError } = await admin.from("listing_monthly_stats").delete().eq("listing_id", listingId);
-  if (deleteMonthlyError) throw new Error(deleteMonthlyError.message);
+  // Monthly income: replace only the months the form actually sent (its 12
+  // slots, blank ones included, so a cleared month is removed).
+  // Oct 8, 2026 ("previous data delete koirona"): the form's window is now
+  // the rolling last 12 months (src/lib/income-months.ts), so this used to
+  // be a full replace that would silently drop any older month that had
+  // rolled out of the window. Older months are now left untouched; the
+  // listing page and averages only ever use the most recent 12.
+  const sentMonths = fields.monthlyIncome.map((r) => r.month);
+  if (sentMonths.length) {
+    const { error: deleteMonthlyError } = await admin
+      .from("listing_monthly_stats")
+      .delete()
+      .eq("listing_id", listingId)
+      .in("month", sentMonths);
+    if (deleteMonthlyError) throw new Error(deleteMonthlyError.message);
+  }
   const monthlyRows = fields.monthlyIncome
     .filter((r) => r.income !== null)
     .map((r) => ({ listing_id: listingId, month: r.month, income: r.income }));
