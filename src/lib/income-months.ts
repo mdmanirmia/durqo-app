@@ -1,9 +1,9 @@
 // Oct 8, 2026 ("eita dynamic hobe always last 12 month hobe"): the Proof of
 // Income month grid on the seller create and edit listing forms used to be
 // a hardcoded Sep 2025 - Aug 2026 list, so it went stale as soon as the
-// calendar moved on. This returns the last 12 *completed* months, oldest
-// first, ending with the month before the current one (on Oct 8, 2026 that
-// is Oct 2025 - Sep 2026).
+// calendar moved on. This returns the last 12 *completed* months, newest
+// first ("all time latest theke start hobe", Oct 8, 2026): on Oct 8, 2026
+// that is Sep 2026, Aug 2026, ... Oct 2025.
 //
 // Computed in UTC so the server render and the browser render of these
 // client forms always agree on the window (no hydration mismatch for a
@@ -24,7 +24,7 @@ export function lastTwelveIncomeMonths(now: Date = new Date()): IncomeMonth[] {
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth(); // 0-11, the current (incomplete) month
   const months: IncomeMonth[] = [];
-  for (let back = 12; back >= 1; back--) {
+  for (let back = 1; back <= 12; back++) {
     const d = new Date(Date.UTC(year, month - back, 1));
     const y = d.getUTCFullYear();
     const m = d.getUTCMonth();
