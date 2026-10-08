@@ -136,6 +136,12 @@ export async function POST(request: Request) {
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      // Oct 8, 2026 ("payment all time USD te nibo"): always charge in USD.
+      // With Stripe's Adaptive Pricing turned on in the Dashboard, Checkout
+      // would otherwise show and charge some buyers in their local currency
+      // (BDT, INR, CAD...). Disabling it per session keeps every Stripe
+      // payment in USD regardless of that Dashboard setting.
+      adaptive_pricing: { enabled: false },
       // Charges the full listing price in one payment — no online-deposit
       // cap for Stripe (see the comment above orderRows).
       line_items: listings.map((l) => ({
