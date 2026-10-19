@@ -283,6 +283,67 @@ h1 {
   mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
 }
 
+/* Hero showcase: a thin brand-green highlight that travels around the
+   card's border (conic gradient masked to the 1.5px border ring). */
+@property --dq-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes dq-rotate { to { --dq-angle: 360deg; } }
+.dq-border::before {
+  content: "";
+  position: absolute;
+  inset: -1.5px;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--dq-angle), transparent 0deg 250deg, rgba(16, 185, 129, 0.9) 320deg, transparent 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: dq-rotate 6s linear infinite;
+  pointer-events: none;
+}
+/* Showcase progress bar (duration set inline to the rotation interval). */
+@keyframes dq-progress { from { width: 0; } to { width: 100%; } }
+.dq-progress { width: 0; animation: dq-progress linear forwards; }
+@keyframes dq-pop {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.dq-pop { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* Homepage deal tour (DealTour.tsx). Each scene remounts when it becomes
+   active, so these one-shot animations replay every time. */
+@keyframes dq-tour-cursor {
+  0% { left: 12%; top: 92%; opacity: 0; }
+  15% { opacity: 1; }
+  45% { left: 74%; top: 34%; transform: scale(1); }
+  52% { left: 74%; top: 34%; transform: scale(0.82); }
+  60%, 100% { left: 74%; top: 34%; transform: scale(1); opacity: 1; }
+}
+.dq-tour-cursor { left: 12%; top: 92%; animation: dq-tour-cursor 3s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both; }
+@keyframes dq-tour-pick {
+  to { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18), 0 16px 30px -18px rgba(11, 19, 36, 0.35); transform: translateY(-3px); }
+}
+.dq-tour-pick { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-tour-pick 0.35s ease 2.2s forwards; }
+@keyframes dq-dash { to { stroke-dashoffset: 0; } }
+.dq-tour-draw polyline { stroke-dasharray: 1; stroke-dashoffset: 1; animation: dq-dash 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.4s forwards; }
+@keyframes dq-tour-select { to { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16); } }
+.dq-tour-select { border: 1px solid #E2E8F0; animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-tour-select 0.3s ease 1.2s forwards; }
+@keyframes dq-tour-radio { to { border-color: #10B981; background: #10B981; box-shadow: inset 0 0 0 3px #fff; } }
+.dq-tour-radio { border: 1px solid #CBD5E1; animation: dq-tour-radio 0.3s ease 1.2s forwards; }
+.dq-tour-toast { opacity: 0; animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 1.9s both; }
+@keyframes dq-fade-out { to { opacity: 0; transform: scale(0.9); } }
+@keyframes dq-fade-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+.dq-tour-status-a { animation: dq-fade-out 0.3s ease forwards; }
+.dq-tour-status-b { opacity: 0; animation: dq-fade-in 0.3s ease forwards; }
+@keyframes dq-ring {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  100% { box-shadow: 0 0 0 18px rgba(16, 185, 129, 0); }
+}
+.dq-tour-ring { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-ring 1.6s ease-out 0.5s 2; }
+
 /* Sitewide: arrow icons inside links and buttons nudge forward on hover. */
 a svg.lucide-arrow-right,
 button svg.lucide-arrow-right {
@@ -298,7 +359,12 @@ button:hover svg.lucide-arrow-right {
   [data-reveal] { opacity: 1 !important; transform: none !important; }
   [data-reveal].dq-draw polyline { stroke-dashoffset: 0 !important; }
   .dq-enter, .dq-bar { animation: none !important; opacity: 1 !important; transform: none !important; }
-  .dq-float, .dq-float-alt, .dq-spin-slow, .dq-glow, .dq-marquee { animation: none !important; }
+  .dq-float, .dq-float-alt, .dq-spin-slow, .dq-glow, .dq-marquee, .dq-border::before, .dq-pop { animation: none !important; }
+  .dq-progress { animation: none !important; width: 100% !important; }
+  .dq-tour-cursor { display: none; }
+  .dq-tour-draw polyline { animation: none !important; stroke-dashoffset: 0 !important; }
+  .dq-tour-toast, .dq-tour-status-b { animation: none !important; opacity: 1 !important; }
+  .dq-tour-status-a { display: none; }
 }
 
 /* Horizontally-scrollable rows with no visible scrollbar (the /buy category

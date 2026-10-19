@@ -9,7 +9,6 @@ import {
   ArrowRight,
   CheckCircle2,
   Check,
-  Search,
   Package,
   Coins,
   LayoutGrid,
@@ -20,10 +19,12 @@ import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { getPublishedListings, getSellerAndBuyerCount } from "@/lib/data/listings.server";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import ListingCard from "@/components/ListingCard";
-import WishlistButton from "@/components/WishlistButton";
+import HeroShowcase, { type ShowcaseSlide } from "@/components/home/HeroShowcase";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import CountUp from "@/components/CountUp";
+import DealTour from "@/components/home/DealTour";
+import MouseGlow from "@/components/home/MouseGlow";
 import { fmtUSD } from "@/lib/format";
 
 // Sep 8, 2026 (technical SEO pass, Section 3): explicit homepage metadata
@@ -174,18 +175,6 @@ function excerpt(text: string, maxChars = 108): string {
 // a lone wrapped item) below that, per the Sep 6 2026 refinement pass.
 const REVIEW_ITEMS = ["Listing reviewed", "Performance checked", "Seller verification available"];
 
-// Sep 13, 2026: "Complete the transfer" now names the real Asset Transfer
-// Room system (live for every payment channel — see
-// claude/asset-transfer-room-feasibility-addendum.md) instead of the vague
-// "move assets through our secure process" placeholder, so this homepage
-// summary stays consistent with /how-to-buy, /how-to-sell, /payments and
-// /terms.
-const STEPS = [
-  { icon: Search, title: "Explore or list", body: "Browse reviewed listings by category, or submit your own business for review." },
-  { icon: LineChart, title: "Review and connect", body: "Evaluate performance data, ask questions and connect directly with the seller." },
-  { icon: CheckCircle2, title: "Complete the transfer", body: "Once payment is made, buyer and seller move through a shared Transfer Room, where each asset is handed over, confirmed, and approved before ownership changes hands." },
-];
-
 // Oct 5, 2026 copy revision (mockup-matched redesign): titles/bodies
 // rewritten to match the approved mockup. Every claim stays hedged to a
 // real, available process rather than a completed-status guarantee —
@@ -195,6 +184,35 @@ const STEPS = [
 // verification help protect..." describes the real KYC + payout
 // name-match checks (see /dashboard/seller/verification) without implying
 // every seller has completed them.
+// Oct 19, 2026: payment (buyer) and payout (seller) methods for the "Pay
+// your way" strip. Brand colors are only used to tint the plain-text names.
+const PAY_ROWS = [
+  {
+    label: "For buyers",
+    title: "Pay the way that suits you",
+    items: [
+      { name: "Card", color: "#0B1324" },
+      { name: "Escrow.com", color: "#0B1324" },
+      { name: "bKash", color: "#E2136E" },
+      { name: "Nagad", color: "#EC6C1F" },
+      { name: "Rocket", color: "#8C3494" },
+      { name: "Bank", color: "#0B1324" },
+    ],
+  },
+  {
+    label: "For sellers",
+    title: "Withdraw your earnings, your way",
+    items: [
+      { name: "Bank", color: "#0B1324" },
+      { name: "bKash", color: "#E2136E" },
+      { name: "Nagad", color: "#EC6C1F" },
+      { name: "Rocket", color: "#8C3494" },
+      { name: "PayPal", color: "#1D4E9E" },
+      { name: "Wise", color: "#2F7A2F" },
+    ],
+  },
+];
+
 const CONFIDENCE = [
   { icon: ShieldCheck, title: "Listing review", body: "Listings are reviewed for completeness, clarity and compliance before publication." },
   { icon: UserCheck, title: "Seller verification", body: "Identity and payout verification help protect seller accounts and withdrawals." },
@@ -317,39 +335,45 @@ export default async function Home() {
     return typeof income === "number" && income > 0 ? income : undefined;
   };
   const spotlightPool = liveListings.length > 0 ? liveListings : listings;
-  const spotlight = [...spotlightPool].sort((a, b) => {
+  const rankedSpotlight = [...spotlightPool].sort((a, b) => {
     const growthDiff = (spotlightGrowth(b) ?? -Infinity) - (spotlightGrowth(a) ?? -Infinity);
     if (growthDiff !== 0) return growthDiff;
     const incomeDiff = (spotlightIncome(b) ?? -Infinity) - (spotlightIncome(a) ?? -Infinity);
     if (incomeDiff !== 0) return incomeDiff;
     return (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price);
-  })[0];
+  });
 
-  const spotlightRevenue = (spotlight?.quickStats.monthly_income as number | undefined) ?? 0;
-  const spotlightExpenseTotal = spotlight
-    ? spotlight.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
-    : 0;
-  const spotlightProfit =
-    spotlight && spotlight.monthlyExpenses.length > 0 ? spotlightRevenue - spotlightExpenseTotal : spotlightRevenue;
-
-  // Revenue-trend badge: a real percentage computed from the spotlight
-  // listing's own monthly stats (first vs. most recent data point) — never
-  // shown when there isn't enough real data to compute it honestly.
-  const spotlightSeries = (spotlight?.monthlyStats ?? [])
-    .slice(-12)
-    .map((m) => m.income)
-    .filter((v): v is number => typeof v === "number");
-  const spotlightTrendPercent =
-    spotlightSeries.length >= 2 && spotlightSeries[0] > 0
-      ? Math.round(((spotlightSeries[spotlightSeries.length - 1] - spotlightSeries[0]) / spotlightSeries[0]) * 100)
-      : null;
-  const sparkPoints = spotlightSeries.slice(-8);
-  const sparkMax = sparkPoints.length ? Math.max(...sparkPoints, 1) : 1;
-  // Proof of Income is entered as a 12-month series across this project's
-  // seller forms, so "Last 12 months" is accurate for a normal listing —
-  // but if a listing has a shorter recorded history for any reason, say so
-  // honestly instead of claiming a span that isn't really there.
-  const spotlightPeriodLabel = spotlightSeries.length >= 10 ? "Last 12 months" : "Recorded history";
+  // Oct 19, 2026: the hero now rotates through the top 4 of this same
+  // ranking (HeroShowcase) instead of showing only the first. Each slide's
+  // numbers use the exact formulas the single spotlight used: profit =
+  // revenue minus listed monthly expenses; the trend percentage compares the
+  // first and latest of the last 12 recorded months and only appears with at
+  // least two real data points; "Last 12 months" only when ~a year of
+  // history really exists.
+  const showcaseSlides: ShowcaseSlide[] = rankedSpotlight.slice(0, 4).map((l) => {
+    const revenue = (l.quickStats.monthly_income as number | undefined) ?? 0;
+    const expenseTotal = l.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+    const series = l.monthlyStats
+      .slice(-12)
+      .map((m) => m.income)
+      .filter((v): v is number => typeof v === "number");
+    const trendPercent =
+      series.length >= 2 && series[0] > 0 ? Math.round(((series[series.length - 1] - series[0]) / series[0]) * 100) : null;
+    return {
+      id: l.id,
+      slug: l.slug,
+      title: l.title,
+      categoryName: CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId,
+      description: SPOTLIGHT_EXCERPTS[l.title] ?? excerpt(l.overview || "Not disclosed"),
+      revenue,
+      profit: l.monthlyExpenses.length > 0 ? revenue - expenseTotal : revenue,
+      ageLabel: l.businessAgeYears ? `${l.businessAgeYears} ${l.businessAgeYears <= 1 ? "Year" : "Years"}` : "New",
+      price: l.discountedPrice ?? l.price,
+      trendPercent,
+      periodLabel: series.length >= 10 ? "Last 12 months" : "Recorded history",
+      sparkPoints: series.slice(-8),
+    };
+  });
 
   // Sep 6 2026: "Business types" used to be CATEGORIES.length (every category
   // the app supports in code, currently 16) regardless of whether any of
@@ -366,9 +390,6 @@ export default async function Home() {
     { icon: Users, value: activeSellersStat.value, label: activeSellersStat.label },
   ];
 
-  const spotlightDescription = spotlight
-    ? SPOTLIGHT_EXCERPTS[spotlight.title] ?? excerpt(spotlight.overview || "Not disclosed")
-    : "";
 
   return (
     <main>
@@ -445,99 +466,9 @@ export default async function Home() {
                 <circle cx="50" cy="50" r="46" stroke="currentColor" strokeWidth="1.5" strokeDasharray="4 6" />
               </svg>
 
-              {spotlight ? (
+              {showcaseSlides.length > 0 ? (
                 <div className="dq-enter relative lg:pr-5 lg:pt-4" style={enterDelay(220)}>
-                  <div className="dq-float rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.3)] sm:p-6 lg:mr-8">
-                    <span className="eyebrow mb-4">Featured opportunity</span>
-                    <div className="flex items-start gap-3">
-                      <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand text-base font-bold text-white">
-                        {spotlight.title.charAt(0).toUpperCase()}
-                      </span>
-                      <div className="min-w-0">
-                        <h3 className="truncate text-base font-semibold text-ink">{spotlight.title}</h3>
-                        <p className="mono text-xs uppercase tracking-wide text-ink-faint">
-                          {CATEGORY_MAP[spotlight.categoryId]?.name ?? spotlight.categoryId}
-                        </p>
-                      </div>
-                    </div>
-                    <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-ink-soft">
-                      {spotlightDescription}
-                    </p>
-
-                    <div className="mono mt-4 grid grid-cols-3 gap-3 border-t border-rule pt-4 text-sm">
-                      <div>
-                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Revenue/mo</span>
-                        {fmtUSD(spotlightRevenue)}
-                      </div>
-                      <div>
-                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Profit/mo</span>
-                        {fmtUSD(spotlightProfit)}
-                      </div>
-                      <div>
-                        <span className="block text-[0.62rem] uppercase tracking-wide text-ink-faint">Age</span>
-                        {spotlight.businessAgeYears
-                          ? `${spotlight.businessAgeYears} ${spotlight.businessAgeYears <= 1 ? "Year" : "Years"}`
-                          : "New"}
-                      </div>
-                    </div>
-
-                    <div className="mt-4 flex items-center justify-between border-t border-rule pt-4">
-                      <span className="mono text-lg font-bold text-ink">
-                        {fmtUSD(spotlight.discountedPrice ?? spotlight.price)}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <WishlistButton listingId={spotlight.id} />
-                        <Link
-                          href={`/listing/${spotlight.slug}`}
-                          className="flex min-h-11 items-center rounded-lg bg-brand-strong px-3.5 py-2 text-xs font-semibold text-white hover:bg-navy-secondary"
-                        >
-                          View Listing
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Revenue trend — computed from the spotlight listing's
-                      own monthly stats. The percentage only ever shows when
-                      there are at least two real recorded data points to
-                      compare; with a sparkline but no clean comparison, or
-                      with no history at all, this falls back to an honest
-                      label rather than a fabricated number. */}
-                  {(spotlightTrendPercent !== null || sparkPoints.length > 0) && (
-                    <div className="dq-float-alt mt-4 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:absolute lg:-right-2 lg:-top-2 lg:mt-0">
-                      <div>
-                        {spotlightTrendPercent !== null ? (
-                          <>
-                            <p className="mono text-lg font-bold text-brand">
-                              {spotlightTrendPercent > 0 ? "+" : ""}
-                              {spotlightTrendPercent}%
-                            </p>
-                            <p className="text-[0.65rem] text-ink-faint">Revenue growth</p>
-                            <p className="text-[0.6rem] text-ink-faint">{spotlightPeriodLabel}</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="text-[0.78rem] font-semibold leading-snug text-ink-soft">Revenue history</p>
-                            <p className="text-[0.65rem] text-ink-faint">{spotlightPeriodLabel}</p>
-                          </>
-                        )}
-                      </div>
-                      {sparkPoints.length > 0 && (
-                        <div className="flex h-8 items-end gap-0.5" aria-hidden>
-                          {sparkPoints.map((v, i) => (
-                            <span
-                              key={i}
-                              className="dq-bar w-1 rounded-sm bg-brand"
-                              style={{
-                                height: `${Math.max(15, (v / sparkMax) * 100)}%`,
-                                ...enterDelay(700 + i * 70),
-                              }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  <HeroShowcase slides={showcaseSlides} />
 
                   {/* Our review process — describes Durqo's actual policy
                       (see "Confidence is built into every step" below), not
@@ -547,7 +478,7 @@ export default async function Home() {
                       room) and as an intentional 2-column grid below that —
                       never a lone item left to wrap by itself, per the
                       Sep 6 2026 refinement pass. */}
-                  <div className="mt-4 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:mr-8">
+                  <div className="relative mt-10 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:mr-8">
                     <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
                       <ShieldCheck size={14} className="shrink-0 text-brand" />
                       Our review process
@@ -800,24 +731,20 @@ export default async function Home() {
         </Container>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="scroll-mt-20 border-b border-rule py-14 sm:py-16">
+      {/* HOW IT WORKS — Oct 19, 2026: the static 3-step row became an
+          animated product tour (DealTour) that plays one deal from browsing
+          to payout. Same #how-it-works anchor the header nav links to. */}
+      <section id="how-it-works" className="scroll-mt-20 border-b border-rule bg-paper-sunk py-16 sm:py-20">
         <Container>
-          <div data-reveal className="mb-10 text-center">
+          <div data-reveal className="mb-10 text-center sm:mb-12">
             <DashEyebrow center>How it works</DashEyebrow>
-            <h2 className="text-2xl sm:text-3xl">A clearer path from discovery to transfer</h2>
+            <h2 className="text-2xl sm:text-3xl">One deal, from discovery to payout</h2>
+            <p className="mx-auto mt-3 max-w-[56ch] text-[0.95rem] leading-relaxed text-ink-soft">
+              See how buying and selling a digital business works on Durqo, step by step.
+            </p>
           </div>
-          <div className="relative grid gap-8 sm:grid-cols-3">
-            <div data-reveal className="dq-line pointer-events-none absolute left-[8%] right-[8%] top-6 hidden h-px bg-brand/40 sm:block" aria-hidden />
-            {STEPS.map(({ title, body }, i) => (
-              <div key={title} data-reveal style={revealDelay(i * 160)} className="relative flex flex-col items-start">
-                <span className="mono relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong ring-8 ring-paper">
-                  0{i + 1}
-                </span>
-                <h4 className="text-base font-semibold text-ink">{title}</h4>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
-              </div>
-            ))}
+          <div data-reveal>
+            <DealTour />
           </div>
         </Container>
       </section>
@@ -835,6 +762,7 @@ export default async function Home() {
           column, with the card grid dropping to a single column below the
           `sm` breakpoint so nothing feels cramped. */}
       <section className="relative overflow-hidden bg-brand-strong py-14 sm:py-16 lg:py-20">
+        <MouseGlow />
         {/* Decorative background — purely cosmetic, kept at very low
             opacity so it never competes with the real content above it. */}
         <div className="pointer-events-none absolute inset-0" aria-hidden>
@@ -933,6 +861,35 @@ export default async function Home() {
                 ))}
               </div>
             </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* PAY YOUR WAY — Oct 19, 2026 premium pass. Payment and payout
+          methods the marketplace actually supports today (see /payments and
+          /seller-payouts), shown as brand-colored wordmarks in text, not
+          third-party logo files. */}
+      <section className="border-b border-rule py-12 sm:py-14">
+        <Container>
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+            {PAY_ROWS.map((row, r) => (
+              <div key={row.label} data-reveal style={revealDelay(r * 120)}>
+                <DashEyebrow>{row.label}</DashEyebrow>
+                <h3 className="text-xl font-semibold text-ink sm:text-2xl">{row.title}</h3>
+                <div className="mt-5 flex flex-wrap gap-2.5">
+                  {row.items.map((m, i) => (
+                    <span
+                      key={m.name}
+                      data-reveal
+                      style={{ ...revealDelay(r * 120 + i * 60), color: m.color }}
+                      className="rounded-xl border border-rule bg-paper-raised px-4 py-2.5 text-[0.95rem] font-bold tracking-tight shadow-[0_10px_24px_-20px_rgba(11,19,36,0.4)] transition hover:-translate-y-0.5 hover:border-brand"
+                    >
+                      {m.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </Container>
       </section>
