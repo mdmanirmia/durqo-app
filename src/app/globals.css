@@ -344,6 +344,73 @@ h1 {
 }
 .dq-tour-ring { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-ring 1.6s ease-out 0.5s 2; }
 
+/* Hero headline: words rise out of a soft blur one by one, then a hand-drawn
+   brand underline sweeps in under the second line. */
+@keyframes dq-word {
+  from { opacity: 0; transform: translateY(0.45em); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+.dq-word {
+  display: inline-block;
+  opacity: 0;
+  animation: dq-word 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+.dq-underline path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: dq-dash 0.9s cubic-bezier(0.65, 0, 0.35, 1) 1.15s forwards;
+}
+
+/* Light sheen that sweeps across a primary button every few seconds. */
+@keyframes dq-shine {
+  0%, 70% { transform: translateX(-120%) skewX(-20deg); }
+  100% { transform: translateX(260%) skewX(-20deg); }
+}
+.dq-shine { position: relative; overflow: hidden; isolation: isolate; }
+.dq-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  animation: dq-shine 4.5s ease-in-out 1.6s infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 3D tilt wrapper (driven by HomeFx.tsx) with a pointer-following glare. */
+.dq-tilt {
+  position: relative;
+  transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  will-change: transform;
+}
+.dq-tilt[data-tilt-on] { transition-duration: 0.08s; }
+.dq-tilt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: radial-gradient(420px circle at var(--gx, 50%) var(--gy, 50%), rgba(255, 255, 255, 0.28), transparent 45%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.dq-tilt[data-tilt-on]::after { opacity: 1; }
+
+/* Icons inside a revealed card pop in just after the card lands. */
+@keyframes dq-icon-pop {
+  0% { transform: scale(0.4) rotate(-12deg); opacity: 0; }
+  70% { transform: scale(1.12) rotate(3deg); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+[data-reveal] .dq-icon-pop { opacity: 0; }
+[data-reveal="true"] .dq-icon-pop {
+  animation: dq-icon-pop 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: calc(var(--reveal-delay, 0ms) + 250ms);
+}
+
 /* Sitewide: arrow icons inside links and buttons nudge forward on hover. */
 a svg.lucide-arrow-right,
 button svg.lucide-arrow-right {
@@ -365,6 +432,11 @@ button:hover svg.lucide-arrow-right {
   .dq-tour-draw polyline { animation: none !important; stroke-dashoffset: 0 !important; }
   .dq-tour-toast, .dq-tour-status-b { animation: none !important; opacity: 1 !important; }
   .dq-tour-status-a { display: none; }
+  .dq-word, .dq-icon-pop, [data-reveal] .dq-icon-pop { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+  .dq-underline path { animation: none !important; stroke-dashoffset: 0 !important; }
+  .dq-shine::after { display: none; }
+  .dq-tilt { transform: none !important; }
+  .dq-tilt::after { display: none; }
 }
 
 /* Horizontally-scrollable rows with no visible scrollbar (the /buy category

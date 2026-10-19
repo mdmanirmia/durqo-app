@@ -25,6 +25,7 @@ import Button from "@/components/ui/Button";
 import CountUp from "@/components/CountUp";
 import DealTour from "@/components/home/DealTour";
 import MouseGlow from "@/components/home/MouseGlow";
+import HomeFx from "@/components/home/HomeFx";
 import { fmtUSD } from "@/lib/format";
 
 // Sep 8, 2026 (technical SEO pass, Section 3): explicit homepage metadata
@@ -239,6 +240,22 @@ const REVIEW_STANDARD_ITEMS = ["Listings reviewed", "Identity verification", "Co
 // and patch every mutation path that can change these counts.
 export const dynamic = "force-dynamic";
 
+// Hero headline words: each rises out of a soft blur in turn (.dq-word).
+function HeadlineWords({ words, start }: { words: string[]; start: number }) {
+  return (
+    <>
+      {words.map((w, i) => (
+        <span key={i}>
+          <span className="dq-word" style={{ "--d": `${start + i * 80}ms` } as CSSProperties}>
+            {w}
+          </span>
+          {i < words.length - 1 ? " " : null}
+        </span>
+      ))}
+    </>
+  );
+}
+
 export default async function Home() {
   const [listings, sellerAndBuyerCount] = await Promise.all([getPublishedListings(), getSellerAndBuyerCount()]);
 
@@ -403,11 +420,14 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBSITE_JSON_LD) }}
       />
 
+      <HomeFx />
+
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-20">
         <div
           className="dq-glow pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
           aria-hidden
+          data-parallax="0.25"
         />
         <Container className="relative">
           <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
@@ -416,10 +436,21 @@ export default async function Home() {
                 <DashEyebrow>The marketplace for digital businesses</DashEyebrow>
               </div>
 
-              <h1 className="dq-enter text-4xl leading-[1.1] sm:text-5xl" style={enterDelay(90)}>
-                Buy what&rsquo;s next.
+              <h1 className="text-4xl leading-[1.1] sm:text-5xl">
+                <HeadlineWords words={["Buy", "what\u2019s", "next."]} start={90} />
                 <br />
-                <span className="text-brand">Sell what you&rsquo;ve built.</span>
+                <span className="relative inline-block text-brand">
+                  <HeadlineWords words={["Sell", "what", "you\u2019ve", "built."]} start={330} />
+                  <svg
+                    viewBox="0 0 300 12"
+                    preserveAspectRatio="none"
+                    className="dq-underline pointer-events-none absolute -bottom-2 left-0 h-3 w-full text-brand/50"
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path d="M2 8 C 60 2, 140 2, 200 6 S 280 10, 298 4" stroke="currentColor" strokeWidth="3" strokeLinecap="round" pathLength={1} />
+                  </svg>
+                </span>
               </h1>
 
               <p className="dq-enter mt-5 max-w-[50ch] text-lg leading-relaxed text-ink-soft" style={enterDelay(180)}>
@@ -428,7 +459,7 @@ export default async function Home() {
               </p>
 
               <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(270)}>
-                <Button href="/buy" size="lg">
+                <Button href="/buy" size="lg" className="dq-shine">
                   Explore businesses
                   <ArrowRight size={16} />
                 </Button>
@@ -456,9 +487,11 @@ export default async function Home() {
               <div
                 className="dq-glow pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-brand/10 blur-3xl sm:h-72 sm:w-72"
                 aria-hidden
+                data-parallax="-0.12"
               />
               <svg
                 className="dq-spin-slow pointer-events-none absolute -right-6 -top-6 hidden h-40 w-40 text-brand/20 sm:block"
+                data-parallax="-0.2"
                 viewBox="0 0 100 100"
                 fill="none"
                 aria-hidden
@@ -636,7 +669,9 @@ export default async function Home() {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {featured.map((l, i) => (
                 <div key={l.id} data-reveal style={revealDelay((i % 3) * 110)}>
-                  <ListingCard listing={l} />
+                  <div data-tilt className="dq-tilt h-full">
+                    <ListingCard listing={l} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -846,13 +881,14 @@ export default async function Home() {
               </div>
 
               <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                {CONFIDENCE.map(({ icon: Icon, title, body }) => (
+                {CONFIDENCE.map(({ icon: Icon, title, body }, i) => (
                   <div
                     key={title}
                     data-reveal
+                    style={revealDelay((i % 2) * 90)}
                     className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 transition-colors duration-200 hover:border-white/20 hover:bg-white/[0.05]"
                   >
-                    <span className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-brand">
+                    <span className="dq-icon-pop grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/5 text-brand">
                       <Icon size={20} strokeWidth={1.75} />
                     </span>
                     <h4 className="mt-4 text-base font-bold text-white">{title}</h4>
