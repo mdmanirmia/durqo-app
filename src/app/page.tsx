@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import {
   ShieldCheck,
@@ -22,6 +23,7 @@ import ListingCard from "@/components/ListingCard";
 import WishlistButton from "@/components/WishlistButton";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
+import CountUp from "@/components/CountUp";
 import { fmtUSD } from "@/lib/format";
 
 // Sep 8, 2026 (technical SEO pass, Section 3): explicit homepage metadata
@@ -106,6 +108,17 @@ const WEBSITE_JSON_LD = {
 // SectionHeader still renders elsewhere in the app (e.g. /about) — kept as
 // a local, page-scoped helper rather than changing that shared component/
 // class, so no other page's heading style shifts as a side effect.
+// Oct 19, 2026 ("home page ta aro dynamic and motion design"): inline CSS
+// custom properties for the homepage motion in globals.css. enterDelay()
+// staggers the hero's on-load fade-up (.dq-enter); revealDelay() staggers
+// scroll reveals ([data-reveal]) across items in a row.
+function enterDelay(ms: number): CSSProperties {
+  return { "--d": `${ms}ms` } as CSSProperties;
+}
+function revealDelay(ms: number): CSSProperties {
+  return { "--reveal-delay": `${ms}ms` } as CSSProperties;
+}
+
 function DashEyebrow({
   children,
   onDark = false,
@@ -372,26 +385,28 @@ export default async function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-20">
         <div
-          className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
+          className="dq-glow pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
           aria-hidden
         />
         <Container className="relative">
           <div className="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
             <div>
-              <DashEyebrow>The marketplace for digital businesses</DashEyebrow>
+              <div className="dq-enter" style={enterDelay(0)}>
+                <DashEyebrow>The marketplace for digital businesses</DashEyebrow>
+              </div>
 
-              <h1 className="text-4xl leading-[1.1] sm:text-5xl">
+              <h1 className="dq-enter text-4xl leading-[1.1] sm:text-5xl" style={enterDelay(90)}>
                 Buy what&rsquo;s next.
                 <br />
                 <span className="text-brand">Sell what you&rsquo;ve built.</span>
               </h1>
 
-              <p className="mt-5 max-w-[50ch] text-lg leading-relaxed text-ink-soft">
+              <p className="dq-enter mt-5 max-w-[50ch] text-lg leading-relaxed text-ink-soft" style={enterDelay(180)}>
                 Discover reviewed websites, SaaS products, apps and digital brands with the performance data you need
                 to move confidently.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(270)}>
                 <Button href="/buy" size="lg">
                   Explore businesses
                   <ArrowRight size={16} />
@@ -401,7 +416,7 @@ export default async function Home() {
                 </Button>
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-rule pt-6">
+              <div className="dq-enter mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-rule pt-6" style={enterDelay(360)}>
                 {["Verified Listings", "Clear performance data", "Guided deal process"].map((label) => (
                   <span key={label} className="flex items-center gap-1.5 text-xs font-medium text-ink-soft">
                     <CheckCircle2 size={14} className="text-brand" />
@@ -418,11 +433,11 @@ export default async function Home() {
                 marketing numbers. */}
             <div className="relative">
               <div
-                className="pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-brand/10 blur-3xl sm:h-72 sm:w-72"
+                className="dq-glow pointer-events-none absolute -right-10 -top-10 h-64 w-64 rounded-full bg-brand/10 blur-3xl sm:h-72 sm:w-72"
                 aria-hidden
               />
               <svg
-                className="pointer-events-none absolute -right-6 -top-6 hidden h-40 w-40 text-brand/20 sm:block"
+                className="dq-spin-slow pointer-events-none absolute -right-6 -top-6 hidden h-40 w-40 text-brand/20 sm:block"
                 viewBox="0 0 100 100"
                 fill="none"
                 aria-hidden
@@ -431,8 +446,8 @@ export default async function Home() {
               </svg>
 
               {spotlight ? (
-                <div className="relative lg:pr-5 lg:pt-4">
-                  <div className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.3)] sm:p-6 lg:mr-8">
+                <div className="dq-enter relative lg:pr-5 lg:pt-4" style={enterDelay(220)}>
+                  <div className="dq-float rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.3)] sm:p-6 lg:mr-8">
                     <span className="eyebrow mb-4">Featured opportunity</span>
                     <div className="flex items-start gap-3">
                       <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand text-base font-bold text-white">
@@ -489,7 +504,7 @@ export default async function Home() {
                       with no history at all, this falls back to an honest
                       label rather than a fabricated number. */}
                   {(spotlightTrendPercent !== null || sparkPoints.length > 0) && (
-                    <div className="mt-4 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:absolute lg:-right-2 lg:-top-2 lg:mt-0">
+                    <div className="dq-float-alt mt-4 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:absolute lg:-right-2 lg:-top-2 lg:mt-0">
                       <div>
                         {spotlightTrendPercent !== null ? (
                           <>
@@ -512,8 +527,11 @@ export default async function Home() {
                           {sparkPoints.map((v, i) => (
                             <span
                               key={i}
-                              className="w-1 rounded-sm bg-brand"
-                              style={{ height: `${Math.max(15, (v / sparkMax) * 100)}%` }}
+                              className="dq-bar w-1 rounded-sm bg-brand"
+                              style={{
+                                height: `${Math.max(15, (v / sparkMax) * 100)}%`,
+                                ...enterDelay(700 + i * 70),
+                              }}
                             />
                           ))}
                         </div>
@@ -564,17 +582,49 @@ export default async function Home() {
         </Container>
       </section>
 
+      {/* CATEGORY TICKER — Oct 19, 2026 motion pass: every category the
+          marketplace supports, scrolling continuously (pauses on hover; off
+          entirely for reduced motion). The list is rendered twice so the
+          loop is seamless; the second copy is hidden from screen readers. */}
+      <section className="border-b border-rule bg-paper-raised py-4" aria-label="Business categories on Durqo">
+        <div className="dq-marquee-wrap overflow-hidden">
+          <div className="dq-marquee flex w-max">
+            {[0, 1].map((copy) => (
+              <ul key={copy} className="flex shrink-0 items-center gap-3 pr-3" aria-hidden={copy === 1 ? true : undefined}>
+                {CATEGORIES.map((c) => {
+                  const Icon = CATEGORY_ICONS[c.id];
+                  return (
+                    <li key={c.id}>
+                      <Link
+                        href={`/buy/${c.id}`}
+                        tabIndex={copy === 1 ? -1 : undefined}
+                        className="flex items-center gap-2 whitespace-nowrap rounded-full border border-rule bg-paper px-4 py-2 text-sm font-medium text-ink-soft transition-colors hover:border-brand hover:text-ink"
+                      >
+                        {Icon && <Icon size={15} className="text-brand" aria-hidden />}
+                        {c.name}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* STATS BAR */}
       <section className="bg-brand-strong py-7 sm:py-9">
         <Container>
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
-            {statsBar.map(({ icon: Icon, value, label }) => (
-              <div key={label} className="flex items-center gap-3">
+            {statsBar.map(({ icon: Icon, value, label }, i) => (
+              <div key={label} data-reveal style={revealDelay(i * 90)} className="flex items-center gap-3">
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
                   <Icon size={19} />
                 </span>
                 <div className="min-w-0">
-                  <div className="mono truncate text-xl font-bold text-white sm:text-2xl">{value}</div>
+                  <div className="mono truncate text-xl font-bold text-white sm:text-2xl">
+                    <CountUp value={value} />
+                  </div>
                   <div className="text-xs leading-snug text-white/60">{label}</div>
                 </div>
               </div>
@@ -586,7 +636,7 @@ export default async function Home() {
       {/* CATEGORIES */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div data-reveal className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <DashEyebrow>Explore</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Find your kind of opportunity</h2>
@@ -613,6 +663,7 @@ export default async function Home() {
                   key={c.id}
                   href={`/buy/${c.id}`}
                   data-reveal
+                  style={revealDelay(i * 70)}
                   className="group relative flex flex-col items-center gap-2.5 rounded-xl border border-rule bg-paper-raised p-5 text-center transition hover:-translate-y-0.5 hover:border-brand hover:bg-brand-soft/40 hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:-translate-y-0.5 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                 >
                   {isPopular && (
@@ -637,7 +688,7 @@ export default async function Home() {
       {/* BUSINESSES GAINING ATTENTION */}
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div data-reveal className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
               <DashEyebrow>Featured listings</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Businesses gaining attention</h2>
@@ -652,8 +703,8 @@ export default async function Home() {
           </div>
           {featured.length > 0 ? (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.map((l) => (
-                <div key={l.id} data-reveal>
+              {featured.map((l, i) => (
+                <div key={l.id} data-reveal style={revealDelay((i % 3) * 110)}>
                   <ListingCard listing={l} />
                 </div>
               ))}
@@ -676,7 +727,7 @@ export default async function Home() {
       <section className="py-12 sm:py-16">
         <Container>
           <div className="grid gap-6 lg:grid-cols-2">
-            <div className="relative overflow-hidden rounded-2xl bg-brand-strong p-6 sm:p-8">
+            <div data-reveal className="relative overflow-hidden rounded-2xl bg-brand-strong p-6 sm:p-8">
               <div className="pointer-events-none absolute -right-12 -top-12 h-56 w-56 rounded-full bg-brand/10 blur-3xl" aria-hidden />
               <div className="relative">
                 <DashEyebrow onDark>For buyers</DashEyebrow>
@@ -699,8 +750,9 @@ export default async function Home() {
 
                 <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
                   <p className="text-[0.7rem] uppercase tracking-wide text-white/50">Better data. Smarter acquisitions.</p>
-                  <svg viewBox="0 0 200 56" className="mt-3 h-12 w-full text-brand" fill="none" aria-hidden>
+                  <svg viewBox="0 0 200 56" data-reveal className="dq-draw mt-3 h-12 w-full text-brand" fill="none" aria-hidden>
                     <polyline
+                      pathLength={1}
                       points="0,44 28,38 56,40 84,26 112,30 140,14 168,18 200,4"
                       stroke="currentColor"
                       strokeWidth="2.5"
@@ -712,7 +764,7 @@ export default async function Home() {
               </div>
             </div>
 
-            <div className="relative overflow-hidden rounded-2xl bg-brand-soft p-6 sm:p-8">
+            <div data-reveal style={revealDelay(120)} className="relative overflow-hidden rounded-2xl bg-brand-soft p-6 sm:p-8">
               <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-brand/15 blur-3xl" aria-hidden />
               <div className="pointer-events-none absolute -left-8 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-brand/10 blur-2xl" aria-hidden />
               <div className="relative">
@@ -751,14 +803,14 @@ export default async function Home() {
       {/* HOW IT WORKS */}
       <section id="how-it-works" className="scroll-mt-20 border-b border-rule py-14 sm:py-16">
         <Container>
-          <div className="mb-10 text-center">
+          <div data-reveal className="mb-10 text-center">
             <DashEyebrow center>How it works</DashEyebrow>
             <h2 className="text-2xl sm:text-3xl">A clearer path from discovery to transfer</h2>
           </div>
           <div className="relative grid gap-8 sm:grid-cols-3">
-            <div className="pointer-events-none absolute left-[8%] right-[8%] top-6 hidden h-px bg-rule sm:block" aria-hidden />
+            <div data-reveal className="dq-line pointer-events-none absolute left-[8%] right-[8%] top-6 hidden h-px bg-brand/40 sm:block" aria-hidden />
             {STEPS.map(({ title, body }, i) => (
-              <div key={title} data-reveal className="relative flex flex-col items-start">
+              <div key={title} data-reveal style={revealDelay(i * 160)} className="relative flex flex-col items-start">
                 <span className="mono relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong ring-8 ring-paper">
                   0{i + 1}
                 </span>
