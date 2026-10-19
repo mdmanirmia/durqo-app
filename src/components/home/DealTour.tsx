@@ -30,14 +30,14 @@ import {
 // SSLCommerz are never described as escrow, and nothing is called "secure"
 // as a guarantee.
 const STEPS = [
-  { icon: Search, title: "Browse reviewed listings", body: "Every listing is reviewed by our team before it goes live." },
-  { icon: LineChart, title: "Check the real numbers", body: "Revenue, traffic and proof images, with connected analytics where available." },
-  { icon: CreditCard, title: "Pay your way", body: "Card, Escrow.com, or in BDT with bKash, Nagad, Rocket, card or bank." },
-  { icon: ArrowLeftRight, title: "Transfer Room", body: "Opens once the full payment is received and verified. Each asset is handed over and confirmed." },
-  { icon: Wallet, title: "Seller gets paid", body: "The payout becomes eligible when the buyer approves the transfer." },
+  { icon: Search, url: "durqo.com/buy", title: "Browse reviewed listings", body: "Every listing is reviewed by our team before it goes live." },
+  { icon: LineChart, url: "durqo.com/listing", title: "Check the real numbers", body: "Revenue, traffic and proof images, with connected analytics where available." },
+  { icon: CreditCard, url: "durqo.com/checkout", title: "Pay your way", body: "Card, Escrow.com, or in BDT with bKash, Nagad, Rocket, card or bank." },
+  { icon: ArrowLeftRight, url: "durqo.com/transfer-room", title: "Transfer Room", body: "Opens once the full payment is received and verified. Each asset is handed over and confirmed." },
+  { icon: Wallet, url: "durqo.com/dashboard/payouts", title: "Seller gets paid", body: "The payout becomes eligible when the buyer approves the transfer." },
 ] as const;
 
-const SCENE_MS = 4800;
+const SCENE_MS = 3400;
 
 function Skel({ w, className = "" }: { w: string; className?: string }) {
   return <span className={`block h-2 rounded-full bg-[#E2E8F0] ${className}`} style={{ width: w }} />;
@@ -63,7 +63,7 @@ function SceneBrowse() {
           <div
             key={label}
             className={`dq-pop rounded-xl border bg-white p-3 ${i === 1 ? "dq-tour-pick border-[#E2E8F0]" : "border-[#E2E8F0]"}`}
-            style={{ animationDelay: i === 1 ? `${i * 140}ms, 2200ms` : `${i * 140}ms` }}
+            style={{ animationDelay: i === 1 ? `${i * 80}ms, 1150ms` : `${i * 80}ms` }}
           >
             <div className="mb-2 flex items-center gap-1.5 text-[0.58rem] font-semibold tracking-wide text-[#94A3B8]">
               <Icon size={12} className="text-[#64748B]" /> {label}
@@ -91,11 +91,11 @@ function SceneData() {
           <Skel w="140px" className="mb-1.5 h-3 bg-[#CBD5E1]" />
           <Skel w="90px" />
         </div>
-        <span className="dq-pop flex items-center gap-1 rounded-full bg-[#E3F7EF] px-2 py-1 text-[0.6rem] font-bold text-[#047857]" style={{ animationDelay: "900ms" }}>
+        <span className="dq-pop flex items-center gap-1 rounded-full bg-[#E3F7EF] px-2 py-1 text-[0.6rem] font-bold text-[#047857]" style={{ animationDelay: "550ms" }}>
           <BadgeCheck size={12} /> GA verified
         </span>
       </div>
-      <div className="dq-pop rounded-xl border border-[#E2E8F0] bg-white p-3" style={{ animationDelay: "150ms" }}>
+      <div className="dq-pop rounded-xl border border-[#E2E8F0] bg-white p-3" style={{ animationDelay: "80ms" }}>
         <div className="mb-2 flex items-center justify-between text-[0.6rem] font-semibold text-[#64748B]">
           <span>Revenue, last 12 months</span>
           <span className="text-[#94A3B8]">Monthly</span>
@@ -115,7 +115,7 @@ function SceneData() {
       </div>
       <div className="mt-2.5 grid grid-cols-3 gap-2">
         {["Revenue/mo", "Profit/mo", "Traffic"].map((l, i) => (
-          <div key={l} className="dq-pop rounded-lg border border-[#E2E8F0] bg-white p-2" style={{ animationDelay: `${400 + i * 120}ms` }}>
+          <div key={l} className="dq-pop rounded-lg border border-[#E2E8F0] bg-white p-2" style={{ animationDelay: `${250 + i * 80}ms` }}>
             <div className="mb-1 text-[0.5rem] font-semibold uppercase tracking-wide text-[#94A3B8]">{l}</div>
             <Skel w="70%" className="h-2.5 bg-[#CBD5E1]" />
           </div>
@@ -142,7 +142,7 @@ function ScenePay() {
           <div
             key={o.title}
             className={`dq-pop flex items-center justify-between rounded-xl border bg-white px-3 py-2.5 ${i === 2 ? "dq-tour-select" : "border-[#E2E8F0]"}`}
-            style={{ animationDelay: i === 2 ? `${150 + i * 140}ms, 1200ms` : `${150 + i * 140}ms` }}
+            style={{ animationDelay: i === 2 ? `${80 + i * 80}ms, 700ms` : `${80 + i * 80}ms` }}
           >
             <div>
               <div className="text-[0.72rem] font-semibold text-[#111827]">{o.title}</div>
@@ -172,20 +172,20 @@ function SceneTransfer() {
       </div>
       <div className="flex flex-col gap-2">
         {items.map((it, i) => (
-          <div key={it} className="dq-pop flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5" style={{ animationDelay: `${120 + i * 140}ms` }}>
+          <div key={it} className="dq-pop flex items-center justify-between rounded-xl border border-[#E2E8F0] bg-white px-3 py-2.5" style={{ animationDelay: `${60 + i * 80}ms` }}>
             <span className="text-[0.7rem] font-semibold text-[#111827]">{it}</span>
             <span className="relative inline-grid text-[0.55rem] font-bold">
-              <span className="dq-tour-status-a [grid-area:1/1] rounded-full bg-[#FBF3DD] px-2 py-0.5 text-[#92730F]" style={{ animationDelay: `${900 + i * 450}ms` }}>
+              <span className="dq-tour-status-a [grid-area:1/1] rounded-full bg-[#FBF3DD] px-2 py-0.5 text-[#92730F]" style={{ animationDelay: `${450 + i * 280}ms` }}>
                 SUBMITTED
               </span>
-              <span className="dq-tour-status-b [grid-area:1/1] flex items-center gap-1 rounded-full bg-[#E3F7EF] px-2 py-0.5 text-[#047857]" style={{ animationDelay: `${900 + i * 450}ms` }}>
+              <span className="dq-tour-status-b [grid-area:1/1] flex items-center gap-1 rounded-full bg-[#E3F7EF] px-2 py-0.5 text-[#047857]" style={{ animationDelay: `${450 + i * 280}ms` }}>
                 <Check size={10} strokeWidth={3} /> RECEIVED
               </span>
             </span>
           </div>
         ))}
       </div>
-      <div className="dq-tour-toast mt-3 rounded-xl border border-dashed border-[#10B981] bg-[#E3F7EF] px-3 py-2 text-[0.62rem] font-semibold text-[#047857]" style={{ animationDelay: "2600ms" }}>
+      <div className="dq-tour-toast mt-3 rounded-xl border border-dashed border-[#10B981] bg-[#E3F7EF] px-3 py-2 text-[0.62rem] font-semibold text-[#047857]" style={{ animationDelay: "1400ms" }}>
         All assets received. Buyer inspection has started.
       </div>
     </div>
@@ -198,17 +198,17 @@ function ScenePayout() {
       <span className="dq-pop dq-tour-ring grid h-16 w-16 place-items-center rounded-full bg-[#10B981] text-white">
         <Check size={30} strokeWidth={3} />
       </span>
-      <div className="dq-pop mt-4 text-sm font-bold text-[#111827]" style={{ animationDelay: "200ms" }}>
+      <div className="dq-pop mt-4 text-sm font-bold text-[#111827]" style={{ animationDelay: "120ms" }}>
         Buyer approved the transfer
       </div>
-      <div className="dq-pop mt-1 text-[0.7rem] text-[#64748B]" style={{ animationDelay: "320ms" }}>
+      <div className="dq-pop mt-1 text-[0.7rem] text-[#64748B]" style={{ animationDelay: "200ms" }}>
         The seller&rsquo;s payout is now eligible
       </div>
-      <div className="dq-pop mt-4 w-full rounded-xl border border-[#E2E8F0] bg-white p-3 text-left" style={{ animationDelay: "500ms" }}>
+      <div className="dq-pop mt-4 w-full rounded-xl border border-[#E2E8F0] bg-white p-3 text-left" style={{ animationDelay: "300ms" }}>
         <div className="mb-2 text-[0.58rem] font-semibold uppercase tracking-wider text-[#94A3B8]">Withdraw to</div>
         <div className="flex flex-wrap gap-1.5">
           {["Bank", "bKash", "Nagad", "Rocket", "PayPal", "Wise"].map((m, i) => (
-            <span key={m} className="dq-pop rounded-md border border-[#E2E8F0] px-2 py-1 text-[0.62rem] font-semibold text-[#334155]" style={{ animationDelay: `${650 + i * 80}ms` }}>
+            <span key={m} className="dq-pop rounded-md border border-[#E2E8F0] px-2 py-1 text-[0.62rem] font-semibold text-[#334155]" style={{ animationDelay: `${400 + i * 50}ms` }}>
               {m}
             </span>
           ))}
@@ -232,39 +232,62 @@ export default function DealTour() {
   }, [paused]);
 
   const Scene = SCENES[index];
+  const step = STEPS[index];
+  const StepIcon = step.icon;
 
   return (
     <div
-      className="grid items-center gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14"
+      className="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      <ol className="flex flex-col gap-1.5" aria-label="How a deal works on Durqo">
+      {/* Step list as a vertical timeline: the rail fills up to the active
+          step, finished steps turn into green checks. */}
+      <ol className="relative flex flex-col gap-1" aria-label="How a deal works on Durqo">
+        <span className="pointer-events-none absolute bottom-8 left-[2.2rem] top-8 w-[2px] -translate-x-1/2 rounded-full bg-rule" aria-hidden>
+          <span
+            className="absolute inset-x-0 top-0 bg-brand transition-[height] duration-500 ease-out"
+            style={{ height: `${(index / (STEPS.length - 1)) * 100}%` }}
+          />
+        </span>
         {STEPS.map(({ icon: Icon, title, body }, i) => {
           const active = i === index;
+          const done = i < index;
           return (
-            <li key={title}>
+            <li key={title} className="relative">
               <button
                 type="button"
                 onClick={() => setIndex(i)}
                 aria-current={active ? "step" : undefined}
-                className={`relative w-full overflow-hidden rounded-xl border px-4 py-3.5 text-left transition-colors ${
-                  active ? "border-rule bg-paper-raised shadow-[0_16px_32px_-24px_rgba(11,19,36,0.35)]" : "border-transparent hover:bg-paper-raised/60"
+                className={`relative w-full overflow-hidden rounded-2xl border px-4 py-3.5 text-left transition-all duration-300 ${
+                  active
+                    ? "border-brand/25 bg-paper-raised shadow-[0_18px_40px_-26px_rgba(11,19,36,0.4)] lg:translate-x-1.5"
+                    : "border-transparent hover:bg-paper-raised/60"
                 }`}
               >
+                {active && <span className="absolute inset-y-3 left-0 w-[3px] rounded-r-full bg-brand" aria-hidden />}
                 <span className="flex items-start gap-3.5">
                   <span
-                    className={`mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-colors ${
-                      active ? "bg-brand text-white" : "bg-paper-sunk text-ink-soft"
+                    className={`relative mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-xl transition-all duration-300 ${
+                      active
+                        ? "scale-105 bg-brand text-white shadow-[0_8px_18px_-8px_rgba(16,185,129,0.7)]"
+                        : done
+                          ? "bg-brand-soft text-brand"
+                          : "border border-rule bg-paper-raised text-ink-faint"
                     }`}
                   >
-                    <Icon size={17} />
+                    {active && <span className="absolute inset-0 animate-ping rounded-xl bg-brand/25 [animation-duration:1.8s]" aria-hidden />}
+                    {done ? <Check size={16} strokeWidth={2.75} /> : <Icon size={17} />}
                   </span>
-                  <span className="min-w-0">
-                    <span className="mono mr-2 text-[0.68rem] font-semibold text-ink-faint">0{i + 1}</span>
-                    <span className={`text-[0.95rem] font-semibold ${active ? "text-ink" : "text-ink-soft"}`}>{title}</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="flex items-center gap-2">
+                      <span className={`mono text-[0.68rem] font-semibold ${active ? "text-brand" : "text-ink-faint"}`}>0{i + 1}</span>
+                      <span className={`text-[0.95rem] font-semibold transition-colors ${active ? "text-ink" : done ? "text-ink-soft" : "text-ink-faint"}`}>
+                        {title}
+                      </span>
+                    </span>
                     <span
-                      className={`grid transition-[grid-template-rows,opacity] duration-500 ${
+                      className={`grid transition-[grid-template-rows,opacity] duration-300 ${
                         active ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
                       }`}
                     >
@@ -275,7 +298,7 @@ export default function DealTour() {
                   </span>
                 </span>
                 {active && (
-                  <span className="absolute inset-x-0 bottom-0 h-0.5 bg-rule">
+                  <span className="absolute inset-x-4 bottom-0 h-0.5 overflow-hidden rounded-full bg-rule">
                     <span
                       key={`${index}-${paused}`}
                       className={`block h-full bg-brand ${paused ? "w-full" : "dq-progress"}`}
@@ -291,20 +314,49 @@ export default function DealTour() {
 
       <div className="relative">
         <div className="dq-glow pointer-events-none absolute -inset-6 rounded-[2rem] bg-brand/15 blur-3xl" aria-hidden />
+        <div
+          className="pointer-events-none absolute -inset-px rounded-[1.05rem] bg-gradient-to-br from-brand/40 via-transparent to-brand/20"
+          aria-hidden
+        />
         <div className="relative overflow-hidden rounded-2xl border border-rule bg-[#F7F8FA] shadow-[0_40px_80px_-40px_rgba(11,19,36,0.45)]" aria-hidden>
-          <div className="flex h-10 items-center gap-2 border-b border-[#E2E8F0] bg-white px-4">
+          <div className="flex h-11 items-center gap-2 border-b border-[#E2E8F0] bg-white px-4">
             <span className="h-2.5 w-2.5 rounded-full bg-[#F87171]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#FBBF24]" />
             <span className="h-2.5 w-2.5 rounded-full bg-[#34D399]" />
-            <span className="ml-3 flex h-6 flex-1 items-center rounded-full bg-[#EEF1F4] px-3 text-[0.65rem] text-[#64748B]">
-              durqo.com
+            <span className="ml-3 flex h-7 flex-1 items-center gap-1.5 overflow-hidden rounded-full bg-[#EEF1F4] px-3 text-[0.68rem] text-[#64748B]">
+              <span key={step.url} className="dq-scene-in truncate">
+                {step.url}
+              </span>
+            </span>
+            <span className="mono hidden rounded-full bg-[#E3F7EF] px-2.5 py-1 text-[0.6rem] font-bold text-[#047857] sm:inline">
+              {index + 1} / {STEPS.length}
             </span>
           </div>
+          {/* Thin per-scene progress line under the address bar. */}
+          <div className="h-[2px] bg-[#EEF1F4]">
+            <span
+              key={`${index}-${paused}-bar`}
+              className={`block h-full bg-[#10B981] ${paused ? "w-full" : "dq-progress"}`}
+              style={{ animationDuration: `${SCENE_MS}ms` }}
+            />
+          </div>
           <div className="h-[340px] p-5 sm:p-6">
-            <div key={index} className="h-full">
+            <div key={index} className="dq-scene-in h-full">
               <Scene />
             </div>
           </div>
+        </div>
+
+        {/* Floating caption naming the current step. */}
+        <div
+          key={`chip-${index}`}
+          className="dq-pop absolute -bottom-7 left-6 flex items-center gap-2.5 rounded-xl border border-rule bg-paper-raised py-2 pl-2 pr-4 shadow-[0_16px_32px_-18px_rgba(11,19,36,0.4)]"
+          aria-hidden
+        >
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-white">
+            <StepIcon size={14} />
+          </span>
+          <span className="text-xs font-semibold text-ink">{step.title}</span>
         </div>
       </div>
     </div>

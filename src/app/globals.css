@@ -259,7 +259,7 @@ h1 {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
-.dq-float { animation: dq-float 6s ease-in-out infinite; }
+.dq-float { animation: dq-float 4.5s ease-in-out infinite; }
 .dq-float-alt { animation: dq-float 7s ease-in-out 1.2s infinite; }
 @keyframes dq-spin { to { transform: rotate(360deg); } }
 .dq-spin-slow { animation: dq-spin 48s linear infinite; }
@@ -301,7 +301,7 @@ h1 {
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: dq-rotate 6s linear infinite;
+  animation: dq-rotate 3.6s linear infinite;
   pointer-events: none;
 }
 /* Showcase progress bar (duration set inline to the rotation interval). */
@@ -322,18 +322,18 @@ h1 {
   52% { left: 74%; top: 34%; transform: scale(0.82); }
   60%, 100% { left: 74%; top: 34%; transform: scale(1); opacity: 1; }
 }
-.dq-tour-cursor { left: 12%; top: 92%; animation: dq-tour-cursor 3s cubic-bezier(0.4, 0, 0.2, 1) 0.6s both; }
+.dq-tour-cursor { left: 12%; top: 92%; animation: dq-tour-cursor 1.7s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both; }
 @keyframes dq-tour-pick {
   to { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18), 0 16px 30px -18px rgba(11, 19, 36, 0.35); transform: translateY(-3px); }
 }
-.dq-tour-pick { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-tour-pick 0.35s ease 2.2s forwards; }
+.dq-tour-pick { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-tour-pick 0.3s ease 1.15s forwards; }
 @keyframes dq-dash { to { stroke-dashoffset: 0; } }
-.dq-tour-draw polyline { stroke-dasharray: 1; stroke-dashoffset: 1; animation: dq-dash 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.4s forwards; }
+.dq-tour-draw polyline { stroke-dasharray: 1; stroke-dashoffset: 1; animation: dq-dash 1s cubic-bezier(0.65, 0, 0.35, 1) 0.15s forwards; }
 @keyframes dq-tour-select { to { border-color: #10B981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.16); } }
-.dq-tour-select { border: 1px solid #E2E8F0; animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-tour-select 0.3s ease 1.2s forwards; }
+.dq-tour-select { border: 1px solid #E2E8F0; animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-tour-select 0.25s ease 0.7s forwards; }
 @keyframes dq-tour-radio { to { border-color: #10B981; background: #10B981; box-shadow: inset 0 0 0 3px #fff; } }
-.dq-tour-radio { border: 1px solid #CBD5E1; animation: dq-tour-radio 0.3s ease 1.2s forwards; }
-.dq-tour-toast { opacity: 0; animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 1.9s both; }
+.dq-tour-radio { border: 1px solid #CBD5E1; animation: dq-tour-radio 0.25s ease 0.7s forwards; }
+.dq-tour-toast { opacity: 0; animation: dq-pop 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) 1.05s both; }
 @keyframes dq-fade-out { to { opacity: 0; transform: scale(0.9); } }
 @keyframes dq-fade-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
 .dq-tour-status-a { animation: dq-fade-out 0.3s ease forwards; }
@@ -342,7 +342,7 @@ h1 {
   0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
   100% { box-shadow: 0 0 0 18px rgba(16, 185, 129, 0); }
 }
-.dq-tour-ring { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-ring 1.6s ease-out 0.5s 2; }
+.dq-tour-ring { animation: dq-pop 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both, dq-ring 1.2s ease-out 0.3s 2; }
 
 /* Hero headline: words rise out of a soft blur one by one, then a hand-drawn
    brand underline sweeps in under the second line. */
@@ -411,6 +411,13 @@ h1 {
   animation-delay: calc(var(--reveal-delay, 0ms) + 250ms);
 }
 
+/* Deal tour scene change: the new screen slides in from the right. */
+@keyframes dq-scene-in {
+  from { opacity: 0; transform: translateX(18px); }
+  to { opacity: 1; transform: none; }
+}
+.dq-scene-in { animation: dq-scene-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
 /* Sitewide: arrow icons inside links and buttons nudge forward on hover. */
 a svg.lucide-arrow-right,
 button svg.lucide-arrow-right {
@@ -437,6 +444,7 @@ button:hover svg.lucide-arrow-right {
   .dq-shine::after { display: none; }
   .dq-tilt { transform: none !important; }
   .dq-tilt::after { display: none; }
+  .dq-scene-in { animation: none !important; }
 }
 
 /* Horizontally-scrollable rows with no visible scrollbar (the /buy category

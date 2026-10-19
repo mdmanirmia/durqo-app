@@ -12,7 +12,7 @@ import { fmtUSD } from "@/lib/format";
 // income, then price). Every slide is a real published, unsold listing; the
 // trend badge is computed per listing from its own recorded monthly income
 // and only shows a percentage when there are at least two real data points.
-// Auto-advances every 5s, pauses on hover/focus, never auto-advances for
+// Auto-advances every 3.6s (sped up from 5s on request), pauses on hover/focus, never auto-advances for
 // prefers-reduced-motion (dots still work).
 export interface ShowcaseSlide {
   id: string;
@@ -29,7 +29,7 @@ export interface ShowcaseSlide {
   sparkPoints: number[];
 }
 
-const INTERVAL_MS = 5000;
+const INTERVAL_MS = 3600;
 
 export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
   const [index, setIndex] = useState(0);
@@ -89,7 +89,7 @@ export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
                 <div
                   key={s.id}
                   aria-hidden={!isActive}
-                  className={`[grid-area:1/1] transition-all duration-700 ease-out ${
+                  className={`[grid-area:1/1] transition-all duration-[450ms] ease-out ${
                     isActive ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0"
                   }`}
                 >
@@ -199,7 +199,7 @@ export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
                   style={
                     {
                       height: `${Math.max(15, (v / sparkMax) * 100)}%`,
-                      "--d": `${150 + i * 60}ms`,
+                      "--d": `${80 + i * 35}ms`,
                     } as React.CSSProperties
                   }
                 />
