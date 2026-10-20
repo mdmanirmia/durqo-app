@@ -194,10 +194,10 @@ const PAY_ROWS = [
     items: [
       { name: "Stripe", color: "#635BFF" },
       { name: "Escrow.com", color: "#0B1324" },
+      { name: "Bank", color: "#0B1324" },
       { name: "bKash", color: "#E2136E" },
       { name: "Nagad", color: "#EC6C1F" },
       { name: "Rocket", color: "#8C3494" },
-      { name: "Bank", color: "#0B1324" },
     ],
   },
   {
