@@ -936,7 +936,7 @@ export default async function Home() {
                 key={row.label}
                 data-reveal
                 style={revealDelay(r * 120)}
-                className="rounded-2xl border border-rule bg-paper-raised p-6 shadow-[0_24px_48px_-36px_rgba(11,19,36,0.35)] sm:p-7"
+                className="rounded-2xl border border-rule bg-paper-sunk/50 p-6 sm:p-7"
               >
                 <DashEyebrow>{row.label}</DashEyebrow>
                 <h3 className="text-xl font-semibold text-ink sm:text-2xl">{row.title}</h3>
@@ -946,7 +946,7 @@ export default async function Home() {
                       key={m.name}
                       data-reveal
                       style={{ ...revealDelay(r * 120 + i * 60), color: m.color }}
-                      className="group flex items-center gap-2 rounded-xl border border-rule bg-paper px-3 py-2 text-[0.92rem] font-bold tracking-tight transition hover:-translate-y-0.5 hover:border-current hover:shadow-[0_12px_24px_-16px_currentColor]"
+                      className="group flex items-center gap-2 rounded-xl border border-rule bg-paper-raised px-3 py-2 text-[0.92rem] font-bold tracking-tight transition hover:-translate-y-0.5 hover:border-current hover:shadow-[0_12px_24px_-16px_currentColor]"
                     >
                       <span
                         className="grid h-6 w-6 place-items-center rounded-md text-[0.7rem] font-bold text-white transition-transform group-hover:scale-110"
