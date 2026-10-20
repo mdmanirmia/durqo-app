@@ -205,11 +205,11 @@ const PAY_ROWS = [
     title: "Withdraw your earnings, your way",
     items: [
       { name: "Bank", color: "#0B1324" },
+      { name: "PayPal", color: "#1D4E9E" },
+      { name: "Wise", color: "#2F7A2F" },
       { name: "bKash", color: "#E2136E" },
       { name: "Nagad", color: "#EC6C1F" },
       { name: "Rocket", color: "#8C3494" },
-      { name: "PayPal", color: "#1D4E9E" },
-      { name: "Wise", color: "#2F7A2F" },
     ],
   },
 ];
