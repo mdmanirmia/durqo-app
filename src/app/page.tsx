@@ -192,7 +192,7 @@ const PAY_ROWS = [
     label: "For buyers",
     title: "Pay the way that suits you",
     items: [
-      { name: "Card", color: "#0B1324" },
+      { name: "Stripe", color: "#635BFF" },
       { name: "Escrow.com", color: "#0B1324" },
       { name: "bKash", color: "#E2136E" },
       { name: "Nagad", color: "#EC6C1F" },
