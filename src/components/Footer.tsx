@@ -201,7 +201,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 border-t border-white/10 pt-6">
-          <p className="mono mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">Secure payments</p>
+          <p className="mono mb-3 text-xs font-semibold uppercase tracking-wider text-white/45">Payment methods</p>
           <div className="flex flex-wrap items-center gap-2">
             {PAYMENT_BADGES.map(({ icon: Icon, label, iconClassName }) => (
               <span

@@ -714,12 +714,35 @@ export default async function Home() {
                   ))}
                 </div>
 
-                <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-[0.7rem] uppercase tracking-wide text-white/50">Better data. Smarter acquisitions.</p>
-                  <svg viewBox="0 0 200 56" data-reveal className="dq-draw mt-3 h-12 w-full text-brand" fill="none" aria-hidden>
+                <div className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[0.7rem] uppercase tracking-wide text-white/50">On Durqo right now</p>
+                    <span className="flex items-center gap-1.5 text-[0.65rem] font-semibold text-brand">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-70" />
+                        <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand" />
+                      </span>
+                      Live
+                    </span>
+                  </div>
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    {[
+                      { value: String(activeListings.length), label: "Listings" },
+                      { value: fmtCompactUSD(totalListedValue), label: "Listed value" },
+                      { value: String(activeCategoryCount), label: "Business types" },
+                    ].map((st) => (
+                      <div key={st.label} className="min-w-0">
+                        <p className="mono truncate text-xl font-bold text-white sm:text-2xl">
+                          <CountUp value={st.value} />
+                        </p>
+                        <p className="mt-0.5 text-[0.68rem] text-white/50">{st.label}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <svg viewBox="0 0 500 40" data-reveal className="dq-draw mt-4 h-10 w-full text-brand" fill="none" aria-hidden>
                     <polyline
                       pathLength={1}
-                      points="0,44 28,38 56,40 84,26 112,30 140,14 168,18 200,4"
+                      points="2,34 70,30 140,31 210,20 280,23 350,11 420,14 498,4"
                       stroke="currentColor"
                       strokeWidth="2.5"
                       strokeLinecap="round"
@@ -905,11 +928,16 @@ export default async function Home() {
           methods the marketplace actually supports today (see /payments and
           /seller-payouts), shown as brand-colored wordmarks in text, not
           third-party logo files. */}
-      <section className="border-b border-rule py-12 sm:py-14">
+      <section className="py-12 sm:py-14">
         <Container>
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
+          <div className="grid gap-6 lg:grid-cols-2">
             {PAY_ROWS.map((row, r) => (
-              <div key={row.label} data-reveal style={revealDelay(r * 120)}>
+              <div
+                key={row.label}
+                data-reveal
+                style={revealDelay(r * 120)}
+                className="rounded-2xl border border-rule bg-paper-raised p-6 shadow-[0_24px_48px_-36px_rgba(11,19,36,0.35)] sm:p-7"
+              >
                 <DashEyebrow>{row.label}</DashEyebrow>
                 <h3 className="text-xl font-semibold text-ink sm:text-2xl">{row.title}</h3>
                 <div className="mt-5 flex flex-wrap gap-2.5">
@@ -918,8 +946,15 @@ export default async function Home() {
                       key={m.name}
                       data-reveal
                       style={{ ...revealDelay(r * 120 + i * 60), color: m.color }}
-                      className="rounded-xl border border-rule bg-paper-raised px-4 py-2.5 text-[0.95rem] font-bold tracking-tight shadow-[0_10px_24px_-20px_rgba(11,19,36,0.4)] transition hover:-translate-y-0.5 hover:border-brand"
+                      className="group flex items-center gap-2 rounded-xl border border-rule bg-paper px-3 py-2 text-[0.92rem] font-bold tracking-tight transition hover:-translate-y-0.5 hover:border-current hover:shadow-[0_12px_24px_-16px_currentColor]"
                     >
+                      <span
+                        className="grid h-6 w-6 place-items-center rounded-md text-[0.7rem] font-bold text-white transition-transform group-hover:scale-110"
+                        style={{ backgroundColor: m.color }}
+                        aria-hidden
+                      >
+                        {m.name.charAt(0)}
+                      </span>
                       {m.name}
                     </span>
                   ))}
@@ -932,23 +967,43 @@ export default async function Home() {
 
       {/* FINAL CTA — trimmed to a compact ~280-320px band on desktop
           (Sep 6 2026 refinement pass); content and both buttons unchanged. */}
-      <section className="relative overflow-hidden py-10 sm:py-11">
-        <div className="pointer-events-none absolute -bottom-20 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-brand/5 blur-3xl" aria-hidden />
-        <Container className="relative">
-          <div className="mx-auto max-w-[620px] text-center">
-            <span className="eyebrow mx-auto">Digital businesses. Real opportunities.</span>
-            <h2 className="mt-4 text-3xl sm:text-4xl">Ready to find your next opportunity?</h2>
-            <p className="mt-3 text-ink-soft">
-              Browse reviewed listings, or get a free valuation on the business you&rsquo;re ready to sell.
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button href="/buy" size="lg">
-                Explore businesses
-                <ArrowRight size={16} />
-              </Button>
-              <Button href="/valuation" variant="secondary" size="lg">
-                Get a free valuation
-              </Button>
+      <section className="pb-14 pt-2 sm:pb-20">
+        <Container>
+          <div
+            data-reveal
+            className="relative overflow-hidden rounded-3xl bg-brand-strong px-6 py-12 text-center sm:px-10 sm:py-16"
+          >
+            <MouseGlow />
+            <div className="dq-glow pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-brand/20 blur-3xl" aria-hidden />
+            <div
+              className="dq-glow pointer-events-none absolute -bottom-28 -right-16 h-80 w-80 rounded-full bg-brand/15 blur-3xl"
+              style={{ animationDelay: "3s" }}
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,#000_30%,transparent_75%)]"
+              aria-hidden
+            />
+            <div className="relative mx-auto max-w-[640px]">
+              <span className="mono inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-white/70">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+                Digital businesses. Real opportunities.
+              </span>
+              <h2 className="mt-5 text-3xl text-white sm:text-[2.6rem] sm:leading-tight">
+                Ready to find your <span className="text-brand">next opportunity?</span>
+              </h2>
+              <p className="mx-auto mt-4 max-w-[52ch] text-white/65">
+                Browse reviewed listings, or get a free valuation on the business you&rsquo;re ready to sell.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Button href="/buy" size="lg" className="dq-shine">
+                  Explore businesses
+                  <ArrowRight size={16} />
+                </Button>
+                <Button href="/valuation" variant="on-dark" size="lg">
+                  Get a free valuation
+                </Button>
+              </div>
             </div>
           </div>
         </Container>
