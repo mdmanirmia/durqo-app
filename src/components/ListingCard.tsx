@@ -108,12 +108,23 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       </div>
 
       <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
-        <h4 className="flex min-w-0 items-center gap-1.5 text-[1.08rem] font-semibold leading-snug tracking-tight text-ink" title={listing.title}>
+        <h4 className="flex min-w-0 items-center gap-1.5 text-[1.08rem] font-semibold leading-snug tracking-tight text-ink">
           <Link href={href} className="truncate after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
             {listing.title}
           </Link>
           {listing.isVerified && (
-            <BadgeCheck size={19} fill="#10B981" className="shrink-0 text-white" aria-label="Listing verified by Durqo" />
+            // Sits above the card's stretched link so hovering the tick shows
+            // its own "Data Verified" tooltip.
+            <span className="group/tick relative z-10 inline-flex shrink-0" role="img" aria-label="Data Verified">
+              <BadgeCheck size={19} fill="#10B981" className="text-white" aria-hidden />
+              <span
+                className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-brand-strong px-2 py-1 text-[0.68rem] font-semibold tracking-normal text-white opacity-0 shadow-lg transition duration-150 group-hover/tick:translate-y-0 group-hover/tick:opacity-100"
+                aria-hidden
+              >
+                Data Verified
+                <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-brand-strong" />
+              </span>
+            </span>
           )}
         </h4>
         <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">{listing.overview || "Not disclosed"}</p>
