@@ -43,10 +43,10 @@ function ColumnHeading({ children }: { children: React.ReactNode }) {
 const PAYMENT_BADGES = [
   { icon: StripeIcon, label: "Stripe", iconClassName: "text-[#635BFF]" },
   { icon: ShieldCheck, label: "Escrow.com", iconClassName: "text-[#42C31D]" },
+  { icon: Landmark, label: "Bank Transfer", iconClassName: "text-brand" },
   { icon: BkashIcon, label: "bKash", iconClassName: "text-[#E2136E]" },
   { icon: RocketGlyph, label: "Rocket", iconClassName: "text-[#7B1E3F]" },
   { icon: Smartphone, label: "Nagad", iconClassName: "text-[#ED1C24]" },
-  { icon: Landmark, label: "Bank Transfer", iconClassName: "text-brand" },
 ];
 
 // Sep 6, 2026: "Every deal held in escrow" / "Payments secured by Stripe"
