@@ -95,9 +95,19 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           >
             <Icon size={18} aria-hidden />
           </span>
-          <span className="truncate text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-ink-soft">
-            {category?.name ?? listing.categoryId}
-          </span>
+          <div className="min-w-0">
+            <span className="block truncate text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-ink-soft">
+              {category?.name ?? listing.categoryId}
+            </span>
+            {listing.isVerified && (
+              <span
+                className="mono mt-1 inline-flex items-center gap-1 rounded-md bg-brand-soft px-1.5 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wide text-brand-hover"
+                aria-label="Listing verified by Durqo"
+              >
+                <BadgeCheck size={11} /> Verified
+              </span>
+            )}
+          </div>
         </div>
         <div className="relative z-10 flex shrink-0 items-center gap-2">
           {isSold && <span className="rounded-full bg-brand-strong px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white">Sold</span>}
@@ -112,7 +122,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           <Link href={href} className="truncate after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
             {listing.title}
           </Link>
-          {listing.isVerified && <BadgeCheck size={17} className="shrink-0 text-brand" aria-label="Listing verified by Durqo" />}
         </h4>
         <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">{listing.overview || "Not disclosed"}</p>
 
