@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   Images,
+  ImageOff,
   X,
   ChevronLeft,
   ChevronRight,
@@ -40,7 +41,12 @@ export default function ProofGalleryButton({
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const hasRealImages = !!images && images.length > 0;
-  const total = hasRealImages ? images!.length : count;
+  // Oct 22, 2026 ("jei listing gulote photo or image add kora hobena oi
+  // gulo te photo view korle bolbe No Data Images Available"): with no
+  // uploaded images the lightbox now says so plainly instead of showing
+  // numbered placeholder frames. `count` is kept for API compatibility.
+  void count;
+  const total = hasRealImages ? images!.length : 0;
 
   return (
     <>
@@ -66,7 +72,7 @@ export default function ProofGalleryButton({
           >
             <div className="mb-3 flex items-center justify-between gap-3">
               <h4 className="text-base font-semibold">
-                Image {index + 1}
+                {hasRealImages ? `Image ${index + 1}` : `${label} Images`}
                 {total > 1 && (
                   <span className="ml-1.5 text-sm font-normal text-ink-faint">
                     of {total}
@@ -99,7 +105,7 @@ export default function ProofGalleryButton({
               className={`relative flex items-center justify-center overflow-hidden rounded-lg border border-rule bg-paper-sunk text-center text-sm text-ink-faint ${
                 hasRealImages
                   ? "h-[min(75vh,820px)] px-12"
-                  : "aspect-video px-6"
+                  : "h-64 px-6 sm:h-80"
               }`}
             >
               {hasRealImages ? (
@@ -111,10 +117,12 @@ export default function ProofGalleryButton({
                   className="block max-h-full max-w-full object-contain"
                 />
               ) : (
-                <span>
-                  {label} screenshot {index + 1} of {total} - uploaded by seller
-                  for verification
-                </span>
+                <div className="flex flex-col items-center gap-3">
+                  <span className="grid h-14 w-14 place-items-center rounded-2xl bg-paper-raised text-ink-faint ring-1 ring-rule">
+                    <ImageOff size={24} aria-hidden />
+                  </span>
+                  <p className="text-base font-semibold text-ink-soft">No Data Images Available</p>
+                </div>
               )}
               {total > 1 && (
                 <>
