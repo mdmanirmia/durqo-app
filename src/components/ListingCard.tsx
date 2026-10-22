@@ -152,11 +152,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3 border-t border-rule px-5 py-4">
-        <div className="min-w-0">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-3 border-t border-rule px-5 py-4">
+        <div className="shrink-0">
           <span className="block text-[0.58rem] font-semibold uppercase tracking-[0.08em] text-ink-faint">Asking price</span>
           <div className="mono flex flex-wrap items-baseline gap-x-2">
-            <span className="text-[1.3rem] font-bold tracking-tight text-ink">{fmtUSD(askPrice)}</span>
+            <span className="whitespace-nowrap text-[1.3rem] font-bold tracking-tight text-ink">{fmtUSD(askPrice)}</span>
             {hasDiscount && (
               <>
                 <span className="text-xs text-ink-faint line-through">{fmtUSD(listing.price)}</span>
@@ -168,7 +168,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           </div>
         </div>
         <span
-          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-brand-strong px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 group-hover:gap-2 group-hover:bg-brand"
+          className="ml-auto flex shrink-0 items-center gap-1.5 rounded-xl bg-brand-strong px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 group-hover:gap-2 group-hover:bg-brand"
           aria-hidden
         >
           View Listing
