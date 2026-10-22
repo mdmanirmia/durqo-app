@@ -423,7 +423,7 @@ export default async function Home() {
       <HomeFx />
 
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-20">
+      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk bg-[radial-gradient(60%_80%_at_85%_0%,rgba(255,255,255,0.9),transparent_70%)] py-14 sm:py-20">
         <div
           className="dq-glow pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
           aria-hidden
@@ -577,12 +577,12 @@ export default async function Home() {
       </section>
 
       {/* STATS BAR */}
-      <section className="bg-brand-strong py-7 sm:py-9">
+      <section className="bg-brand-strong bg-[linear-gradient(180deg,#0B1324,#101C33)] py-7 sm:py-9">
         <Container>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 sm:divide-x sm:divide-white/10">
             {statsBar.map(({ icon: Icon, value, label }, i) => (
-              <div key={label} data-reveal style={revealDelay(i * 90)} className="flex items-center gap-3">
-                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-white/10 text-brand">
+              <div key={label} data-reveal style={revealDelay(i * 90)} className="flex items-center gap-3 sm:pl-6 sm:first:pl-0">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/[0.07] text-brand ring-1 ring-white/10">
                   <Icon size={19} />
                 </span>
                 <div className="min-w-0">
@@ -598,7 +598,7 @@ export default async function Home() {
       </section>
 
       {/* CATEGORIES */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      <section className="border-b border-rule bg-paper-raised py-14 sm:py-16">
         <Container>
           <div data-reveal className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -628,7 +628,7 @@ export default async function Home() {
                   href={`/buy/${c.id}`}
                   data-reveal
                   style={revealDelay(i * 70)}
-                  className="group relative flex flex-col items-center gap-2.5 rounded-xl border border-rule bg-paper-raised p-5 text-center transition hover:-translate-y-0.5 hover:border-brand hover:bg-brand-soft/40 hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:-translate-y-0.5 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+                  className="group relative flex flex-col items-center gap-2.5 rounded-2xl border border-rule bg-paper p-5 text-center shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition hover:-translate-y-0.5 hover:border-brand hover:bg-paper-raised hover:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:-translate-y-0.5 focus-visible:border-brand focus-visible:bg-paper-raised focus-visible:shadow-[0_16px_32px_-22px_rgba(15,23,41,0.25)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                 >
                   {isPopular && (
                     <span className="absolute -top-2 right-3 rounded-full bg-brand px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wide text-white">
@@ -819,7 +819,7 @@ export default async function Home() {
           column gap doesn't push past 100% width); mobile stacks to one
           column, with the card grid dropping to a single column below the
           `sm` breakpoint so nothing feels cramped. */}
-      <section className="relative overflow-hidden bg-brand-strong py-14 sm:py-16 lg:py-20">
+      <section className="relative overflow-hidden bg-brand-strong bg-[linear-gradient(180deg,#0B1324,#0F1A30)] py-14 sm:py-16 lg:py-20">
         <MouseGlow />
         {/* Decorative background — purely cosmetic, kept at very low
             opacity so it never competes with the real content above it. */}
