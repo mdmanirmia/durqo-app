@@ -65,10 +65,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   const href = `/listing/${listing.slug}`;
   const accent = CATEGORY_ACCENTS[listing.categoryId] ?? "#10B981";
 
-  // Valuation multiple a buyer would compute themselves: asking price over
-  // annual profit. Only shown when there's real, positive recorded profit.
   const askPrice = listing.discountedPrice ?? listing.price;
-  const multiple = profit !== undefined && profit > 0 ? askPrice / (profit * 12) : undefined;
 
   // Oct 22, 2026 ("card er dekhte aro sundor kore and premium koro", then
   // "aro premium and professional koro"): premium redesign. Same data and
@@ -128,7 +125,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
               <CalendarClock size={12} /> {fmtAgeOrNA(listing.businessAgeYears)}
             </span>
           )}
-          {listing.isVerified && <span className="font-medium text-brand-hover">Verified by Durqo</span>}
         </div>
 
         {tags.length > 0 && (
@@ -145,20 +141,14 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         )}
 
         <div className="mt-auto pt-4">
-          <dl className="grid grid-cols-3 divide-x divide-rule rounded-xl border border-rule">
+          <dl className="grid grid-cols-2 divide-x divide-rule rounded-xl border border-rule">
             {[
               { label: "Revenue/mo", value: fmtUSDOrNA(revenue), missing: revenue === undefined, good: false },
               { label: "Profit/mo", value: fmtUSDOrNA(profit), missing: profit === undefined, good: profit !== undefined && profit > 0 },
-              {
-                label: "Multiple",
-                value: multiple !== undefined ? `${multiple.toFixed(1)}x` : "N/A",
-                missing: multiple === undefined,
-                good: false,
-              },
             ].map(({ label, value, missing, good }) => (
-              <div key={label} className="min-w-0 px-2.5 py-2.5">
-                <dt className="whitespace-nowrap text-[0.56rem] font-semibold uppercase tracking-[0.02em] text-ink-faint">{label}</dt>
-                <dd className={`mono mt-0.5 truncate text-[0.9rem] font-semibold ${missing ? "text-ink-faint" : good ? "text-brand-hover" : "text-ink"}`}>
+              <div key={label} className="min-w-0 px-4 py-2.5">
+                <dt className="whitespace-nowrap text-[0.6rem] font-semibold uppercase tracking-[0.06em] text-ink-faint">{label}</dt>
+                <dd className={`mono mt-0.5 truncate text-[0.95rem] font-semibold ${missing ? "text-ink-faint" : good ? "text-brand-hover" : "text-ink"}`}>
                   {value}
                 </dd>
               </div>
