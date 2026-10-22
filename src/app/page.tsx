@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { CATEGORIES, CATEGORY_MAP } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
+import { CATEGORY_ACCENTS } from "@/lib/category-accents";
 import { getPublishedListings, getSellerAndBuyerCount } from "@/lib/data/listings.server";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import ListingCard from "@/components/ListingCard";
@@ -969,40 +970,59 @@ export default async function Home() {
           (Sep 6 2026 refinement pass); content and both buttons unchanged. */}
       <section className="pb-14 pt-2 sm:pb-20">
         <Container>
-          <div
-            data-reveal
-            className="relative overflow-hidden rounded-3xl bg-brand-strong px-6 py-12 text-center sm:px-10 sm:py-16"
-          >
-            <MouseGlow />
-            <div className="dq-glow pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-brand/20 blur-3xl" aria-hidden />
-            <div
-              className="dq-glow pointer-events-none absolute -bottom-28 -right-16 h-80 w-80 rounded-full bg-brand/15 blur-3xl"
-              style={{ animationDelay: "3s" }}
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:radial-gradient(circle,#fff_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_at_center,#000_30%,transparent_75%)]"
-              aria-hidden
-            />
-            <div className="relative mx-auto max-w-[640px]">
-              <span className="mono inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-white/70">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                Digital businesses. Real opportunities.
-              </span>
-              <h2 className="mt-5 text-3xl text-white sm:text-[2.6rem] sm:leading-tight">
-                Ready to find your <span className="text-brand">next opportunity?</span>
-              </h2>
-              <p className="mx-auto mt-4 max-w-[52ch] text-white/65">
-                Browse reviewed listings, or get a free valuation on the business you&rsquo;re ready to sell.
-              </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Button href="/buy" size="lg" className="dq-shine w-full sm:w-auto">
-                  Explore businesses
-                  <ArrowRight size={16} />
-                </Button>
-                <Button href="/valuation" variant="on-dark" size="lg" className="w-full sm:w-auto">
-                  Get a free valuation
-                </Button>
+          <div data-reveal className="relative rounded-[28px] bg-gradient-to-br from-brand/50 via-white/10 to-[#3B82F6]/40 p-px">
+            <div className="relative overflow-hidden rounded-[27px] bg-[radial-gradient(70%_90%_at_50%_0%,rgba(16,185,129,0.22),transparent_60%),linear-gradient(180deg,#0B1324,#0E1A30)] px-6 py-14 text-center sm:px-10 sm:py-20">
+              <MouseGlow />
+              {/* Faint grid that fades toward the edges. */}
+              <div
+                className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_40%,#000_20%,transparent_75%)]"
+                aria-hidden
+              />
+              <div className="dq-glow pointer-events-none absolute -bottom-32 left-1/2 h-72 w-[38rem] -translate-x-1/2 rounded-full bg-brand/15 blur-3xl" aria-hidden />
+
+              {/* Decorative category tiles floating at the sides (desktop
+                  only), in the same accent colors as the listing cards. */}
+              {[
+                { id: "websites", pos: "left-[7%] top-[18%]", cls: "dq-float" },
+                { id: "saas", pos: "left-[13%] bottom-[16%]", cls: "dq-float-alt" },
+                { id: "youtube-channels", pos: "left-[3%] top-[52%]", cls: "dq-float-alt" },
+                { id: "e-commerce", pos: "right-[7%] top-[16%]", cls: "dq-float-alt" },
+                { id: "ai-apps-tools", pos: "right-[13%] bottom-[18%]", cls: "dq-float" },
+                { id: "apps-tools", pos: "right-[3%] top-[50%]", cls: "dq-float" },
+              ].map(({ id, pos, cls }) => {
+                const Icon = CATEGORY_ICONS[id];
+                const color = CATEGORY_ACCENTS[id] ?? "#10B981";
+                return Icon ? (
+                  <span
+                    key={id}
+                    className={`${cls} pointer-events-none absolute ${pos} hidden h-12 w-12 place-items-center rounded-2xl border border-white/10 bg-white/[0.06] backdrop-blur-sm lg:grid`}
+                    style={{ color, boxShadow: `0 10px 30px -12px ${color}` }}
+                    aria-hidden
+                  >
+                    <Icon size={20} />
+                  </span>
+                ) : null;
+              })}
+
+              <div className="relative mx-auto max-w-[640px]">
+                <h2 className="text-3xl leading-tight text-white sm:text-[2.75rem]">
+                  Ready to find your{" "}
+                  <span className="bg-gradient-to-r from-[#34D399] via-brand to-[#2DD4BF] bg-clip-text text-transparent">
+                    next opportunity?
+                  </span>
+                </h2>
+                <p className="mx-auto mt-4 max-w-[52ch] text-center text-white/65">
+                  Browse reviewed listings, or get a free valuation on the business you&rsquo;re ready to sell.
+                </p>
+                <div className="mt-9 flex flex-wrap justify-center gap-3">
+                  <Button href="/buy" size="lg" className="dq-shine w-full shadow-[0_12px_28px_-12px_rgba(16,185,129,0.9)] sm:w-auto">
+                    Explore businesses
+                    <ArrowRight size={16} />
+                  </Button>
+                  <Button href="/valuation" variant="on-dark" size="lg" className="w-full sm:w-auto">
+                    Get a free valuation
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
