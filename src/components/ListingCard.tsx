@@ -113,7 +113,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             {listing.title}
           </Link>
           {listing.isVerified && (
-            <BadgeCheck size={19} fill="#1D9BF0" className="shrink-0 text-white" aria-label="Listing verified by Durqo" />
+            <BadgeCheck size={19} fill="#10B981" className="shrink-0 text-white" aria-label="Listing verified by Durqo" />
           )}
         </h4>
         <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">{listing.overview || "Not disclosed"}</p>
