@@ -175,7 +175,6 @@ function excerpt(text: string, maxChars = 108): string {
 // marketplace-wide policy (see CONFIDENCE below), rendered as a single
 // nowrap line on wider screens and as an intentional 2-column grid (never
 // a lone wrapped item) below that, per the Sep 6 2026 refinement pass.
-const REVIEW_ITEMS = ["Listing reviewed", "Performance checked", "Seller verification available"];
 
 // Oct 5, 2026 copy revision (mockup-matched redesign): titles/bodies
 // rewritten to match the approved mockup. Every claim stays hedged to a
@@ -381,6 +380,7 @@ export default async function Home() {
       id: l.id,
       slug: l.slug,
       title: l.title,
+      categoryId: l.categoryId,
       categoryName: CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId,
       description: SPOTLIGHT_EXCERPTS[l.title] ?? excerpt(l.overview || "Not disclosed"),
       revenue,
@@ -504,38 +504,6 @@ export default async function Home() {
                 <div className="dq-enter relative lg:pr-5 lg:pt-4" style={enterDelay(220)}>
                   <HeroShowcase slides={showcaseSlides} />
 
-                  {/* Our review process — describes Durqo's actual policy
-                      (see "Confidence is built into every step" below), not
-                      a claim that this specific listing has completed every
-                      check, per the no-fake-verification brief. Renders as a
-                      single balanced line on lg+ screens (where the card has
-                      room) and as an intentional 2-column grid below that —
-                      never a lone item left to wrap by itself, per the
-                      Sep 6 2026 refinement pass. */}
-                  <div className="relative mt-10 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_1px_2px_rgba(11,19,36,0.05)] lg:mr-8">
-                    <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
-                      <ShieldCheck size={14} className="shrink-0 text-brand" />
-                      Our review process
-                    </p>
-                    <div className="mt-2.5 grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 lg:mt-2 lg:flex lg:flex-nowrap lg:items-center lg:gap-0">
-                      {REVIEW_ITEMS.map((t, i) => (
-                        <span
-                          key={t}
-                          className={`flex items-center gap-1.5 whitespace-nowrap text-[0.8rem] font-medium text-ink ${
-                            i === 2 ? "sm:col-span-2 lg:col-span-1" : ""
-                          }`}
-                        >
-                          <CheckCircle2 size={12} className="shrink-0 text-brand lg:hidden" aria-hidden />
-                          {i > 0 && (
-                            <span className="hidden text-ink-soft lg:mx-2.5 lg:inline" aria-hidden>
-                              ·
-                            </span>
-                          )}
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               ) : (
                 <div className="relative rounded-2xl border border-dashed border-rule-strong bg-paper-raised p-10 text-center text-sm text-ink-faint">
