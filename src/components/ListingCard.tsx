@@ -76,8 +76,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       style={{ "--acc": accent } as React.CSSProperties}
       className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[color-mix(in_srgb,var(--acc)_45%,transparent)] hover:shadow-[0_28px_56px_-30px_color-mix(in_srgb,var(--acc)_55%,transparent)]"
     >
-      {/* Tinted category header with a dotted texture and a large faded
-          icon watermark. */}
+      {/* Tinted category header with a light dotted texture. */}
       <div
         className="relative overflow-hidden px-5 pb-4 pt-5"
         style={{
@@ -87,13 +86,6 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       >
         <span
           className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:radial-gradient(color-mix(in_srgb,var(--acc)_35%,transparent)_1px,transparent_1px)] [background-size:14px_14px] [mask-image:linear-gradient(110deg,transparent_35%,#000)]"
-          aria-hidden
-        />
-        <Icon
-          size={92}
-          strokeWidth={1.25}
-          className="pointer-events-none absolute -bottom-5 right-14 opacity-[0.09] transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-110"
-          style={{ color: accent }}
           aria-hidden
         />
         <div className="relative flex items-start justify-between gap-3">
