@@ -95,19 +95,9 @@ export default function ListingCard({ listing }: { listing: Listing }) {
           >
             <Icon size={18} aria-hidden />
           </span>
-          <div className="min-w-0">
-            <span className="block truncate text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-ink-soft">
-              {category?.name ?? listing.categoryId}
-            </span>
-            {listing.isVerified && (
-              <span
-                className="mono mt-1 inline-flex items-center gap-1 rounded-md bg-brand-soft px-1.5 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wide text-brand-hover"
-                aria-label="Listing verified by Durqo"
-              >
-                <BadgeCheck size={11} /> Verified
-              </span>
-            )}
-          </div>
+          <span className="truncate text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-ink-soft">
+            {category?.name ?? listing.categoryId}
+          </span>
         </div>
         <div className="relative z-10 flex shrink-0 items-center gap-2">
           {isSold && <span className="rounded-full bg-brand-strong px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white">Sold</span>}
@@ -125,13 +115,23 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         </h4>
         <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">{listing.overview || "Not disclosed"}</p>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-ink-faint">
-          <span className="flex items-center gap-1">
-            <MapPin size={12} /> {location}
-          </span>
-          {listing.businessAgeYears != null && (
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-ink-faint">
             <span className="flex items-center gap-1">
-              <CalendarClock size={12} /> {fmtAgeOrNA(listing.businessAgeYears)}
+              <MapPin size={12} /> {location}
+            </span>
+            {listing.businessAgeYears != null && (
+              <span className="flex items-center gap-1">
+                <CalendarClock size={12} /> {fmtAgeOrNA(listing.businessAgeYears)}
+              </span>
+            )}
+          </div>
+          {listing.isVerified && (
+            <span
+              className="mono inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-soft px-2 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-brand-hover"
+              aria-label="Listing verified by Durqo"
+            >
+              <BadgeCheck size={12} /> Verified
             </span>
           )}
         </div>
