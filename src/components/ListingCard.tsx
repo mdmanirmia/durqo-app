@@ -111,17 +111,11 @@ export default function ListingCard({ listing }: { listing: Listing }) {
       </div>
 
       <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
-        <h4 className="line-clamp-2 text-[1.08rem] font-semibold leading-snug tracking-tight text-ink">
-          <Link href={href} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
+        <h4 className="flex min-w-0 items-center gap-1.5 text-[1.08rem] font-semibold leading-snug tracking-tight text-ink" title={listing.title}>
+          <Link href={href} className="truncate after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
             {listing.title}
           </Link>
-          {listing.isVerified && (
-            <BadgeCheck
-              size={17}
-              className="relative -top-px ml-1.5 inline-block text-brand"
-              aria-label="Listing verified by Durqo"
-            />
-          )}
+          {listing.isVerified && <BadgeCheck size={17} className="shrink-0 text-brand" aria-label="Listing verified by Durqo" />}
         </h4>
         <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">{listing.overview || "Not disclosed"}</p>
 
