@@ -259,7 +259,7 @@ h1 {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
 }
-.dq-float { animation: dq-float 4.5s ease-in-out infinite; }
+.dq-float { animation: dq-float 3s ease-in-out infinite; }
 .dq-float-alt { animation: dq-float 7s ease-in-out 1.2s infinite; }
 @keyframes dq-spin { to { transform: rotate(360deg); } }
 .dq-spin-slow { animation: dq-spin 48s linear infinite; }
@@ -301,7 +301,7 @@ h1 {
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
-  animation: dq-rotate 3.6s linear infinite;
+  animation: dq-rotate 2.4s linear infinite;
   pointer-events: none;
 }
 /* Showcase progress bar (duration set inline to the rotation interval). */

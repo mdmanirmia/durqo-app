@@ -33,7 +33,7 @@ export interface ShowcaseSlide {
   sparkPoints: number[];
 }
 
-const INTERVAL_MS = 3600;
+const INTERVAL_MS = 2600;
 
 export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
   const [index, setIndex] = useState(0);
@@ -106,8 +106,8 @@ export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
                     aria-hidden={!isActive}
                     className={`[grid-area:1/1] transition-[opacity,transform] ease-out ${
                       isActive
-                        ? "translate-y-0 opacity-100 delay-150 duration-300"
-                        : "pointer-events-none translate-y-1 opacity-0 delay-0 duration-150"
+                        ? "translate-y-0 opacity-100 delay-100 duration-200"
+                        : "pointer-events-none translate-y-1 opacity-0 delay-0 duration-100"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -227,7 +227,7 @@ export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
                   style={
                     {
                       height: `${Math.max(15, (v / sparkMax) * 100)}%`,
-                      "--d": `${80 + i * 35}ms`,
+                      "--d": `${40 + i * 25}ms`,
                     } as React.CSSProperties
                   }
                 />
