@@ -4,6 +4,7 @@ import { useId } from "react";
 import { Check, Globe } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
+import { CATEGORY_ACCENTS } from "@/lib/category-accents";
 import { FilterDraft, FilterDraftErrors } from "@/lib/filter-draft";
 
 // Oct 22, 2026 ("left er filter card ta aro valo kore deisgn"): premium
@@ -26,7 +27,7 @@ const PRICE_PRESETS: { label: string; min: string; max: string }[] = [
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <fieldset className="min-w-0 border-t border-rule pt-4 first:border-t-0 first:pt-0">
-      <legend className="float-left mb-2.5 w-full text-[0.8rem] font-semibold text-ink">
+      <legend className="float-left mb-2.5 flex w-full items-center gap-2 text-[0.8rem] font-semibold text-ink before:h-3.5 before:w-[3px] before:rounded-full before:bg-brand before:content-['']">
 
         {title}
       </legend>
@@ -75,7 +76,7 @@ export default function FilterForm({
               <label
                 key={v}
                 className={`cursor-pointer rounded-md py-1.5 text-center text-sm font-medium transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/40 ${
-                  on ? "bg-paper-raised text-ink shadow-[0_1px_2px_rgba(11,19,36,0.12)] ring-1 ring-rule" : "text-ink-faint hover:text-ink"
+                  on ? "bg-brand text-white shadow-[0_4px_10px_-4px_rgba(16,185,129,0.8)]" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 <input type="radio" name={incomeId} checked={on} onChange={() => onChange({ income: v })} className="sr-only" />
@@ -95,12 +96,18 @@ export default function FilterForm({
               <label
                 key={c.id}
                 className={`flex min-h-[34px] cursor-pointer items-center gap-2.5 rounded-md px-1.5 text-sm transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/40 ${
-                  on ? "font-medium text-ink" : "text-ink-soft hover:bg-paper-sunk hover:text-ink"
+                  on ? "bg-brand-soft/70 font-medium text-ink" : "text-ink-soft hover:bg-paper-sunk hover:text-ink"
                 }`}
               >
                 <input type="checkbox" checked={on} onChange={() => toggleCategory(c.id)} className="sr-only" />
                 <CheckBox checked={on} />
-                <Icon size={15} className={on ? "text-ink" : "text-ink-faint"} aria-hidden />
+                <span
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-md"
+                  style={{ color: CATEGORY_ACCENTS[c.id] ?? "#10B981", backgroundColor: `color-mix(in srgb, ${CATEGORY_ACCENTS[c.id] ?? "#10B981"} 12%, #fff)` }}
+                  aria-hidden
+                >
+                  <Icon size={13} />
+                </span>
                 <span className="truncate">{c.name}</span>
               </label>
             );
@@ -201,7 +208,7 @@ export default function FilterForm({
             <label
               key={label}
               className={`flex min-h-[38px] cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand/40 ${
-                on ? "border-ink/20 font-medium text-ink" : "border-rule text-ink-soft hover:border-rule-strong"
+                on ? "border-brand bg-brand-soft font-medium text-ink" : "border-rule text-ink-soft hover:border-rule-strong"
               }`}
             >
               <input type="checkbox" checked={on} onChange={(e) => onChange({ [key]: e.target.checked })} className="sr-only" />

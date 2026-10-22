@@ -88,9 +88,11 @@ export default function DesktopFilterSidebar() {
 
   return (
     <aside className="hidden h-max flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] md:sticky md:top-24 md:flex md:max-h-[calc(100vh-7rem)]">
-      <div className="flex items-center justify-between gap-3 border-b border-rule px-5 py-4">
+      <div className="flex items-center justify-between gap-3 border-b border-rule bg-gradient-to-r from-brand-soft to-paper-raised px-5 py-4">
         <div className="flex items-center gap-2">
-          <SlidersHorizontal size={16} className="text-ink-soft" aria-hidden />
+          <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand text-white">
+            <SlidersHorizontal size={14} aria-hidden />
+          </span>
           <p className="text-[0.95rem] font-semibold text-ink">Filters</p>
           {activeCount > 0 && (
             <span className="mono grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1.5 text-[0.65rem] font-bold text-white">
@@ -119,7 +121,7 @@ export default function DesktopFilterSidebar() {
           type="button"
           onClick={apply}
           disabled={hasErrors || isPending}
-          className="group flex items-center justify-center gap-1.5 rounded-lg bg-brand-strong py-2.5 text-sm font-semibold text-white transition hover:bg-navy-secondary disabled:cursor-not-allowed disabled:opacity-60"
+          className="group flex items-center justify-center gap-1.5 rounded-lg bg-brand py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? "Applying…" : "Apply filters"}
           {!isPending && <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" aria-hidden />}
