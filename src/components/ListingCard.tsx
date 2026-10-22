@@ -79,7 +79,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   return (
     <div
       style={{ "--acc": accent } as React.CSSProperties}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04),0_8px_24px_-18px_rgba(11,19,36,0.18)] transition duration-300 hover:-translate-y-1 hover:border-[color-mix(in_srgb,var(--acc)_35%,transparent)] hover:shadow-[0_30px_60px_-34px_rgba(11,19,36,0.38)]"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border-[1.5px] border-[color-mix(in_srgb,var(--acc)_28%,#CBD5E1)] bg-paper-raised shadow-[0_1px_3px_rgba(11,19,36,0.06),0_10px_28px_-18px_rgba(11,19,36,0.22)] transition duration-300 hover:-translate-y-1 hover:border-[color-mix(in_srgb,var(--acc)_70%,#CBD5E1)] hover:shadow-[0_0_0_4px_color-mix(in_srgb,var(--acc)_10%,transparent),0_30px_60px_-34px_rgba(11,19,36,0.4)]"
     >
       <span className="h-[3px] w-full" style={{ backgroundColor: accent }} aria-hidden />
 
