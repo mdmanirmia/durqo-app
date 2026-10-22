@@ -65,71 +65,67 @@ export default function ListingCard({ listing }: { listing: Listing }) {
   const href = `/listing/${listing.slug}`;
   const accent = CATEGORY_ACCENTS[listing.categoryId] ?? "#10B981";
 
-  // Oct 22, 2026 ("card er dekhte aro sundor kore and premium koro"):
-  // premium redesign. Same data and honesty rules as before; layout changes
-  // only: category tile instead of the grey header band, metrics in a soft
-  // panel, an "Asking price" footer, and the whole card is clickable
-  // (stretched title link) while the wishlist button stays separately
-  // clickable above it.
+  // Valuation multiple a buyer would compute themselves: asking price over
+  // annual profit. Only shown when there's real, positive recorded profit.
+  const askPrice = listing.discountedPrice ?? listing.price;
+  const multiple = profit !== undefined && profit > 0 ? askPrice / (profit * 12) : undefined;
+
+  // Oct 22, 2026 ("card er dekhte aro sundor kore and premium koro", then
+  // "aro premium and professional koro"): premium redesign. Same data and
+  // honesty rules as before. Each category gets a quiet accent color (thin
+  // top rule, soft header tint, icon); everything else stays neutral so the
+  // card reads as professional rather than colorful. Whole card is
+  // clickable via the stretched title link; wishlist stays its own button.
   return (
     <div
       style={{ "--acc": accent } as React.CSSProperties}
-      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-1 hover:border-[color-mix(in_srgb,var(--acc)_45%,transparent)] hover:shadow-[0_28px_56px_-30px_color-mix(in_srgb,var(--acc)_55%,transparent)]"
+      className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04),0_8px_24px_-18px_rgba(11,19,36,0.18)] transition duration-300 hover:-translate-y-1 hover:border-[color-mix(in_srgb,var(--acc)_35%,transparent)] hover:shadow-[0_30px_60px_-34px_rgba(11,19,36,0.38)]"
     >
-      {/* Tinted category header with a light dotted texture. */}
+      <span className="h-[3px] w-full" style={{ backgroundColor: accent }} aria-hidden />
+
+      {/* Soft category header. */}
       <div
-        className="relative overflow-hidden px-5 pb-4 pt-5"
+        className="flex items-center justify-between gap-3 border-b px-5 py-3.5"
         style={{
-          background:
-            "linear-gradient(135deg, color-mix(in srgb, var(--acc) 16%, #fff) 0%, color-mix(in srgb, var(--acc) 5%, #fff) 70%)",
+          background: "linear-gradient(180deg, color-mix(in srgb, var(--acc) 8%, #fff), color-mix(in srgb, var(--acc) 2%, #fff))",
+          borderColor: "color-mix(in srgb, var(--acc) 14%, #E2E8F0)",
         }}
       >
-        <span
-          className="pointer-events-none absolute inset-0 opacity-[0.35] [background-image:radial-gradient(color-mix(in_srgb,var(--acc)_35%,transparent)_1px,transparent_1px)] [background-size:14px_14px] [mask-image:linear-gradient(110deg,transparent_35%,#000)]"
-          aria-hidden
-        />
-        <div className="relative flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span
-              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white shadow-[0_6px_14px_-6px_color-mix(in_srgb,var(--acc)_60%,transparent)] ring-1 ring-black/5 transition-transform duration-300 group-hover:scale-105"
-              style={{ color: accent }}
-            >
-              <Icon size={20} aria-hidden />
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-[0.68rem] font-bold uppercase tracking-wider" style={{ color: accent }}>
-                {category?.name ?? listing.categoryId}
-              </p>
-              <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                {listing.isVerified && (
-                  <span
-                    className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[0.65rem] font-semibold text-brand-hover ring-1 ring-brand/20"
-                    aria-label="Listing verified by Durqo"
-                  >
-                    <BadgeCheck size={11} /> Verified
-                  </span>
-                )}
-                {isSold && (
-                  <span className="rounded-full bg-brand-strong px-2 py-0.5 text-[0.65rem] font-semibold text-white">Sold</span>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="relative z-10 rounded-full bg-white/90">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-white ring-1 ring-black/[0.06] transition-transform duration-300 group-hover:scale-105"
+            style={{ color: accent }}
+          >
+            <Icon size={18} aria-hidden />
+          </span>
+          <span className="truncate text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-ink-soft">
+            {category?.name ?? listing.categoryId}
+          </span>
+        </div>
+        <div className="relative z-10 flex shrink-0 items-center gap-2">
+          {isSold && <span className="rounded-full bg-brand-strong px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wide text-white">Sold</span>}
+          <span className="rounded-full bg-white">
             <WishlistButton listingId={listing.id} size="lg" />
-          </div>
+          </span>
         </div>
       </div>
 
       <div className="flex flex-1 flex-col px-5 pb-5 pt-4">
-        <h4 className="line-clamp-2 text-[1.05rem] font-semibold leading-snug text-ink">
+        <h4 className="line-clamp-2 text-[1.08rem] font-semibold leading-snug tracking-tight text-ink">
           <Link href={href} className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none">
             {listing.title}
           </Link>
+          {listing.isVerified && (
+            <BadgeCheck
+              size={17}
+              className="relative -top-px ml-1.5 inline-block text-brand"
+              aria-label="Listing verified by Durqo"
+            />
+          )}
         </h4>
         <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ink-soft">{listing.overview || "Not disclosed"}</p>
 
-        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-faint">
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-ink-faint">
           <span className="flex items-center gap-1">
             <MapPin size={12} /> {location}
           </span>
@@ -138,63 +134,62 @@ export default function ListingCard({ listing }: { listing: Listing }) {
               <CalendarClock size={12} /> {fmtAgeOrNA(listing.businessAgeYears)}
             </span>
           )}
+          {listing.isVerified && <span className="font-medium text-brand-hover">Verified by Durqo</span>}
         </div>
 
         {tags.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full px-2.5 py-0.5 text-[0.68rem] font-medium"
-                style={{ color: accent, backgroundColor: `color-mix(in srgb, ${accent} 9%, #fff)` }}
-              >
+              <span key={t} className="rounded-md bg-paper-sunk px-2 py-1 text-[0.68rem] font-medium text-ink-soft">
                 {t}
               </span>
             ))}
             {extraTagCount > 0 && (
-              <span className="rounded-full bg-paper-sunk px-2.5 py-0.5 text-[0.68rem] font-medium text-ink-faint">+{extraTagCount}</span>
+              <span className="rounded-md bg-paper-sunk px-2 py-1 text-[0.68rem] font-medium text-ink-faint">+{extraTagCount}</span>
             )}
           </div>
         )}
 
         <div className="mt-auto pt-4">
-          <div className="grid grid-cols-2 gap-2">
+          <dl className="grid grid-cols-3 divide-x divide-rule rounded-xl border border-rule">
             {[
-              { label: "Revenue/mo", value: revenue },
-              { label: "Profit/mo", value: profit },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded-xl border border-rule bg-paper-sunk/50 px-3.5 py-2.5">
-                <span className="block text-[0.6rem] font-semibold uppercase tracking-wider text-ink-faint">{label}</span>
-                <span
-                  className={`mono mt-0.5 block text-[0.95rem] font-semibold ${
-                    value === undefined ? "text-ink-faint" : label === "Profit/mo" && value > 0 ? "text-brand-hover" : "text-ink"
-                  }`}
-                >
-                  {fmtUSDOrNA(value)}
-                </span>
+              { label: "Revenue/mo", value: fmtUSDOrNA(revenue), missing: revenue === undefined, good: false },
+              { label: "Profit/mo", value: fmtUSDOrNA(profit), missing: profit === undefined, good: profit !== undefined && profit > 0 },
+              {
+                label: "Multiple",
+                value: multiple !== undefined ? `${multiple.toFixed(1)}x` : "N/A",
+                missing: multiple === undefined,
+                good: false,
+              },
+            ].map(({ label, value, missing, good }) => (
+              <div key={label} className="min-w-0 px-2.5 py-2.5">
+                <dt className="whitespace-nowrap text-[0.56rem] font-semibold uppercase tracking-[0.02em] text-ink-faint">{label}</dt>
+                <dd className={`mono mt-0.5 truncate text-[0.9rem] font-semibold ${missing ? "text-ink-faint" : good ? "text-brand-hover" : "text-ink"}`}>
+                  {value}
+                </dd>
               </div>
             ))}
-          </div>
+          </dl>
         </div>
       </div>
 
-      <div className="flex items-end justify-between gap-3 border-t border-dashed border-rule bg-paper-sunk/40 px-5 py-4">
+      <div className="flex items-center justify-between gap-3 border-t border-rule px-5 py-4">
         <div className="min-w-0">
-          <span className="block text-[0.6rem] font-semibold uppercase tracking-wider text-ink-faint">Asking price</span>
+          <span className="block text-[0.58rem] font-semibold uppercase tracking-[0.08em] text-ink-faint">Asking price</span>
           <div className="mono flex flex-wrap items-baseline gap-x-2">
-            <span className="text-xl font-bold text-ink">{fmtUSD(listing.discountedPrice ?? listing.price)}</span>
+            <span className="text-[1.3rem] font-bold tracking-tight text-ink">{fmtUSD(askPrice)}</span>
             {hasDiscount && (
               <>
                 <span className="text-xs text-ink-faint line-through">{fmtUSD(listing.price)}</span>
                 {discountPct > 0 && (
-                  <span className="rounded-full bg-[#FEE2E2] px-1.5 py-0.5 text-[0.62rem] font-bold text-[#B91C1C]">-{discountPct}%</span>
+                  <span className="rounded-md bg-[#FEF2F2] px-1.5 py-0.5 text-[0.62rem] font-bold text-[#B91C1C]">-{discountPct}%</span>
                 )}
               </>
             )}
           </div>
         </div>
         <span
-          className="flex shrink-0 items-center gap-1 rounded-xl bg-brand-strong px-3.5 py-2.5 text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(11,19,36,0.6)] transition-colors duration-300 group-hover:bg-brand"
+          className="flex shrink-0 items-center gap-1.5 rounded-xl bg-brand-strong px-4 py-2.5 text-sm font-semibold text-white transition-all duration-300 group-hover:gap-2 group-hover:bg-brand"
           aria-hidden
         >
           View Listing
