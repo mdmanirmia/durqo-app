@@ -78,7 +78,7 @@ export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
         )}
 
         <div className="dq-float relative lg:mr-8">
-          <div className="dq-border relative rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.3)] sm:p-6">
+          <div className="dq-border relative rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_1px_2px_rgba(11,19,36,0.05),0_8px_20px_-14px_rgba(11,19,36,0.18)] sm:p-6">
             <div className="mb-4 flex items-center justify-between gap-3">
               <span className="eyebrow">Featured opportunity</span>
               {count > 1 && (
@@ -205,7 +205,7 @@ export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
       {(active.trendPercent !== null || active.sparkPoints.length > 0) && (
         <div
           key={active.id}
-          className="dq-pop relative z-10 mt-10 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:absolute lg:-right-2 lg:-top-6 lg:mt-0"
+          className="dq-pop relative z-10 mt-10 flex items-center gap-3 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_1px_2px_rgba(11,19,36,0.05),0_6px_14px_-10px_rgba(11,19,36,0.18)] lg:absolute lg:-right-2 lg:-top-6 lg:mt-0"
         >
           <div>
             {active.trendPercent !== null ? (

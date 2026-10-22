@@ -511,7 +511,7 @@ export default async function Home() {
                       room) and as an intentional 2-column grid below that —
                       never a lone item left to wrap by itself, per the
                       Sep 6 2026 refinement pass. */}
-                  <div className="relative mt-10 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_16px_32px_-22px_rgba(11,19,36,0.25)] lg:mr-8">
+                  <div className="relative mt-10 rounded-xl border border-rule bg-paper-raised px-4 py-3 shadow-[0_1px_2px_rgba(11,19,36,0.05)] lg:mr-8">
                     <p className="flex items-center gap-1.5 text-xs font-semibold text-ink">
                       <ShieldCheck size={14} className="shrink-0 text-brand" />
                       Our review process
