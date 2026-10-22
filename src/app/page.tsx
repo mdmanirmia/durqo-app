@@ -381,6 +381,7 @@ export default async function Home() {
       slug: l.slug,
       title: l.title,
       categoryId: l.categoryId,
+      isVerified: Boolean(l.isVerified),
       categoryName: CATEGORY_MAP[l.categoryId]?.name ?? l.categoryId,
       description: SPOTLIGHT_EXCERPTS[l.title] ?? excerpt(l.overview || "Not disclosed"),
       revenue,

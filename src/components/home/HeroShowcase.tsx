@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import WishlistButton from "@/components/WishlistButton";
 import { fmtUSD } from "@/lib/format";
-import { Globe } from "lucide-react";
+import { Globe, BadgeCheck } from "lucide-react";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
 import { CATEGORY_ACCENTS } from "@/lib/category-accents";
 
@@ -22,6 +22,7 @@ export interface ShowcaseSlide {
   slug: string;
   title: string;
   categoryId?: string;
+  isVerified?: boolean;
   categoryName: string;
   description: string;
   revenue: number;
@@ -119,7 +120,22 @@ export default function HeroShowcase({ slides }: { slides: ShowcaseSlide[] }) {
                         <Icon size={20} />
                       </span>
                       <div className="min-w-0">
-                        <h3 className="truncate text-[1.05rem] font-semibold tracking-tight text-ink">{s.title}</h3>
+                        <h3 className="flex min-w-0 items-center gap-1.5 text-[1.05rem] font-semibold tracking-tight text-ink">
+                          <span className="truncate">{s.title}</span>
+                          {s.isVerified && (
+                            // Same green tick and "Data Verified" tooltip as the listing cards.
+                            <span className="group/tick relative inline-flex shrink-0" role="img" aria-label="Data Verified">
+                              <BadgeCheck size={18} fill="#10B981" className="text-white" aria-hidden />
+                              <span
+                                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 -translate-x-1/2 translate-y-1 whitespace-nowrap rounded-md bg-brand-strong px-2 py-1 text-[0.68rem] font-semibold tracking-normal text-white opacity-0 shadow-lg transition duration-150 group-hover/tick:translate-y-0 group-hover/tick:opacity-100"
+                                aria-hidden
+                              >
+                                Data Verified
+                                <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-brand-strong" />
+                              </span>
+                            </span>
+                          )}
+                        </h3>
                         <p className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-ink-faint">
                           {s.categoryName}
                         </p>
