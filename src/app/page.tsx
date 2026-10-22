@@ -459,11 +459,11 @@ export default async function Home() {
               </p>
 
               <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(270)}>
-                <Button href="/buy" size="lg" className="dq-shine">
+                <Button href="/buy" size="lg" className="dq-shine w-full sm:w-auto">
                   Explore businesses
                   <ArrowRight size={16} />
                 </Button>
-                <Button href="/sell" variant="secondary" size="lg">
+                <Button href="/sell" variant="secondary" size="lg" className="w-full sm:w-auto">
                   Sell your business
                 </Button>
               </div>
@@ -725,14 +725,14 @@ export default async function Home() {
                       Live
                     </span>
                   </div>
-                  <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
                     {[
                       { value: String(activeListings.length), label: "Listings" },
                       { value: fmtCompactUSD(totalListedValue), label: "Listed value" },
                       { value: String(activeCategoryCount), label: "Business types" },
                     ].map((st) => (
                       <div key={st.label} className="min-w-0">
-                        <p className="mono truncate text-xl font-bold text-white sm:text-2xl">
+                        <p className="mono truncate text-lg font-bold text-white sm:text-2xl">
                           <CountUp value={st.value} />
                         </p>
                         <p className="mt-0.5 text-[0.68rem] text-white/50">{st.label}</p>
@@ -792,7 +792,7 @@ export default async function Home() {
       {/* HOW IT WORKS — Oct 19, 2026: the static 3-step row became an
           animated product tour (DealTour) that plays one deal from browsing
           to payout. Same #how-it-works anchor the header nav links to. */}
-      <section id="how-it-works" className="scroll-mt-20 border-b border-rule bg-paper-sunk py-16 sm:py-20">
+      <section id="how-it-works" className="scroll-mt-20 overflow-hidden border-b border-rule bg-paper-sunk py-16 sm:py-20">
         <Container>
           <div data-reveal className="mb-10 text-center sm:mb-12">
             <DashEyebrow center>How it works</DashEyebrow>
@@ -996,11 +996,11 @@ export default async function Home() {
                 Browse reviewed listings, or get a free valuation on the business you&rsquo;re ready to sell.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Button href="/buy" size="lg" className="dq-shine">
+                <Button href="/buy" size="lg" className="dq-shine w-full sm:w-auto">
                   Explore businesses
                   <ArrowRight size={16} />
                 </Button>
-                <Button href="/valuation" variant="on-dark" size="lg">
+                <Button href="/valuation" variant="on-dark" size="lg" className="w-full sm:w-auto">
                   Get a free valuation
                 </Button>
               </div>
