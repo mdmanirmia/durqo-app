@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMarketplaceNav } from "@/lib/use-marketplace-nav";
 import { draftFromFilters, draftToFilters, validateDraft, FilterDraft } from "@/lib/filter-draft";
+import { SlidersHorizontal, RotateCcw } from "lucide-react";
 import FilterForm from "./FilterForm";
 
 const RESET_PATCH = { income: "any" as const, categoryIds: [] as string[], priceMin: null, priceMax: null, ageMin: null, ageMax: null, status: "available" as const };
@@ -78,16 +79,47 @@ export default function DesktopFilterSidebar() {
     navigate(next);
   }
 
+  const activeCount =
+    (draft.income !== "any" ? 1 : 0) +
+    draft.categoryIds.length +
+    (draft.priceMin || draft.priceMax ? 1 : 0) +
+    (draft.ageMin || draft.ageMax ? 1 : 0) +
+    (draft.statusSold ? 1 : 0);
+
   return (
-    <aside className="hidden h-max flex-col gap-6 rounded-xl border border-rule bg-paper-raised p-5 md:sticky md:top-24 md:flex md:max-h-[calc(100vh-7rem)] md:overflow-y-auto">
-      <p className="mono text-xs font-semibold uppercase tracking-wide text-ink-faint">Filter listings</p>
-      <FilterForm draft={draft} onChange={handleFormChange} errors={errors} />
-      <div className="flex flex-col gap-2 border-t border-rule pt-4">
+    <aside className="hidden h-max flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_3px_rgba(11,19,36,0.05),0_12px_32px_-24px_rgba(11,19,36,0.25)] md:sticky md:top-24 md:flex md:max-h-[calc(100vh-7rem)]">
+      <div className="flex items-center justify-between gap-3 border-b border-rule bg-gradient-to-b from-brand-soft/60 to-paper-raised px-5 py-4">
+        <div className="flex items-center gap-2.5">
+          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">
+            <SlidersHorizontal size={15} aria-hidden />
+          </span>
+          <div>
+            <p className="text-sm font-bold text-ink">Filters</p>
+            <p className="text-[0.68rem] text-ink-faint">{activeCount > 0 ? `${activeCount} active` : "Refine your search"}</p>
+          </div>
+        </div>
+        {activeCount > 0 && (
+          <button
+            type="button"
+            onClick={reset}
+            disabled={isPending}
+            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-ink-soft transition hover:bg-paper-sunk hover:text-ink disabled:opacity-60"
+          >
+            <RotateCcw size={12} aria-hidden /> Reset
+          </button>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5">
+        <FilterForm draft={draft} onChange={handleFormChange} errors={errors} />
+      </div>
+
+      <div className="flex flex-col gap-2 border-t border-rule bg-paper-sunk/40 px-5 py-4">
         <button
           type="button"
           onClick={apply}
           disabled={hasErrors || isPending}
-          className="rounded-md bg-brand py-2.5 text-sm font-semibold text-white transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-brand py-2.5 text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(16,185,129,0.8)] transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? "Applying…" : "Apply filters"}
         </button>
@@ -95,7 +127,7 @@ export default function DesktopFilterSidebar() {
           type="button"
           onClick={reset}
           disabled={isPending}
-          className="rounded-md border border-rule-strong py-2.5 text-sm font-semibold text-ink transition hover:border-brand-strong disabled:opacity-60"
+          className="rounded-lg border border-rule-strong bg-paper-raised py-2.5 text-sm font-semibold text-ink transition hover:border-brand-strong disabled:opacity-60"
         >
           Reset filters
         </button>
