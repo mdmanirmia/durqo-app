@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useMarketplaceNav } from "@/lib/use-marketplace-nav";
 import { draftFromFilters, draftToFilters, validateDraft, FilterDraft } from "@/lib/filter-draft";
-import { SlidersHorizontal, RotateCcw } from "lucide-react";
+import { SlidersHorizontal, RotateCcw, ArrowRight } from "lucide-react";
 import FilterForm from "./FilterForm";
 
 const RESET_PATCH = { income: "any" as const, categoryIds: [] as string[], priceMin: null, priceMax: null, ageMin: null, ageMax: null, status: "available" as const };
@@ -87,49 +87,54 @@ export default function DesktopFilterSidebar() {
     (draft.statusSold ? 1 : 0);
 
   return (
-    <aside className="hidden h-max flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_3px_rgba(11,19,36,0.05),0_12px_32px_-24px_rgba(11,19,36,0.25)] md:sticky md:top-24 md:flex md:max-h-[calc(100vh-7rem)]">
-      <div className="flex items-center justify-between gap-3 border-b border-rule bg-gradient-to-b from-brand-soft/60 to-paper-raised px-5 py-4">
-        <div className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-white">
-            <SlidersHorizontal size={15} aria-hidden />
-          </span>
-          <div>
-            <p className="text-sm font-bold text-ink">Filters</p>
-            <p className="text-[0.68rem] text-ink-faint">{activeCount > 0 ? `${activeCount} active` : "Refine your search"}</p>
+    <aside className="hidden h-max flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_3px_rgba(11,19,36,0.05),0_18px_40px_-28px_rgba(11,19,36,0.35)] md:sticky md:top-24 md:flex md:max-h-[calc(100vh-7rem)]">
+      {/* Dark premium header with a soft brand glow. */}
+      <div className="relative overflow-hidden bg-brand-strong px-5 py-4">
+        <span className="pointer-events-none absolute -right-10 -top-12 h-32 w-32 rounded-full bg-brand/30 blur-2xl" aria-hidden />
+        <div className="relative flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/10 text-brand ring-1 ring-white/15">
+              <SlidersHorizontal size={16} aria-hidden />
+            </span>
+            <div>
+              <p className="text-[0.95rem] font-bold text-white">Filters</p>
+              <p className="text-[0.7rem] text-white/55">{activeCount > 0 ? `${activeCount} active` : "Refine your search"}</p>
+            </div>
           </div>
+          {activeCount > 0 && (
+            <button
+              type="button"
+              onClick={reset}
+              disabled={isPending}
+              className="flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[0.7rem] font-semibold text-white/85 ring-1 ring-white/15 transition hover:bg-white/20 hover:text-white disabled:opacity-60"
+            >
+              <RotateCcw size={11} aria-hidden /> Clear
+            </button>
+          )}
         </div>
-        {activeCount > 0 && (
-          <button
-            type="button"
-            onClick={reset}
-            disabled={isPending}
-            className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-ink-soft transition hover:bg-paper-sunk hover:text-ink disabled:opacity-60"
-          >
-            <RotateCcw size={12} aria-hidden /> Reset
-          </button>
-        )}
       </div>
 
       <div className="flex-1 overflow-y-auto px-5 py-5">
         <FilterForm draft={draft} onChange={handleFormChange} errors={errors} />
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-rule bg-paper-sunk/40 px-5 py-4">
+      <div className="flex flex-col gap-2.5 border-t border-rule bg-paper-sunk/50 px-5 py-4">
         <button
           type="button"
           onClick={apply}
           disabled={hasErrors || isPending}
-          className="rounded-lg bg-brand py-2.5 text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(16,185,129,0.8)] transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
+          className="group flex items-center justify-center gap-1.5 rounded-xl bg-brand py-2.5 text-sm font-semibold text-white shadow-[0_10px_22px_-12px_rgba(16,185,129,0.9)] transition hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           {isPending ? "Applying…" : "Apply filters"}
+          {!isPending && <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" aria-hidden />}
         </button>
         <button
           type="button"
           onClick={reset}
           disabled={isPending}
-          className="rounded-lg border border-rule-strong bg-paper-raised py-2.5 text-sm font-semibold text-ink transition hover:border-brand-strong disabled:opacity-60"
+          className="rounded-xl py-1.5 text-xs font-semibold text-ink-soft transition hover:text-ink disabled:opacity-60"
         >
-          Reset filters
+          Reset all filters
         </button>
       </div>
     </aside>
