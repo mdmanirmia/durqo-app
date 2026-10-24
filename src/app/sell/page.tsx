@@ -22,6 +22,21 @@ import { createClient } from "@/lib/supabase/server";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import SellFaq from "./SellFaq";
+import type { CSSProperties } from "react";
+import CountUp from "@/components/CountUp";
+import MouseGlow from "@/components/home/MouseGlow";
+import { CATEGORY_ACCENTS } from "@/lib/category-accents";
+
+// Oct 24, 2026 ("ei page ta aro motion type and dynamic koro ... sundor
+// and premium"): same motion system as the homepage (globals.css dq-*
+// classes + [data-reveal]), all of it off for prefers-reduced-motion.
+// Content is unchanged; only presentation and motion.
+function enterDelay(ms: number): CSSProperties {
+  return { "--d": `${ms}ms` } as CSSProperties;
+}
+function revealDelay(ms: number): CSSProperties {
+  return { "--reveal-delay": `${ms}ms` } as CSSProperties;
+}
 
 // Sep 6, 2026 redesign to match the approved homepage's visual system —
 // see claude/homepage-redesign-addendum.md for the full brief and the
@@ -196,37 +211,50 @@ export default async function SellPage() {
       {/* HERO — 52/48 desktop split via fr units (not percent), same
           overflow-safe technique as the homepage's Confidence section, so
           the 48-64px column gap never pushes the two columns past 100%. */}
-      <section className="relative overflow-hidden border-b border-rule bg-brand-strong py-16 sm:py-20 lg:py-24">
+      <section className="relative overflow-hidden border-b border-rule bg-brand-strong bg-[radial-gradient(60%_80%_at_0%_0%,rgba(16,185,129,0.16),transparent_60%),radial-gradient(50%_70%_at_100%_100%,rgba(59,130,246,0.12),transparent_60%),linear-gradient(180deg,#0B1324,#0F1B33)] py-16 sm:py-20 lg:py-24">
+        <MouseGlow />
         <div
-          className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_70%_at_30%_30%,#000_25%,transparent_75%)]"
+          aria-hidden
+        />
+        <div
+          className="dq-glow pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-brand/20 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="dq-glow pointer-events-none absolute -bottom-24 right-[10%] h-72 w-72 rounded-full bg-[#3B82F6]/15 blur-3xl"
+          style={{ animationDelay: "3s" }}
           aria-hidden
         />
         <Container className="relative">
           <Inner>
             <div className="grid items-center gap-10 lg:grid-cols-[0.52fr_0.48fr] lg:gap-x-14">
               <div>
-                <DashEyebrow onDark>Sell on Durqo</DashEyebrow>
-                <h1 className="max-w-[17ch] text-4xl leading-[1.1] text-white sm:text-5xl">
-                  Your business <span className="text-brand">has value.</span>
+                <div className="dq-enter" style={enterDelay(0)}>
+                  <DashEyebrow onDark>Sell on Durqo</DashEyebrow>
+                </div>
+                <h1 className="dq-enter max-w-[17ch] text-4xl leading-[1.1] text-white sm:text-5xl" style={enterDelay(90)}>
+                  Your business{" "}
+                  <span className="bg-gradient-to-r from-[#34D399] via-brand to-[#2DD4BF] bg-clip-text text-transparent">has value.</span>
                   <br />
                   Let the market see it.
                 </h1>
-                <p className="mt-5 max-w-[52ch] text-lg leading-relaxed text-white/70">
+                <p className="dq-enter mt-5 max-w-[52ch] text-lg leading-relaxed text-white/70" style={enterDelay(180)}>
                   Get a free valuation, create a reviewed listing and connect with serious buyers, all without paying
                   anything upfront.
                 </p>
 
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button href="/valuation" size="lg">
+                <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(270)}>
+                  <Button href="/valuation" size="lg" className="dq-shine w-full sm:w-auto">
                     Get a free valuation
                     <ArrowRight size={16} />
                   </Button>
-                  <Button href={listBusinessHref} variant="on-dark" size="lg">
+                  <Button href={listBusinessHref} variant="on-dark" size="lg" className="w-full sm:w-auto">
                     List your business
                   </Button>
                 </div>
 
-                <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-white/10 pt-6">
+                <div className="dq-enter mt-8 flex flex-wrap gap-x-6 gap-y-2.5 border-t border-white/10 pt-6" style={enterDelay(360)}>
                   {["Free to list", "Reviewed before publishing", "Tiered fee only when sold"].map((label) => (
                     <span key={label} className="flex items-center gap-1.5 text-xs font-medium text-white/70">
                       <CheckCircle2 size={14} className="text-brand" />
@@ -239,31 +267,34 @@ export default async function SellPage() {
               {/* Illustrative valuation preview — clearly labeled static
                   example content (per the brief), never a computed,
                   visitor-specific number and never randomized on load. */}
-              <div className="relative">
-                <div className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[0_28px_56px_-30px_rgba(11,19,36,0.4)] sm:p-6">
+              <div className="dq-enter relative" style={enterDelay(220)}>
+                <div className="dq-spin-slow pointer-events-none absolute -right-8 -top-8 hidden h-36 w-36 rounded-full border border-dashed border-brand/30 sm:block" aria-hidden />
+                <div className="dq-float relative">
+                <div className="dq-border relative rounded-2xl border border-white/10 bg-paper-raised p-5 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.6)] sm:p-6">
                   <span className="eyebrow mb-4">Illustrative valuation example</span>
                   <div className="mono mt-1 flex flex-col gap-2.5 text-sm">
-                    <div className="flex items-center justify-between border-b border-rule pb-2.5">
+                    <div className="dq-enter flex items-center justify-between border-b border-rule pb-2.5" style={enterDelay(450)}>
                       <span className="text-ink-faint">Monthly revenue</span>
                       <span className="font-semibold text-ink">$8,500</span>
                     </div>
-                    <div className="flex items-center justify-between border-b border-rule pb-2.5">
+                    <div className="dq-enter flex items-center justify-between border-b border-rule pb-2.5" style={enterDelay(540)}>
                       <span className="text-ink-faint">Monthly profit</span>
                       <span className="font-semibold text-ink">$3,200</span>
                     </div>
-                    <div className="flex items-center justify-between border-b border-rule pb-2.5">
+                    <div className="dq-enter flex items-center justify-between border-b border-rule pb-2.5" style={enterDelay(630)}>
                       <span className="text-ink-faint">Business type</span>
                       <span className="font-semibold text-ink">SaaS</span>
                     </div>
                   </div>
 
-                  <div className="mt-4 rounded-xl bg-brand-soft p-4">
+                  <div className="dq-pop mt-4 rounded-xl bg-brand-soft p-4" style={{ animationDelay: "760ms" }}>
                     <p className="text-[0.68rem] font-semibold uppercase tracking-wide text-brand-strong/70">
                       Estimated valuation range
                     </p>
                     <p className="mono mt-1 text-2xl font-bold text-brand-strong">$96,000 – $192,000</p>
-                    <svg viewBox="0 0 200 40" className="mt-3 h-8 w-full text-brand" fill="none" aria-hidden>
+                    <svg viewBox="0 0 200 40" data-reveal className="dq-draw mt-3 h-8 w-full text-brand" fill="none" aria-hidden>
                       <polyline
+                        pathLength={1}
                         points="0,32 30,26 60,28 90,18 120,20 150,8 180,10 200,2"
                         stroke="currentColor"
                         strokeWidth="2.5"
@@ -281,6 +312,7 @@ export default async function SellPage() {
                     <ArrowRight size={13} />
                   </Link>
                 </div>
+                </div>
               </div>
             </div>
           </Inner>
@@ -288,13 +320,15 @@ export default async function SellPage() {
       </section>
 
       {/* SELLER-BENEFIT STRIP */}
-      <section className="border-b border-rule bg-paper-sunk py-6">
+      <section className="border-b border-rule bg-paper-raised py-6">
         <Container>
           <Inner>
             <div className="grid grid-cols-2 divide-y divide-rule sm:grid-cols-4 sm:divide-x sm:divide-y-0">
-              {BENEFIT_STRIP.map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center justify-center gap-2.5 px-4 py-3 text-center sm:py-0">
-                  <Icon size={16} className="shrink-0 text-brand" />
+              {BENEFIT_STRIP.map(({ icon: Icon, label }, i) => (
+                <div key={label} data-reveal style={revealDelay(i * 90)} className="flex items-center justify-center gap-2.5 px-4 py-3 text-center sm:py-0">
+                  <span className="dq-icon-pop grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+                    <Icon size={15} />
+                  </span>
                   <span className="text-sm font-medium text-ink">{label}</span>
                 </div>
               ))}
@@ -307,7 +341,7 @@ export default async function SellPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[60ch]">
+            <div data-reveal className="mb-10 max-w-[60ch]">
               <DashEyebrow>A better way to sell</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Built to help you sell with clarity.</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
@@ -317,8 +351,10 @@ export default async function SellPage() {
             </div>
             <div className="grid gap-8 divide-y divide-rule sm:grid-cols-3 sm:gap-6 sm:divide-x sm:divide-y-0">
               {VALUE_PROPS.map(({ icon: Icon, title, body }, i) => (
-                <div key={title} data-reveal className={`flex flex-col gap-2 ${i > 0 ? "pt-6 sm:pt-0 sm:pl-6" : ""}`}>
-                  <Icon size={22} className="text-brand" />
+                <div key={title} data-reveal style={revealDelay(i * 120)} className={`group flex flex-col gap-2 ${i > 0 ? "pt-6 sm:pt-0 sm:pl-6" : ""}`}>
+                  <span className="dq-icon-pop grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand transition group-hover:bg-brand group-hover:text-white">
+                    <Icon size={20} />
+                  </span>
                   <h4 className="mt-1 text-base font-semibold text-ink">{title}</h4>
                   <p className="text-sm leading-relaxed text-ink-soft">{body}</p>
                 </div>
@@ -330,18 +366,23 @@ export default async function SellPage() {
 
       {/* SELLING PROCESS — same connected-timeline technique as the
           homepage's How It Works, extended to 4 steps. */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
+      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-16">
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.08)_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,#000_20%,transparent_70%)]"
+          aria-hidden
+        />
+        <Container className="relative">
           <Inner>
-            <div className="mb-10 text-center">
+            <div data-reveal className="mb-10 text-center">
               <DashEyebrow center>The selling process</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">From valuation to a completed sale.</h2>
             </div>
             <div className="relative grid gap-8 sm:grid-cols-4">
               <div className="pointer-events-none absolute left-[6%] right-[6%] top-6 hidden h-px bg-rule sm:block" aria-hidden />
-              {PROCESS_STEPS.map(({ n, title, body }) => (
-                <div key={n} data-reveal className="relative flex flex-col items-start">
-                  <span className="mono relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand-strong ring-8 ring-paper-sunk">
+              <div data-reveal className="dq-line pointer-events-none absolute left-[6%] right-[6%] top-6 hidden h-0.5 -translate-y-px rounded-full bg-gradient-to-r from-brand via-brand to-brand/30 sm:block" aria-hidden />
+              {PROCESS_STEPS.map(({ n, title, body }, i) => (
+                <div key={n} data-reveal style={revealDelay(i * 160)} className="group relative flex flex-col items-start">
+                  <span className="dq-icon-pop mono relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(16,185,129,0.8)] ring-8 ring-paper-sunk transition group-hover:scale-110">
                     {n}
                   </span>
                   <h4 className="text-base font-semibold text-ink">{title}</h4>
@@ -364,22 +405,30 @@ export default async function SellPage() {
       <section className="border-b border-rule py-20">
         <Container>
           <div className="mx-auto max-w-[1240px]">
+            <div data-reveal>
             <DashEyebrow>What you can sell</DashEyebrow>
             <h2 className="text-2xl sm:text-3xl">Sell any type of digital business.</h2>
-            <p className="mb-8 mt-2 max-w-[60ch] text-[0.95rem] leading-relaxed text-ink-soft">
+            </div>
+            <p data-reveal className="mb-8 mt-2 max-w-[60ch] text-[0.95rem] leading-relaxed text-ink-soft">
               Explore all the digital business categories you can list and sell on Durqo.
             </p>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
-              {CATEGORIES.map((category) => {
+              {CATEGORIES.map((category, i) => {
                 const Icon = CATEGORY_ICONS[category.id];
+                const accent = CATEGORY_ACCENTS[category.id] ?? "#10B981";
                 const count = categoryCounts.get(category.id) ?? 0;
                 return (
                   <Link
                     key={category.id}
                     href={`/buy/${category.id}`}
-                    className="flex h-full min-h-[7rem] flex-col items-center justify-center gap-2.5 rounded-xl border border-rule bg-paper-raised px-4 py-6 text-center transition hover:border-brand hover:bg-brand-soft/40 focus-visible:border-brand focus-visible:bg-brand-soft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+                    data-reveal
+                    style={revealDelay((i % 4) * 70)}
+                    className="group flex h-full min-h-[7rem] flex-col items-center justify-center gap-2.5 rounded-2xl border border-rule bg-paper px-4 py-6 text-center transition hover:-translate-y-1 hover:border-brand hover:bg-paper-raised hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)] focus-visible:border-brand focus-visible:bg-paper-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
                   >
-                    <span className="grid h-11 w-11 place-items-center rounded-lg bg-paper-sunk text-brand-strong transition group-hover:bg-brand">
+                    <span
+                      className="grid h-11 w-11 place-items-center rounded-xl transition group-hover:scale-110"
+                      style={{ color: accent, backgroundColor: `color-mix(in srgb, ${accent} 12%, #fff)` }}
+                    >
                       <Icon size={19} />
                     </span>
                     <span className="text-sm font-semibold text-ink">{category.name}</span>
@@ -397,8 +446,9 @@ export default async function SellPage() {
       </section>
 
       {/* TIERED PRICING */}
-      <section className="border-b border-rule bg-brand-strong py-14 text-center sm:py-16">
-        <Container>
+      <section className="relative overflow-hidden border-b border-rule bg-brand-strong bg-[radial-gradient(60%_90%_at_50%_0%,rgba(16,185,129,0.18),transparent_60%),linear-gradient(180deg,#0B1324,#0F1A30)] py-14 text-center sm:py-16">
+        <MouseGlow />
+        <Container className="relative">
           <Inner>
             <DashEyebrow onDark center>
               Simple pricing
@@ -408,23 +458,28 @@ export default async function SellPage() {
               List with no upfront charge. Durqo collects a success fee only after your business is sold.
             </p>
 
-            <div className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-xl border border-white/10">
-              <div className="grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-                {PRICING_TIERS.map(({ label, percent }) => (
-                  <div key={label} className="flex flex-col items-center gap-1.5 px-6 py-8">
+            <div className="mx-auto mt-10 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
+                {PRICING_TIERS.map(({ label, percent }, i) => (
+                  <div
+                    key={label}
+                    data-reveal
+                    style={revealDelay(i * 140)}
+                    className="flex flex-col items-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-8 transition hover:-translate-y-1 hover:border-brand/50 hover:bg-white/[0.07]"
+                  >
                     <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-white/50">
                       {label}
                     </p>
-                    <p className="mono text-4xl font-bold text-brand sm:text-5xl">{percent}</p>
+                    <p className="mono text-4xl font-bold text-brand sm:text-5xl">
+                      <CountUp value={percent} />
+                    </p>
                     <p className="text-xs text-white/60">Success fee</p>
                   </div>
                 ))}
-              </div>
             </div>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-              {PRICING_FOOTNOTES.map(({ icon: Icon, label }) => (
-                <span key={label} className="flex items-center gap-2 text-sm text-white/75">
+              {PRICING_FOOTNOTES.map(({ icon: Icon, label }, i) => (
+                <span key={label} data-reveal style={revealDelay(300 + i * 100)} className="flex items-center gap-2 text-sm text-white/75">
                   <Icon size={15} className="text-brand" />
                   {label}
                 </span>
@@ -443,16 +498,22 @@ export default async function SellPage() {
                 <DashEyebrow>Seller readiness</DashEyebrow>
                 <h2 className="text-2xl sm:text-3xl">Is your business ready to list?</h2>
                 <div className="mt-6 flex flex-col gap-3">
-                  {READINESS_CHECKLIST.map((item) => (
-                    <span key={item} className="flex items-center gap-2.5 text-sm text-ink">
-                      <CheckCircle2 size={17} className="shrink-0 text-brand" />
+                  {READINESS_CHECKLIST.map((item, i) => (
+                    <span
+                      key={item}
+                      data-reveal
+                      style={revealDelay(i * 80)}
+                      className="flex items-center gap-2.5 rounded-xl border border-rule bg-paper-raised px-3.5 py-2.5 text-sm text-ink transition hover:border-brand/50"
+                    >
+                      <CheckCircle2 size={17} className="dq-icon-pop shrink-0 text-brand" />
                       {item}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="flex flex-col justify-center gap-2 rounded-xl bg-brand-soft p-6">
+              <div data-reveal style={revealDelay(150)} className="relative flex flex-col justify-center gap-2 overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-br from-brand-soft to-paper-raised p-6">
+                <span className="dq-glow pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-brand/20 blur-3xl" aria-hidden />
                 <MessageSquare size={20} className="text-brand-strong" />
                 <h4 className="text-base font-semibold text-ink">Not sure yet?</h4>
                 <p className="text-sm leading-relaxed text-ink-soft">
@@ -471,9 +532,13 @@ export default async function SellPage() {
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[760px]">
+            <div data-reveal>
             <DashEyebrow center>Frequently asked questions</DashEyebrow>
             <h2 className="mb-8 text-center text-2xl sm:text-3xl">Your questions, answered.</h2>
-            <SellFaq items={SELL_FAQS} />
+            </div>
+            <div data-reveal style={revealDelay(120)}>
+              <SellFaq items={SELL_FAQS} />
+            </div>
           </Inner>
         </Container>
       </section>
@@ -482,9 +547,10 @@ export default async function SellPage() {
       <section className="py-10 sm:py-12">
         <Container>
           <Inner>
-            <div className="flex flex-wrap items-center justify-between gap-6 rounded-2xl bg-brand-soft p-8 sm:p-10">
-              <div className="flex items-start gap-4">
-                <span className="mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-paper-raised text-brand-strong">
+            <div data-reveal className="relative flex flex-wrap items-center justify-between gap-6 overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-br from-brand-soft via-brand-soft to-paper-raised p-8 sm:p-10">
+              <span className="dq-glow pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-brand/20 blur-3xl" aria-hidden />
+              <div className="relative flex items-start gap-4">
+                <span className="relative mt-0.5 grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand text-white shadow-[0_8px_18px_-8px_rgba(16,185,129,0.8)]">
                   <TrendingUp size={20} />
                 </span>
                 <div>
@@ -494,12 +560,12 @@ export default async function SellPage() {
                   <p className="mt-1 max-w-[46ch] text-sm text-ink-soft">Start with a free, no-obligation valuation.</p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-3">
-                <Button href="/valuation" size="lg">
+              <div className="relative flex w-full flex-wrap gap-3 sm:w-auto">
+                <Button href="/valuation" size="lg" className="dq-shine w-full sm:w-auto">
                   Get a free valuation
                   <ArrowRight size={16} />
                 </Button>
-                <Button href="/register?as=seller" variant="secondary" size="lg">
+                <Button href="/register?as=seller" variant="secondary" size="lg" className="w-full sm:w-auto">
                   Create a seller account
                 </Button>
               </div>
