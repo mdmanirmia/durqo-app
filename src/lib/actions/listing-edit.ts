@@ -4,9 +4,10 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
+import { sendEmail } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
 import { sanitizeFileName } from "@/lib/sanitize-filename";
+import { snapshotListing, diffSnapshots, sendListingChangeEmail, imageKindLabel, type ListingSnapshot } from "@/lib/listing-change-log";
 
 // Shared by BOTH the admin edit form (dashboard/admin/listings/[id]/edit)
 // and the seller edit form (dashboard/seller/listings/[id]/edit) — one
@@ -130,12 +131,17 @@ export type ListingFullEditFields = {
   // reasoning as monthly income / social stats — the form always sends
   // every row it currently has.
   faqs: { question: string; answer: string }[];
+  // Oct 24, 2026: how many new images the form is about to upload per
+  // gallery right after this save (addListingImages runs after this call),
+  // so the admin change email can mention them in the same message
+  // instead of sending a separate email per gallery.
+  pendingImageUploads?: Record<string, number>;
 };
 
 // Core listing row + every related "profile" table (quick stats live as
 // flat columns on `listings` itself, everything else is 1:1 or 1:many).
 export async function updateListingFull(listingId: string, fields: ListingFullEditFields) {
-  const { admin, isAdmin, sellerId } = await requireEditAccess(listingId);
+  const { admin, isAdmin, sellerId, userId } = await requireEditAccess(listingId);
 
   if (!fields.title.trim()) throw new Error("Title is required.");
   if (!Number.isFinite(fields.price) || fields.price < 0) throw new Error("Invalid price.");
@@ -154,6 +160,16 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
   // when its title changes. `.select("slug")` just reads back that
   // unchanged value for the notification emails below, at no extra
   // round-trip cost.
+  // Oct 24, 2026: "before" picture for the admin change email (see
+  // src/lib/listing-change-log.ts). Best-effort: a failed snapshot just
+  // means no diff email, never a failed save.
+  let beforeSnapshot: ListingSnapshot | null = null;
+  try {
+    beforeSnapshot = await snapshotListing(admin, listingId);
+  } catch (err) {
+    console.error("[listing-edit] before-snapshot failed:", err);
+  }
+
   const { data: updatedListing, error: listingError } = await admin
     .from("listings")
     .update({
@@ -370,8 +386,9 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
   revalidatePath("/");
   revalidatePath("/buy");
 
-  // Best-effort notifications — a seller editing their own listing notifies
-  // admin (as before) AND now gets their own confirmation email; an admin
+  // Best-effort notifications — every edit emails support@durqo.com the
+  // detailed change table (below); a seller editing their own listing also
+  // gets their own confirmation email; an admin
   // editing someone else's listing (this same function is shared by both
   // edit forms — see the module comment above) now notifies the seller,
   // which previously sent no email at all. Failures here never surface to
@@ -383,26 +400,30 @@ export async function updateListingFull(listingId: string, fields: ListingFullEd
     const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
     const listingUrl = `${origin}/listing/${updatedListing?.slug ?? listingId}`;
 
-    if (!isAdmin) {
-      const [{ data: sellerProfile }, emails] = await Promise.all([
-        admin.from("profiles").select("full_name").eq("id", sellerId).single(),
-        getUserEmails(admin, [sellerId]),
-      ]);
-      const sellerName = sellerProfile?.full_name || "A seller";
-      const sellerEmail = emails[sellerId];
+    // Oct 24, 2026: every save, by the seller or an admin, before or after
+    // publishing, emails support@durqo.com a field-by-field Previous/New
+    // table (replaces the old one-line "Listing updated" admin email,
+    // which only fired for seller edits and said nothing about what
+    // changed).
+    if (beforeSnapshot) {
+      const afterSnapshot = await snapshotListing(admin, listingId);
+      const notes = Object.entries(fields.pendingImageUploads ?? {})
+        .filter(([, n]) => n > 0)
+        .map(([kind, n]) => `${n} new image${n === 1 ? "" : "s"} uploaded to ${imageKindLabel(kind)}`);
+      await sendListingChangeEmail({
+        admin,
+        listingId,
+        actorId: userId,
+        actorIsAdmin: isAdmin,
+        origin,
+        changes: diffSnapshots(beforeSnapshot, afterSnapshot),
+        notes,
+      });
+    }
 
-      // 2026-09-19 request ("kono seller listing update korle, sell korle o
-      // seller details include koiro"): seller name/email called out as
-      // their own labeled lines — same convention as the "listing
-      // submitted" admin email in listing-notifications.ts — instead of
-      // folded into the lead sentence.
-      await sendEmail(
-        ADMIN_EMAIL,
-        `Listing updated - ${fields.title}`,
-        `<p>The listing "${fields.title}" was updated.</p>
-         <p>Seller: ${sellerName}${sellerEmail ? `<br>Email: ${sellerEmail}` : ""}</p>
-         <p><a href="${origin}/dashboard/admin/listings">Review it in the admin dashboard</a>.</p>`
-      );
+    if (!isAdmin) {
+      const emails = await getUserEmails(admin, [sellerId]);
+      const sellerEmail = emails[sellerId];
       if (sellerEmail) {
         await sendEmail(
           sellerEmail,
@@ -457,10 +478,29 @@ export async function addListingImages(listingId: string, kind: string, formData
 }
 
 export async function deleteListingImage(listingId: string, imageId: string) {
-  const { admin } = await requireEditAccess(listingId);
+  const { admin, userId, isAdmin } = await requireEditAccess(listingId);
+
+  const { data: image } = await admin.from("listing_images").select("url, kind").eq("id", imageId).eq("listing_id", listingId).maybeSingle();
 
   const { error } = await admin.from("listing_images").delete().eq("id", imageId).eq("listing_id", listingId);
   if (error) throw new Error(error.message);
+
+  // Oct 24, 2026: removing a proof image is a data change too, so it's
+  // reported to support@durqo.com with the removed image's link as the
+  // "Previous" value (the file itself stays in Storage).
+  if (image) {
+    const hdrs = await headers();
+    const host = hdrs.get("host");
+    const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
+    await sendListingChangeEmail({
+      admin,
+      listingId,
+      actorId: userId,
+      actorIsAdmin: isAdmin,
+      origin,
+      changes: [{ field: `Image removed: ${imageKindLabel(image.kind as string)}`, before: image.url as string, after: "(removed)" }],
+    });
+  }
 
   revalidatePath("/listing/[slug]", "page");
 }

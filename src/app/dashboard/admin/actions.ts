@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { sendListingChangeEmail, statusLabel, snapshotListing, diffSnapshots } from "@/lib/listing-change-log";
 import { headers } from "next/headers";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -41,7 +42,7 @@ type OrderPaymentChannel = (typeof ORDER_PAYMENT_CHANNELS)[number];
 // (permission, the row's other fields) is re-derived server-side.
 
 export async function setListingStatus(listingId: string, status: ListingStatus) {
-  await requireAdmin();
+  const actor = await requireAdmin();
   if (!LISTING_STATUSES.includes(status)) throw new Error("Invalid status");
 
   const admin = createAdminClient();
@@ -60,6 +61,20 @@ export async function setListingStatus(listingId: string, status: ListingStatus)
 
   const { error } = await admin.from("listings").update({ status }).eq("id", listingId);
   if (error) throw new Error(error.message);
+
+  // Oct 24, 2026: status changes (publish, unpublish, mark sold, archive,
+  // restore) are reported to support@durqo.com like every other listing
+  // data change, with the previous and new status.
+  if (beforeRow && beforeRow.status !== status) {
+    await sendListingChangeEmail({
+      admin,
+      listingId,
+      actorId: actor.id,
+      actorIsAdmin: true,
+      origin: await resolveOrigin(),
+      changes: [{ field: "Listing status", before: statusLabel(beforeRow.status as string), after: statusLabel(status) }],
+    });
+  }
 
   revalidatePath("/dashboard/admin/listings");
   revalidatePath("/dashboard/admin");
@@ -446,12 +461,14 @@ export async function updateListing(
     quickStatColumns: Record<string, unknown>;
   }
 ) {
-  await requireAdmin();
+  const actor = await requireAdmin();
   if (!fields.title.trim()) throw new Error("Title is required.");
   if (!Number.isFinite(fields.price) || fields.price < 0) throw new Error("Invalid price.");
 
   const supabaseAdmin = createAdminClient();
   if (!supabaseAdmin) throw new Error("Admin client unavailable");
+
+  const beforeSnapshot = await snapshotListing(supabaseAdmin, listingId).catch(() => null);
 
   const { error } = await supabaseAdmin
     .from("listings")
@@ -473,6 +490,20 @@ export async function updateListing(
   revalidatePath("/dashboard/admin/listings");
   revalidatePath("/listing/[slug]", "page");
   revalidatePath("/dashboard/admin");
+
+  if (beforeSnapshot) {
+    const afterSnapshot = await snapshotListing(supabaseAdmin, listingId).catch(() => null);
+    if (afterSnapshot) {
+      await sendListingChangeEmail({
+        admin: supabaseAdmin,
+        listingId,
+        actorId: actor.id,
+        actorIsAdmin: true,
+        origin: await resolveOrigin(),
+        changes: diffSnapshots(beforeSnapshot, afterSnapshot),
+      });
+    }
+  }
 
   // Best-effort: let the seller know an admin changed their listing.
   try {
@@ -504,13 +535,26 @@ export async function updateListing(
 // ga_access_confirmed (their self-declared "I granted access" checkbox),
 // never ga_verified itself.
 export async function setListingGaVerified(listingId: string, verified: boolean) {
-  await requireAdmin();
+  const actor = await requireAdmin();
 
   const admin = createAdminClient();
   if (!admin) throw new Error("Admin client unavailable");
 
+  const { data: beforeRow } = await admin.from("listings").select("ga_verified").eq("id", listingId).maybeSingle();
+
   const { error } = await admin.from("listings").update({ ga_verified: verified }).eq("id", listingId);
   if (error) throw new Error(error.message);
+
+  if (beforeRow && Boolean(beforeRow.ga_verified) !== verified) {
+    await sendListingChangeEmail({
+      admin,
+      listingId,
+      actorId: actor.id,
+      actorIsAdmin: true,
+      origin: await resolveOrigin(),
+      changes: [{ field: "Google Analytics verified (admin)", before: beforeRow.ga_verified ? "Yes" : "No", after: verified ? "Yes" : "No" }],
+    });
+  }
 
   revalidatePath("/dashboard/admin/listings");
   revalidatePath("/listing/[slug]", "page");

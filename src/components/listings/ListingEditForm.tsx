@@ -626,6 +626,14 @@ export default function ListingEditForm({
                 }
               : null
             : undefined,
+        pendingImageUploads: {
+          proof_of_income: incomeImages.length,
+          google_analytics: gaImages.length,
+          search_console: gscImages.length,
+          semrush: semrushImages.length,
+          ahrefs: ahrefsImages.length,
+          copyright_notes: copyrightImages.length,
+        },
       });
 
       await Promise.all([
