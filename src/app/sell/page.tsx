@@ -13,6 +13,12 @@ import {
   SlidersHorizontal,
   Tag,
   TrendingUp,
+  Landmark,
+  Wallet,
+  Smartphone,
+  UserCheck,
+  Clock,
+  Info,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/categories";
 import { CATEGORY_ICONS } from "@/lib/category-icons";
@@ -22,6 +28,7 @@ import { createClient } from "@/lib/supabase/server";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import SellFaq from "./SellFaq";
+import SellerTour from "@/components/sell/SellerTour";
 import type { CSSProperties } from "react";
 import CountUp from "@/components/CountUp";
 import MouseGlow from "@/components/home/MouseGlow";
@@ -123,18 +130,30 @@ const VALUE_PROPS = [
 // flow (live for every payment channel) instead of the vague "agree on the
 // terms and complete the transfer" placeholder, matching /how-to-sell,
 // /payments and /terms.
-const PROCESS_STEPS = [
-  { n: "01", title: "Value your business", body: "Get a free valuation range based on the information you provide." },
-  { n: "02", title: "Build your listing", body: "Share the key details and submit your business for review." },
-  { n: "03", title: "Review buyer interest", body: "Receive messages and consider offers from interested buyers." },
-  { n: "04", title: "Complete the transfer", body: "Once a buyer pays, hand over each asset in your shared Transfer Room and get approved for payout." },
-];
 
 // Sep 6, 2026: sourced from the single shared src/lib/fees.ts module rather
 // than a separate hardcoded array — this is the same schedule /terms's fee
 // table and worked example now use, closing out the conflict two earlier
 // audits flagged (see fees.ts's own comment for the history).
 const PRICING_TIERS = SUCCESS_FEE_TIERS.map((t) => ({ label: t.label, percent: fmtRate(t.rate) }));
+
+const PAYOUT_METHODS = [
+  { name: "Bank Transfer", cap: "No daily or monthly cap", color: "#0B1324", icon: Landmark },
+  { name: "PayPal", cap: "No daily or monthly cap", color: "#1D4E9E", icon: Wallet },
+  { name: "Wise", cap: "No daily or monthly cap", color: "#2F7A2F", icon: Wallet },
+  { name: "bKash", cap: "Up to ৳50,000/day · ৳300,000/month", color: "#E2136E", icon: Smartphone },
+  { name: "Nagad", cap: "Up to ৳50,000/day · ৳300,000/month", color: "#EC6C1F", icon: Smartphone },
+  { name: "Rocket", cap: "Up to ৳50,000/day · ৳300,000/month", color: "#8C3494", icon: Smartphone },
+];
+
+const PAYOUT_STATUS = ["Requested", "Under review", "Approved", "Processing", "Paid"];
+
+const PAYOUT_FACTS = [
+  { icon: UserCheck, label: "Complete identity verification (KYC) once, before your first withdrawal." },
+  { icon: ShieldCheck, label: "The name on your payout account must match your verified name." },
+  { icon: Clock, label: "Requests are normally reviewed within an estimated 3-5 business days." },
+  { icon: Info, label: "Escrow.com sales are paid to you directly by Escrow.com, not through Durqo." },
+];
 
 const PRICING_FOOTNOTES = [
   { icon: Tag, label: "$0 upfront listing fee" },
@@ -325,7 +344,7 @@ export default async function SellPage() {
           <Inner>
             <div className="grid grid-cols-2 divide-y divide-rule sm:grid-cols-4 sm:divide-x sm:divide-y-0">
               {BENEFIT_STRIP.map(({ icon: Icon, label }, i) => (
-                <div key={label} data-reveal style={revealDelay(i * 90)} className="flex items-center justify-center gap-2.5 px-4 py-3 text-center sm:py-0">
+                <div key={label} data-reveal style={revealDelay(i * 90)} className="flex items-center justify-start gap-2.5 px-2 py-3 text-left sm:justify-center sm:px-4 sm:py-0 sm:text-center">
                   <span className="dq-icon-pop grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
                     <Icon size={15} />
                   </span>
@@ -364,31 +383,25 @@ export default async function SellPage() {
         </Container>
       </section>
 
-      {/* SELLING PROCESS — same connected-timeline technique as the
-          homepage's How It Works, extended to 4 steps. */}
-      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      {/* SELLING PROCESS — Oct 24, 2026: the static 4-step timeline became
+          an auto-playing tour of the seller's full journey, from valuation
+          through the Transfer Room to payout (SellerTour.tsx). */}
+      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk py-16 sm:py-20">
         <div
           className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.08)_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,#000_20%,transparent_70%)]"
           aria-hidden
         />
         <Container className="relative">
           <Inner>
-            <div data-reveal className="mb-10 text-center">
+            <div data-reveal className="mb-10 text-center sm:mb-12">
               <DashEyebrow center>The selling process</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">From valuation to a completed sale.</h2>
+              <p className="mx-auto mt-3 max-w-[56ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
+                See every step of selling on Durqo, from your first valuation to the Transfer Room and your payout.
+              </p>
             </div>
-            <div className="relative grid gap-8 sm:grid-cols-4">
-              <div className="pointer-events-none absolute left-[6%] right-[6%] top-6 hidden h-px bg-rule sm:block" aria-hidden />
-              <div data-reveal className="dq-line pointer-events-none absolute left-[6%] right-[6%] top-6 hidden h-0.5 -translate-y-px rounded-full bg-gradient-to-r from-brand via-brand to-brand/30 sm:block" aria-hidden />
-              {PROCESS_STEPS.map(({ n, title, body }, i) => (
-                <div key={n} data-reveal style={revealDelay(i * 160)} className="group relative flex flex-col items-start">
-                  <span className="dq-icon-pop mono relative z-10 mb-4 grid h-12 w-12 place-items-center rounded-full bg-brand text-sm font-bold text-white shadow-[0_8px_20px_-8px_rgba(16,185,129,0.8)] ring-8 ring-paper-sunk transition group-hover:scale-110">
-                    {n}
-                  </span>
-                  <h4 className="text-base font-semibold text-ink">{title}</h4>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
-                </div>
-              ))}
+            <div data-reveal>
+              <SellerTour />
             </div>
           </Inner>
         </Container>
@@ -484,6 +497,84 @@ export default async function SellPage() {
                   {label}
                 </span>
               ))}
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* GETTING PAID — Oct 24, 2026. Every fact here mirrors the published
+          /seller-payouts page (methods and caps, KYC, the estimated 3-5
+          business day review, the Escrow.com exception). */}
+      <section className="relative overflow-hidden border-b border-rule bg-paper-raised py-16 sm:py-20">
+        <Container className="relative">
+          <Inner>
+            <div className="grid gap-10 lg:grid-cols-[0.42fr_0.58fr] lg:gap-14">
+              <div data-reveal>
+                <DashEyebrow>Getting paid</DashEyebrow>
+                <h2 className="text-2xl sm:text-3xl">Withdraw your earnings, your way.</h2>
+                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                  Once the buyer approves the transfer, the sale is completed and your earnings, already net of the
+                  success fee, become available to withdraw.
+                </p>
+                <div className="mt-6 flex flex-col gap-3">
+                  {PAYOUT_FACTS.map(({ icon: Icon, label }, i) => (
+                    <div key={label} data-reveal style={revealDelay(i * 90)} className="flex items-start gap-3">
+                      <span className="dq-icon-pop mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">
+                        <Icon size={15} />
+                      </span>
+                      <span className="text-sm leading-relaxed text-ink">{label}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/seller-payouts" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
+                  How seller payouts work
+                  <ArrowRight size={14} />
+                </Link>
+              </div>
+
+              <div className="flex flex-col gap-5">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {PAYOUT_METHODS.map(({ name, cap, color, icon: Icon }, i) => (
+                    <div
+                      key={name}
+                      data-reveal
+                      style={revealDelay(i * 70)}
+                      className="group rounded-2xl border border-rule bg-paper p-4 transition hover:-translate-y-1 hover:bg-paper-raised hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
+                    >
+                      <span
+                        className="dq-icon-pop grid h-10 w-10 place-items-center rounded-xl text-white transition group-hover:scale-110"
+                        style={{ backgroundColor: color, boxShadow: `0 10px 22px -12px ${color}` }}
+                      >
+                        <Icon size={18} />
+                      </span>
+                      <p className="mt-3 text-sm font-semibold text-ink">{name}</p>
+                      <p className="mt-0.5 text-xs leading-snug text-ink-faint">{cap}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div data-reveal className="rounded-2xl border border-rule bg-paper p-5">
+                  <p className="text-[0.7rem] font-semibold uppercase tracking-wider text-ink-faint">Payout request status</p>
+                  <div className="relative mt-4">
+                    <div className="pointer-events-none absolute left-[10%] right-[10%] top-3 h-px bg-rule" aria-hidden />
+                    <div data-reveal className="dq-line pointer-events-none absolute left-[10%] right-[10%] top-3 h-0.5 -translate-y-px rounded-full bg-brand" aria-hidden />
+                    <div className="relative grid grid-cols-5 gap-1">
+                      {PAYOUT_STATUS.map((label, i) => (
+                        <div key={label} data-reveal style={revealDelay(200 + i * 180)} className="flex flex-col items-center gap-2 text-center">
+                          <span className="dq-icon-pop grid h-6 w-6 place-items-center rounded-full bg-brand text-white ring-4 ring-paper">
+                            <CheckCircle2 size={13} />
+                          </span>
+                          <span className="text-[0.68rem] font-semibold leading-tight text-ink sm:text-xs">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="mt-4 text-xs leading-relaxed text-ink-soft">
+                    Durqo normally reviews and processes an eligible request within an estimated 3-5 business days. Your
+                    bank or payout provider can add its own time on top.
+                  </p>
+                </div>
+              </div>
             </div>
           </Inner>
         </Container>
