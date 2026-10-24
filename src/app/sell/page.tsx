@@ -170,32 +170,138 @@ const READINESS_CHECKLIST = [
 
 // Order matches the brief; index 0 ("How is my valuation calculated?")
 // opens by default, per SellFaq's single-open-by-default behavior.
-const SELL_FAQS = [
+// Oct 24, 2026 ("aro FAQ add koro jei gulo seller er mone question aste
+// pare. Verification, payment methods, minimum payments and others"):
+// grouped into tabs. New answers reuse the already-published wording from
+// /seller-faq and /payments, and the payout facts match the database
+// (create_withdrawal_request: no minimum amount, a request claims the full
+// available balance oldest-first, MFS methods capped per day/month).
+const SELL_FAQ_GROUPS = [
   {
-    question: "How is my valuation calculated?",
-    answer:
-      "We generate an illustrative valuation range based on the monthly revenue, profit and business type you share with us, compared against similar businesses on Durqo. It's a starting reference, not a guarantee of your final sale price.",
+    heading: "General",
+    items: [
+      {
+        question: "How is my valuation calculated?",
+        answer:
+          "We generate an illustrative valuation range based on the monthly revenue, profit and business type you share with us, compared against similar businesses on Durqo. It's a starting reference, not a guarantee of your final sale price.",
+      },
+      {
+        question: "Is it free to list my business?",
+        answer:
+          "Yes. There's no upfront listing fee and no monthly subscription. Durqo only charges a success fee, and only once your business actually sells.",
+      },
+      {
+        question: "Can I list more than one business?",
+        answer: "Yes, there's no limit on how many listings you can create.",
+      },
+      {
+        question: "How long does the review take?",
+        answer:
+          "Our team manually reviews every submission for accuracy and completeness before it goes live. We don't have a fixed turnaround time, but we'll email you as soon as a decision is made.",
+      },
+      {
+        question: "Can I edit my listing after it's published?",
+        answer: "Yes, at any time, from your My Listings page.",
+      },
+      {
+        question: "What information is shown publicly?",
+        answer:
+          "Once your listing is published, its business details (category, financial summary and asking price) along with your seller profile are visible to anyone browsing Durqo. Messages with buyers stay private until you choose to share more.",
+      },
+    ],
   },
   {
-    question: "What information is shown publicly?",
-    answer:
-      "Once your listing is published, its business details (category, financial summary and asking price) along with your seller profile are visible to anyone browsing Durqo. Messages with buyers stay private until you choose to share more.",
+    heading: "Verification",
+    items: [
+      {
+        question: "When do I need to verify my identity?",
+        answer:
+          "Identity verification (KYC) is required before your very first withdrawal. You upload one ID document from your dashboard's Verification page and Durqo's team reviews it. It's needed only once: every withdrawal after that uses the same approved verification.",
+      },
+      {
+        question: "Which documents can I submit for identity verification (KYC)?",
+        answer:
+          "A Passport, National ID, Driving License or Birth Certificate. Choose one document type on the Verification page and upload a clear photo of it (front and back if applicable).",
+      },
+      {
+        question: "Does my payout account name need to match my verified identity?",
+        answer:
+          "Yes. The account holder name you enter when requesting a withdrawal must match the legal name on your identity verification (KYC). Durqo's team checks this by hand as part of reviewing every payout request.",
+      },
+      {
+        question: "What is Google Analytics verification?",
+        answer:
+          "An optional step where you give Durqo access to your Google Analytics so our team can confirm your real traffic numbers. Once reviewed, your listing shows a GA Verified badge that helps build buyer trust.",
+      },
+    ],
   },
   {
-    question: "When do I pay the success fee?",
-    answer: "Only when your business sale is completed. There's no charge for creating or maintaining a listing.",
+    heading: "Fees & payments",
+    items: [
+      {
+        question: "How does the tiered success fee work?",
+        answer:
+          "Durqo charges a success fee based on the final sale price. Sales below $50,000 are charged 10%, sales from $50,000 through $250,000 are charged 7%, and sales above $250,000 are charged 5%. The applicable percentage is applied to the full sale price.",
+      },
+      {
+        question: "When do I pay the success fee?",
+        answer:
+          "Only when your business sale is completed. There's no charge for creating or maintaining a listing. When you request a withdrawal, the fee is deducted from the sale proceeds and you're paid the remaining net amount.",
+      },
+      {
+        question: "How can buyers pay for my business?",
+        answer:
+          "By card through Stripe, through Escrow.com, or in Bangladeshi Taka through SSLCommerz (bKash, Rocket, Nagad, bank transfer or card). Escrow.com may not be available for lower-priced listings, because its own minimum fee can be larger than the purchase price.",
+      },
+      {
+        question: "What happens after the buyer pays?",
+        answer:
+          "Once the payment is received and verified, you and the buyer are taken to a shared Transfer Room. You hand over each asset and mark it Submitted, the buyer marks it Received and inspects it, then approves the transfer. That's when the sale is completed and your payout becomes eligible.",
+      },
+      {
+        question: "What if the buyer pays through Escrow.com?",
+        answer:
+          "Escrow.com pays you directly once it releases the funds. Those sales don't go through Durqo's own withdrawal system and aren't added to your Durqo balance.",
+      },
+    ],
   },
   {
-    question: "How long does the review take?",
-    answer:
-      "Our team manually reviews every submission for accuracy and completeness before it goes live. We don't have a fixed turnaround time, but we'll email you as soon as a decision is made.",
-  },
-  {
-    question: "How does the tiered success fee work?",
-    answer:
-      "Durqo charges a success fee based on the final sale price. Sales below $50,000 are charged 10%, sales from $50,000 through $250,000 are charged 7%, and sales above $250,000 are charged 5%. The applicable percentage is applied to the full sale price.",
+    heading: "Payouts",
+    items: [
+      {
+        question: "What withdrawal methods can I use?",
+        answer:
+          "Bank Transfer, PayPal, Wise, bKash, Rocket or Nagad. bKash, Rocket and Nagad each have their own limit; Bank Transfer, PayPal and Wise have no daily or monthly cap.",
+      },
+      {
+        question: "Is there a minimum withdrawal amount?",
+        answer:
+          "No. Durqo doesn't set a minimum withdrawal amount. There's no amount to type in: each request claims your available balance, oldest completed sales first. With bKash, Rocket or Nagad, a single request can only claim up to that method's remaining daily and monthly limit.",
+      },
+      {
+        question: "Are bKash, Rocket and Nagad withdrawals limited?",
+        answer:
+          "Yes. Each of the three has its own independent limit of ৳50,000 per day and ৳300,000 per month, calculated at that day's exchange rate. They don't share one combined cap. Bank Transfer, PayPal and Wise have no such limit.",
+      },
+      {
+        question: "How long does a withdrawal take?",
+        answer:
+          "Payout requests are normally reviewed and processed within an estimated 3-5 business days. First-time payouts, identity verification, high-value transactions, incorrect payout details, compliance reviews or active disputes can take longer, and your bank or payout provider may add its own time.",
+      },
+      {
+        question: "Can I cancel a withdrawal request?",
+        answer:
+          "Yes, while it's still Requested or Under review. Once Durqo starts processing it, contact support@durqo.com instead.",
+      },
+      {
+        question: "What happens if a buyer reports an issue instead of approving?",
+        answer:
+          "Nothing is released automatically. Your payout stays on hold while Durqo's team reviews the evidence and decides what happens next.",
+      },
+    ],
   },
 ];
+
 
 export default async function SellPage() {
   // Real per-category listing counts (Sep 6, 2026 "What You Can Sell"
@@ -628,7 +734,7 @@ export default async function SellPage() {
             <h2 className="mb-8 text-center text-2xl sm:text-3xl">Your questions, answered.</h2>
             </div>
             <div data-reveal style={revealDelay(120)}>
-              <SellFaq items={SELL_FAQS} />
+              <SellFaq groups={SELL_FAQ_GROUPS} />
             </div>
           </Inner>
         </Container>
