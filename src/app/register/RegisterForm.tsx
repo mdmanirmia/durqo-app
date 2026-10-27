@@ -33,6 +33,15 @@ function RegisterForm() {
   // NEXT_PUBLIC_TURNSTILE_SITE_KEY isn't configured.
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileHandle>(null);
+  // Oct 26, 2026 fix: Supabase's captcha protection (Cloudflare Turnstile)
+  // applies to resend() too, not just signUp(). The "Resend the link"
+  // button used to send no token, so every resend was rejected with
+  // "captcha protection: request disallowed" and the seller could never
+  // get a fresh confirmation link (and so never reached /auth/callback,
+  // where the admin "new seller" email is sent). Turnstile tokens are
+  // single-use, so the "check your email" step renders its own widget.
+  const [resendToken, setResendToken] = useState<string | null>(null);
+  const resendTurnstileRef = useRef<TurnstileHandle>(null);
 
   // 2026-09-19 (listing-page login gate): carries a visitor back to
   // whatever they were trying to view (e.g. a gated listing) once they've
@@ -101,13 +110,20 @@ function RegisterForm() {
     // admin "new seller verified" email, among other things) never ran for
     // anyone who had to click "Resend the link" to get in. Must match the
     // original signUp() call's emailRedirectTo above exactly.
+    if (captchaRequired && !resendToken) {
+      setError("Please complete the security check, then click resend.");
+      return;
+    }
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+        captchaToken: resendToken ?? undefined,
       },
     });
+    resendTurnstileRef.current?.reset();
+    setResendToken(null);
     if (error) { setError(error.message); return; }
     setNotice("Sent again, check your inbox.");
   }
@@ -123,9 +139,20 @@ function RegisterForm() {
           signed in automatically.
         </p>
         {notice && <p className="mb-4 text-sm text-brand-hover">{notice}</p>}
+        {error && <p role="alert" className="mb-4 text-sm text-danger">{error}</p>}
+        <div className="mb-4 flex justify-center">
+          <TurnstileWidget ref={resendTurnstileRef} onToken={setResendToken} />
+        </div>
         <p className="text-center text-sm text-ink-soft">
           Didn&rsquo;t get it?{" "}
-          <button type="button" onClick={handleResend} className="font-semibold text-brand-hover">Resend the link</button>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={captchaRequired && !resendToken}
+            className="font-semibold text-brand-hover disabled:opacity-50"
+          >
+            Resend the link
+          </button>
         </p>
       </div>
     );

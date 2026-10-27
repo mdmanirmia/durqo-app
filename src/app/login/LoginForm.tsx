@@ -127,6 +127,13 @@ function LoginForm() {
       setError("Enter your email above, then click resend.");
       return;
     }
+    // Oct 26, 2026 fix: resend() is captcha-protected too (see
+    // RegisterForm.tsx), so it needs the same Turnstile token as login.
+    if (captchaRequired && !captchaToken) {
+      setNotice(null);
+      setError("Please complete the security check below, then click resend.");
+      return;
+    }
     setError(null);
     setNotice(null);
     setResending(true);
@@ -145,8 +152,12 @@ function LoginForm() {
       email,
       options: {
         emailRedirectTo: `${window.location.origin}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`,
+        captchaToken: captchaToken ?? undefined,
       },
     });
+    // Turnstile tokens are single-use: get a fresh one for the next action.
+    turnstileRef.current?.reset();
+    setCaptchaToken(null);
     setResending(false);
     if (error) {
       setError(error.message);
