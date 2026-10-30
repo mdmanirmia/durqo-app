@@ -1,16 +1,34 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { CheckCircle2, ClipboardCheck, Landmark } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { CheckCircle2, ClipboardCheck, Landmark, Volume2, VolumeX } from "lucide-react";
 
 // Oct 30, 2026 (/durqo-bangladesh: "kono video baniye add korte hobe"): the
-// hero's product film. public/video/durqo-bangladesh.mp4 is a 23s, silent,
+// hero's product film. public/video/durqo-bangladesh.mp4 is a 23s,
 // code-rendered walkthrough of the page's own published flow (pay in BDT ->
 // Transfer Room -> BDT payout); no stock footage, no invented numbers. It
 // plays only while on screen and stays paused on its poster for visitors
-// who prefer reduced motion.
+// who prefer reduced motion. Same day ("video te voice o add kore dite
+// paro"): the file now carries an English voiceover. Browsers only autoplay
+// muted video, so it starts silent with a "Play with sound" button that
+// restarts it from the top with audio.
 export default function BdHeroVideo() {
   const ref = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+
+  function toggleSound() {
+    const v = ref.current;
+    if (!v) return;
+    if (v.muted) {
+      v.muted = false;
+      v.currentTime = 0;
+      v.play().catch(() => {});
+      setMuted(false);
+    } else {
+      v.muted = true;
+      setMuted(true);
+    }
+  }
 
   useEffect(() => {
     const v = ref.current;
@@ -51,7 +69,7 @@ export default function BdHeroVideo() {
         <video
           ref={ref}
           className="block aspect-video w-full"
-          src="/video/durqo-bangladesh.mp4"
+          src="/video/durqo-bangladesh.mp4?v=2"
           poster="/video/durqo-bangladesh-poster.jpg"
           autoPlay
           muted
@@ -60,10 +78,22 @@ export default function BdHeroVideo() {
           preload="metadata"
           aria-label="Short animation: buy in BDT, hand over every asset in the Transfer Room, and get paid out in BDT."
         />
+        <button
+          type="button"
+          onClick={toggleSound}
+          aria-pressed={!muted}
+          className="group absolute bottom-3 left-3 flex min-h-9 items-center gap-2 rounded-full border border-white/20 bg-[#0B1324]/75 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-white backdrop-blur transition hover:border-brand hover:bg-[#0B1324]/90"
+        >
+          <span className={`relative grid h-6 w-6 place-items-center rounded-full ${muted ? "bg-brand" : "bg-white/15"}`}>
+            {muted && <span className="absolute inset-0 animate-ping rounded-full bg-brand/60" aria-hidden />}
+            {muted ? <Volume2 size={13} className="relative" /> : <VolumeX size={13} />}
+          </span>
+          {muted ? "Play with sound" : "Mute"}
+        </button>
       </div>
 
       {/* Floating status chips */}
-      <div className="dq-float pointer-events-none absolute -left-4 bottom-10 hidden items-center gap-2 rounded-xl border border-white/10 bg-white/95 px-3 py-2 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] backdrop-blur sm:flex lg:-left-8" aria-hidden>
+      <div className="dq-float pointer-events-none absolute -left-4 bottom-20 hidden items-center gap-2 rounded-xl border border-white/10 bg-white/95 px-3 py-2 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] backdrop-blur sm:flex lg:-left-8" aria-hidden>
         <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-soft text-brand-strong">
           <CheckCircle2 size={14} />
         </span>

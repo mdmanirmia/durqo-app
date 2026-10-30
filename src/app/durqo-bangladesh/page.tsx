@@ -210,13 +210,6 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
   return <div className={`mx-auto max-w-[1200px] ${className}`}>{children}</div>;
 }
 
-const STATS = [
-  { value: "16", label: "Digital business categories", icon: Layers },
-  { value: "5", label: "Local ways to pay in BDT", icon: Wallet },
-  { value: "4", label: "Local BDT payout methods", icon: Landmark },
-  { value: "7-Day", label: "Buyer inspection window", icon: ClipboardCheck },
-];
-
 const BUYER_CHANNELS = [
   { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]" },
   { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]" },
@@ -603,7 +596,7 @@ export default async function DurqoBangladeshPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }} />
 
       {/* HERO: copy left, product film right */}
-      <section className="relative overflow-hidden bg-[#0B1324] bg-[radial-gradient(55%_70%_at_0%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_55%_at_100%_100%,rgba(244,42,65,0.12),transparent_60%),linear-gradient(180deg,#0B1324,#0E1A31)] pb-28 pt-14 sm:pb-32 sm:pt-20 lg:pb-40 lg:pt-24">
+      <section className="relative overflow-hidden bg-[#0B1324] bg-[radial-gradient(55%_70%_at_0%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_55%_at_100%_100%,rgba(244,42,65,0.12),transparent_60%),linear-gradient(180deg,#0B1324,#0E1A31)] pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-24">
         <MouseGlow />
         <div
           className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_70%_at_30%_30%,#000_25%,transparent_75%)]"
@@ -648,9 +641,10 @@ export default async function DurqoBangladeshPage() {
                   <span className="bg-gradient-to-r from-[#34D399] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
                 </h1>
                 <p className="dq-enter mt-6 max-w-[56ch] text-[1.05rem] leading-relaxed text-white/70" style={enterDelay(200)}>
-                  Buy global digital businesses using BDT through bKash, Rocket, Nagad, bank transfer and card.
-                  Sell to buyers in Bangladesh and globally and get paid out in BDT. A structured payment, asset
-                  transfer and inspection process keeps every transaction organized and transparent.
+                  <span className="font-semibold text-white">Buying?</span> Pay for websites, apps, SaaS and other
+                  online businesses in BDT with bKash, Nagad, Rocket, bank transfer or card.{" "}
+                  <span className="font-semibold text-white">Selling?</span> Reach buyers in Bangladesh and worldwide,
+                  and get paid out in BDT.
                 </p>
                 <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(280)}>
                   <Button href="/buy" size="lg" className="dq-shine w-full shadow-[0_14px_30px_-12px_rgba(16,185,129,0.9)] sm:w-auto">
@@ -687,44 +681,17 @@ export default async function DurqoBangladeshPage() {
         </Container>
       </section>
 
-      {/* STATS: floating glass panel overlapping the hero */}
-      <section className="relative z-10 -mt-16 pb-4 sm:-mt-20">
-        <Container>
-          <Inner>
-            <div className="grid grid-cols-2 overflow-hidden rounded-3xl border border-rule bg-paper-raised shadow-[0_40px_80px_-40px_rgba(11,19,36,0.45)] sm:grid-cols-4">
-              {STATS.map(({ value, label, icon: Icon }, i) => (
-                <div
-                  key={label}
-                  data-reveal
-                  style={revealDelay(i * 100)}
-                  className={`group relative flex flex-col gap-1 p-5 sm:p-7 ${i % 2 === 1 ? "border-l border-rule" : ""} ${i >= 2 ? "border-t border-rule sm:border-t-0" : ""} ${i === 2 ? "sm:border-l" : ""}`}
-                >
-                  <span className="dq-icon-pop mb-2 grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:bg-brand group-hover:text-white">
-                    <Icon size={17} />
-                  </span>
-                  <p className="mono text-3xl font-bold tabular-nums text-ink sm:text-[2.6rem] sm:leading-none">
-                    <CountUp value={value} />
-                  </p>
-                  <p className="text-xs leading-snug text-ink-soft sm:text-sm">{label}</p>
-                </div>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
       {/* CATEGORIES with live counts */}
       <section id="categories" className="scroll-mt-24 border-b border-rule py-16 sm:py-20">
         <Container>
           <Inner>
             <div className="mb-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
               <div data-reveal className="max-w-[66ch]">
-                <DashEyebrow>Reach buyers beyond Bangladesh</DashEyebrow>
-                <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Buy or Sell Across 16 Digital Business Categories</h2>
+                <DashEyebrow>16 categories</DashEyebrow>
+                <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Browse by Category</h2>
                 <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                  Selling only within Bangladesh limits how many buyers ever see a listing. Durqo opens every listing
-                  to buyers everywhere, across 16 digital business categories - whatever kind of digital business
-                  you&rsquo;re buying or selling, it has a home here.
+                  Durqo has 16 digital business categories. Each card shows how many businesses are for sale in it
+                  right now. Tap a category to see its listings.
                 </p>
               </div>
               <div data-reveal style={revealDelay(120)} className="flex items-center gap-5 rounded-2xl border border-rule bg-paper-raised px-6 py-4 shadow-[0_18px_40px_-30px_rgba(11,19,36,0.4)]">
@@ -866,10 +833,10 @@ export default async function DurqoBangladeshPage() {
           <Inner>
             <div data-reveal className="mb-8 max-w-[70ch]">
               <DashEyebrow>The problems we hear most</DashEyebrow>
-              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">What Bangladeshi Buyers and Sellers Struggle With, and How Durqo Solves It</h2>
+              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Common Problems, and How Durqo Solves Them</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                These are the real obstacles Bangladeshi buyers and sellers run into when trying to buy or sell a
-                digital business internationally, and how Durqo addresses each one.
+                Ten problems Bangladeshi buyers and sellers face when buying or selling a digital business, and
+                Durqo&rsquo;s answer to each. Pick one to see the solution.
               </p>
             </div>
             <div data-reveal style={revealDelay(120)}>
@@ -895,8 +862,8 @@ export default async function DurqoBangladeshPage() {
               </p>
               <h2 className="text-3xl tracking-tight text-white sm:text-[2.4rem] sm:leading-tight">Pay and Get Paid the Way You Already Do</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-white/65">
-                No foreign wire transfers or unfamiliar payment forms - Durqo runs on the same local payment methods
-                Bangladeshi buyers and sellers already use every day.
+                Buyers pay in BDT. Durqo holds the payment until the buyer approves the handover. Then the seller
+                is paid out in BDT.
               </p>
             </div>
             <div data-reveal className="mb-5">
