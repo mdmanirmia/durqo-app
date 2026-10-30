@@ -5,9 +5,7 @@ import {
   Wallet,
   Landmark,
   ShieldCheck,
-  Lock,
   ClipboardCheck,
-  Search,
   Layers,
   Handshake,
   Globe2,
@@ -33,15 +31,20 @@ import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import type { CSSProperties } from "react";
 import CountUp from "@/components/CountUp";
 import MouseGlow from "@/components/home/MouseGlow";
-import BdNetwork from "@/components/bangladesh/BdNetwork";
 import MoneyFlow from "@/components/bangladesh/MoneyFlow";
 import { CATEGORY_ACCENTS } from "@/lib/category-accents";
+import BdHeroVideo from "@/components/bangladesh/BdHeroVideo";
+import ProblemExplorer, { type ProblemItem } from "@/components/bangladesh/ProblemExplorer";
+import ListingCard from "@/components/ListingCard";
+import { getPublishedListings } from "@/lib/data/listings.server";
 
 // Oct 30, 2026 ("ei page er design ta perfect koro. Motion type and
 // dynamic and khub e premium ... photo or video add korte hole baniye
 // koro"): same motion system as the homepage and /sell (globals.css dq-*
 // + [data-reveal]); the hero's photo/video slot is a code-built animated
-// network (BdNetwork.tsx). Copy is unchanged.
+// network (BdNetwork.tsx). Copy is unchanged. Oct 30 (take 2): the hero now
+// carries a rendered product film (BdHeroVideo, public/video/), category
+// tiles show live listing counts, and problems are an interactive explorer.
 function enterDelay(ms: number): CSSProperties {
   return { "--d": `${ms}ms` } as CSSProperties;
 }
@@ -165,6 +168,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.durqo.com/durqo-bangladesh" },
 };
 
+// Live per-category listing counts must match /buy at request time (same
+// reason the homepage is force-dynamic), not a build-time snapshot.
+export const dynamic = "force-dynamic";
+
 const PAGE_URL = "https://www.durqo.com/durqo-bangladesh";
 
 const BREADCRUMB_JSON_LD = {
@@ -225,79 +232,66 @@ const PAYOUT_METHODS = [
   { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
 ];
 
-type Audience = "For Buyers" | "For Sellers" | "For Everyone";
-
-const AUDIENCE_STYLE: Record<Audience, { pill: string; icon: string; bar: string; solutionBg: string }> = {
-  "For Buyers": { pill: "bg-brand-soft text-brand-strong", icon: "bg-brand-soft text-brand-strong", bar: "bg-brand", solutionBg: "bg-brand-soft" },
-  "For Sellers": { pill: "bg-gold-soft text-[#92730F]", icon: "bg-gold-soft text-[#92730F]", bar: "bg-gold", solutionBg: "bg-gold-soft" },
-  "For Everyone": { pill: "bg-paper-sunk text-ink-soft", icon: "bg-paper-sunk text-ink-soft", bar: "bg-ink-faint", solutionBg: "bg-paper-sunk" },
-};
-
-const PROBLEMS: {
-  audience: Audience;
-  icon: typeof Wallet;
-  problem: string;
-  solution: string;
-}[] = [
+const PROBLEMS: ProblemItem[] = [
   {
     audience: "For Buyers",
-    icon: Wallet,
+    icon: "Wallet",
     problem: "Paying an international seller in BDT is hard. Most global marketplaces only take cards or wires priced in USD.",
     solution: "Buy in BDT through supported local payment methods, including bKash, Nagad, Rocket, bank transfer or card.",
   },
   {
     audience: "For Sellers",
-    icon: Landmark,
+    icon: "Landmark",
     problem: "Bangladeshi sellers struggle to reach buyers outside the country, and getting paid back in BDT is even harder.",
     solution: "Sell to buyers anywhere in the world and get paid out in BDT through bank transfer, bKash, Nagad or Rocket.",
   },
   {
     audience: "For Buyers",
-    icon: ShieldCheck,
+    icon: "ShieldCheck",
     problem: "Buyers worry about paying for a business and never actually receiving the assets.",
     solution: "Every purchase moves through a structured Asset Transfer Room with a 7-day inspection period before the sale is finalized.",
   },
   {
     audience: "For Everyone",
-    icon: Lock,
+    icon: "Lock",
     problem: "Both sides carry payment and delivery risk in a deal this size.",
     solution:
       "A structured process covering payment, transfer, inspection, approval and payout keeps things organized end to end. Supported transactions may also use Escrow.com as an independent escrow option.",
   },
   {
     audience: "For Everyone",
-    icon: ClipboardCheck,
+    icon: "ClipboardCheck",
     problem: "Assets can go missing or not match what was promised after the handover.",
     solution: "Buyers can report an issue and have the transaction reviewed, instead of the sale auto-approving.",
   },
   {
     audience: "For Buyers",
-    icon: Search,
+    icon: "Search",
     problem: "Listing information on many marketplaces can't be trusted.",
     solution:
       "Listings go through review before they go live and carry verification signals, including supported Google Analytics connections, though buyers should still do their own diligence.",
   },
   {
     audience: "For Everyone",
-    icon: Layers,
+    icon: "Layers",
     problem: "A sale with several moving parts, such as the domain, app, accounts and documents, is hard to hand over cleanly.",
     solution: "The Transfer Room tracks every asset in the sale individually, so nothing gets lost in a multi-part handover.",
   },
   {
     audience: "For Sellers",
-    icon: Handshake,
+    icon: "Handshake",
     problem: "A seller already has a buyer lined up through Facebook or a personal contact, but no reliable way to actually close the deal.",
     solution: "Bring that buyer onto Durqo and run the sale through the same structured Transfer Room process.",
   },
   {
     audience: "For Sellers",
-    icon: Globe2,
+    icon: "Globe2",
     problem: "Selling only within Bangladesh limits how many buyers ever see the listing.",
     solution: "Reach international buyers across Durqo's 16 digital business categories.",
   },
   {
     audience: "For Sellers",
-    icon: Calculator,
+    icon: "Calculator",
     problem: "Many owners have no idea what their business is actually worth.",
     solution: "Get a free indicative valuation before deciding whether or when to sell.",
   },
@@ -579,15 +573,37 @@ function NumberedFlow({ steps }: { steps: { title: string; body?: string; icon?:
   );
 }
 
-export default function DurqoBangladeshPage() {
+export default async function DurqoBangladeshPage() {
+  // Real catalog numbers, computed exactly like the homepage: sold listings
+  // are excluded so every count matches what /buy shows by default.
+  const listings = await getPublishedListings();
+  const activeListings = listings.filter((l) => l.status !== "sold");
+  const categoryCounts = new Map<string, number>();
+  for (const l of activeListings) categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
+  const totalActive = activeListings.length;
+  const maxCount = Math.max(1, ...categoryCounts.values());
+  // Most-stocked categories first; ties keep the canonical CATEGORIES order.
+  const sortedCategories = CATEGORIES.map((c, idx) => ({ c, idx, count: categoryCounts.get(c.id) ?? 0 })).sort(
+    (a, b) => b.count - a.count || a.idx - b.idx,
+  );
+  const profitOf = (l: (typeof listings)[number]) => {
+    const revenue = l.quickStats.monthly_income as number | undefined;
+    if (revenue === undefined) return undefined;
+    const exp = l.monthlyExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+    return l.monthlyExpenses.length > 0 ? revenue - exp : revenue;
+  };
+  const featured = [...activeListings]
+    .sort((a, b) => (profitOf(b) ?? -1) - (profitOf(a) ?? -1) || (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price))
+    .slice(0, 3);
+
   return (
     <main>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(BREADCRUMB_JSON_LD) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBPAGE_JSON_LD) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }} />
 
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-brand-strong bg-[radial-gradient(60%_80%_at_0%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(45%_60%_at_100%_100%,rgba(244,42,65,0.10),transparent_60%),linear-gradient(180deg,#0B1324,#0F1B33)] py-16 sm:py-20 lg:py-24">
+      {/* HERO: copy left, product film right */}
+      <section className="relative overflow-hidden bg-[#0B1324] bg-[radial-gradient(55%_70%_at_0%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_55%_at_100%_100%,rgba(244,42,65,0.12),transparent_60%),linear-gradient(180deg,#0B1324,#0E1A31)] pb-28 pt-14 sm:pb-32 sm:pt-20 lg:pb-40 lg:pt-24">
         <MouseGlow />
         <div
           className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_70%_at_30%_30%,#000_25%,transparent_75%)]"
@@ -596,10 +612,23 @@ export default function DurqoBangladeshPage() {
         <div className="dq-glow pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-brand/20 blur-3xl" aria-hidden />
         <Container className="relative">
           <Inner>
-            <div className="grid gap-10 lg:grid-cols-[52fr_48fr] lg:items-center lg:gap-12">
+            <div className="grid gap-12 lg:grid-cols-[44fr_56fr] lg:items-center lg:gap-14">
               <div className="min-w-0">
-                <div className="dq-enter mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70" style={enterDelay(0)}>
-                  <span className="h-px w-6 bg-brand" aria-hidden="true" />
+                <Link
+                  href="#categories"
+                  className="dq-enter group mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] py-1 pl-1 pr-3 text-xs text-white/75 backdrop-blur transition hover:border-brand/60 hover:text-white"
+                  style={enterDelay(0)}
+                >
+                  <span className="mono flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[0.65rem] font-bold text-white">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                    LIVE
+                  </span>
+                  <span>
+                    <span className="font-semibold text-white">{totalActive}</span> listings across 16 categories
+                  </span>
+                  <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+                </Link>
+                <div className="dq-enter mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70" style={enterDelay(60)}>
                   <span className="flex items-center gap-1.5 text-brand">
                     <MapPin size={13} />
                     Bangladesh
@@ -614,17 +643,17 @@ export default function DurqoBangladeshPage() {
                     The World
                   </span>
                 </div>
-                <h1 className="dq-enter text-4xl leading-[1.1] text-white sm:text-5xl lg:text-[3.3rem]" style={enterDelay(90)}>
+                <h1 className="dq-enter text-[2.5rem] leading-[1.06] tracking-tight text-white sm:text-5xl lg:text-[3.6rem]" style={enterDelay(120)}>
                   The Global Marketplace to{" "}
                   <span className="bg-gradient-to-r from-[#34D399] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
                 </h1>
-                <p className="dq-enter mt-5 max-w-[60ch] text-lg leading-relaxed text-white/70" style={enterDelay(180)}>
+                <p className="dq-enter mt-6 max-w-[56ch] text-[1.05rem] leading-relaxed text-white/70" style={enterDelay(200)}>
                   Buy global digital businesses using BDT through bKash, Rocket, Nagad, bank transfer and card.
                   Sell to buyers in Bangladesh and globally and get paid out in BDT. A structured payment, asset
                   transfer and inspection process keeps every transaction organized and transparent.
                 </p>
-                <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(270)}>
-                  <Button href="/buy" size="lg" className="dq-shine w-full sm:w-auto">
+                <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(280)}>
+                  <Button href="/buy" size="lg" className="dq-shine w-full shadow-[0_14px_30px_-12px_rgba(16,185,129,0.9)] sm:w-auto">
                     Browse Businesses
                     <ArrowRight size={16} />
                   </Button>
@@ -632,104 +661,51 @@ export default function DurqoBangladeshPage() {
                     Sell a Business
                   </Button>
                 </div>
-                <p className="dq-enter mono mt-5 flex items-start gap-1.5 text-xs leading-relaxed text-white/55" style={enterDelay(360)}>
+                <div className="dq-enter mt-7 flex flex-wrap items-center gap-2" style={enterDelay(360)}>
+                  {BUYER_CHANNELS.map(({ icon: Icon, label }, i) => (
+                    <span
+                      key={label}
+                      className="dq-pop mono flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.05] px-3 py-1.5 text-[0.68rem] text-white/75"
+                      style={{ animationDelay: `${520 + i * 80}ms` }}
+                    >
+                      <Icon size={12} className="text-brand" />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <p className="dq-enter mono mt-5 flex items-start gap-1.5 text-xs leading-relaxed text-white/55" style={enterDelay(440)}>
                   <ShieldCheck size={13} className="mt-0.5 shrink-0 text-brand" />
                   <span>Payments secured through Stripe and SSLCommerz, with Escrow.com available for extra protection.</span>
                 </p>
               </div>
 
-              <div className="dq-enter relative min-w-0" style={enterDelay(200)}>
-                {/* Animated Bangladesh-to-world network: the page's built-in
-                    "photo/video" (BdNetwork.tsx). */}
-                <div className="pointer-events-none relative h-[250px] sm:h-[300px] lg:-mx-8 lg:h-[340px]" aria-hidden>
-                  <span className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F42A41]/10 blur-3xl" />
-                  <BdNetwork />
-                </div>
-              <div className="dq-float relative -mt-6 min-w-0">
-              <div className="dq-border relative min-w-0 rounded-2xl border border-white/10 bg-paper-raised p-6 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)] sm:p-7">
-                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
-                  Bangladesh at a Glance
-                </p>
-
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Wallet size={16} />
-                  </span>
-                  <div>
-                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">For buyers</p>
-                    <h3 className="text-sm font-semibold text-ink">Pay in BDT Through Local Methods</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      Supported channels include bKash, Nagad, Rocket, bank transfer and card.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {BUYER_CHANNELS.map(({ icon: Icon, label, tint }, i) => (
-                        <span key={label} className="dq-pop mono flex items-center gap-1 rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft" style={{ animationDelay: `${500 + i * 70}ms` }}>
-                          <Icon size={11} className={tint} />
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="my-5 h-px bg-rule" aria-hidden />
-
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
-                    <Landmark size={16} />
-                  </span>
-                  <div>
-                    <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">For sellers</p>
-                    <h3 className="text-sm font-semibold text-ink">Get Paid Out in BDT</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                      Supported payout methods include bank transfer, bKash, Nagad and Rocket, subject to eligibility
-                      and verification.
-                    </p>
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {PAYOUT_METHODS.map(({ icon: Icon, label, tint }, i) => (
-                        <span key={label} className="dq-pop mono flex items-center gap-1 rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft" style={{ animationDelay: `${850 + i * 70}ms` }}>
-                          <Icon size={11} className={tint} />
-                          {label}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-5 flex items-start gap-2.5 rounded-lg bg-paper-sunk px-3.5 py-3">
-                  <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
-                  <p className="text-xs leading-relaxed text-ink-faint">
-                    Buyer payments and seller payouts follow separate processes. A confirmed buyer payment does not
-                    immediately create an available seller balance.
-                  </p>
-                </div>
-              </div>
-              </div>
+              <div className="dq-enter min-w-0" style={enterDelay(220)}>
+                <BdHeroVideo />
               </div>
             </div>
           </Inner>
         </Container>
       </section>
 
-      {/* STATS STRIP */}
-      <section className="border-b border-rule bg-paper-raised py-10">
+      {/* STATS: floating glass panel overlapping the hero */}
+      <section className="relative z-10 -mt-16 pb-4 sm:-mt-20">
         <Container>
           <Inner>
-            <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 sm:gap-4">
+            <div className="grid grid-cols-2 overflow-hidden rounded-3xl border border-rule bg-paper-raised shadow-[0_40px_80px_-40px_rgba(11,19,36,0.45)] sm:grid-cols-4">
               {STATS.map(({ value, label, icon: Icon }, i) => (
                 <div
                   key={label}
                   data-reveal
                   style={revealDelay(i * 100)}
-                  className={`flex flex-col items-center px-2 text-center sm:items-start sm:border-l sm:border-rule sm:px-4 sm:text-left ${i === 0 ? "sm:border-l-0 sm:px-0" : ""}`}
+                  className={`group relative flex flex-col gap-1 p-5 sm:p-7 ${i % 2 === 1 ? "border-l border-rule" : ""} ${i >= 2 ? "border-t border-rule sm:border-t-0" : ""} ${i === 2 ? "sm:border-l" : ""}`}
                 >
-                  <span className="dq-icon-pop mb-2 grid h-9 w-9 place-items-center rounded-xl bg-brand-soft text-brand-strong">
-                    <Icon size={16} />
+                  <span className="dq-icon-pop mb-2 grid h-10 w-10 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:bg-brand group-hover:text-white">
+                    <Icon size={17} />
                   </span>
-                  <p className="mono text-3xl font-bold tabular-nums text-brand-strong sm:text-4xl">
+                  <p className="mono text-3xl font-bold tabular-nums text-ink sm:text-[2.6rem] sm:leading-none">
                     <CountUp value={value} />
                   </p>
-                  <p className="mt-1 text-xs leading-snug text-ink-soft">{label}</p>
+                  <p className="text-xs leading-snug text-ink-soft sm:text-sm">{label}</p>
                 </div>
               ))}
             </div>
@@ -737,58 +713,113 @@ export default function DurqoBangladeshPage() {
         </Container>
       </section>
 
-      {/* PROBLEMS & SOLUTIONS */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      {/* CATEGORIES with live counts */}
+      <section id="categories" className="scroll-mt-24 border-b border-rule py-16 sm:py-20">
         <Container>
           <Inner>
-            <div data-reveal className="mb-10 max-w-[70ch]">
-              <DashEyebrow>The problems we hear most</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">What Bangladeshi Buyers and Sellers Struggle With, and How Durqo Solves It</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                These are the real obstacles Bangladeshi buyers and sellers run into when trying to buy or sell a
-                digital business internationally, and how Durqo addresses each one.
-              </p>
+            <div className="mb-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div data-reveal className="max-w-[66ch]">
+                <DashEyebrow>Reach buyers beyond Bangladesh</DashEyebrow>
+                <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Buy or Sell Across 16 Digital Business Categories</h2>
+                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                  Selling only within Bangladesh limits how many buyers ever see a listing. Durqo opens every listing
+                  to buyers everywhere, across 16 digital business categories - whatever kind of digital business
+                  you&rsquo;re buying or selling, it has a home here.
+                </p>
+              </div>
+              <div data-reveal style={revealDelay(120)} className="flex items-center gap-5 rounded-2xl border border-rule bg-paper-raised px-6 py-4 shadow-[0_18px_40px_-30px_rgba(11,19,36,0.4)]">
+                <div>
+                  <p className="mono text-4xl font-bold tabular-nums leading-none text-brand-strong">
+                    <CountUp value={String(totalActive)} />
+                  </p>
+                  <p className="mt-1 text-xs text-ink-soft">Live listings right now</p>
+                </div>
+                <Link href="/buy" className="group grid h-11 w-11 place-items-center rounded-full bg-ink text-white transition hover:bg-brand" aria-label="View all listings">
+                  <ArrowRight size={17} className="transition group-hover:translate-x-0.5" />
+                </Link>
+              </div>
             </div>
 
-            <div className="flex flex-col gap-4">
-              {PROBLEMS.map(({ audience, icon: Icon, problem, solution }, i) => {
-                const style = AUDIENCE_STYLE[audience];
-                return (
-                  <div
-                    key={problem}
-                    data-reveal
-                    style={revealDelay((i % 3) * 90)}
-                    className="group relative overflow-hidden rounded-2xl border border-rule bg-paper-raised transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)] sm:grid sm:grid-cols-[1fr_1fr]"
-                  >
-                    <span className={`absolute inset-y-0 left-0 w-1.5 ${style.bar}`} aria-hidden />
-
-                    {/* Problem side — deliberately quiet, so the solution reads as the answer */}
-                    <div className="relative p-6 pl-8 sm:p-8 sm:pl-9">
-                      <span
-                        className="mono pointer-events-none absolute right-5 top-5 text-3xl font-bold leading-none text-ink-faint/20 transition group-hover:text-ink-faint/30 sm:right-6 sm:top-6 sm:text-4xl"
-                        aria-hidden
-                      >
-                        {String(i + 1).padStart(2, "0")}
+            <div className="grid grid-flow-dense grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
+              {sortedCategories.map(({ c, count }, i) => {
+                const Icon = categoryIcon(c.id);
+                const accent = CATEGORY_ACCENTS[c.id] ?? "#10B981";
+                const big = i < 2 && count > 0;
+                const share = Math.round((count / maxCount) * 100);
+                const countLabel = count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "Coming soon";
+                if (big) {
+                  return (
+                    <Link
+                      key={c.id}
+                      href={`/buy/${c.id}`}
+                      data-reveal
+                      style={{ ...revealDelay(i * 90), "--accent": accent } as CSSProperties}
+                      className={`group relative flex min-h-[230px] flex-col overflow-hidden rounded-3xl p-6 text-white shadow-[0_30px_60px_-36px_var(--accent)] transition duration-300 hover:-translate-y-1 min-[420px]:col-span-2 sm:p-7 ${i === 0 ? "lg:row-span-2" : ""}`}
+                    >
+                      <span className="absolute inset-0 bg-[linear-gradient(135deg,var(--accent),color-mix(in_srgb,var(--accent)_55%,#0B1324))]" aria-hidden />
+                      <span className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_80%_at_100%_0%,#000_10%,transparent_70%)]" aria-hidden />
+                      <span className="pointer-events-none absolute -bottom-10 -right-6 text-white/10 transition duration-500 group-hover:-translate-y-2 group-hover:rotate-6" aria-hidden>
+                        <Icon size={190} strokeWidth={1.2} />
                       </span>
-                      <span className={`mono mb-4 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[0.65rem] font-semibold uppercase tracking-wider ${style.pill}`}>
-                        <Icon size={12} />
-                        {audience}
-                      </span>
-                      <p className="mono mb-2 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">The problem</p>
-                      <p className="max-w-[90%] text-[0.95rem] font-medium leading-relaxed text-ink">{problem}</p>
-                    </div>
-
-                    {/* Solution side — highlighted so Durqo's answer is the visual payoff of each row */}
-                    <div className={`border-t border-rule p-6 pl-8 sm:border-l sm:border-t-0 sm:p-8 sm:pl-8 ${style.solutionBg}`}>
-                      <p className="mono mb-2 flex items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-wider text-brand-strong">
-                        <span className="dq-icon-pop grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/70">
-                          <CheckCircle2 size={12} />
+                      <div className="relative flex items-start justify-between gap-3">
+                        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur">
+                          <Icon size={22} />
                         </span>
-                        Durqo&rsquo;s solution
-                      </p>
-                      <p className="text-[0.95rem] leading-relaxed text-ink">{solution}</p>
+                        <span className="mono rounded-full bg-white/15 px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wider ring-1 ring-white/20">
+                          {i === 0 ? "Most listings" : "Popular"}
+                        </span>
+                      </div>
+                      <div className="relative mt-auto pt-8">
+                        <p className="mono text-5xl font-bold tabular-nums leading-none">
+                          <CountUp value={String(count)} />
+                        </p>
+                        <p className="mt-1 text-xs text-white/75">live listing{count === 1 ? "" : "s"}</p>
+                        <h3 className="mt-4 text-xl font-semibold">{c.name}</h3>
+                        <p className="mt-1 max-w-[46ch] text-sm leading-relaxed text-white/80">{c.description}</p>
+                        <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold">
+                          Browse {c.name}
+                          <ArrowRight size={15} className="transition group-hover:translate-x-1" />
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                }
+                return (
+                  <Link
+                    key={c.id}
+                    href={`/buy/${c.id}`}
+                    data-reveal
+                    style={{ ...revealDelay((i % 4) * 70), "--accent": accent } as CSSProperties}
+                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised p-5 transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_22px_44px_-30px_var(--accent)]"
+                  >
+                    <span className="absolute inset-x-0 top-0 h-1 bg-[var(--accent)] opacity-80" aria-hidden />
+                    <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[var(--accent)] opacity-0 blur-2xl transition duration-500 group-hover:opacity-20" aria-hidden />
+                    <div className="relative flex items-start justify-between gap-3">
+                      <span
+                        className="grid h-11 w-11 place-items-center rounded-xl transition duration-300 group-hover:scale-110"
+                        style={{ color: accent, backgroundColor: `color-mix(in srgb, ${accent} 12%, #fff)` }}
+                      >
+                        <Icon size={19} />
+                      </span>
+                      <span
+                        className={`mono rounded-full px-2.5 py-1 text-[0.65rem] font-semibold ${count > 0 ? "" : "bg-paper-sunk text-ink-faint"}`}
+                        style={count > 0 ? { color: accent, backgroundColor: `color-mix(in srgb, ${accent} 10%, #fff)` } : undefined}
+                      >
+                        {countLabel}
+                      </span>
                     </div>
-                  </div>
+                    <h3 className="relative mt-4 text-[0.95rem] font-semibold text-ink">{c.name}</h3>
+                    <p className="relative mt-1 line-clamp-2 text-xs leading-relaxed text-ink-soft">{c.description}</p>
+                    <div className="relative mt-auto pt-4">
+                      <div className="h-1 overflow-hidden rounded-full bg-paper-sunk" aria-hidden>
+                        <div data-reveal className="dq-line h-full rounded-full bg-[var(--accent)]" style={{ width: `${Math.max(count > 0 ? 6 : 0, share)}%` }} />
+                      </div>
+                      <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink-soft transition group-hover:text-[var(--accent)]">
+                        {count > 0 ? "View listings" : "Explore category"}
+                        <ArrowRight size={13} className="transition group-hover:translate-x-1" />
+                      </span>
+                    </div>
+                  </Link>
                 );
               })}
             </div>
@@ -796,96 +827,222 @@ export default function DurqoBangladeshPage() {
         </Container>
       </section>
 
-      {/* PAY & GET PAID IN BDT */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
+      {/* LIVE LISTINGS */}
+      {featured.length > 0 && (
+        <section className="border-b border-rule bg-paper-sunk py-16 sm:py-20">
+          <Container>
+            <Inner>
+              <div data-reveal className="mb-9 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <DashEyebrow>Live on Durqo right now</DashEyebrow>
+                  <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Businesses You Can Buy in BDT Today</h2>
+                </div>
+                <Button href="/buy" variant="secondary" className="min-h-11">
+                  View all {totalActive} listings
+                  <ArrowRight size={15} />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {featured.map((l, i) => (
+                  <div key={l.id} data-reveal style={revealDelay(i * 110)} className={i === 2 ? "sm:hidden lg:block" : ""}>
+                    <div data-tilt className="dq-tilt h-full">
+                      <ListingCard listing={l} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Inner>
+          </Container>
+        </section>
+      )}
+
+      {/* PROBLEMS & SOLUTIONS (interactive) */}
+      <section className="relative overflow-hidden border-b border-rule py-16 sm:py-20">
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.06)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_70%_60%_at_80%_20%,#000_15%,transparent_70%)]"
+          aria-hidden
+        />
+        <Container className="relative">
           <Inner>
-            <div data-reveal className="mb-10 max-w-[70ch]">
-              <DashEyebrow>Local money, global reach</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Pay and Get Paid the Way You Already Do</h2>
+            <div data-reveal className="mb-8 max-w-[70ch]">
+              <DashEyebrow>The problems we hear most</DashEyebrow>
+              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">What Bangladeshi Buyers and Sellers Struggle With, and How Durqo Solves It</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                No foreign wire transfers or unfamiliar payment forms - Durqo runs on the same local payment methods
-                Bangladeshi buyers and sellers already use every day.
+                These are the real obstacles Bangladeshi buyers and sellers run into when trying to buy or sell a
+                digital business internationally, and how Durqo addresses each one.
               </p>
             </div>
-            <div className="mb-6">
-              <MoneyFlow />
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div data-reveal className="group rounded-2xl border border-rule bg-paper-raised p-6 transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]">
-                <span className="dq-icon-pop mb-4 grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:scale-110">
-                  <Wallet size={19} />
-                </span>
-                <p className="mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">For buyers</p>
-                <h3 className="text-lg font-semibold text-ink">Pay for a Business in BDT</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Choose SSLCommerz at checkout and select one of five supported local payment channels.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {BUYER_CHANNELS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="mono flex items-center gap-1.5 rounded-full border border-rule bg-paper-sunk px-3 py-1.5 text-xs text-ink-soft transition hover:-translate-y-0.5 hover:border-rule-strong hover:bg-paper-raised">
-                      <Icon size={14} className={tint} />
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              <div data-reveal style={revealDelay(120)} className="group rounded-2xl border border-rule bg-paper-raised p-6 transition duration-300 hover:-translate-y-1 hover:border-gold/60 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]">
-                <span className="dq-icon-pop mb-4 grid h-11 w-11 place-items-center rounded-xl bg-gold-soft text-[#92730F] transition group-hover:scale-110">
-                  <Landmark size={19} />
-                </span>
-                <p className="mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">For sellers</p>
-                <h3 className="text-lg font-semibold text-ink">Get Paid Out in BDT</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Once eligible earnings are available, request a payout through one of four supported local methods.
-                </p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="mono flex items-center gap-1.5 rounded-full border border-rule bg-paper-sunk px-3 py-1.5 text-xs text-ink-soft transition hover:-translate-y-0.5 hover:border-rule-strong hover:bg-paper-raised">
-                      <Icon size={14} className={tint} />
-                      {label}
-                    </span>
-                  ))}
-                </div>
-              </div>
+            <div data-reveal style={revealDelay(120)}>
+              <ProblemExplorer items={PROBLEMS} />
             </div>
           </Inner>
         </Container>
       </section>
 
-      {/* MARKETPLACE FEES */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      {/* PAY & GET PAID IN BDT (dark bento) */}
+      <section className="relative overflow-hidden bg-[#0B1324] bg-[radial-gradient(50%_60%_at_100%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(40%_50%_at_0%_100%,rgba(217,119,6,0.12),transparent_60%)] py-16 sm:py-20">
+        <MouseGlow />
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_30%,#000_20%,transparent_75%)]"
+          aria-hidden
+        />
+        <Container className="relative">
+          <Inner>
+            <div data-reveal className="mb-10 max-w-[70ch]">
+              <p className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/60">
+                <span className="h-px w-6 bg-brand" aria-hidden />
+                Local money, global reach
+              </p>
+              <h2 className="text-3xl tracking-tight text-white sm:text-[2.4rem] sm:leading-tight">Pay and Get Paid the Way You Already Do</h2>
+              <p className="mt-3 text-[0.95rem] leading-relaxed text-white/65">
+                No foreign wire transfers or unfamiliar payment forms - Durqo runs on the same local payment methods
+                Bangladeshi buyers and sellers already use every day.
+              </p>
+            </div>
+            <div data-reveal className="mb-5">
+              <MoneyFlow />
+            </div>
+            <div className="grid gap-5 md:grid-cols-2">
+              {[
+                {
+                  tag: "For buyers",
+                  title: "Pay for a Business in BDT",
+                  body: "Choose SSLCommerz at checkout and select one of five supported local payment channels.",
+                  icon: Wallet,
+                  list: BUYER_CHANNELS,
+                  tone: "from-brand/25",
+                  tagColor: "text-[#34D399]",
+                  iconBg: "bg-brand text-white",
+                },
+                {
+                  tag: "For sellers",
+                  title: "Get Paid Out in BDT",
+                  body: "Once eligible earnings are available, request a payout through one of four supported local methods.",
+                  icon: Landmark,
+                  list: PAYOUT_METHODS,
+                  tone: "from-gold/25",
+                  tagColor: "text-gold",
+                  iconBg: "bg-gold text-[#0B1324]",
+                },
+              ].map(({ tag, title, body, icon: Icon, list, tone, tagColor, iconBg }, i) => (
+                <div
+                  key={title}
+                  data-reveal
+                  style={revealDelay(i * 120)}
+                  className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${tone} to-white/[0.03] p-6 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-white/25 sm:p-8`}
+                >
+                  <span className={`dq-icon-pop mb-5 grid h-12 w-12 place-items-center rounded-2xl ${iconBg} shadow-[0_12px_26px_-12px_rgba(0,0,0,0.8)] transition group-hover:scale-110`}>
+                    <Icon size={20} />
+                  </span>
+                  <p className={`mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider ${tagColor}`}>{tag}</p>
+                  <h3 className="text-xl font-semibold text-white">{title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-white/65">{body}</p>
+                  <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    {list.map(({ icon: ItemIcon, label, tint }, j) => (
+                      <span
+                        key={label}
+                        data-reveal
+                        style={revealDelay(200 + j * 70)}
+                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white px-3 py-2.5 text-xs font-semibold text-ink shadow-[0_8px_20px_-14px_rgba(0,0,0,0.8)] transition hover:-translate-y-0.5"
+                      >
+                        <ItemIcon size={15} className={tint} />
+                        {label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div data-reveal className="mt-5 flex items-start gap-2.5 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5">
+              <Info size={14} className="mt-0.5 shrink-0 text-white/50" />
+              <p className="text-xs leading-relaxed text-white/60">
+                Buyer payments and seller payouts follow separate processes. A confirmed buyer payment does not
+                immediately create an available seller balance.
+              </p>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* HOW A DURQO TRANSACTION WORKS */}
+      <section className="relative overflow-hidden border-b border-rule py-16 sm:py-20">
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.07)_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,#000_20%,transparent_70%)]"
+          aria-hidden
+        />
+        <Container className="relative">
+          <Inner className="max-w-[1000px]">
+            <div data-reveal className="mb-10 text-center">
+              <DashEyebrow center>From payment to payout</DashEyebrow>
+              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">How a Durqo Transaction Works</h2>
+              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
+                The same structured flow runs behind every sale on Durqo, whether the buyer or seller is in
+                Bangladesh or anywhere else.
+              </p>
+            </div>
+            <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_30px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
+              <NumberedFlow steps={TRANSACTION_STEPS} />
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* INSIDE THE TRANSFER ROOM */}
+      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-20">
+        <Container>
+          <Inner className="max-w-[1000px]">
+            <div data-reveal className="mb-10 text-center">
+              <DashEyebrow center>Step 2, zoomed in</DashEyebrow>
+              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">What Happens Inside the Transfer Room</h2>
+              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
+                Every asset on the checklist, such as the domain, code, accounts or documents, moves through this
+                same handover sequence before the sale can close.
+              </p>
+            </div>
+            <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_30px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
+              <NumberedFlow steps={TRANSFER_ROOM_STEPS} />
+            </div>
+            <div className="mt-8 text-center">
+              <Link href="/transfer-room" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
+                See the full Transfer Room walkthrough
+                <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* FEES + VALUATION */}
+      <section className="border-b border-rule py-16 sm:py-20">
         <Container>
           <Inner>
-            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
-              <div data-reveal className="max-w-[60ch]">
+            <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+              <div data-reveal className="relative overflow-hidden rounded-3xl border border-rule bg-paper-raised p-7 sm:p-9">
+                <span className="dq-glow pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand/15 blur-3xl" aria-hidden />
                 <DashEyebrow>What it costs</DashEyebrow>
-                <h2 className="text-2xl sm:text-3xl">Marketplace Fees</h2>
+                <h2 className="text-3xl tracking-tight sm:text-[2.2rem] sm:leading-tight">Marketplace Fees</h2>
                 <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                   Durqo does not charge buyers a marketplace fee. Buyers pay the agreed purchase price, although
                   disclosed payment-provider, banking or currency-related charges may apply. Sellers are charged a
                   tiered success fee based on the final sale price, deducted only after a successful sale.
                 </p>
-              </div>
-              <div data-reveal style={revealDelay(120)} className="relative overflow-hidden rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <span className="dq-glow pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-brand/15 blur-3xl" aria-hidden />
-                <p className="mono relative mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
-                <dl className="flex flex-col gap-3">
+                <p className="mono mb-3 mt-7 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
+                <dl className="grid gap-3 sm:grid-cols-3">
                   {SUCCESS_FEE_TIERS.map((tier, i) => (
                     <div
                       key={tier.id}
                       data-reveal
-                      style={revealDelay(200 + i * 120)}
-                      className="relative flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0"
+                      style={revealDelay(150 + i * 120)}
+                      className="rounded-2xl border border-rule bg-paper-sunk p-4 transition hover:-translate-y-0.5 hover:border-brand/50"
                     >
-                      <dt className="text-sm text-ink-soft">{tier.label}</dt>
-                      <dd className="mono text-2xl font-bold text-brand-strong">
+                      <dd className="mono text-3xl font-bold text-brand-strong">
                         <CountUp value={fmtRate(tier.rate)} />
                       </dd>
+                      <dt className="mt-1 text-xs leading-snug text-ink-soft">{tier.label}</dt>
                     </div>
                   ))}
                 </dl>
-                <p className="relative mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
+                <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
                   <Info size={13} className="mt-0.5 shrink-0" />
                   <span>
                     Applies to the full final sale price. See{" "}
@@ -896,102 +1053,42 @@ export default function DurqoBangladeshPage() {
                   </span>
                 </p>
               </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
 
-      {/* HOW A DURQO TRANSACTION WORKS */}
-      <section className="relative overflow-hidden border-b border-rule py-14 sm:py-16">
-        <div
-          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.07)_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,#000_20%,transparent_70%)]"
-          aria-hidden
-        />
-        <Container className="relative">
-          <Inner className="max-w-[900px]">
-            <div data-reveal className="mb-10 text-center">
-              <DashEyebrow center>From payment to payout</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">How a Durqo Transaction Works</h2>
-              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
-                The same structured flow runs behind every sale on Durqo, whether the buyer or seller is in
-                Bangladesh or anywhere else.
-              </p>
-            </div>
-            <NumberedFlow steps={TRANSACTION_STEPS} />
-          </Inner>
-        </Container>
-      </section>
-
-      {/* INSIDE THE TRANSFER ROOM */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
-        <Container>
-          <Inner className="max-w-[900px]">
-            <div data-reveal className="mb-10 text-center">
-              <DashEyebrow center>Step 2, zoomed in</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">What Happens Inside the Transfer Room</h2>
-              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
-                Every asset on the checklist, such as the domain, code, accounts or documents, moves through this
-                same handover sequence before the sale can close.
-              </p>
-            </div>
-            <NumberedFlow steps={TRANSFER_ROOM_STEPS} />
-            <div className="mt-8 text-center">
-              <Link href="/transfer-room" className="text-sm font-semibold text-brand-strong hover:underline">
-                See the full Transfer Room walkthrough
-              </Link>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* 16 CATEGORIES */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <div data-reveal className="mb-10 max-w-[70ch]">
-              <DashEyebrow>Reach buyers beyond Bangladesh</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Buy or Sell Across 16 Digital Business Categories</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Selling only within Bangladesh limits how many buyers ever see a listing. Durqo opens every listing
-                to buyers everywhere, across 16 digital business categories - whatever kind of digital business
-                you&rsquo;re buying or selling, it has a home here.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {CATEGORIES.map((c, i) => {
-                const Icon = categoryIcon(c.id);
-                const accent = CATEGORY_ACCENTS[c.id] ?? "#10B981";
-                return (
+              <div data-reveal style={revealDelay(120)} className="relative flex flex-col overflow-hidden rounded-3xl bg-[linear-gradient(140deg,#10B981,#0F766E_55%,#0B1324)] p-7 text-white sm:p-9">
+                <span className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:30px_30px] [mask-image:radial-gradient(ellipse_80%_70%_at_100%_0%,#000_10%,transparent_70%)]" aria-hidden />
+                <span className="pointer-events-none absolute -bottom-8 -right-6 text-white/10" aria-hidden>
+                  <Calculator size={200} strokeWidth={1.1} />
+                </span>
+                <span className="dq-icon-pop relative mb-6 grid h-14 w-14 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/25">
+                  <Calculator size={24} />
+                </span>
+                <h2 className="relative text-2xl font-semibold leading-tight sm:text-3xl">Not Sure What Your Business Is Worth?</h2>
+                <p className="relative mt-3 text-sm leading-relaxed text-white/80">
+                  Get a free, instant estimate based on how similar businesses sell on Durqo, before deciding whether
+                  or when to sell.
+                </p>
+                <div className="relative mt-auto pt-8">
                   <Link
-                    key={c.id}
-                    href={`/buy/${c.id}`}
-                    data-reveal
-                    style={revealDelay((i % 4) * 70)}
-                    className="group rounded-2xl border border-rule bg-paper-raised p-5 transition duration-300 hover:-translate-y-1 hover:border-brand hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
+                    href="/valuation"
+                    className="dq-shine group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-ink shadow-[0_16px_30px_-14px_rgba(0,0,0,0.6)] transition hover:-translate-y-0.5 sm:w-auto"
                   >
-                    <span
-                      className="mb-3 grid h-10 w-10 place-items-center rounded-xl transition group-hover:scale-110"
-                      style={{ color: accent, backgroundColor: `color-mix(in srgb, ${accent} 12%, #fff)` }}
-                    >
-                      <Icon size={17} />
-                    </span>
-                    <h3 className="text-sm font-semibold text-ink">{c.name}</h3>
-                    <p className="mt-1 text-xs leading-relaxed text-ink-soft">{c.description}</p>
+                    Get a Free Valuation
+                    <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
                   </Link>
-                );
-              })}
+                </div>
+              </div>
             </div>
           </Inner>
         </Container>
       </section>
 
-      {/* WHY DURQO */}
-      <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
+      {/* WHY DURQO (bento) */}
+      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-20">
         <Container>
           <Inner>
             <div data-reveal className="mb-10 max-w-[70ch]">
               <DashEyebrow>Built for Bangladesh</DashEyebrow>
-              <h2 className="text-2xl sm:text-3xl">Why Buy and Sell Through Durqo?</h2>
+              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Why Buy and Sell Through Durqo?</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
                 Bangladeshi buyers and sellers face real friction buying and selling internationally - paying and
                 getting paid in BDT, and trusting a stranger with the handover. Durqo&rsquo;s structured, tracked
@@ -999,45 +1096,45 @@ export default function DurqoBangladeshPage() {
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }, i) => (
-                <div
-                  key={title}
-                  data-reveal
-                  style={revealDelay((i % 3) * 110)}
-                  className="group rounded-2xl border border-rule bg-paper-raised p-6 transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]"
-                >
-                  <span className="dq-icon-pop mb-3 grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:bg-brand group-hover:text-white">
-                    <Icon size={17} />
-                  </span>
-                  <h4 className="text-sm font-semibold text-ink">{title}</h4>
-                  <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{body}</p>
-                </div>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* FREE VALUATION CTA */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
-          <Inner>
-            <div data-reveal className="relative flex flex-col items-center gap-6 overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-br from-brand-soft via-brand-soft to-paper-raised p-8 text-center sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:text-left">
-              <span className="dq-glow pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-brand/20 blur-3xl" aria-hidden />
-              <div className="relative lg:max-w-[48ch]">
-                <span className="mb-3 inline-grid h-11 w-11 place-items-center rounded-xl bg-brand text-white shadow-[0_8px_18px_-8px_rgba(16,185,129,0.8)]">
-                  <Calculator size={19} />
-                </span>
-                <h2 className="text-xl font-semibold text-ink sm:text-2xl">Not Sure What Your Business Is Worth?</h2>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-                  Get a free, instant estimate based on how similar businesses sell on Durqo, before deciding whether
-                  or when to sell.
-                </p>
-              </div>
-              <Button href="/valuation" size="lg" className="dq-shine relative w-full shrink-0 sm:w-auto">
-                Get a Free Valuation
-                <ArrowRight size={16} />
-              </Button>
+              {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }, i) => {
+                // Bento rhythm on 3 columns: [wide, narrow], [narrow, wide],
+                // [wide, narrow] - six cards, no gaps. Dark tiles on 1 and 4.
+                const hero = i === 0 || i === 3;
+                const wide = i === 0 || i === 3 || i === 4;
+                return (
+                  <div
+                    key={title}
+                    data-reveal
+                    style={revealDelay((i % 3) * 110)}
+                    className={`group relative overflow-hidden rounded-3xl p-6 transition duration-300 hover:-translate-y-1 sm:p-7 ${
+                      hero
+                        ? "bg-[#0B1324] text-white shadow-[0_30px_60px_-36px_rgba(11,19,36,0.8)]"
+                        : "border border-rule bg-paper-raised hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]"
+                    } ${wide ? "lg:col-span-2" : ""} ${wide && !hero ? "bg-gradient-to-br from-brand-soft to-paper-raised" : ""}`}
+                  >
+                    {hero && (
+                      <>
+                        <span className="dq-glow pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-brand/30 blur-3xl" aria-hidden />
+                        <span className="pointer-events-none absolute -bottom-10 right-4 text-white/[0.06] transition duration-500 group-hover:-translate-y-2" aria-hidden>
+                          <Icon size={180} strokeWidth={1.1} />
+                        </span>
+                      </>
+                    )}
+                    <span className="mono pointer-events-none absolute right-6 top-6 text-xs font-bold text-current opacity-30" aria-hidden>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      className={`dq-icon-pop relative mb-5 grid h-12 w-12 place-items-center rounded-2xl transition ${
+                        hero ? "bg-brand text-white" : "bg-brand-soft text-brand-strong group-hover:bg-brand group-hover:text-white"
+                      }`}
+                    >
+                      <Icon size={20} />
+                    </span>
+                    <h3 className={`relative font-semibold ${hero ? "text-xl text-white" : "text-base text-ink"}`}>{title}</h3>
+                    <p className={`relative mt-2 max-w-[52ch] text-sm leading-relaxed ${hero ? "text-white/70" : "text-ink-soft"}`}>{body}</p>
+                  </div>
+                );
+              })}
             </div>
           </Inner>
         </Container>
