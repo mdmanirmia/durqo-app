@@ -418,6 +418,24 @@ h1 {
 }
 .dq-scene-in { animation: dq-scene-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
+/* /durqo-bangladesh network illustration (BdNetwork.tsx). */
+@keyframes dq-bd-flow { to { stroke-dashoffset: -120; } }
+.dq-bd-flow { stroke-dasharray: 18 102; animation: dq-bd-flow 3.2s linear infinite; }
+@keyframes dq-bd-packet {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+.dq-bd-packet { offset-rotate: 0deg; animation: dq-bd-packet 3.8s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+@keyframes dq-bd-node { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.5); opacity: 1; } }
+.dq-bd-node { transform-box: fill-box; transform-origin: center; animation: dq-bd-node 3s ease-in-out infinite; }
+@keyframes dq-bd-ring { from { transform: scale(0.7); opacity: 0.9; } to { transform: scale(2.4); opacity: 0; } }
+.dq-bd-ring { transform-box: fill-box; transform-origin: center; animation: dq-bd-ring 2.4s ease-out infinite; }
+
+@keyframes dq-flow-dot { from { left: -10%; } to { left: 105%; } }
+.dq-flow-dot { animation: dq-flow-dot 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+
 /* Sitewide: arrow icons inside links and buttons nudge forward on hover. */
 a svg.lucide-arrow-right,
 button svg.lucide-arrow-right {
@@ -445,6 +463,9 @@ button:hover svg.lucide-arrow-right {
   .dq-tilt { transform: none !important; }
   .dq-tilt::after { display: none; }
   .dq-scene-in { animation: none !important; }
+  .dq-bd-flow, .dq-bd-packet, .dq-bd-node, .dq-bd-ring { animation: none !important; }
+  .dq-bd-packet { display: none; }
+  .dq-flow-dot { display: none; }
 }
 
 /* Horizontally-scrollable rows with no visible scrollbar (the /buy category

@@ -30,6 +30,24 @@ import { BkashIcon } from "@/components/icons/PaymentIcons";
 import { CATEGORIES } from "@/lib/categories";
 import { categoryIcon } from "@/lib/category-icons";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
+import type { CSSProperties } from "react";
+import CountUp from "@/components/CountUp";
+import MouseGlow from "@/components/home/MouseGlow";
+import BdNetwork from "@/components/bangladesh/BdNetwork";
+import MoneyFlow from "@/components/bangladesh/MoneyFlow";
+import { CATEGORY_ACCENTS } from "@/lib/category-accents";
+
+// Oct 30, 2026 ("ei page er design ta perfect koro. Motion type and
+// dynamic and khub e premium ... photo or video add korte hole baniye
+// koro"): same motion system as the homepage and /sell (globals.css dq-*
+// + [data-reveal]); the hero's photo/video slot is a code-built animated
+// network (BdNetwork.tsx). Copy is unchanged.
+function enterDelay(ms: number): CSSProperties {
+  return { "--d": `${ms}ms` } as CSSProperties;
+}
+function revealDelay(ms: number): CSSProperties {
+  return { "--reveal-delay": `${ms}ms` } as CSSProperties;
+}
 
 // Sep 30, 2026: new Bangladesh-focused marketing/positioning page, built per
 // the merchant's own brief (chat — "akta page banao ei gulor upor based kore
@@ -520,9 +538,9 @@ function NumberedFlow({ steps }: { steps: { title: string; body?: string; icon?:
     <div>
       <ol className="flex flex-col gap-6 md:hidden">
         {steps.map((step, i) => (
-          <li key={step.title} className="flex gap-4">
+          <li key={step.title} data-reveal style={revealDelay(i * 120)} className="flex gap-4">
             <div className="flex flex-col items-center">
-              <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">
+              <span className="dq-icon-pop mono grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(16,185,129,0.8)]">
                 {i + 1}
               </span>
               {i < n - 1 && <span className="mt-2 w-px flex-1 bg-rule" aria-hidden />}
@@ -539,10 +557,11 @@ function NumberedFlow({ steps }: { steps: { title: string; body?: string; icon?:
       </ol>
       <div className="relative hidden md:block">
         <div className="absolute top-6 h-px bg-rule" style={{ left: `${inset}%`, right: `${inset}%` }} aria-hidden />
+        <div data-reveal className="dq-line absolute top-6 h-0.5 -translate-y-px rounded-full bg-gradient-to-r from-brand via-brand to-brand/40" style={{ left: `${inset}%`, right: `${inset}%` }} aria-hidden />
         <ol className="flex gap-4">
           {steps.map((step, i) => (
-            <li key={step.title} className="flex flex-1 flex-col items-center gap-3 text-center">
-              <span className="mono relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white">
+            <li key={step.title} data-reveal style={revealDelay(i * 150)} className="group flex flex-1 flex-col items-center gap-3 text-center">
+              <span className="dq-icon-pop mono relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white shadow-[0_10px_22px_-10px_rgba(16,185,129,0.9)] transition group-hover:scale-110">
                 {i + 1}
               </span>
               <div>
@@ -568,52 +587,66 @@ export default function DurqoBangladeshPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }} />
 
       {/* HERO */}
-      <section className="border-b border-rule py-14 sm:py-16 lg:py-20">
-        <Container>
+      <section className="relative overflow-hidden bg-brand-strong bg-[radial-gradient(60%_80%_at_0%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(45%_60%_at_100%_100%,rgba(244,42,65,0.10),transparent_60%),linear-gradient(180deg,#0B1324,#0F1B33)] py-16 sm:py-20 lg:py-24">
+        <MouseGlow />
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_70%_at_30%_30%,#000_25%,transparent_75%)]"
+          aria-hidden
+        />
+        <div className="dq-glow pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-brand/20 blur-3xl" aria-hidden />
+        <Container className="relative">
           <Inner>
-            <div className="grid gap-10 lg:grid-cols-[56fr_44fr] lg:items-start lg:gap-16">
+            <div className="grid gap-10 lg:grid-cols-[52fr_48fr] lg:items-center lg:gap-12">
               <div className="min-w-0">
-                <div className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-ink-soft">
+                <div className="dq-enter mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70" style={enterDelay(0)}>
                   <span className="h-px w-6 bg-brand" aria-hidden="true" />
-                  <span className="flex items-center gap-1.5 text-brand-strong">
+                  <span className="flex items-center gap-1.5 text-brand">
                     <MapPin size={13} />
                     Bangladesh
                   </span>
                   <span className="flex items-center gap-1" aria-hidden="true">
-                    <span className="h-px w-5 bg-rule-strong" />
-                    <span className="h-1 w-1 rounded-full bg-rule-strong" />
-                    <span className="h-px w-5 bg-rule-strong" />
+                    <span className="h-px w-5 bg-white/25" />
+                    <span className="h-1 w-1 animate-pulse rounded-full bg-brand" />
+                    <span className="h-px w-5 bg-white/25" />
                   </span>
                   <span className="flex items-center gap-1.5">
                     <Globe2 size={13} />
                     The World
                   </span>
                 </div>
-                <h1 className="text-4xl leading-[1.1] sm:text-5xl lg:text-[3.3rem]">
+                <h1 className="dq-enter text-4xl leading-[1.1] text-white sm:text-5xl lg:text-[3.3rem]" style={enterDelay(90)}>
                   The Global Marketplace to{" "}
-                  <span className="text-brand">Buy and Sell in BDT.</span>
+                  <span className="bg-gradient-to-r from-[#34D399] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
                 </h1>
-                <p className="mt-5 max-w-[60ch] text-lg leading-relaxed text-ink-soft">
+                <p className="dq-enter mt-5 max-w-[60ch] text-lg leading-relaxed text-white/70" style={enterDelay(180)}>
                   Buy global digital businesses using BDT through bKash, Rocket, Nagad, bank transfer and card.
                   Sell to buyers in Bangladesh and globally and get paid out in BDT. A structured payment, asset
                   transfer and inspection process keeps every transaction organized and transparent.
                 </p>
-                <div className="mt-8 flex flex-wrap gap-3">
-                  <Button href="/buy" size="lg">
+                <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(270)}>
+                  <Button href="/buy" size="lg" className="dq-shine w-full sm:w-auto">
                     Browse Businesses
                     <ArrowRight size={16} />
                   </Button>
-                  <Button href="/sell" variant="secondary" size="lg">
+                  <Button href="/sell" variant="on-dark" size="lg" className="w-full sm:w-auto">
                     Sell a Business
                   </Button>
                 </div>
-                <p className="mono mt-5 flex items-start gap-1.5 text-xs leading-relaxed text-ink-faint">
-                  <ShieldCheck size={13} className="mt-0.5 shrink-0 text-ink-faint" />
+                <p className="dq-enter mono mt-5 flex items-start gap-1.5 text-xs leading-relaxed text-white/55" style={enterDelay(360)}>
+                  <ShieldCheck size={13} className="mt-0.5 shrink-0 text-brand" />
                   <span>Payments secured through Stripe and SSLCommerz, with Escrow.com available for extra protection.</span>
                 </p>
               </div>
 
-              <div className="min-w-0 rounded-2xl border border-rule bg-paper-raised p-6 shadow-sm sm:p-7">
+              <div className="dq-enter relative min-w-0" style={enterDelay(200)}>
+                {/* Animated Bangladesh-to-world network: the page's built-in
+                    "photo/video" (BdNetwork.tsx). */}
+                <div className="pointer-events-none relative h-[250px] sm:h-[300px] lg:-mx-8 lg:h-[340px]" aria-hidden>
+                  <span className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F42A41]/10 blur-3xl" />
+                  <BdNetwork />
+                </div>
+              <div className="dq-float relative -mt-6 min-w-0">
+              <div className="dq-border relative min-w-0 rounded-2xl border border-white/10 bg-paper-raised p-6 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.7)] sm:p-7">
                 <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">
                   Bangladesh at a Glance
                 </p>
@@ -629,8 +662,9 @@ export default function DurqoBangladeshPage() {
                       Supported channels include bKash, Nagad, Rocket, bank transfer and card.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {BUYER_CHANNELS.map(({ label }) => (
-                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
+                      {BUYER_CHANNELS.map(({ icon: Icon, label, tint }, i) => (
+                        <span key={label} className="dq-pop mono flex items-center gap-1 rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft" style={{ animationDelay: `${500 + i * 70}ms` }}>
+                          <Icon size={11} className={tint} />
                           {label}
                         </span>
                       ))}
@@ -652,8 +686,9 @@ export default function DurqoBangladeshPage() {
                       and verification.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-1.5">
-                      {PAYOUT_METHODS.map(({ label }) => (
-                        <span key={label} className="mono rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft">
+                      {PAYOUT_METHODS.map(({ icon: Icon, label, tint }, i) => (
+                        <span key={label} className="dq-pop mono flex items-center gap-1 rounded-full border border-rule px-2.5 py-1 text-[0.65rem] text-ink-soft" style={{ animationDelay: `${850 + i * 70}ms` }}>
+                          <Icon size={11} className={tint} />
                           {label}
                         </span>
                       ))}
@@ -669,6 +704,8 @@ export default function DurqoBangladeshPage() {
                   </p>
                 </div>
               </div>
+              </div>
+              </div>
             </div>
           </Inner>
         </Container>
@@ -682,12 +719,16 @@ export default function DurqoBangladeshPage() {
               {STATS.map(({ value, label, icon: Icon }, i) => (
                 <div
                   key={label}
+                  data-reveal
+                  style={revealDelay(i * 100)}
                   className={`flex flex-col items-center px-2 text-center sm:items-start sm:border-l sm:border-rule sm:px-4 sm:text-left ${i === 0 ? "sm:border-l-0 sm:px-0" : ""}`}
                 >
-                  <span className="mb-2 grid h-8 w-8 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-                    <Icon size={15} />
+                  <span className="dq-icon-pop mb-2 grid h-9 w-9 place-items-center rounded-xl bg-brand-soft text-brand-strong">
+                    <Icon size={16} />
                   </span>
-                  <p className="mono text-3xl font-bold tabular-nums text-brand-strong sm:text-4xl">{value}</p>
+                  <p className="mono text-3xl font-bold tabular-nums text-brand-strong sm:text-4xl">
+                    <CountUp value={value} />
+                  </p>
                   <p className="mt-1 text-xs leading-snug text-ink-soft">{label}</p>
                 </div>
               ))}
@@ -700,7 +741,7 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[70ch]">
+            <div data-reveal className="mb-10 max-w-[70ch]">
               <DashEyebrow>The problems we hear most</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">What Bangladeshi Buyers and Sellers Struggle With, and How Durqo Solves It</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
@@ -715,7 +756,9 @@ export default function DurqoBangladeshPage() {
                 return (
                   <div
                     key={problem}
-                    className="group relative overflow-hidden rounded-2xl border border-rule bg-paper-raised transition duration-200 hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-md sm:grid sm:grid-cols-[1fr_1fr]"
+                    data-reveal
+                    style={revealDelay((i % 3) * 90)}
+                    className="group relative overflow-hidden rounded-2xl border border-rule bg-paper-raised transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)] sm:grid sm:grid-cols-[1fr_1fr]"
                   >
                     <span className={`absolute inset-y-0 left-0 w-1.5 ${style.bar}`} aria-hidden />
 
@@ -738,7 +781,7 @@ export default function DurqoBangladeshPage() {
                     {/* Solution side — highlighted so Durqo's answer is the visual payoff of each row */}
                     <div className={`border-t border-rule p-6 pl-8 sm:border-l sm:border-t-0 sm:p-8 sm:pl-8 ${style.solutionBg}`}>
                       <p className="mono mb-2 flex items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-wider text-brand-strong">
-                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/70">
+                        <span className="dq-icon-pop grid h-5 w-5 shrink-0 place-items-center rounded-full bg-white/70">
                           <CheckCircle2 size={12} />
                         </span>
                         Durqo&rsquo;s solution
@@ -757,7 +800,7 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[70ch]">
+            <div data-reveal className="mb-10 max-w-[70ch]">
               <DashEyebrow>Local money, global reach</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Pay and Get Paid the Way You Already Do</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
@@ -765,9 +808,12 @@ export default function DurqoBangladeshPage() {
                 Bangladeshi buyers and sellers already use every day.
               </p>
             </div>
+            <div className="mb-6">
+              <MoneyFlow />
+            </div>
             <div className="grid gap-5 sm:grid-cols-2">
-              <div className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
-                <span className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+              <div data-reveal className="group rounded-2xl border border-rule bg-paper-raised p-6 transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]">
+                <span className="dq-icon-pop mb-4 grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:scale-110">
                   <Wallet size={19} />
                 </span>
                 <p className="mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">For buyers</p>
@@ -777,15 +823,15 @@ export default function DurqoBangladeshPage() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {BUYER_CHANNELS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="mono flex items-center gap-1.5 rounded-full border border-rule bg-paper-sunk px-3 py-1.5 text-xs text-ink-soft">
+                    <span key={label} className="mono flex items-center gap-1.5 rounded-full border border-rule bg-paper-sunk px-3 py-1.5 text-xs text-ink-soft transition hover:-translate-y-0.5 hover:border-rule-strong hover:bg-paper-raised">
                       <Icon size={14} className={tint} />
                       {label}
                     </span>
                   ))}
                 </div>
               </div>
-              <div className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
-                <span className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
+              <div data-reveal style={revealDelay(120)} className="group rounded-2xl border border-rule bg-paper-raised p-6 transition duration-300 hover:-translate-y-1 hover:border-gold/60 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]">
+                <span className="dq-icon-pop mb-4 grid h-11 w-11 place-items-center rounded-xl bg-gold-soft text-[#92730F] transition group-hover:scale-110">
                   <Landmark size={19} />
                 </span>
                 <p className="mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">For sellers</p>
@@ -795,7 +841,7 @@ export default function DurqoBangladeshPage() {
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="mono flex items-center gap-1.5 rounded-full border border-rule bg-paper-sunk px-3 py-1.5 text-xs text-ink-soft">
+                    <span key={label} className="mono flex items-center gap-1.5 rounded-full border border-rule bg-paper-sunk px-3 py-1.5 text-xs text-ink-soft transition hover:-translate-y-0.5 hover:border-rule-strong hover:bg-paper-raised">
                       <Icon size={14} className={tint} />
                       {label}
                     </span>
@@ -812,7 +858,7 @@ export default function DurqoBangladeshPage() {
         <Container>
           <Inner>
             <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start lg:gap-16">
-              <div className="max-w-[60ch]">
+              <div data-reveal className="max-w-[60ch]">
                 <DashEyebrow>What it costs</DashEyebrow>
                 <h2 className="text-2xl sm:text-3xl">Marketplace Fees</h2>
                 <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
@@ -821,26 +867,33 @@ export default function DurqoBangladeshPage() {
                   tiered success fee based on the final sale price, deducted only after a successful sale.
                 </p>
               </div>
-              <div className="rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <p className="mono mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
+              <div data-reveal style={revealDelay(120)} className="relative overflow-hidden rounded-2xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <span className="dq-glow pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-brand/15 blur-3xl" aria-hidden />
+                <p className="mono relative mb-4 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
                 <dl className="flex flex-col gap-3">
-                  {SUCCESS_FEE_TIERS.map((tier) => (
+                  {SUCCESS_FEE_TIERS.map((tier, i) => (
                     <div
                       key={tier.id}
-                      className="flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0"
+                      data-reveal
+                      style={revealDelay(200 + i * 120)}
+                      className="relative flex items-center justify-between gap-4 border-b border-rule pb-3 last:border-b-0 last:pb-0"
                     >
                       <dt className="text-sm text-ink-soft">{tier.label}</dt>
-                      <dd className="mono text-lg font-bold text-brand-strong">{fmtRate(tier.rate)}</dd>
+                      <dd className="mono text-2xl font-bold text-brand-strong">
+                        <CountUp value={fmtRate(tier.rate)} />
+                      </dd>
                     </div>
                   ))}
                 </dl>
-                <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
+                <p className="relative mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
                   <Info size={13} className="mt-0.5 shrink-0" />
-                  Applies to the full final sale price. See{" "}
-                  <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
-                    Buy &amp; Sell in BDT
-                  </Link>{" "}
-                  for the full fee schedule and payout details.
+                  <span>
+                    Applies to the full final sale price. See{" "}
+                    <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
+                      Buy &amp; Sell in BDT
+                    </Link>{" "}
+                    for the full fee schedule and payout details.
+                  </span>
                 </p>
               </div>
             </div>
@@ -849,10 +902,14 @@ export default function DurqoBangladeshPage() {
       </section>
 
       {/* HOW A DURQO TRANSACTION WORKS */}
-      <section className="border-b border-rule py-14 sm:py-16">
-        <Container>
+      <section className="relative overflow-hidden border-b border-rule py-14 sm:py-16">
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.07)_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,#000_20%,transparent_70%)]"
+          aria-hidden
+        />
+        <Container className="relative">
           <Inner className="max-w-[900px]">
-            <div className="mb-10 text-center">
+            <div data-reveal className="mb-10 text-center">
               <DashEyebrow center>From payment to payout</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">How a Durqo Transaction Works</h2>
               <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
@@ -869,7 +926,7 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[900px]">
-            <div className="mb-10 text-center">
+            <div data-reveal className="mb-10 text-center">
               <DashEyebrow center>Step 2, zoomed in</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">What Happens Inside the Transfer Room</h2>
               <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
@@ -891,7 +948,7 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[70ch]">
+            <div data-reveal className="mb-10 max-w-[70ch]">
               <DashEyebrow>Reach buyers beyond Bangladesh</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Buy or Sell Across 16 Digital Business Categories</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
@@ -901,15 +958,21 @@ export default function DurqoBangladeshPage() {
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {CATEGORIES.map((c) => {
+              {CATEGORIES.map((c, i) => {
                 const Icon = categoryIcon(c.id);
+                const accent = CATEGORY_ACCENTS[c.id] ?? "#10B981";
                 return (
                   <Link
                     key={c.id}
                     href={`/buy/${c.id}`}
-                    className="group rounded-xl border border-rule bg-paper-raised p-5 transition hover:border-brand-strong hover:shadow-sm"
+                    data-reveal
+                    style={revealDelay((i % 4) * 70)}
+                    className="group rounded-2xl border border-rule bg-paper-raised p-5 transition duration-300 hover:-translate-y-1 hover:border-brand hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
                   >
-                    <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-paper-sunk text-ink-soft transition group-hover:bg-brand-soft group-hover:text-brand-strong">
+                    <span
+                      className="mb-3 grid h-10 w-10 place-items-center rounded-xl transition group-hover:scale-110"
+                      style={{ color: accent, backgroundColor: `color-mix(in srgb, ${accent} 12%, #fff)` }}
+                    >
                       <Icon size={17} />
                     </span>
                     <h3 className="text-sm font-semibold text-ink">{c.name}</h3>
@@ -926,7 +989,7 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="mb-10 max-w-[70ch]">
+            <div data-reveal className="mb-10 max-w-[70ch]">
               <DashEyebrow>Built for Bangladesh</DashEyebrow>
               <h2 className="text-2xl sm:text-3xl">Why Buy and Sell Through Durqo?</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
@@ -936,9 +999,14 @@ export default function DurqoBangladeshPage() {
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }) => (
-                <div key={title} className="rounded-xl border border-rule bg-paper-raised p-6 transition hover:border-rule-strong hover:shadow-sm">
-                  <span className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+              {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }, i) => (
+                <div
+                  key={title}
+                  data-reveal
+                  style={revealDelay((i % 3) * 110)}
+                  className="group rounded-2xl border border-rule bg-paper-raised p-6 transition duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]"
+                >
+                  <span className="dq-icon-pop mb-3 grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:bg-brand group-hover:text-white">
                     <Icon size={17} />
                   </span>
                   <h4 className="text-sm font-semibold text-ink">{title}</h4>
@@ -954,9 +1022,10 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <div className="flex flex-col items-center gap-6 rounded-2xl border border-rule bg-paper-raised p-8 text-center sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:text-left">
-              <div className="lg:max-w-[48ch]">
-                <span className="mb-3 inline-grid h-11 w-11 place-items-center rounded-lg bg-brand-soft text-brand-strong">
+            <div data-reveal className="relative flex flex-col items-center gap-6 overflow-hidden rounded-2xl border border-brand/20 bg-gradient-to-br from-brand-soft via-brand-soft to-paper-raised p-8 text-center sm:p-10 lg:flex-row lg:items-center lg:justify-between lg:text-left">
+              <span className="dq-glow pointer-events-none absolute -bottom-16 -left-10 h-48 w-48 rounded-full bg-brand/20 blur-3xl" aria-hidden />
+              <div className="relative lg:max-w-[48ch]">
+                <span className="mb-3 inline-grid h-11 w-11 place-items-center rounded-xl bg-brand text-white shadow-[0_8px_18px_-8px_rgba(16,185,129,0.8)]">
                   <Calculator size={19} />
                 </span>
                 <h2 className="text-xl font-semibold text-ink sm:text-2xl">Not Sure What Your Business Is Worth?</h2>
@@ -965,7 +1034,7 @@ export default function DurqoBangladeshPage() {
                   or when to sell.
                 </p>
               </div>
-              <Button href="/valuation" size="lg" className="shrink-0">
+              <Button href="/valuation" size="lg" className="dq-shine relative w-full shrink-0 sm:w-auto">
                 Get a Free Valuation
                 <ArrowRight size={16} />
               </Button>
@@ -978,9 +1047,13 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule bg-paper-sunk py-14 sm:py-16">
         <Container>
           <Inner className="max-w-[860px]">
-            <DashEyebrow center>Frequently asked questions</DashEyebrow>
-            <h2 className="mb-8 text-center text-2xl sm:text-3xl">Everything About Buying and Selling from Bangladesh.</h2>
-            <GroupedFaq groups={FAQ_GROUPS} />
+            <div data-reveal>
+              <DashEyebrow center>Frequently asked questions</DashEyebrow>
+              <h2 className="mb-8 text-center text-2xl sm:text-3xl">Everything About Buying and Selling from Bangladesh.</h2>
+            </div>
+            <div data-reveal style={revealDelay(120)}>
+              <GroupedFaq groups={FAQ_GROUPS} />
+            </div>
           </Inner>
         </Container>
       </section>
@@ -989,14 +1062,18 @@ export default function DurqoBangladeshPage() {
       <section className="border-b border-rule py-14 sm:py-16">
         <Container>
           <Inner>
-            <DashEyebrow>Keep exploring</DashEyebrow>
-            <h2 className="mb-6 text-2xl sm:text-3xl">Related Reading</h2>
+            <div data-reveal>
+              <DashEyebrow>Keep exploring</DashEyebrow>
+              <h2 className="mb-6 text-2xl sm:text-3xl">Related Reading</h2>
+            </div>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {RELATED_LINKS.map(({ href, label }) => (
+              {RELATED_LINKS.map(({ href, label }, i) => (
                 <Link
                   key={href}
                   href={href}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-rule bg-paper-raised px-5 py-4 transition hover:border-brand-strong hover:shadow-sm"
+                  data-reveal
+                  style={revealDelay((i % 3) * 80)}
+                  className="group flex items-center justify-between gap-3 rounded-2xl border border-rule bg-paper-raised px-5 py-4 transition duration-300 hover:-translate-y-0.5 hover:border-brand hover:shadow-[0_14px_28px_-20px_rgba(11,19,36,0.35)]"
                 >
                   <span className="text-sm font-semibold text-ink">{label}</span>
                   <ArrowRight
@@ -1011,20 +1088,26 @@ export default function DurqoBangladeshPage() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="bg-brand-strong py-14 text-center sm:py-16">
-        <Container>
+      <section className="relative overflow-hidden bg-brand-strong bg-[radial-gradient(60%_90%_at_50%_0%,rgba(16,185,129,0.20),transparent_60%),linear-gradient(180deg,#0B1324,#0F1A30)] py-16 text-center sm:py-20">
+        <MouseGlow />
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_40%,#000_20%,transparent_75%)]"
+          aria-hidden
+        />
+        <div className="dq-glow pointer-events-none absolute -bottom-32 left-1/2 h-72 w-[38rem] -translate-x-1/2 rounded-full bg-brand/15 blur-3xl" aria-hidden />
+        <Container className="relative">
           <Inner>
-            <h2 className="text-2xl text-white sm:text-3xl">Ready to Buy or Sell a Digital Business?</h2>
+            <h2 data-reveal className="text-2xl text-white sm:text-[2.4rem] sm:leading-tight">Ready to Buy or Sell a Digital Business?</h2>
             <p className="mx-auto mt-3 max-w-[54ch] text-center text-[0.95rem] leading-relaxed text-white/65">
               Browse income-generating digital businesses, or list your business and reach buyers around the
               world.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Button href="/buy" size="lg">
+            <div data-reveal style={revealDelay(120)} className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Button href="/buy" size="lg" className="dq-shine w-full shadow-[0_12px_28px_-12px_rgba(16,185,129,0.9)] sm:w-auto">
                 Browse Businesses
                 <ArrowRight size={16} />
               </Button>
-              <Button href="/sell" variant="on-dark" size="lg">
+              <Button href="/sell" variant="on-dark" size="lg" className="w-full sm:w-auto">
                 Sell a Business
               </Button>
             </div>
