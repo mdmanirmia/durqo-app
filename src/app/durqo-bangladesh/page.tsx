@@ -20,11 +20,12 @@ import {
   Edit3,
   Send,
   Eye,
+  XCircle,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
 import GroupedFaq, { type FaqGroup } from "@/components/GroupedFaq";
-import { BkashIcon } from "@/components/icons/PaymentIcons";
+import { BkashIcon, StripeIcon, EscrowIcon } from "@/components/icons/PaymentIcons";
 import { CATEGORIES } from "@/lib/categories";
 import { categoryIcon } from "@/lib/category-icons";
 import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
@@ -34,7 +35,6 @@ import MouseGlow from "@/components/home/MouseGlow";
 import MoneyFlow from "@/components/bangladesh/MoneyFlow";
 import { CATEGORY_ACCENTS } from "@/lib/category-accents";
 import BdHeroVideo from "@/components/bangladesh/BdHeroVideo";
-import ProblemExplorer, { type ProblemItem } from "@/components/bangladesh/ProblemExplorer";
 import ListingCard from "@/components/ListingCard";
 import { getPublishedListings } from "@/lib/data/listings.server";
 
@@ -210,6 +210,46 @@ function Inner({ children, className = "" }: { children: React.ReactNode; classN
   return <div className={`mx-auto max-w-[1200px] ${className}`}>{children}</div>;
 }
 
+function SectionHead({
+  eyebrow,
+  title,
+  body,
+  action,
+  center = false,
+  dark = false,
+}: {
+  eyebrow: string;
+  title: string;
+  body?: string;
+  action?: React.ReactNode;
+  center?: boolean;
+  dark?: boolean;
+}) {
+  return (
+    <div className={`mb-10 flex flex-col gap-6 sm:mb-12 ${center ? "items-center text-center" : "lg:flex-row lg:items-end lg:justify-between"}`}>
+      <div data-reveal className={`max-w-[64ch] ${center ? "mx-auto" : ""}`}>
+        <p
+          className={`mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider ${center ? "justify-center" : ""} ${
+            dark ? "text-white/55" : "text-ink-soft"
+          }`}
+        >
+          <span className="h-px w-6 bg-brand" aria-hidden />
+          {eyebrow}
+        </p>
+        <h2 className={`text-3xl tracking-tight sm:text-[2.5rem] sm:leading-[1.1] ${dark ? "text-white" : ""}`}>{title}</h2>
+        {body && (
+          <p className={`mt-4 text-[1rem] leading-relaxed ${center ? "mx-auto text-center" : ""} ${dark ? "text-white/65" : "text-ink-soft"}`}>{body}</p>
+        )}
+      </div>
+      {action && (
+        <div data-reveal style={revealDelay(120)} className="shrink-0">
+          {action}
+        </div>
+      )}
+    </div>
+  );
+}
+
 const BUYER_CHANNELS = [
   { icon: BkashIcon, label: "bKash", tint: "text-[#E2136E]" },
   { icon: Smartphone, label: "Nagad", tint: "text-[#ED1C24]" },
@@ -225,66 +265,56 @@ const PAYOUT_METHODS = [
   { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
 ];
 
-const PROBLEMS: ProblemItem[] = [
+const PROBLEMS: { audience: "For Buyers" | "For Sellers" | "For Everyone"; problem: string; solution: string }[] = [
   {
     audience: "For Buyers",
-    icon: "Wallet",
     problem: "Paying an international seller in BDT is hard. Most global marketplaces only take cards or wires priced in USD.",
     solution: "Buy in BDT through supported local payment methods, including bKash, Nagad, Rocket, bank transfer or card.",
   },
   {
     audience: "For Sellers",
-    icon: "Landmark",
     problem: "Bangladeshi sellers struggle to reach buyers outside the country, and getting paid back in BDT is even harder.",
     solution: "Sell to buyers anywhere in the world and get paid out in BDT through bank transfer, bKash, Nagad or Rocket.",
   },
   {
     audience: "For Buyers",
-    icon: "ShieldCheck",
     problem: "Buyers worry about paying for a business and never actually receiving the assets.",
     solution: "Every purchase moves through a structured Asset Transfer Room with a 7-day inspection period before the sale is finalized.",
   },
   {
     audience: "For Everyone",
-    icon: "Lock",
     problem: "Both sides carry payment and delivery risk in a deal this size.",
     solution:
       "A structured process covering payment, transfer, inspection, approval and payout keeps things organized end to end. Supported transactions may also use Escrow.com as an independent escrow option.",
   },
   {
     audience: "For Everyone",
-    icon: "ClipboardCheck",
     problem: "Assets can go missing or not match what was promised after the handover.",
     solution: "Buyers can report an issue and have the transaction reviewed, instead of the sale auto-approving.",
   },
   {
     audience: "For Buyers",
-    icon: "Search",
     problem: "Listing information on many marketplaces can't be trusted.",
     solution:
       "Listings go through review before they go live and carry verification signals, including supported Google Analytics connections, though buyers should still do their own diligence.",
   },
   {
     audience: "For Everyone",
-    icon: "Layers",
     problem: "A sale with several moving parts, such as the domain, app, accounts and documents, is hard to hand over cleanly.",
     solution: "The Transfer Room tracks every asset in the sale individually, so nothing gets lost in a multi-part handover.",
   },
   {
     audience: "For Sellers",
-    icon: "Handshake",
     problem: "A seller already has a buyer lined up through Facebook or a personal contact, but no reliable way to actually close the deal.",
     solution: "Bring that buyer onto Durqo and run the sale through the same structured Transfer Room process.",
   },
   {
     audience: "For Sellers",
-    icon: "Globe2",
     problem: "Selling only within Bangladesh limits how many buyers ever see the listing.",
     solution: "Reach international buyers across Durqo's 16 digital business categories.",
   },
   {
     audience: "For Sellers",
-    icon: "Calculator",
     problem: "Many owners have no idea what their business is actually worth.",
     solution: "Get a free indicative valuation before deciding whether or when to sell.",
   },
@@ -574,7 +604,6 @@ export default async function DurqoBangladeshPage() {
   const categoryCounts = new Map<string, number>();
   for (const l of activeListings) categoryCounts.set(l.categoryId, (categoryCounts.get(l.categoryId) ?? 0) + 1);
   const totalActive = activeListings.length;
-  const maxCount = Math.max(1, ...categoryCounts.values());
   // Most-stocked categories first; ties keep the canonical CATEGORIES order.
   const sortedCategories = CATEGORIES.map((c, idx) => ({ c, idx, count: categoryCounts.get(c.id) ?? 0 })).sort(
     (a, b) => b.count - a.count || a.idx - b.idx,
@@ -681,111 +710,98 @@ export default async function DurqoBangladeshPage() {
         </Container>
       </section>
 
-      {/* CATEGORIES with live counts */}
-      <section id="categories" className="scroll-mt-24 border-b border-rule py-16 sm:py-20">
+      {/* PAYMENT TRUST STRIP */}
+      <section className="border-b border-rule bg-paper-raised">
         <Container>
           <Inner>
-            <div className="mb-10 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-              <div data-reveal className="max-w-[66ch]">
-                <DashEyebrow>16 categories</DashEyebrow>
-                <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Browse by Category</h2>
-                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                  Durqo has 16 digital business categories. Each card shows how many businesses are for sale in it
-                  right now. Tap a category to see its listings.
-                </p>
+            <div className="flex flex-col gap-5 py-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span className="mono mr-1 text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Pay in BDT</span>
+                {BUYER_CHANNELS.map(({ icon: Icon, label, tint }, i) => (
+                  <span key={label} data-reveal style={revealDelay(i * 60)} className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
+                    <Icon size={14} className={tint} />
+                    {label}
+                  </span>
+                ))}
               </div>
-              <div data-reveal style={revealDelay(120)} className="flex items-center gap-5 rounded-2xl border border-rule bg-paper-raised px-6 py-4 shadow-[0_18px_40px_-30px_rgba(11,19,36,0.4)]">
-                <div>
-                  <p className="mono text-4xl font-bold tabular-nums leading-none text-brand-strong">
-                    <CountUp value={String(totalActive)} />
-                  </p>
-                  <p className="mt-1 text-xs text-ink-soft">Live listings right now</p>
-                </div>
-                <Link href="/buy" className="group grid h-11 w-11 place-items-center rounded-full bg-ink text-white transition hover:bg-brand" aria-label="View all listings">
-                  <ArrowRight size={17} className="transition group-hover:translate-x-0.5" />
-                </Link>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <span className="mono mr-1 text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Secured by</span>
+                <span className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
+                  <StripeIcon size={14} />
+                  Stripe
+                </span>
+                <span className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
+                  <ShieldCheck size={14} className="text-brand-strong" />
+                  SSLCommerz
+                </span>
+                <span className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
+                  <EscrowIcon size={9} className="text-[#42C31D]" />
+                  <span className="sr-only">Escrow.com</span>
+                </span>
               </div>
             </div>
+          </Inner>
+        </Container>
+      </section>
 
-            <div className="grid grid-flow-dense grid-cols-1 gap-4 min-[420px]:grid-cols-2 lg:grid-cols-4">
+      {/* CATEGORIES with live counts */}
+      <section id="categories" className="scroll-mt-24 border-b border-rule py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <SectionHead
+              eyebrow="16 categories"
+              title="Browse by Category"
+              body="Each category shows how many businesses are for sale in it right now. Choose one to see its listings."
+              action={
+                <Link
+                  href="/buy"
+                  className="group inline-flex min-h-11 items-center gap-2 rounded-xl border border-rule bg-paper-raised px-4 text-sm font-semibold text-ink shadow-[0_1px_2px_rgba(11,19,36,0.05)] transition hover:border-ink"
+                >
+                  <span className="mono text-brand-strong">{totalActive}</span> live listings
+                  <ArrowRight size={15} className="transition group-hover:translate-x-0.5" />
+                </Link>
+              }
+            />
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               {sortedCategories.map(({ c, count }, i) => {
                 const Icon = categoryIcon(c.id);
                 const accent = CATEGORY_ACCENTS[c.id] ?? "#10B981";
-                const big = i < 2 && count > 0;
-                const share = Math.round((count / maxCount) * 100);
-                const countLabel = count > 0 ? `${count} listing${count === 1 ? "" : "s"}` : "Coming soon";
-                if (big) {
-                  return (
-                    <Link
-                      key={c.id}
-                      href={`/buy/${c.id}`}
-                      data-reveal
-                      style={{ ...revealDelay(i * 90), "--accent": accent } as CSSProperties}
-                      className={`group relative flex min-h-[230px] flex-col overflow-hidden rounded-3xl p-6 text-white shadow-[0_30px_60px_-36px_var(--accent)] transition duration-300 hover:-translate-y-1 min-[420px]:col-span-2 sm:p-7 ${i === 0 ? "lg:row-span-2" : ""}`}
-                    >
-                      <span className="absolute inset-0 bg-[linear-gradient(135deg,var(--accent),color-mix(in_srgb,var(--accent)_55%,#0B1324))]" aria-hidden />
-                      <span className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:28px_28px] [mask-image:radial-gradient(ellipse_70%_80%_at_100%_0%,#000_10%,transparent_70%)]" aria-hidden />
-                      <span className="pointer-events-none absolute -bottom-10 -right-6 text-white/10 transition duration-500 group-hover:-translate-y-2 group-hover:rotate-6" aria-hidden>
-                        <Icon size={190} strokeWidth={1.2} />
-                      </span>
-                      <div className="relative flex items-start justify-between gap-3">
-                        <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/25 backdrop-blur">
-                          <Icon size={22} />
-                        </span>
-                        <span className="mono rounded-full bg-white/15 px-2.5 py-1 text-[0.62rem] font-semibold uppercase tracking-wider ring-1 ring-white/20">
-                          {i === 0 ? "Most listings" : "Popular"}
-                        </span>
-                      </div>
-                      <div className="relative mt-auto pt-8">
-                        <p className="mono text-5xl font-bold tabular-nums leading-none">
-                          <CountUp value={String(count)} />
-                        </p>
-                        <p className="mt-1 text-xs text-white/75">live listing{count === 1 ? "" : "s"}</p>
-                        <h3 className="mt-4 text-xl font-semibold">{c.name}</h3>
-                        <p className="mt-1 max-w-[46ch] text-sm leading-relaxed text-white/80">{c.description}</p>
-                        <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold">
-                          Browse {c.name}
-                          <ArrowRight size={15} className="transition group-hover:translate-x-1" />
-                        </span>
-                      </div>
-                    </Link>
-                  );
-                }
                 return (
                   <Link
                     key={c.id}
                     href={`/buy/${c.id}`}
                     data-reveal
-                    style={{ ...revealDelay((i % 4) * 70), "--accent": accent } as CSSProperties}
-                    className="group relative flex flex-col overflow-hidden rounded-2xl border border-rule bg-paper-raised p-5 transition duration-300 hover:-translate-y-1 hover:border-[var(--accent)] hover:shadow-[0_22px_44px_-30px_var(--accent)]"
+                    style={{ ...revealDelay((i % 4) * 60), "--accent": accent } as CSSProperties}
+                    className="group relative flex flex-col rounded-2xl border border-rule bg-paper-raised p-4 shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--accent)] sm:p-5 hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
                   >
-                    <span className="absolute inset-x-0 top-0 h-1 bg-[var(--accent)] opacity-80" aria-hidden />
-                    <span className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[var(--accent)] opacity-0 blur-2xl transition duration-500 group-hover:opacity-20" aria-hidden />
-                    <div className="relative flex items-start justify-between gap-3">
+                    <div className="flex items-start justify-between gap-3">
                       <span
-                        className="grid h-11 w-11 place-items-center rounded-xl transition duration-300 group-hover:scale-110"
-                        style={{ color: accent, backgroundColor: `color-mix(in srgb, ${accent} 12%, #fff)` }}
+                        className="grid h-11 w-11 place-items-center rounded-xl transition duration-300 group-hover:scale-105"
+                        style={{ color: accent, backgroundColor: `color-mix(in srgb, ${accent} 11%, #fff)` }}
                       >
                         <Icon size={19} />
                       </span>
-                      <span
-                        className={`mono rounded-full px-2.5 py-1 text-[0.65rem] font-semibold ${count > 0 ? "" : "bg-paper-sunk text-ink-faint"}`}
-                        style={count > 0 ? { color: accent, backgroundColor: `color-mix(in srgb, ${accent} 10%, #fff)` } : undefined}
-                      >
-                        {countLabel}
+                      <span className="grid h-8 w-8 place-items-center rounded-full border border-rule text-ink-faint transition group-hover:border-[var(--accent)] group-hover:bg-[var(--accent)] group-hover:text-white">
+                        <ArrowRight size={14} />
                       </span>
                     </div>
-                    <h3 className="relative mt-4 text-[0.95rem] font-semibold text-ink">{c.name}</h3>
-                    <p className="relative mt-1 line-clamp-2 text-xs leading-relaxed text-ink-soft">{c.description}</p>
-                    <div className="relative mt-auto pt-4">
-                      <div className="h-1 overflow-hidden rounded-full bg-paper-sunk" aria-hidden>
-                        <div data-reveal className="dq-line h-full rounded-full bg-[var(--accent)]" style={{ width: `${Math.max(count > 0 ? 6 : 0, share)}%` }} />
-                      </div>
-                      <span className="mt-3 flex items-center gap-1 text-xs font-semibold text-ink-soft transition group-hover:text-[var(--accent)]">
-                        {count > 0 ? "View listings" : "Explore category"}
-                        <ArrowRight size={13} className="transition group-hover:translate-x-1" />
-                      </span>
-                    </div>
+                    <h3 className="mt-4 text-sm font-semibold leading-snug text-ink sm:text-[0.95rem]">{c.name}</h3>
+                    <p className="mt-1 line-clamp-2 hidden text-xs leading-relaxed text-ink-soft sm:block">{c.description}</p>
+                    <p className="mt-auto flex items-center gap-2 border-t border-rule pt-3 text-xs font-semibold" style={{ marginTop: "1rem" }}>
+                      {count > 0 ? (
+                        <>
+                          <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: accent }} />
+                          <span className="mono" style={{ color: accent }}>
+                            {count} for sale
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="h-1.5 w-1.5 rounded-full bg-rule-strong" />
+                          <span className="mono text-ink-faint">No listings yet</span>
+                        </>
+                      )}
+                    </p>
                   </Link>
                 );
               })}
@@ -796,19 +812,19 @@ export default async function DurqoBangladeshPage() {
 
       {/* LIVE LISTINGS */}
       {featured.length > 0 && (
-        <section className="border-b border-rule bg-paper-sunk py-16 sm:py-20">
+        <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
           <Container>
             <Inner>
-              <div data-reveal className="mb-9 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <DashEyebrow>Live on Durqo right now</DashEyebrow>
-                  <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Businesses You Can Buy in BDT Today</h2>
-                </div>
-                <Button href="/buy" variant="secondary" className="min-h-11">
-                  View all {totalActive} listings
-                  <ArrowRight size={15} />
-                </Button>
-              </div>
+              <SectionHead
+                eyebrow="Live on Durqo right now"
+                title="Businesses You Can Buy in BDT Today"
+                action={
+                  <Button href="/buy" variant="secondary" className="min-h-11">
+                    View all {totalActive} listings
+                    <ArrowRight size={15} />
+                  </Button>
+                }
+              />
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {featured.map((l, i) => (
                   <div key={l.id} data-reveal style={revealDelay(i * 110)} className={i === 2 ? "sm:hidden lg:block" : ""}>
@@ -823,49 +839,68 @@ export default async function DurqoBangladeshPage() {
         </section>
       )}
 
-      {/* PROBLEMS & SOLUTIONS (interactive) */}
-      <section className="relative overflow-hidden border-b border-rule py-16 sm:py-20">
+      {/* PROBLEMS vs SOLUTIONS: comparison table */}
+      <section className="relative overflow-hidden bg-[#0B1324] py-16 sm:py-24">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-brand/15 blur-3xl" aria-hidden />
         <div
-          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.06)_1px,transparent_1px)] [background-size:22px_22px] [mask-image:radial-gradient(ellipse_70%_60%_at_80%_20%,#000_15%,transparent_70%)]"
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_20%,transparent_75%)]"
           aria-hidden
         />
         <Container className="relative">
           <Inner>
-            <div data-reveal className="mb-8 max-w-[70ch]">
-              <DashEyebrow>The problems we hear most</DashEyebrow>
-              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Common Problems, and How Durqo Solves Them</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Ten problems Bangladeshi buyers and sellers face when buying or selling a digital business, and
-                Durqo&rsquo;s answer to each. Pick one to see the solution.
-              </p>
-            </div>
-            <div data-reveal style={revealDelay(120)}>
-              <ProblemExplorer items={PROBLEMS} />
+            <SectionHead
+              dark
+              eyebrow="The problems we hear most"
+              title="Common Problems, and How Durqo Solves Them"
+              body="Ten things that make buying or selling a digital business hard from Bangladesh, and Durqo's answer to each."
+            />
+            <div data-reveal className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+              <div className="mono hidden grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] border-b border-white/10 text-[0.68rem] font-semibold uppercase tracking-wider md:grid">
+                <p className="flex items-center gap-2 px-7 py-4 text-[#FDA4AF]">
+                  <XCircle size={14} />
+                  The problem
+                </p>
+                <p className="flex items-center gap-2 border-l border-white/10 bg-brand/[0.08] px-7 py-4 text-[#6EE7B7]">
+                  <CheckCircle2 size={14} />
+                  How Durqo solves it
+                </p>
+              </div>
+              <ol>
+                {PROBLEMS.map(({ audience, problem, solution }, i) => (
+                  <li
+                    key={problem}
+                    data-reveal
+                    style={revealDelay((i % 5) * 60)}
+                    className="group grid border-b border-white/10 transition last:border-b-0 hover:bg-white/[0.03] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
+                  >
+                    <div className="flex gap-4 px-5 pb-3 pt-5 sm:px-7 md:py-6">
+                      <span className="mono mt-0.5 text-xs font-semibold text-white/30">{String(i + 1).padStart(2, "0")}</span>
+                      <div>
+                        <p className="mono mb-1.5 text-[0.62rem] font-semibold uppercase tracking-wider text-white/40">{audience}</p>
+                        <p className="text-[0.92rem] leading-relaxed text-white/60">{problem}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 border-white/10 bg-brand/[0.06] px-5 pb-5 pt-3 transition group-hover:bg-brand/[0.1] sm:px-7 md:border-l md:py-6">
+                      <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-[#34D399]" />
+                      <p className="text-[0.95rem] font-medium leading-relaxed text-white">{solution}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
           </Inner>
         </Container>
       </section>
 
-      {/* PAY & GET PAID IN BDT (dark bento) */}
-      <section className="relative overflow-hidden bg-[#0B1324] bg-[radial-gradient(50%_60%_at_100%_0%,rgba(16,185,129,0.18),transparent_60%),radial-gradient(40%_50%_at_0%_100%,rgba(217,119,6,0.12),transparent_60%)] py-16 sm:py-20">
-        <MouseGlow />
-        <div
-          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:radial-gradient(ellipse_70%_70%_at_50%_30%,#000_20%,transparent_75%)]"
-          aria-hidden
-        />
-        <Container className="relative">
+      {/* PAY & GET PAID IN BDT */}
+      <section className="border-b border-rule py-16 sm:py-24">
+        <Container>
           <Inner>
-            <div data-reveal className="mb-10 max-w-[70ch]">
-              <p className="mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/60">
-                <span className="h-px w-6 bg-brand" aria-hidden />
-                Local money, global reach
-              </p>
-              <h2 className="text-3xl tracking-tight text-white sm:text-[2.4rem] sm:leading-tight">Pay and Get Paid the Way You Already Do</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-white/65">
-                Buyers pay in BDT. Durqo holds the payment until the buyer approves the handover. Then the seller
-                is paid out in BDT.
-              </p>
-            </div>
+            <SectionHead
+              eyebrow="Local money, global reach"
+              title="Pay and Get Paid the Way You Already Do"
+              body="Buyers pay in BDT. Durqo holds the payment until the buyer approves the handover. Then the seller is paid out in BDT."
+            />
             <div data-reveal className="mb-5">
               <MoneyFlow />
             </div>
@@ -877,9 +912,8 @@ export default async function DurqoBangladeshPage() {
                   body: "Choose SSLCommerz at checkout and select one of five supported local payment channels.",
                   icon: Wallet,
                   list: BUYER_CHANNELS,
-                  tone: "from-brand/25",
-                  tagColor: "text-[#34D399]",
-                  iconBg: "bg-brand text-white",
+                  iconBg: "bg-brand-soft text-brand-strong",
+                  tagColor: "text-brand-strong",
                 },
                 {
                   tag: "For sellers",
@@ -887,42 +921,45 @@ export default async function DurqoBangladeshPage() {
                   body: "Once eligible earnings are available, request a payout through one of four supported local methods.",
                   icon: Landmark,
                   list: PAYOUT_METHODS,
-                  tone: "from-gold/25",
-                  tagColor: "text-gold",
-                  iconBg: "bg-gold text-[#0B1324]",
+                  iconBg: "bg-gold-soft text-[#92730F]",
+                  tagColor: "text-[#92730F]",
                 },
-              ].map(({ tag, title, body, icon: Icon, list, tone, tagColor, iconBg }, i) => (
+              ].map(({ tag, title, body, icon: Icon, list, iconBg, tagColor }, i) => (
                 <div
                   key={title}
                   data-reveal
                   style={revealDelay(i * 120)}
-                  className={`group relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br ${tone} to-white/[0.03] p-6 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-white/25 sm:p-8`}
+                  className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(11,19,36,0.04)] sm:p-8"
                 >
-                  <span className={`dq-icon-pop mb-5 grid h-12 w-12 place-items-center rounded-2xl ${iconBg} shadow-[0_12px_26px_-12px_rgba(0,0,0,0.8)] transition group-hover:scale-110`}>
-                    <Icon size={20} />
-                  </span>
-                  <p className={`mono mb-1 text-[0.68rem] font-semibold uppercase tracking-wider ${tagColor}`}>{tag}</p>
-                  <h3 className="text-xl font-semibold text-white">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-white/65">{body}</p>
-                  <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {list.map(({ icon: ItemIcon, label, tint }, j) => (
-                      <span
-                        key={label}
-                        data-reveal
-                        style={revealDelay(200 + j * 70)}
-                        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white px-3 py-2.5 text-xs font-semibold text-ink shadow-[0_8px_20px_-14px_rgba(0,0,0,0.8)] transition hover:-translate-y-0.5"
-                      >
-                        <ItemIcon size={15} className={tint} />
-                        {label}
-                      </span>
-                    ))}
+                  <div className="flex items-center gap-3">
+                    <span className={`dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl ${iconBg}`}>
+                      <Icon size={20} />
+                    </span>
+                    <div>
+                      <p className={`mono text-[0.68rem] font-semibold uppercase tracking-wider ${tagColor}`}>{tag}</p>
+                      <h3 className="text-lg font-semibold text-ink">{title}</h3>
+                    </div>
                   </div>
+                  <p className="mt-4 text-sm leading-relaxed text-ink-soft">{body}</p>
+                  <ul className="mt-5 divide-y divide-rule rounded-2xl border border-rule">
+                    {list.map(({ icon: ItemIcon, label, tint }) => (
+                      <li key={label} className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-ink">
+                        <span className="flex items-center gap-3">
+                          <span className="grid h-8 w-8 place-items-center rounded-lg bg-paper-sunk">
+                            <ItemIcon size={15} className={tint} />
+                          </span>
+                          {label}
+                        </span>
+                        <CheckCircle2 size={16} className="text-brand" />
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>
-            <div data-reveal className="mt-5 flex items-start gap-2.5 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3.5">
-              <Info size={14} className="mt-0.5 shrink-0 text-white/50" />
-              <p className="text-xs leading-relaxed text-white/60">
+            <div data-reveal className="mt-5 flex items-start gap-2.5 rounded-2xl border border-rule bg-paper-sunk px-4 py-3.5">
+              <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
+              <p className="text-xs leading-relaxed text-ink-soft">
                 Buyer payments and seller payouts follow separate processes. A confirmed buyer payment does not
                 immediately create an available seller balance.
               </p>
@@ -931,61 +968,71 @@ export default async function DurqoBangladeshPage() {
         </Container>
       </section>
 
-      {/* HOW A DURQO TRANSACTION WORKS */}
-      <section className="relative overflow-hidden border-b border-rule py-16 sm:py-20">
-        <div
-          className="pointer-events-none absolute inset-0 [background-image:radial-gradient(rgba(17,24,39,0.07)_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,#000_20%,transparent_70%)]"
-          aria-hidden
-        />
-        <Container className="relative">
-          <Inner className="max-w-[1000px]">
-            <div data-reveal className="mb-10 text-center">
-              <DashEyebrow center>From payment to payout</DashEyebrow>
-              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">How a Durqo Transaction Works</h2>
-              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
-                The same structured flow runs behind every sale on Durqo, whether the buyer or seller is in
-                Bangladesh or anywhere else.
-              </p>
-            </div>
-            <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_30px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
+      {/* HOW A DURQO TRANSACTION WORKS + TRANSFER ROOM */}
+      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <SectionHead
+              center
+              eyebrow="From payment to payout"
+              title="How a Durqo Transaction Works"
+              body="The same structured flow runs behind every sale on Durqo, whether the buyer or seller is in Bangladesh or anywhere else."
+            />
+            <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_24px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
               <NumberedFlow steps={TRANSACTION_STEPS} />
+            </div>
+
+            <div className="mt-16 sm:mt-20">
+              <SectionHead
+                center
+                eyebrow="Step 2, zoomed in"
+                title="What Happens Inside the Transfer Room"
+                body="Every asset on the checklist, such as the domain, code, accounts or documents, moves through this same handover sequence before the sale can close."
+              />
+              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_24px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
+                <NumberedFlow steps={TRANSFER_ROOM_STEPS} />
+              </div>
+              <div className="mt-8 text-center">
+                <Link href="/transfer-room" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
+                  See the full Transfer Room walkthrough
+                  <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
+                </Link>
+              </div>
             </div>
           </Inner>
         </Container>
       </section>
 
-      {/* INSIDE THE TRANSFER ROOM */}
-      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-20">
+      {/* WHY DURQO */}
+      <section className="border-b border-rule py-16 sm:py-24">
         <Container>
-          <Inner className="max-w-[1000px]">
-            <div data-reveal className="mb-10 text-center">
-              <DashEyebrow center>Step 2, zoomed in</DashEyebrow>
-              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">What Happens Inside the Transfer Room</h2>
-              <p className="mx-auto mt-3 max-w-[64ch] text-center text-[0.95rem] leading-relaxed text-ink-soft">
-                Every asset on the checklist, such as the domain, code, accounts or documents, moves through this
-                same handover sequence before the sale can close.
-              </p>
-            </div>
-            <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_30px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
-              <NumberedFlow steps={TRANSFER_ROOM_STEPS} />
-            </div>
-            <div className="mt-8 text-center">
-              <Link href="/transfer-room" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
-                See the full Transfer Room walkthrough
-                <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-              </Link>
+          <Inner>
+            <SectionHead
+              eyebrow="Built for Bangladesh"
+              title="Why Buy and Sell Through Durqo?"
+              body="Paying and getting paid in BDT, and trusting a stranger with the handover, are the two biggest hurdles. Durqo's local payment support and tracked process solve both."
+            />
+            <div className="grid gap-px overflow-hidden rounded-3xl border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-3">
+              {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }, i) => (
+                <div key={title} data-reveal style={revealDelay((i % 3) * 90)} className="group bg-paper-raised p-7 transition hover:bg-paper">
+                  <span className="dq-icon-pop mb-5 grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:bg-brand group-hover:text-white">
+                    <Icon size={19} />
+                  </span>
+                  <h3 className="text-base font-semibold text-ink">{title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{body}</p>
+                </div>
+              ))}
             </div>
           </Inner>
         </Container>
       </section>
 
       {/* FEES + VALUATION */}
-      <section className="border-b border-rule py-16 sm:py-20">
+      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
         <Container>
           <Inner>
-            <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
-              <div data-reveal className="relative overflow-hidden rounded-3xl border border-rule bg-paper-raised p-7 sm:p-9">
-                <span className="dq-glow pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand/15 blur-3xl" aria-hidden />
+            <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-7 shadow-[0_1px_2px_rgba(11,19,36,0.04)] sm:p-9">
                 <DashEyebrow>What it costs</DashEyebrow>
                 <h2 className="text-3xl tracking-tight sm:text-[2.2rem] sm:leading-tight">Marketplace Fees</h2>
                 <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
@@ -993,22 +1040,22 @@ export default async function DurqoBangladeshPage() {
                   disclosed payment-provider, banking or currency-related charges may apply. Sellers are charged a
                   tiered success fee based on the final sale price, deducted only after a successful sale.
                 </p>
-                <p className="mono mb-3 mt-7 text-xs font-semibold uppercase tracking-wider text-ink-faint">Seller success fee</p>
-                <dl className="grid gap-3 sm:grid-cols-3">
-                  {SUCCESS_FEE_TIERS.map((tier, i) => (
-                    <div
-                      key={tier.id}
-                      data-reveal
-                      style={revealDelay(150 + i * 120)}
-                      className="rounded-2xl border border-rule bg-paper-sunk p-4 transition hover:-translate-y-0.5 hover:border-brand/50"
-                    >
-                      <dd className="mono text-3xl font-bold text-brand-strong">
-                        <CountUp value={fmtRate(tier.rate)} />
-                      </dd>
-                      <dt className="mt-1 text-xs leading-snug text-ink-soft">{tier.label}</dt>
-                    </div>
-                  ))}
-                </dl>
+                <div className="mt-7 overflow-hidden rounded-2xl border border-rule">
+                  <div className="mono grid grid-cols-2 bg-paper-sunk px-5 py-2.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
+                    <span>Final sale price</span>
+                    <span className="text-right">Seller success fee</span>
+                  </div>
+                  <dl className="divide-y divide-rule">
+                    {SUCCESS_FEE_TIERS.map((tier, i) => (
+                      <div key={tier.id} data-reveal style={revealDelay(150 + i * 110)} className="grid grid-cols-2 items-center px-5 py-4">
+                        <dt className="text-sm text-ink">{tier.label}</dt>
+                        <dd className="mono text-right text-2xl font-bold text-brand-strong">
+                          <CountUp value={fmtRate(tier.rate)} />
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
                 <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
                   <Info size={13} className="mt-0.5 shrink-0" />
                   <span>
@@ -1021,87 +1068,23 @@ export default async function DurqoBangladeshPage() {
                 </p>
               </div>
 
-              <div data-reveal style={revealDelay(120)} className="relative flex flex-col overflow-hidden rounded-3xl bg-[linear-gradient(140deg,#10B981,#0F766E_55%,#0B1324)] p-7 text-white sm:p-9">
-                <span className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.08)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:30px_30px] [mask-image:radial-gradient(ellipse_80%_70%_at_100%_0%,#000_10%,transparent_70%)]" aria-hidden />
-                <span className="pointer-events-none absolute -bottom-8 -right-6 text-white/10" aria-hidden>
-                  <Calculator size={200} strokeWidth={1.1} />
+              <div data-reveal style={revealDelay(120)} className="relative flex flex-col overflow-hidden rounded-3xl bg-[#0B1324] p-7 text-white sm:p-9">
+                <span className="dq-glow pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand/25 blur-3xl" aria-hidden />
+                <span className="dq-icon-pop relative mb-6 grid h-12 w-12 place-items-center rounded-2xl bg-brand text-white">
+                  <Calculator size={20} />
                 </span>
-                <span className="dq-icon-pop relative mb-6 grid h-14 w-14 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/25">
-                  <Calculator size={24} />
-                </span>
-                <h2 className="relative text-2xl font-semibold leading-tight sm:text-3xl">Not Sure What Your Business Is Worth?</h2>
-                <p className="relative mt-3 text-sm leading-relaxed text-white/80">
+                <h2 className="relative text-2xl font-semibold leading-tight sm:text-[1.9rem]">Not Sure What Your Business Is Worth?</h2>
+                <p className="relative mt-3 text-sm leading-relaxed text-white/70">
                   Get a free, instant estimate based on how similar businesses sell on Durqo, before deciding whether
                   or when to sell.
                 </p>
                 <div className="relative mt-auto pt-8">
-                  <Link
-                    href="/valuation"
-                    className="dq-shine group inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-6 text-sm font-semibold text-ink shadow-[0_16px_30px_-14px_rgba(0,0,0,0.6)] transition hover:-translate-y-0.5 sm:w-auto"
-                  >
+                  <Button href="/valuation" size="lg" className="dq-shine w-full sm:w-auto">
                     Get a Free Valuation
-                    <ArrowRight size={16} className="transition group-hover:translate-x-0.5" />
-                  </Link>
+                    <ArrowRight size={16} />
+                  </Button>
                 </div>
               </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* WHY DURQO (bento) */}
-      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-20">
-        <Container>
-          <Inner>
-            <div data-reveal className="mb-10 max-w-[70ch]">
-              <DashEyebrow>Built for Bangladesh</DashEyebrow>
-              <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Why Buy and Sell Through Durqo?</h2>
-              <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                Bangladeshi buyers and sellers face real friction buying and selling internationally - paying and
-                getting paid in BDT, and trusting a stranger with the handover. Durqo&rsquo;s structured, tracked
-                process and local payment support solve both.
-              </p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }, i) => {
-                // Bento rhythm on 3 columns: [wide, narrow], [narrow, wide],
-                // [wide, narrow] - six cards, no gaps. Dark tiles on 1 and 4.
-                const hero = i === 0 || i === 3;
-                const wide = i === 0 || i === 3 || i === 4;
-                return (
-                  <div
-                    key={title}
-                    data-reveal
-                    style={revealDelay((i % 3) * 110)}
-                    className={`group relative overflow-hidden rounded-3xl p-6 transition duration-300 hover:-translate-y-1 sm:p-7 ${
-                      hero
-                        ? "bg-[#0B1324] text-white shadow-[0_30px_60px_-36px_rgba(11,19,36,0.8)]"
-                        : "border border-rule bg-paper-raised hover:border-brand/40 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)]"
-                    } ${wide ? "lg:col-span-2" : ""} ${wide && !hero ? "bg-gradient-to-br from-brand-soft to-paper-raised" : ""}`}
-                  >
-                    {hero && (
-                      <>
-                        <span className="dq-glow pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full bg-brand/30 blur-3xl" aria-hidden />
-                        <span className="pointer-events-none absolute -bottom-10 right-4 text-white/[0.06] transition duration-500 group-hover:-translate-y-2" aria-hidden>
-                          <Icon size={180} strokeWidth={1.1} />
-                        </span>
-                      </>
-                    )}
-                    <span className="mono pointer-events-none absolute right-6 top-6 text-xs font-bold text-current opacity-30" aria-hidden>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span
-                      className={`dq-icon-pop relative mb-5 grid h-12 w-12 place-items-center rounded-2xl transition ${
-                        hero ? "bg-brand text-white" : "bg-brand-soft text-brand-strong group-hover:bg-brand group-hover:text-white"
-                      }`}
-                    >
-                      <Icon size={20} />
-                    </span>
-                    <h3 className={`relative font-semibold ${hero ? "text-xl text-white" : "text-base text-ink"}`}>{title}</h3>
-                    <p className={`relative mt-2 max-w-[52ch] text-sm leading-relaxed ${hero ? "text-white/70" : "text-ink-soft"}`}>{body}</p>
-                  </div>
-                );
-              })}
             </div>
           </Inner>
         </Container>

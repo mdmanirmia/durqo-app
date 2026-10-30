@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, ClipboardCheck, Landmark, Volume2, VolumeX } from "lucide-react";
 
 // Oct 30, 2026 (/durqo-bangladesh: "kono video baniye add korte hobe"): the
-// hero's product film. public/video/durqo-bangladesh.mp4 is a 23s,
+// hero's product film. public/video/durqo-bangladesh.mp4 is a ~1 minute overview (problems, then Durqo's answers),
 // code-rendered walkthrough of the page's own published flow (pay in BDT ->
 // Transfer Room -> BDT payout); no stock footage, no invented numbers. It
 // plays only while on screen and stays paused on its poster for visitors
@@ -69,14 +69,14 @@ export default function BdHeroVideo() {
         <video
           ref={ref}
           className="block aspect-video w-full"
-          src="/video/durqo-bangladesh.mp4?v=2"
-          poster="/video/durqo-bangladesh-poster.jpg"
+          src="/video/durqo-bangladesh.mp4?v=3"
+          poster="/video/durqo-bangladesh-poster.jpg?v=3"
           autoPlay
           muted
           loop
           playsInline
           preload="metadata"
-          aria-label="Short animation: buy in BDT, hand over every asset in the Transfer Room, and get paid out in BDT."
+          aria-label="One-minute overview: the problems Bangladeshi buyers and sellers face, and how Durqo solves them with BDT payments, the Transfer Room and BDT payouts."
         />
         <button
           type="button"
