@@ -12,6 +12,8 @@ import { Play } from "lucide-react";
 // paro"): the file now carries an English voiceover. Browsers only autoplay
 // muted video, so it starts silent with a "Play with sound" button that
 // restarts it from the top with audio.
+const UNLOCK_EVENTS = ["pointerdown", "touchend", "click", "keydown"] as const;
+
 export default function BdHeroVideo() {
   const ref = useRef<HTMLVideoElement>(null);
   const [, setMuted] = useState(true);
@@ -89,11 +91,11 @@ export default function BdHeroVideo() {
         setMuted(false);
         if (v.paused) v.play().catch(() => {});
       }
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
+      UNLOCK_EVENTS.forEach((ev) => window.removeEventListener(ev, unlock));
     };
-    window.addEventListener("pointerdown", unlock);
-    window.addEventListener("keydown", unlock);
+    // Mobile Safari only lets a page turn sound on inside a "real" gesture
+    // (touchend / click), not pointerdown, so listen for all of them.
+    UNLOCK_EVENTS.forEach((ev) => window.addEventListener(ev, unlock, { passive: true }));
 
     const io = new IntersectionObserver(
       ([e]) => {
@@ -105,8 +107,7 @@ export default function BdHeroVideo() {
     io.observe(v);
     return () => {
       io.disconnect();
-      window.removeEventListener("pointerdown", unlock);
-      window.removeEventListener("keydown", unlock);
+      UNLOCK_EVENTS.forEach((ev) => window.removeEventListener(ev, unlock));
       v.removeEventListener("play", onPlay);
       v.removeEventListener("pause", onPause);
     };
