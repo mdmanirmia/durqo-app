@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { Play } from "lucide-react";
 
 // Oct 30, 2026 (/durqo-bangladesh: "kono video baniye add korte hobe"): the
 // hero's product film. public/video/durqo-bangladesh.mp4 is the merchant-supplied overview (Oct 31: "Durqo_Buyers_Sellers_Problems_v10", ~2m24s, 720p web encode); earlier versions were a ~80s overview (problems, then Durqo's answers),
@@ -14,7 +14,7 @@ import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 // restarts it from the top with audio.
 export default function BdHeroVideo() {
   const ref = useRef<HTMLVideoElement>(null);
-  const [muted, setMuted] = useState(true);
+  const [, setMuted] = useState(true);
   const [paused, setPaused] = useState(false);
   // Oct 31, 2026 ("video ta auto play with sound hobe, just pause korar
   // option thakle"): try to autoplay WITH sound first. Browsers block
@@ -25,26 +25,17 @@ export default function BdHeroVideo() {
   const userPaused = useRef(false);
   const wrap = useRef<HTMLDivElement>(null);
 
-  function onVideoClick() {
-    const v = ref.current;
-    if (!v) return;
-    if (v.muted) toggleSound();
-    else togglePlay();
-  }
-
-  function toggleSound() {
-    const v = ref.current;
-    if (!v) return;
-    v.muted = !v.muted;
-    setMuted(v.muted);
-    if (v.paused && !userPaused.current) v.play().catch(() => {});
-  }
-
+  // Oct 31, 2026 ("video te pause sign and sound sign dekhate hobena, video
+  // te click korle pause hobe, pause hole pause sign thakbe"): no on-screen
+  // controls. Clicking the video pauses it and shows a play sign; clicking
+  // again resumes it, with sound on.
   function togglePlay() {
     const v = ref.current;
     if (!v) return;
     if (v.paused) {
       userPaused.current = false;
+      v.muted = false;
+      setMuted(false);
       v.play().catch(() => {});
     } else {
       userPaused.current = true;
@@ -140,32 +131,21 @@ export default function BdHeroVideo() {
           loop
           playsInline
           preload="metadata"
-          onClick={onVideoClick}
+          onClick={togglePlay}
           aria-label="Overview video: the problems Bangladeshi buyers and sellers face, and how Durqo solves them with BDT payments, the Transfer Room and BDT payouts."
         />
-        <div className="absolute bottom-3 left-3 flex items-center gap-2">
+        {paused && (
           <button
             type="button"
             onClick={togglePlay}
-            aria-label={paused ? "Play video" : "Pause video"}
-            className="grid h-9 w-9 place-items-center rounded-full border border-white/20 bg-[#0B1324]/75 text-white backdrop-blur transition hover:border-brand hover:bg-[#0B1324]/90"
+            aria-label="Play video"
+            className="absolute inset-x-0 bottom-0 top-[42px] grid place-items-center bg-black/30"
           >
-            {paused ? <Play size={14} className="translate-x-px" /> : <Pause size={14} />}
-          </button>
-          <button
-            type="button"
-            onClick={toggleSound}
-            aria-pressed={!muted}
-            aria-label={muted ? "Turn sound on" : "Mute"}
-            className="flex min-h-9 items-center gap-2 rounded-full border border-white/20 bg-[#0B1324]/75 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-white backdrop-blur transition hover:border-brand hover:bg-[#0B1324]/90"
-          >
-            <span className={`relative grid h-6 w-6 place-items-center rounded-full ${muted ? "bg-brand" : "bg-white/15"}`}>
-              {muted && <span className="absolute inset-0 animate-ping rounded-full bg-brand/60" aria-hidden />}
-              {muted ? <VolumeX size={13} className="relative" /> : <Volume2 size={13} />}
+            <span className="grid h-16 w-16 place-items-center rounded-full bg-white/95 text-[#0B1324] shadow-[0_18px_40px_-12px_rgba(0,0,0,0.7)] transition hover:scale-105 sm:h-20 sm:w-20">
+              <Play size={30} className="ml-1" fill="currentColor" />
             </span>
-            {muted ? "Tap for sound" : "Sound on"}
           </button>
-        </div>
+        )}
       </div>
 
     </div>
