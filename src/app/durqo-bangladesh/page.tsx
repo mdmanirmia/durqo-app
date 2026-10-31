@@ -629,7 +629,7 @@ export default async function DurqoBangladeshPage() {
                   </span>
                   <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
                 </Link>
-                <h1 className="dq-enter mt-6 text-[2.5rem] leading-[1.05] tracking-tight text-white sm:text-[3.2rem] lg:text-[3.5rem]" style={enterDelay(100)}>
+                <h1 className="dq-enter mt-6 text-[2.2rem] leading-[1.06] tracking-tight text-white sm:text-[3.2rem] lg:text-[3.5rem]" style={enterDelay(100)}>
                   The Global Marketplace to{" "}
                   <span className="bg-gradient-to-r from-[#6EE7B7] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
                 </h1>
@@ -647,7 +647,7 @@ export default async function DurqoBangladeshPage() {
                     <ArrowRight size={16} />
                   </Button>
                 </div>
-                <div className="dq-enter mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/55" style={enterDelay(400)}>
+                <div className="dq-enter mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 text-[0.7rem] sm:gap-x-5 sm:text-xs text-white/55" style={enterDelay(400)}>
                   <span className="mono uppercase tracking-wider">Secured by</span>
                   <span className="flex items-center gap-1.5 font-semibold text-white/80"><StripeIcon size={14} />Stripe</span>
                   <span className="flex items-center gap-1.5 font-semibold text-white/80"><ShieldCheck size={14} className="text-brand" />SSLCommerz</span>
@@ -672,12 +672,12 @@ export default async function DurqoBangladeshPage() {
               title="The Problems Bangladeshi Buyers and Sellers Face, Solved"
               body="The most common problems, and exactly how Durqo solves each one."
             />
-            <div className="grid gap-8 lg:grid-cols-2 lg:gap-6">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-6">
               {(["For Buyers", "For Sellers"] as const).map((aud, gi) => {
                 const items = PROBLEMS.filter((p) => p.audience === aud);
                 const buyer = gi === 0;
                 return (
-                  <div key={aud} data-reveal style={revealDelay(gi * 120)} className="flex flex-col">
+                  <div key={aud} data-reveal style={revealDelay(gi * 120)} className="flex min-w-0 flex-col">
                     <div className="mb-5 flex items-center gap-4">
                       <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl shadow-[0_12px_24px_-14px_rgba(11,19,36,0.6)] ${buyer ? "bg-brand text-white" : "bg-gold text-[#0B1324]"}`}>
                         {buyer ? <Wallet size={20} /> : <Landmark size={20} />}
@@ -688,13 +688,14 @@ export default async function DurqoBangladeshPage() {
                       </div>
                       <span className={`ml-auto hidden h-px flex-1 sm:block ${buyer ? "bg-gradient-to-r from-brand/50 to-transparent" : "bg-gradient-to-r from-gold/60 to-transparent"}`} aria-hidden />
                     </div>
-                    <ol className="flex flex-1 flex-col gap-4">
+                    <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
+                    <ol className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-1 sm:snap-none sm:flex-col sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
                       {items.map(({ title, problem, solution }, i) => (
                         <li
                           key={title}
                           data-reveal
                           style={revealDelay(gi * 120 + i * 90)}
-                          className="group overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[0_18px_40px_-28px_rgba(11,19,36,0.45)]"
+                          className="group w-[86%] shrink-0 snap-start overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition hover:-translate-y-0.5 sm:w-auto hover:border-rule-strong hover:shadow-[0_18px_40px_-28px_rgba(11,19,36,0.45)]"
                         >
                           <div className="flex gap-4 px-5 pb-4 pt-5">
                             <span className={`mono grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-bold ${buyer ? "bg-brand-soft text-brand" : "bg-gold-soft text-gold"}`}>
@@ -1020,7 +1021,8 @@ export default async function DurqoBangladeshPage() {
                 </Link>
               }
             />
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
+            <div className="-mx-4 grid snap-x snap-mandatory auto-cols-[46%] grid-flow-col grid-rows-2 gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-2 sm:grid-rows-none sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
               {sortedCategories.map(({ c, count }, i) => {
                 const Icon = categoryIcon(c.id);
                 const accent = CATEGORY_ACCENTS[c.id] ?? "#10B981";
@@ -1030,7 +1032,7 @@ export default async function DurqoBangladeshPage() {
                     href={`/buy/${c.id}`}
                     data-reveal
                     style={{ ...revealDelay((i % 4) * 60), "--accent": accent } as CSSProperties}
-                    className="group relative flex flex-col rounded-2xl border border-rule bg-paper-raised p-4 shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--accent)] sm:p-5 hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
+                    className="group relative flex snap-start flex-col rounded-2xl border border-rule bg-paper-raised p-4 shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--accent)] sm:p-5 hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <span
@@ -1083,9 +1085,10 @@ export default async function DurqoBangladeshPage() {
                   </Button>
                 }
               />
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
+              <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
                 {featured.map((l, i) => (
-                  <div key={l.id} data-reveal style={revealDelay(i * 110)} className={i === 2 ? "sm:hidden lg:block" : ""}>
+                  <div key={l.id} data-reveal style={revealDelay(i * 110)} className={`w-[86%] shrink-0 snap-start sm:w-auto ${i === 2 ? "sm:hidden lg:block" : ""}`}>
                     <div data-tilt className="dq-tilt h-full">
                       <ListingCard listing={l} />
                     </div>
@@ -1307,12 +1310,14 @@ export default async function DurqoBangladeshPage() {
             </div>
 
             {/* Mobile: Durqo card first, then the others */}
-            <div className="flex flex-col gap-3 md:hidden">
+            <div className="md:hidden">
+            <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
+            <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {COMPARISON_COMPANIES.map((c) => (
                 <div
                   key={c.name}
                   data-reveal
-                  className={`rounded-2xl border p-5 ${c.highlight ? "border-brand bg-brand-soft/60 shadow-[0_20px_40px_-28px_rgba(16,185,129,0.6)] ring-1 ring-brand" : "border-rule bg-paper-raised"}`}
+                  className={`w-[84%] shrink-0 snap-start rounded-2xl border p-5 ${c.highlight ? "border-brand bg-brand-soft/60 shadow-[0_20px_40px_-28px_rgba(16,185,129,0.6)] ring-1 ring-brand" : "border-rule bg-paper-raised"}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className={`text-base font-semibold ${c.highlight ? "text-ink" : "text-ink-soft"}`}>{c.name}</h3>
@@ -1336,6 +1341,7 @@ export default async function DurqoBangladeshPage() {
                   </dl>
                 </div>
               ))}
+            </div>
             </div>
           </Inner>
         </Container>
