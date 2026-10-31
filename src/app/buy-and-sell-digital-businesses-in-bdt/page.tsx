@@ -229,7 +229,7 @@ type Cell = { text: string; highlight?: boolean };
 const COMPARISON_ROWS: { feature: string; durqo: Cell; flippa: Cell; acquire: Cell; empireFlippers: Cell; motionInvest: Cell }[] = [
   {
     feature: "Market focus",
-    durqo: { text: "Built for Bangladesh, open to global listings", highlight: true },
+    durqo: { text: "Global marketplace that accepts BDT payment methods", highlight: true },
     flippa: { text: "Global marketplace and exit platform" },
     acquire: { text: "Global marketplace for online businesses" },
     empireFlippers: { text: "Curated brokerage for established businesses" },
