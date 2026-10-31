@@ -20,6 +20,10 @@ import {
   Search,
   Clock,
   Lock,
+  Globe,
+  LayoutGrid,
+  Banknote,
+  PackageCheck,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -294,6 +298,7 @@ const COMPARISON_ROWS: { feature: string; durqo: Cell; flippa: Cell; acquire: Ce
   { feature: "Seller fee", durqo: { text: "Tiered success fee, charged only after a sale" }, flippa: { text: "Listing fee plus a plan-based success fee" }, acquire: { text: "Listing and closing fees, plan-based" }, empireFlippers: { text: "Brokerage commission, based on sale terms" }, motionInvest: { text: "Fees vary by transaction and platform terms" } },
   { feature: "Transfer support", durqo: { text: "Private Transfer Room tied to each order" }, flippa: { text: "Deal-management and transaction-support tools" }, acquire: { text: "Acquisition, document and closing tools" }, empireFlippers: { text: "Managed migration and transaction assistance" }, motionInvest: { text: "Transfer assistance for eligible digital assets" } },
 ];
+const COMPARISON_ICONS = [Globe, LayoutGrid, Banknote, Percent, PackageCheck];
 const COMPARISON_COMPANIES = [
   { name: "Durqo", highlight: true, key: "durqo" as const },
   { name: "Flippa", key: "flippa" as const },
@@ -323,15 +328,15 @@ const ASSET_STATUS = {
   pending: { label: "PENDING", cls: "bg-paper-sunk text-ink-faint" },
 } as const;
 
-const PROBLEMS: { audience: "For Buyers" | "For Sellers" | "For Everyone"; problem: string; solution: string }[] = [
-  { audience: "For Buyers", problem: "Global marketplaces only take USD cards or wires.", solution: "Pay in BDT: bKash, Nagad, Rocket, bank or card." },
-  { audience: "For Sellers", problem: "Hard to reach buyers outside Bangladesh.", solution: "Your listing is seen by buyers worldwide, across 16 categories." },
-  { audience: "For Sellers", problem: "Getting paid back home in BDT is harder still.", solution: "Payout in BDT to bank, bKash, Nagad or Rocket." },
-  { audience: "For Buyers", problem: "Can the listing numbers be trusted?", solution: "Every listing is checked by hand and its business data verified before it goes live." },
-  { audience: "For Buyers", problem: "Paid, but will the assets ever arrive?", solution: "The Transfer Room tracks every asset, with a 7-day inspection." },
-  { audience: "For Buyers", problem: "Assets missing or not as promised.", solution: "Report an issue: payment stays on hold, the seller is not paid until Durqo reviews." },
-  { audience: "For Sellers", problem: "A buyer from Facebook, but no reliable way to close.", solution: "Bring them to Durqo and close through the Transfer Room." },
-  { audience: "For Sellers", problem: "No idea what the business is worth.", solution: "Get a free, instant valuation estimate." },
+const PROBLEMS: { audience: "For Buyers" | "For Sellers"; title: string; problem: string; solution: string }[] = [
+  { audience: "For Buyers", title: "Paying in Taka", problem: "Global marketplaces only take USD cards or wires.", solution: "Pay in BDT with bKash, Nagad, Rocket, bank transfer or card." },
+  { audience: "For Buyers", title: "Trusting the numbers", problem: "Can the listing numbers be trusted?", solution: "Every listing is checked by hand, and its business data is verified before it goes live." },
+  { audience: "For Buyers", title: "Receiving every asset", problem: "You've paid, but will every asset arrive?", solution: "The Transfer Room tracks every asset, with 7 days to inspect." },
+  { audience: "For Buyers", title: "If something is wrong", problem: "Assets are missing or not as promised.", solution: "Report an issue. Payment stays on hold and the seller is not paid until Durqo reviews it." },
+  { audience: "For Sellers", title: "Reaching buyers abroad", problem: "It's hard to reach buyers outside Bangladesh.", solution: "Your listing is seen by buyers in Bangladesh and other countries, across 16 categories." },
+  { audience: "For Sellers", title: "Getting paid at home", problem: "Getting paid back home in BDT is harder still.", solution: "Get paid out in BDT to your bank, bKash, Nagad or Rocket." },
+  { audience: "For Sellers", title: "Closing with your own buyer", problem: "You found a buyer on Facebook, but there's no reliable way to close.", solution: "Bring them to Durqo and close the deal through the Transfer Room." },
+  { audience: "For Sellers", title: "Knowing your price", problem: "You're not sure what your business is worth.", solution: "Get a free valuation estimate before you list." },
 ];
 
 
@@ -665,33 +670,57 @@ export default async function DurqoBangladeshPage() {
               center
               eyebrow="Why Durqo"
               title="The Problems Bangladeshi Buyers and Sellers Face, Solved"
-              body="Each problem on the left, and how Durqo fixes it on the right."
+              body="The most common problems, and exactly how Durqo solves each one."
             />
-            <div className="grid gap-6 lg:grid-cols-2">
-              {(["For Buyers", "For Sellers"] as const).map((aud, gi) => (
-                <div key={aud} data-reveal style={revealDelay(gi * 120)} className="overflow-hidden rounded-3xl border border-rule bg-paper-raised shadow-[0_24px_50px_-40px_rgba(11,19,36,0.5)]">
-                  <div className={`flex items-center gap-3 px-6 py-5 ${gi === 0 ? "bg-brand-soft" : "bg-gold-soft"}`}>
-                    <span className={`grid h-10 w-10 place-items-center rounded-xl ${gi === 0 ? "bg-brand text-white" : "bg-gold text-[#0B1324]"}`}>
-                      {gi === 0 ? <Wallet size={18} /> : <Landmark size={18} />}
-                    </span>
-                    <h3 className="text-xl font-semibold text-ink">{aud}</h3>
+            <div className="grid gap-8 lg:grid-cols-2 lg:gap-6">
+              {(["For Buyers", "For Sellers"] as const).map((aud, gi) => {
+                const items = PROBLEMS.filter((p) => p.audience === aud);
+                const buyer = gi === 0;
+                return (
+                  <div key={aud} data-reveal style={revealDelay(gi * 120)} className="flex flex-col">
+                    <div className="mb-5 flex items-center gap-4">
+                      <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl shadow-[0_12px_24px_-14px_rgba(11,19,36,0.6)] ${buyer ? "bg-brand text-white" : "bg-gold text-[#0B1324]"}`}>
+                        {buyer ? <Wallet size={20} /> : <Landmark size={20} />}
+                      </span>
+                      <div>
+                        <h3 className="text-2xl font-semibold tracking-tight text-ink">{aud}</h3>
+                        <p className="text-sm text-ink-soft">{items.length} common problems, solved</p>
+                      </div>
+                      <span className={`ml-auto hidden h-px flex-1 sm:block ${buyer ? "bg-gradient-to-r from-brand/50 to-transparent" : "bg-gradient-to-r from-gold/60 to-transparent"}`} aria-hidden />
+                    </div>
+                    <ol className="flex flex-1 flex-col gap-4">
+                      {items.map(({ title, problem, solution }, i) => (
+                        <li
+                          key={title}
+                          data-reveal
+                          style={revealDelay(gi * 120 + i * 90)}
+                          className="group overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[0_18px_40px_-28px_rgba(11,19,36,0.45)]"
+                        >
+                          <div className="flex gap-4 px-5 pb-4 pt-5">
+                            <span className={`mono grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-bold ${buyer ? "bg-brand-soft text-brand" : "bg-gold-soft text-gold"}`}>
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <div className="min-w-0">
+                              <p className={`mono text-[0.65rem] font-semibold uppercase tracking-wider ${buyer ? "text-brand" : "text-gold"}`}>{title}</p>
+                              <p className="mt-1 flex items-start gap-2 text-[1rem] font-semibold leading-snug text-ink">
+                                <XCircle size={17} className="mt-[3px] shrink-0 text-[#E11D48]" />
+                                {problem}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2.5 border-t border-brand/15 bg-brand-soft/45 px-5 py-3.5 pl-[4.75rem] text-[0.93rem] leading-relaxed text-ink">
+                            <CheckCircle2 size={17} className="mt-[3px] shrink-0 text-brand" />
+                            <span>
+                              <span className="font-semibold">Durqo: </span>
+                              <span className="text-ink-soft">{solution}</span>
+                            </span>
+                          </div>
+                        </li>
+                      ))}
+                    </ol>
                   </div>
-                  <ul className="divide-y divide-rule">
-                    {PROBLEMS.filter((p) => p.audience === aud).map(({ problem, solution }) => (
-                      <li key={problem} className="px-6 py-5">
-                        <p className="flex items-start gap-3 text-[0.98rem] font-semibold text-ink">
-                          <XCircle size={19} className="mt-0.5 shrink-0 text-[#E11D48]" />
-                          {problem}
-                        </p>
-                        <p className="mt-2 flex items-start gap-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                          <CheckCircle2 size={19} className="mt-0.5 shrink-0 text-brand" />
-                          {solution}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Inner>
         </Container>
@@ -1068,21 +1097,19 @@ export default async function DurqoBangladeshPage() {
         </section>
       )}
 
-      {/* FEES + VALUATION */}
-      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
+      {/* MARKETPLACE FEES */}
+      <section className="border-b border-rule py-16 sm:py-24">
         <Container>
           <Inner>
-            <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-stretch">
-              {/* Fees card */}
-              <div data-reveal className="flex flex-col rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(11,19,36,0.04),0_24px_48px_-32px_rgba(11,19,36,0.18)] sm:p-9">
+            <div data-reveal className="grid gap-8 rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(11,19,36,0.04),0_24px_48px_-32px_rgba(11,19,36,0.18)] sm:p-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-12">
+              <div className="flex flex-col">
                 <DashEyebrow>What it costs</DashEyebrow>
-                <h2 className="text-3xl tracking-tight sm:text-[2.2rem] sm:leading-tight">Marketplace Fees</h2>
-                <p className="mt-3 max-w-[52ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                <h2 className="text-3xl tracking-tight sm:text-[2.4rem] sm:leading-tight">Marketplace Fees</h2>
+                <p className="mt-3 max-w-[46ch] text-[0.98rem] leading-relaxed text-ink-soft">
                   Simple and upfront. Buyers pay no marketplace fee, and sellers pay a success fee only when the sale
                   is complete.
                 </p>
-
-                <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                <div className="mt-7 flex flex-col gap-3">
                   <div className="flex items-center gap-4 rounded-2xl border border-brand/25 bg-brand-soft/60 p-4">
                     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand text-white">
                       <Wallet size={19} />
@@ -1102,8 +1129,10 @@ export default async function DurqoBangladeshPage() {
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="mt-8 flex items-end justify-between gap-4">
+              <div className="flex flex-col">
+                <div className="flex items-end justify-between gap-4">
                   <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Seller success fee by final sale price</p>
                   <p className="hidden text-xs font-semibold text-brand sm:block">Bigger sale, lower rate</p>
                 </div>
@@ -1117,10 +1146,10 @@ export default async function DurqoBangladeshPage() {
                         style={revealDelay(150 + i * 110)}
                         className="flex items-center justify-between gap-4 rounded-2xl border border-rule bg-paper p-4 sm:flex-col sm:items-start sm:justify-end sm:p-5"
                       >
-                        <dd className="mono order-2 text-3xl font-bold tracking-tight text-ink sm:order-none sm:text-[2.6rem] sm:leading-none">
+                        <dd className="mono order-2 text-3xl font-bold tracking-tight text-ink sm:order-none sm:text-[2.8rem] sm:leading-none">
                           <CountUp value={fmtRate(tier.rate)} />
                         </dd>
-                        <div className="w-full max-w-[60%] sm:mt-4 sm:max-w-none">
+                        <div className="w-full max-w-[60%] sm:mt-5 sm:max-w-none">
                           <div className="h-1.5 w-full overflow-hidden rounded-full bg-paper-sunk">
                             <span className="block h-full rounded-full bg-brand" style={{ width: `${(tier.rate / top) * 100}%` }} />
                           </div>
@@ -1130,8 +1159,7 @@ export default async function DurqoBangladeshPage() {
                     );
                   })}
                 </dl>
-
-                <div className="mt-5 flex flex-col gap-1 rounded-2xl border border-dashed border-rule-strong px-4 py-3.5 text-sm text-ink-soft sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-4 flex flex-col gap-1 rounded-2xl border border-dashed border-rule-strong px-4 py-3.5 text-sm text-ink-soft sm:flex-row sm:items-center sm:justify-between">
                   <span>
                     <span className="mono mr-2 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">Example</span>
                     A $20,000 sale
@@ -1140,7 +1168,6 @@ export default async function DurqoBangladeshPage() {
                     {fmtRate(SUCCESS_FEE_TIERS[0].rate)} fee = ${(20_000 * SUCCESS_FEE_TIERS[0].rate).toLocaleString("en-US")}
                   </span>
                 </div>
-
                 <p className="mt-auto flex items-start gap-2 pt-5 text-xs leading-relaxed text-ink-faint">
                   <Info size={13} className="mt-0.5 shrink-0" />
                   <span>
@@ -1152,12 +1179,20 @@ export default async function DurqoBangladeshPage() {
                   </span>
                 </p>
               </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
 
-              {/* Valuation card */}
-              <div data-reveal style={revealDelay(120)} className="relative flex flex-col overflow-hidden rounded-3xl bg-[#0B1324] p-6 text-white sm:p-9">
-                <span className="dq-glow pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand/25 blur-3xl" aria-hidden />
-                <span className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#3341A0]/30 blur-3xl" aria-hidden />
-                <div className="relative flex items-center gap-3">
+      {/* FREE VALUATION */}
+      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <div data-reveal className="relative grid gap-10 overflow-hidden rounded-3xl bg-[#0B1324] p-7 text-white sm:p-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14">
+              <span className="dq-glow pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand/25 blur-3xl" aria-hidden />
+              <span className="pointer-events-none absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-[#3341A0]/30 blur-3xl" aria-hidden />
+              <div className="relative">
+                <div className="flex items-center gap-3">
                   <span className="dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl bg-brand text-white">
                     <Calculator size={20} />
                   </span>
@@ -1165,41 +1200,44 @@ export default async function DurqoBangladeshPage() {
                     Free valuation tool
                   </span>
                 </div>
-                <h2 className="relative mt-6 text-2xl font-semibold leading-tight sm:text-[1.9rem]">Not Sure What Your Business Is Worth?</h2>
-                <p className="relative mt-3 text-sm leading-relaxed text-white/70">
+                <h2 className="mt-6 text-3xl font-semibold leading-tight tracking-tight sm:text-[2.4rem]">Not Sure What Your Business Is Worth?</h2>
+                <p className="mt-4 max-w-[46ch] text-[0.98rem] leading-relaxed text-white/70">
                   Get a free estimated value range for your online business, based on typical profit multiples for
-                  its category.
+                  its category. Use it to plan your asking price before you list.
                 </p>
-
-                <ol className="relative mt-7 flex flex-col gap-0">
-                  {[
-                    ["Pick your category", "Website, YouTube channel, SaaS, AI app and more"],
-                    ["Add your numbers", "Monthly revenue, profit and business age"],
-                    ["See your estimated range", "Use it to plan your asking price"],
-                  ].map(([title, sub], i, arr) => (
-                    <li key={title} className="relative flex gap-4 pb-5 last:pb-0">
-                      {i < arr.length - 1 && <span className="absolute left-[15px] top-9 h-[calc(100%-2.25rem)] w-px bg-white/15" aria-hidden />}
-                      <span className="mono grid h-8 w-8 shrink-0 place-items-center rounded-full border border-brand/40 bg-brand/15 text-xs font-bold text-brand">
-                        {i + 1}
-                      </span>
-                      <div className="pt-1">
-                        <p className="text-[0.95rem] font-semibold leading-snug">{title}</p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-white/55">{sub}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-
-                <div className="relative mt-auto pt-8">
-                  <Button href="/valuation" size="lg" className="dq-shine w-full">
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Button href="/valuation" size="lg" className="dq-shine">
                     Get a Free Valuation
                     <ArrowRight size={16} />
                   </Button>
-                  <p className="mt-3 text-center text-[0.7rem] leading-relaxed text-white/45">
+                  <p className="text-xs leading-relaxed text-white/45 sm:max-w-[26ch]">
                     An indicative estimate, not an offer or a guaranteed sale price.
                   </p>
                 </div>
               </div>
+
+              <ol className="relative flex flex-col gap-3">
+                {[
+                  ["Pick your category", "Website, YouTube channel, SaaS, AI app and more"],
+                  ["Add your numbers", "Monthly revenue, profit and business age"],
+                  ["See your estimated range", "Get a low-to-high value range for your business"],
+                ].map(([title, sub], i) => (
+                  <li
+                    key={title}
+                    data-reveal
+                    style={revealDelay(150 + i * 110)}
+                    className="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/[0.05] p-4 backdrop-blur sm:p-5"
+                  >
+                    <span className="mono grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand/15 text-sm font-bold text-brand ring-1 ring-brand/40">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div>
+                      <p className="text-base font-semibold leading-snug">{title}</p>
+                      <p className="mt-0.5 text-sm leading-relaxed text-white/55">{sub}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
             </div>
           </Inner>
         </Container>
@@ -1214,41 +1252,87 @@ export default async function DurqoBangladeshPage() {
               title="How Durqo Compares with Major Marketplaces"
               body="All are global marketplaces. Durqo is the one that also accepts BDT payment methods and pays sellers out in BDT."
             />
-            <div data-reveal className="hidden overflow-hidden rounded-3xl border border-rule bg-paper-raised md:block">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-rule bg-paper-sunk">
-                    <th scope="col" className="mono px-5 py-4 text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Feature</th>
-                    {COMPARISON_COMPANIES.map((c) => (
-                      <th key={c.name} scope="col" className={`px-5 py-4 text-sm font-semibold ${c.highlight ? "bg-brand text-white" : "text-ink"}`}>{c.name}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {COMPARISON_ROWS.map((row, i) => (
-                    <tr key={row.feature} className={i !== COMPARISON_ROWS.length - 1 ? "border-b border-rule" : ""}>
-                      <th scope="row" className="px-5 py-4 text-sm font-semibold text-ink">{row.feature}</th>
-                      <td className="bg-brand-soft/60 px-5 py-4 text-sm font-semibold text-brand-strong">{row.durqo.text}</td>
-                      <td className="px-5 py-4 text-sm text-ink-soft">{row.flippa.text}</td>
-                      <td className="px-5 py-4 text-sm text-ink-soft">{row.acquire.text}</td>
-                      <td className="px-5 py-4 text-sm text-ink-soft">{row.empireFlippers.text}</td>
-                      <td className="px-5 py-4 text-sm text-ink-soft">{row.motionInvest.text}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Desktop: grid table with an elevated Durqo column */}
+            <div data-reveal className="relative hidden rounded-3xl border border-rule bg-paper-raised p-3 shadow-[0_30px_60px_-46px_rgba(11,19,36,0.55)] md:block">
+              <div className="relative grid grid-cols-[minmax(150px,0.9fr)_minmax(200px,1.25fr)_repeat(4,minmax(0,1fr))]">
+                <span
+                  className="pointer-events-none absolute inset-0 rounded-2xl bg-brand-soft/70 ring-2 ring-brand shadow-[0_24px_48px_-24px_rgba(16,185,129,0.55)]"
+                  style={{ gridColumn: "2 / 3", gridRow: `1 / ${COMPARISON_ROWS.length + 2}` }}
+                  aria-hidden
+                />
+                {/* header row */}
+                <div className="mono flex items-end px-4 pb-4 pt-5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint" style={{ gridColumn: 1, gridRow: 1 }}>
+                  Compare
+                </div>
+                <div className="relative px-5 pb-4 pt-5" style={{ gridColumn: 2, gridRow: 1 }}>
+                  <span className="mono mb-2 inline-flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-white">
+                    <CheckCircle2 size={11} /> BDT payments and payouts
+                  </span>
+                  <p className="text-xl font-bold tracking-tight text-ink">
+                    durqo<span className="text-brand">.</span>
+                  </p>
+                </div>
+                {COMPARISON_COMPANIES.filter((c) => !c.highlight).map((c, ci) => (
+                  <div key={c.name} className="flex items-end px-4 pb-4 pt-5 text-[0.95rem] font-semibold text-ink-soft" style={{ gridColumn: ci + 3, gridRow: 1 }}>
+                    {c.name}
+                  </div>
+                ))}
+                {/* body rows */}
+                {COMPARISON_ROWS.map((row, ri) => {
+                  const Icon = COMPARISON_ICONS[ri];
+                  const isBdt = row.feature === "BDT payment methods";
+                  const others = [row.flippa, row.acquire, row.empireFlippers, row.motionInvest];
+                  return (
+                    <div key={row.feature} className="contents">
+                      <div className="flex items-center gap-3 border-t border-rule px-4 py-4" style={{ gridColumn: 1, gridRow: ri + 2 }}>
+                        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-paper-sunk text-ink-soft">
+                          <Icon size={15} />
+                        </span>
+                        <span className="text-sm font-semibold leading-snug text-ink">{row.feature}</span>
+                      </div>
+                      <div className="relative flex items-start gap-2.5 border-t border-brand/20 px-5 py-4" style={{ gridColumn: 2, gridRow: ri + 2 }}>
+                        <CheckCircle2 size={17} className="mt-0.5 shrink-0 text-brand" />
+                        <span className="text-sm font-semibold leading-snug text-ink">{row.durqo.text}</span>
+                      </div>
+                      {others.map((cell, ci) => (
+                        <div key={ci} className="flex items-start gap-2 border-t border-rule px-4 py-4 text-sm leading-snug text-ink-soft" style={{ gridColumn: ci + 3, gridRow: ri + 2 }}>
+                          {isBdt && <XCircle size={15} className="mt-0.5 shrink-0 text-ink-faint" />}
+                          <span>{cell.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Mobile: Durqo card first, then the others */}
             <div className="flex flex-col gap-3 md:hidden">
               {COMPARISON_COMPANIES.map((c) => (
-                <div key={c.name} data-reveal className={`rounded-2xl border p-5 ${c.highlight ? "border-brand bg-brand-soft/50" : "border-rule bg-paper-raised"}`}>
-                  <h3 className={`text-sm font-semibold ${c.highlight ? "text-brand-strong" : "text-ink"}`}>{c.name}</h3>
-                  <dl className="mt-3 flex flex-col gap-2.5">
-                    {c.rows.map((r) => (
-                      <div key={r.feature}>
-                        <dt className="mono text-[0.62rem] font-semibold uppercase tracking-wider text-ink-faint">{r.feature}</dt>
-                        <dd className="mt-0.5 text-sm leading-relaxed text-ink-soft">{r.value}</dd>
-                      </div>
-                    ))}
+                <div
+                  key={c.name}
+                  data-reveal
+                  className={`rounded-2xl border p-5 ${c.highlight ? "border-brand bg-brand-soft/60 shadow-[0_20px_40px_-28px_rgba(16,185,129,0.6)] ring-1 ring-brand" : "border-rule bg-paper-raised"}`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className={`text-base font-semibold ${c.highlight ? "text-ink" : "text-ink-soft"}`}>{c.name}</h3>
+                    {c.highlight && (
+                      <span className="mono rounded-full bg-brand px-2 py-0.5 text-[0.58rem] font-bold uppercase tracking-wider text-white">BDT supported</span>
+                    )}
+                  </div>
+                  <dl className="mt-3 flex flex-col gap-3">
+                    {c.rows.map((r, ri) => {
+                      const Icon = COMPARISON_ICONS[ri];
+                      return (
+                        <div key={r.feature} className="flex gap-3">
+                          <Icon size={15} className={`mt-1 shrink-0 ${c.highlight ? "text-brand" : "text-ink-faint"}`} />
+                          <div>
+                            <dt className="mono text-[0.6rem] font-semibold uppercase tracking-wider text-ink-faint">{r.feature}</dt>
+                            <dd className={`mt-0.5 text-sm leading-relaxed ${c.highlight ? "font-medium text-ink" : "text-ink-soft"}`}>{r.value}</dd>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </dl>
                 </div>
               ))}
