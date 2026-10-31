@@ -1072,33 +1072,79 @@ export default async function DurqoBangladeshPage() {
       <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
         <Container>
           <Inner>
-            <div className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
-              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-7 shadow-[0_1px_2px_rgba(11,19,36,0.04)] sm:p-9">
+            <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-stretch">
+              {/* Fees card */}
+              <div data-reveal className="flex flex-col rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(11,19,36,0.04),0_24px_48px_-32px_rgba(11,19,36,0.18)] sm:p-9">
                 <DashEyebrow>What it costs</DashEyebrow>
                 <h2 className="text-3xl tracking-tight sm:text-[2.2rem] sm:leading-tight">Marketplace Fees</h2>
-                <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                  Buyers pay no marketplace fee. Sellers pay a tiered success fee, only after a successful sale.
+                <p className="mt-3 max-w-[52ch] text-[0.95rem] leading-relaxed text-ink-soft">
+                  Simple and upfront. Buyers pay no marketplace fee, and sellers pay a success fee only when the sale
+                  is complete.
                 </p>
-                <div className="mt-7 overflow-hidden rounded-2xl border border-rule">
-                  <div className="mono grid grid-cols-2 bg-paper-sunk px-5 py-2.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
-                    <span>Final sale price</span>
-                    <span className="text-right">Seller success fee</span>
+
+                <div className="mt-7 grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center gap-4 rounded-2xl border border-brand/25 bg-brand-soft/60 p-4">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand text-white">
+                      <Wallet size={19} />
+                    </span>
+                    <div>
+                      <p className="mono text-[0.65rem] font-semibold uppercase tracking-wider text-brand">For buyers</p>
+                      <p className="text-lg font-semibold leading-snug text-ink">$0 marketplace fee</p>
+                    </div>
                   </div>
-                  <dl className="divide-y divide-rule">
-                    {SUCCESS_FEE_TIERS.map((tier, i) => (
-                      <div key={tier.id} data-reveal style={revealDelay(150 + i * 110)} className="grid grid-cols-2 items-center px-5 py-4">
-                        <dt className="text-sm text-ink">{tier.label}</dt>
-                        <dd className="mono text-right text-2xl font-bold text-brand-strong">
+                  <div className="flex items-center gap-4 rounded-2xl border border-rule bg-paper-sunk p-4">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#0B1324] text-white">
+                      <Percent size={18} />
+                    </span>
+                    <div>
+                      <p className="mono text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">For sellers</p>
+                      <p className="text-lg font-semibold leading-snug text-ink">Pay only after you sell</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex items-end justify-between gap-4">
+                  <p className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Seller success fee by final sale price</p>
+                  <p className="hidden text-xs font-semibold text-brand sm:block">Bigger sale, lower rate</p>
+                </div>
+                <dl className="mt-3 grid gap-3 sm:grid-cols-3">
+                  {SUCCESS_FEE_TIERS.map((tier, i) => {
+                    const top = SUCCESS_FEE_TIERS[0].rate;
+                    return (
+                      <div
+                        key={tier.id}
+                        data-reveal
+                        style={revealDelay(150 + i * 110)}
+                        className="flex items-center justify-between gap-4 rounded-2xl border border-rule bg-paper p-4 sm:flex-col sm:items-start sm:justify-end sm:p-5"
+                      >
+                        <dd className="mono order-2 text-3xl font-bold tracking-tight text-ink sm:order-none sm:text-[2.6rem] sm:leading-none">
                           <CountUp value={fmtRate(tier.rate)} />
                         </dd>
+                        <div className="w-full max-w-[60%] sm:mt-4 sm:max-w-none">
+                          <div className="h-1.5 w-full overflow-hidden rounded-full bg-paper-sunk">
+                            <span className="block h-full rounded-full bg-brand" style={{ width: `${(tier.rate / top) * 100}%` }} />
+                          </div>
+                          <dt className="mt-2.5 text-sm font-medium text-ink-soft">{tier.label}</dt>
+                        </div>
                       </div>
-                    ))}
-                  </dl>
+                    );
+                  })}
+                </dl>
+
+                <div className="mt-5 flex flex-col gap-1 rounded-2xl border border-dashed border-rule-strong px-4 py-3.5 text-sm text-ink-soft sm:flex-row sm:items-center sm:justify-between">
+                  <span>
+                    <span className="mono mr-2 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">Example</span>
+                    A $20,000 sale
+                  </span>
+                  <span className="font-semibold text-ink">
+                    {fmtRate(SUCCESS_FEE_TIERS[0].rate)} fee = ${(20_000 * SUCCESS_FEE_TIERS[0].rate).toLocaleString("en-US")}
+                  </span>
                 </div>
-                <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-faint">
+
+                <p className="mt-auto flex items-start gap-2 pt-5 text-xs leading-relaxed text-ink-faint">
                   <Info size={13} className="mt-0.5 shrink-0" />
                   <span>
-                    Applies to the full final sale price. See{" "}
+                    The fee applies to the full final sale price. See{" "}
                     <Link href="/buy-and-sell-digital-businesses-in-bdt" className="font-semibold text-brand-strong hover:underline">
                       Buy &amp; Sell in BDT
                     </Link>{" "}
@@ -1107,21 +1153,51 @@ export default async function DurqoBangladeshPage() {
                 </p>
               </div>
 
-              <div data-reveal style={revealDelay(120)} className="relative flex flex-col overflow-hidden rounded-3xl bg-[#0B1324] p-7 text-white sm:p-9">
-                <span className="dq-glow pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-brand/25 blur-3xl" aria-hidden />
-                <span className="dq-icon-pop relative mb-6 grid h-12 w-12 place-items-center rounded-2xl bg-brand text-white">
-                  <Calculator size={20} />
-                </span>
-                <h2 className="relative text-2xl font-semibold leading-tight sm:text-[1.9rem]">Not Sure What Your Business Is Worth?</h2>
+              {/* Valuation card */}
+              <div data-reveal style={revealDelay(120)} className="relative flex flex-col overflow-hidden rounded-3xl bg-[#0B1324] p-6 text-white sm:p-9">
+                <span className="dq-glow pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-brand/25 blur-3xl" aria-hidden />
+                <span className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#3341A0]/30 blur-3xl" aria-hidden />
+                <div className="relative flex items-center gap-3">
+                  <span className="dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl bg-brand text-white">
+                    <Calculator size={20} />
+                  </span>
+                  <span className="mono rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[0.65rem] font-semibold uppercase tracking-wider text-brand">
+                    Free valuation tool
+                  </span>
+                </div>
+                <h2 className="relative mt-6 text-2xl font-semibold leading-tight sm:text-[1.9rem]">Not Sure What Your Business Is Worth?</h2>
                 <p className="relative mt-3 text-sm leading-relaxed text-white/70">
-                  Get a free, instant estimate based on how similar businesses sell on Durqo, before deciding whether
-                  or when to sell.
+                  Get a free estimated value range for your online business, based on typical profit multiples for
+                  its category.
                 </p>
+
+                <ol className="relative mt-7 flex flex-col gap-0">
+                  {[
+                    ["Pick your category", "Website, YouTube channel, SaaS, AI app and more"],
+                    ["Add your numbers", "Monthly revenue, profit and business age"],
+                    ["See your estimated range", "Use it to plan your asking price"],
+                  ].map(([title, sub], i, arr) => (
+                    <li key={title} className="relative flex gap-4 pb-5 last:pb-0">
+                      {i < arr.length - 1 && <span className="absolute left-[15px] top-9 h-[calc(100%-2.25rem)] w-px bg-white/15" aria-hidden />}
+                      <span className="mono grid h-8 w-8 shrink-0 place-items-center rounded-full border border-brand/40 bg-brand/15 text-xs font-bold text-brand">
+                        {i + 1}
+                      </span>
+                      <div className="pt-1">
+                        <p className="text-[0.95rem] font-semibold leading-snug">{title}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-white/55">{sub}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+
                 <div className="relative mt-auto pt-8">
-                  <Button href="/valuation" size="lg" className="dq-shine w-full sm:w-auto">
+                  <Button href="/valuation" size="lg" className="dq-shine w-full">
                     Get a Free Valuation
                     <ArrowRight size={16} />
                   </Button>
+                  <p className="mt-3 text-center text-[0.7rem] leading-relaxed text-white/45">
+                    An indicative estimate, not an offer or a guaranteed sale price.
+                  </p>
                 </div>
               </div>
             </div>
