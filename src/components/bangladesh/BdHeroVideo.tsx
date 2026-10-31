@@ -32,6 +32,13 @@ export default function BdHeroVideo() {
   function togglePlay() {
     const v = ref.current;
     if (!v) return;
+    // Still playing muted (the browser blocked sound): the first click just
+    // turns the sound on instead of pausing.
+    if (!v.paused && v.muted) {
+      v.muted = false;
+      setMuted(false);
+      return;
+    }
     if (v.paused) {
       userPaused.current = false;
       v.muted = false;
