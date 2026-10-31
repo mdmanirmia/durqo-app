@@ -329,7 +329,7 @@ const ASSET_STATUS = {
 } as const;
 
 const PROBLEMS: { audience: "For Buyers" | "For Sellers"; title: string; problem: string; solution: string }[] = [
-  { audience: "For Buyers", title: "Paying in Taka", problem: "Global marketplaces only take USD cards or wires.", solution: "Pay in BDT with bKash, Nagad, Rocket, bank transfer or card." },
+  { audience: "For Buyers", title: "Paying in Taka", problem: "Global marketplaces only take USD cards or wires.", solution: "Pay in BDT with Bank Transfer, bKash, Nagad, Rocket, or card, along with USD." },
   { audience: "For Buyers", title: "Trusting the numbers", problem: "Can the listing numbers be trusted?", solution: "Every listing is checked by hand, and its business data is verified before it goes live." },
   { audience: "For Buyers", title: "Receiving every asset", problem: "You've paid, but will every asset arrive?", solution: "The Transfer Room tracks every asset, with 7 days to inspect." },
   { audience: "For Buyers", title: "If something is wrong", problem: "Assets are missing or not as promised.", solution: "Report an issue. Payment stays on hold and the seller is not paid until Durqo reviews it." },
