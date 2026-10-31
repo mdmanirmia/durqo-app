@@ -17,10 +17,12 @@ import {
   CreditCard,
   Percent,
   Info,
-  Edit3,
   Send,
   Eye,
   XCircle,
+  Search,
+  Clock,
+  Lock,
 } from "lucide-react";
 import Container from "@/components/ui/Container";
 import Button from "@/components/ui/Button";
@@ -265,69 +267,65 @@ const PAYOUT_METHODS = [
   { icon: RocketGlyph, label: "Rocket", tint: "text-[#7B1E3F]" },
 ];
 
+const BUYER_STEPS = [
+  { title: "Choose a business", icon: Search },
+  { title: "Pick BDT at checkout", icon: Wallet },
+  { title: "See the exact BDT amount", icon: Eye },
+  { title: "Pay through SSLCommerz", icon: CreditCard },
+  { title: "Handover in the Transfer Room", icon: Handshake },
+];
+
+const LISTING_REVIEW = [
+  { title: "Submit your listing", sub: "Business data and assets", icon: Send },
+  { title: "Checked by hand", sub: "Durqo team verifies the data", icon: ClipboardCheck },
+  { title: "Goes live", sub: "Only after verification", icon: CheckCircle2 },
+];
+
+const SELLER_STATS = [
+  { value: "৳50,000", label: "per day on bKash, Nagad or Rocket (each)", icon: Smartphone, dark: false },
+  { value: "৳300,000", label: "per month on each of them. Bank: no MFS limit", icon: Landmark, dark: false },
+  { value: "3–5 days", label: "business days to review and process a payout", icon: Clock, dark: true },
+  { value: "After sale", label: "success fee is deducted only after a successful sale", icon: Percent, dark: true },
+];
+
+const SELLER_STATUSES = ["Sale Completed", "Payout Eligible", "Withdrawal Requested", "Under Review", "Processing", "Paid"];
+
+type Cell = { text: string };
+const COMPARISON_ROWS: { feature: string; durqo: Cell; flippa: Cell; acquire: Cell; empireFlippers: Cell; motionInvest: Cell }[] = [
+  { feature: "Market focus", durqo: { text: "Built for Bangladesh, open to global listings" }, flippa: { text: "Global marketplace and exit platform" }, acquire: { text: "Global marketplace for online businesses" }, empireFlippers: { text: "Curated brokerage for established businesses" }, motionInvest: { text: "Focused on content sites and YouTube channels" } },
+  { feature: "Digital business types", durqo: { text: "Websites, e-commerce, SaaS, apps and more" }, flippa: { text: "A wide range of online businesses" }, acquire: { text: "SaaS, e-commerce, agencies, apps and more" }, empireFlippers: { text: "Vetted e-commerce, SaaS, content and service businesses" }, motionInvest: { text: "Mainly content sites and YouTube channels" } },
+  { feature: "Bangladesh-focused BDT flow", durqo: { text: "Yes - BDT payments and payouts" }, flippa: { text: "No dedicated BDT payment flow" }, acquire: { text: "No dedicated BDT payment flow" }, empireFlippers: { text: "No dedicated BDT payment flow" }, motionInvest: { text: "No dedicated BDT payment flow" } },
+  { feature: "Seller fee", durqo: { text: "Tiered success fee, charged only after a sale" }, flippa: { text: "Listing fee plus a plan-based success fee" }, acquire: { text: "Listing and closing fees, plan-based" }, empireFlippers: { text: "Brokerage commission, based on sale terms" }, motionInvest: { text: "Fees vary by transaction and platform terms" } },
+  { feature: "Transfer support", durqo: { text: "Private Transfer Room tied to each order" }, flippa: { text: "Deal-management and transaction-support tools" }, acquire: { text: "Acquisition, document and closing tools" }, empireFlippers: { text: "Managed migration and transaction assistance" }, motionInvest: { text: "Transfer assistance for eligible digital assets" } },
+];
+const COMPARISON_COMPANIES = [
+  { name: "Durqo", highlight: true, key: "durqo" as const },
+  { name: "Flippa", key: "flippa" as const },
+  { name: "Acquire.com", key: "acquire" as const },
+  { name: "Empire Flippers", key: "empireFlippers" as const },
+  { name: "Motion Invest", key: "motionInvest" as const },
+].map((c) => ({ ...c, rows: COMPARISON_ROWS.map((r) => ({ feature: r.feature, value: r[c.key].text })) }));
+
 const PROBLEMS: { audience: "For Buyers" | "For Sellers" | "For Everyone"; problem: string; solution: string }[] = [
-  {
-    audience: "For Buyers",
-    problem: "Paying an international seller in BDT is hard. Most global marketplaces only take cards or wires priced in USD.",
-    solution: "Buy in BDT through supported local payment methods, including bKash, Nagad, Rocket, bank transfer or card.",
-  },
-  {
-    audience: "For Sellers",
-    problem: "Bangladeshi sellers struggle to reach buyers outside the country, and getting paid back in BDT is even harder.",
-    solution: "Sell to buyers anywhere in the world and get paid out in BDT through bank transfer, bKash, Nagad or Rocket.",
-  },
-  {
-    audience: "For Buyers",
-    problem: "Buyers worry about paying for a business and never actually receiving the assets.",
-    solution: "Every purchase moves through a structured Asset Transfer Room with a 7-day inspection period before the sale is finalized.",
-  },
-  {
-    audience: "For Everyone",
-    problem: "Both sides carry payment and delivery risk in a deal this size.",
-    solution:
-      "A structured process covering payment, transfer, inspection, approval and payout keeps things organized end to end. Supported transactions may also use Escrow.com as an independent escrow option.",
-  },
-  {
-    audience: "For Everyone",
-    problem: "Assets can go missing or not match what was promised after the handover.",
-    solution: "Buyers can report an issue and have the transaction reviewed, instead of the sale auto-approving.",
-  },
-  {
-    audience: "For Buyers",
-    problem: "Listing information on many marketplaces can't be trusted.",
-    solution:
-      "Listings go through review before they go live and carry verification signals, including supported Google Analytics connections, though buyers should still do their own diligence.",
-  },
-  {
-    audience: "For Everyone",
-    problem: "A sale with several moving parts, such as the domain, app, accounts and documents, is hard to hand over cleanly.",
-    solution: "The Transfer Room tracks every asset in the sale individually, so nothing gets lost in a multi-part handover.",
-  },
-  {
-    audience: "For Sellers",
-    problem: "A seller already has a buyer lined up through Facebook or a personal contact, but no reliable way to actually close the deal.",
-    solution: "Bring that buyer onto Durqo and run the sale through the same structured Transfer Room process.",
-  },
-  {
-    audience: "For Sellers",
-    problem: "Selling only within Bangladesh limits how many buyers ever see the listing.",
-    solution: "Reach international buyers across Durqo's 16 digital business categories.",
-  },
-  {
-    audience: "For Sellers",
-    problem: "Many owners have no idea what their business is actually worth.",
-    solution: "Get a free indicative valuation before deciding whether or when to sell.",
-  },
+  { audience: "For Buyers", problem: "Global marketplaces only take USD cards or wires.", solution: "Pay in BDT: bKash, Nagad, Rocket, bank or card." },
+  { audience: "For Sellers", problem: "Hard to reach buyers outside Bangladesh.", solution: "Your listing is seen by buyers worldwide, across 16 categories." },
+  { audience: "For Sellers", problem: "Getting paid back home in BDT is harder still.", solution: "Payout in BDT to bank, bKash, Nagad or Rocket." },
+  { audience: "For Buyers", problem: "Can the listing numbers be trusted?", solution: "Every listing is checked by hand and its business data verified before it goes live." },
+  { audience: "For Buyers", problem: "Paid, but will the assets ever arrive?", solution: "The Transfer Room tracks every asset, with a 7-day inspection." },
+  { audience: "For Buyers", problem: "Assets missing or not as promised.", solution: "Report an issue: payment stays on hold, the seller is not paid until Durqo reviews." },
+  { audience: "For Everyone", problem: "Payment and delivery risk on both sides.", solution: "One tracked flow from payment to payout. Escrow.com available on supported deals." },
+  { audience: "For Sellers", problem: "A buyer from Facebook, but no reliable way to close.", solution: "Bring them to Durqo and close through the Transfer Room." },
+  { audience: "For Sellers", problem: "No idea what the business is worth.", solution: "Get a free, instant valuation estimate." },
 ];
 
 const WHY_DURQO_CARDS = [
-  { icon: Layers, title: "16 Digital Business Categories", body: "Buy or sell across websites, e-commerce, SaaS, apps, domains and more - all in one marketplace." },
-  { icon: Wallet, title: "Buy and Sell in BDT", body: "Bangladesh-based buyers pay in BDT, and eligible sellers get paid out in BDT through supported local methods." },
-  { icon: Percent, title: "No Buyer Marketplace Fee", body: "Durqo does not charge buyers a marketplace fee. Buyers pay the agreed purchase price, although disclosed payment-provider, banking or currency charges may apply." },
-  { icon: Percent, title: "Seller Fee Only After a Sale", body: "Durqo deducts the applicable success fee from the seller only after a successful sale." },
-  { icon: ShieldCheck, title: "Structured, Tracked Transfers", body: "Every sale moves through the Transfer Room, which stays locked until the complete purchase price has been received and verified." },
-  { icon: ClipboardCheck, title: "7-Day Buyer Inspection", body: "Buyers get a 7-day window to inspect every asset in the sale before the transfer is finalized." },
-];
+  { icon: Layers, title: "16 Digital Business Categories", body: "Websites, e-commerce, SaaS, apps, domains and more." },
+  { icon: Wallet, title: "Buy and Sell in BDT", body: "Pay in BDT. Get paid out in BDT." },
+  { icon: Percent, title: "No Buyer Marketplace Fee", body: "Buyers pay the agreed price. Provider charges may apply." },
+  { icon: Percent, title: "Seller Fee Only After a Sale", body: "No sale, no success fee." },
+  { icon: ShieldCheck, title: "Structured, Tracked Transfers", body: "Transfer Room opens only after full payment is verified." },
+  { icon: ClipboardCheck, title: "7-Day Buyer Inspection", body: "Check every asset before the sale is final." },
+]
 
 const RELATED_LINKS = [
   { href: "/buy-and-sell-digital-businesses-in-bdt", label: "Buy & Sell in BDT: The Full Guide" },
@@ -339,30 +337,13 @@ const RELATED_LINKS = [
 ];
 
 const TRANSACTION_STEPS = [
-  { title: "Payment Is Confirmed", body: "The buyer's payment is received and verified before the sale moves forward.", icon: Wallet },
-  { title: "Transfer Room Opens", body: "Buyer and seller move into a private Transfer Room to hand over every asset in the sale.", icon: Handshake },
-  { title: "7-Day Inspection", body: "The buyer has 7 days to inspect the assets against what was agreed.", icon: ClipboardCheck },
-  { title: "Buyer Approves", body: "The buyer approves the completed transfer, or reports an issue for review instead of an automatic approval.", icon: CheckCircle2 },
-  { title: "Seller Is Paid Out", body: "Once the transfer is approved, the seller can request their payout - including in BDT for Bangladeshi sellers.", icon: Landmark },
-];
+  { title: "Payment Confirmed", body: "Received and verified.", icon: Wallet },
+  { title: "Transfer Room Opens", body: "Private handover space.", icon: Handshake },
+  { title: "7-Day Inspection", body: "Check every asset.", icon: ClipboardCheck },
+  { title: "Approve or Report", body: "Issue = payment on hold.", icon: CheckCircle2 },
+  { title: "Seller Paid Out", body: "In BDT, after approval.", icon: Landmark },
+]
 
-// Oct 1, 2026 (Revision 12): zooms into step 2 of TRANSACTION_STEPS above —
-// what actually happens, per asset, inside the Transfer Room itself. Every
-// label and behavior here is traced to the real Transfer Room page
-// (src/app/transfer-room/page.tsx, itself traced to TransferRoomView.tsx and
-// the asset-transfer RPC migrations): "Mark In Progress" / "Mark Submitted"
-// are the seller's real action labels (SELLER_STEPS there); "Mark Received"
-// is the buyer's real action label (BUYER_STEPS there); the closing
-// approve-or-report branch, including that a reported issue holds payment
-// for admin review rather than auto-releasing, matches TRANSFER_FLOW and the
-// "Report an Issue" copy on that same page. Nothing here is new information —
-// it restates /transfer-room's own facts at a glance for this audience.
-const TRANSFER_ROOM_STEPS = [
-  { title: "Seller Marks In Progress", body: "As the seller starts preparing each asset on the checklist for handover.", icon: Edit3 },
-  { title: "Seller Marks Submitted", body: "Once it's handed over, with an optional reference note, such as a transfer code or login details.", icon: Send },
-  { title: "Buyer Marks Received", body: "After checking the asset against what was agreed, inside the 7-day inspection window.", icon: Eye },
-  { title: "Buyer Approves, or Reports an Issue", body: "Approving releases payment for that asset. Reporting an issue keeps payment held until Durqo's team reviews it.", icon: CheckCircle2 },
-];
 
 const FAQ_GROUPS: FaqGroup[] = [
   {
@@ -398,6 +379,14 @@ const FAQ_GROUPS: FaqGroup[] = [
   {
     heading: "Buying & selling in BDT",
     items: [
+      {
+        question: "Who can pay for a business in BDT?",
+        answer: "The BDT checkout option is for Bangladesh-based buyers who select SSLCommerz.",
+      },
+      {
+        question: "What happens if the business costs USD 2,000 or less?",
+        answer: "You pay the complete BDT equivalent through SSLCommerz at checkout. Durqo shows the applicable exchange rate and exact BDT amount before you confirm the payment.",
+      },
       {
         question: "Can I pay for a business in BDT from Bangladesh?",
         answer: "Yes. Bangladesh-based buyers can pay for eligible digital businesses in BDT through SSLCommerz, using bKash, Nagad, Rocket, a supported bank, or a credit or debit card.",
@@ -438,6 +427,10 @@ const FAQ_GROUPS: FaqGroup[] = [
     heading: "Listings, badges & verification",
     items: [
       {
+        question: "Is a seller's business data checked before the listing goes live?",
+        answer: "Yes. Every listing is manually reviewed by Durqo's team, and the seller's business data is verified before the listing is published.",
+      },
+      {
         question: "What does “Reviewed by Durqo” mean?",
         answer: "Every listing is manually reviewed by our team for accuracy and completeness before it's allowed to publish.",
       },
@@ -471,7 +464,7 @@ const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         question: "What happens if the assets don't match what was agreed?",
-        answer: "The buyer can report an issue and have the transaction reviewed, instead of the sale auto-approving.",
+        answer: "The buyer can report an issue during the 7-day inspection. The payment stays on hold and the seller is not paid until Durqo's team has reviewed the transaction, instead of the sale auto-approving.",
       },
       {
         question: "How is Durqo different from Flippa or Acquire.com?",
@@ -481,8 +474,28 @@ const FAQ_GROUPS: FaqGroup[] = [
     ],
   },
   {
-    heading: "Payments & support",
+    heading: "Payouts & support",
     items: [
+      {
+        question: "When does the Transfer Room become available?",
+        answer: "The Transfer Room becomes available after the complete purchase price has been received and verified. An initial partial payment does not make the order fully funded.",
+      },
+      {
+        question: "When can a seller request a payout?",
+        answer: "A seller can request a payout after the sale and agreed asset transfer are completed, any required review has finished and the eligible earnings appear as available in the Seller Dashboard.",
+      },
+      {
+        question: "Which BDT payout methods does Durqo support?",
+        answer: "Supported local payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller eligibility, verification and applicable withdrawal limits.",
+      },
+      {
+        question: "Does a seller need to verify their identity before withdrawing?",
+        answer: "Yes. Identity verification (KYC) is required before a seller's very first withdrawal, regardless of payout method. The account holder name on the withdrawal request must also match the seller's verified legal name, which Durqo checks by hand before approving the payout.",
+      },
+      {
+        question: "What are the withdrawal limits for bKash, Nagad and Rocket?",
+        answer: "Each of bKash, Nagad and Rocket allows up to ৳50,000 per day and ৳300,000 per month. The limits apply to each method on its own and are not combined, and bank transfer does not use these mobile financial service limits.",
+      },
       {
         question: "How long does a seller payout take?",
         answer:
@@ -524,20 +537,28 @@ const FAQ_JSON_LD = {
     { q: "Do I need to be in Bangladesh to buy?", a: "No. Durqo is open to buyers anywhere - card payments and Escrow.com are available globally, while bKash, Nagad, Rocket and bank transfer are specifically for buyers paying in BDT." },
     { q: "How do I create a listing?", a: "Sign up for a free seller account, then use “Add New Business” from your seller dashboard to build your listing." },
     { q: "Can I list more than one business?", a: "Yes, there's no limit on how many listings you can create." },
+    { q: "Who can pay for a business in BDT?", a: "The BDT checkout option is for Bangladesh-based buyers who select SSLCommerz." },
+    { q: "What happens if the business costs USD 2,000 or less?", a: "You pay the complete BDT equivalent through SSLCommerz at checkout. Durqo shows the applicable exchange rate and exact BDT amount before you confirm the payment." },
     { q: "Can I pay for a business in BDT from Bangladesh?", a: "Yes. Bangladesh-based buyers can pay for eligible digital businesses in BDT through SSLCommerz, using bKash, Nagad, Rocket, a supported bank, or a credit or debit card." },
     { q: "Which payment methods are available through SSLCommerz?", a: "SSLCommerz payment channels include bKash, Nagad, Rocket, supported banks, and credit or debit cards." },
     { q: "What happens if the business costs more than USD 2,000?", a: "You pay the BDT equivalent of USD 2,000 through SSLCommerz at checkout. After that payment is confirmed, Durqo emails you instructions for paying the remaining balance. The purchase proceeds to asset transfer only after the complete balance has been received and verified." },
     { q: "Can I get paid out in BDT as a Bangladeshi seller?", a: "Yes. After a successful sale, completed asset transfer and any required review, eligible sellers can request their available earnings through bank transfer, bKash, Nagad or Rocket." },
     { q: "I already have a buyer through Facebook or a personal contact - can I still use Durqo?", a: "Yes. Bring that buyer onto Durqo and run the sale through the same structured payment, Transfer Room and inspection process as any other listing." },
     { q: "How much does it cost to buy or sell on Durqo?", a: "Durqo does not charge buyers a marketplace fee. Sellers are charged a tiered success fee, deducted only after a successful sale." },
+    { q: "Is a seller's business data checked before the listing goes live?", a: "Yes. Every listing is manually reviewed by Durqo's team, and the seller's business data is verified before the listing is published." },
     { q: "What does “Reviewed by Durqo” mean?", a: "Every listing is manually reviewed by our team for accuracy and completeness before it's allowed to publish." },
     { q: "What does a “GA Verified” badge mean?", a: "It means Durqo was given read-only access to that listing's Google Analytics account and reviewed the real traffic numbers being shown." },
     { q: "What does a “Verified” seller badge mean?", a: "That seller submitted an identity document which Durqo's team reviewed and approved." },
     { q: "What is seller identity verification (KYC)?", a: "An optional step where a seller uploads an ID document from their dashboard. Once Durqo's team reviews and approves it, the seller's profile shows a Verified badge. The public badge itself is optional, but completing this same identity verification is required before a seller's very first withdrawal." },
     { q: "Can I ask the seller questions before buying?", a: "Yes, three ways. Many listings already answer common questions in their own Questions & Answers section, written by the seller. You can also post a question in the Comments section on the listing page, and the seller is notified and replies there publicly. Or message the seller directly for a private conversation, which stays in your dashboard inbox." },
     { q: "Is SSLCommerz an escrow service?", a: "No. SSLCommerz is a payment gateway or payment processor and is not described as an escrow provider. Durqo holds the buyer's payment until the transfer is approved, and supported transactions may also use Escrow.com as an independent escrow option." },
-    { q: "What happens if the assets don't match what was agreed?", a: "The buyer can report an issue and have the transaction reviewed, instead of the sale auto-approving." },
+    { q: "What happens if the assets don't match what was agreed?", a: "The buyer can report an issue during the 7-day inspection. The payment stays on hold and the seller is not paid until Durqo's team has reviewed the transaction, instead of the sale auto-approving." },
     { q: "How is Durqo different from Flippa or Acquire.com?", a: "Flippa and Acquire.com are established international marketplaces serving broad global audiences. Durqo is the first marketplace specifically built to support the purchase of digital businesses in BDT and eligible seller payouts through supported local methods." },
+    { q: "When does the Transfer Room become available?", a: "The Transfer Room becomes available after the complete purchase price has been received and verified. An initial partial payment does not make the order fully funded." },
+    { q: "When can a seller request a payout?", a: "A seller can request a payout after the sale and agreed asset transfer are completed, any required review has finished and the eligible earnings appear as available in the Seller Dashboard." },
+    { q: "Which BDT payout methods does Durqo support?", a: "Supported local payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller eligibility, verification and applicable withdrawal limits." },
+    { q: "Does a seller need to verify their identity before withdrawing?", a: "Yes. Identity verification (KYC) is required before a seller's very first withdrawal, regardless of payout method. The account holder name on the withdrawal request must also match the seller's verified legal name, which Durqo checks by hand before approving the payout." },
+    { q: "What are the withdrawal limits for bKash, Nagad and Rocket?", a: "Each of bKash, Nagad and Rocket allows up to ৳50,000 per day and ৳300,000 per month. The limits apply to each method on its own and are not combined, and bank transfer does not use these mobile financial service limits." },
     { q: "How long does a seller payout take?", a: "Durqo normally reviews and processes a payout request within 3–5 business days. The receiving bank or payment provider may require additional time to credit the seller's account." },
     { q: "What should I do if my payment status is pending?", a: "Do not submit the same payment again immediately. Check your order status and contact support@durqo.com so the transaction can be reviewed." },
     { q: "Where can I get help?", a: "Contact support@durqo.com before repeating a payment, changing payment methods or sending money using different instructions." },
@@ -744,6 +765,40 @@ export default async function DurqoBangladeshPage() {
         </Container>
       </section>
 
+      {/* AUDIENCE SWITCH */}
+      <section className="border-b border-rule py-10 sm:py-12">
+        <Container>
+          <Inner>
+            <div className="grid gap-4 md:grid-cols-2">
+              {[
+                { href: "#buyers", tag: "I'm buying", title: "Buy a digital business in BDT", body: "Payment channels, how much you pay at checkout, step-by-step buying and your 7-day inspection.", icon: Wallet, tone: "bg-brand-soft text-brand-strong", ring: "hover:border-brand" },
+                { href: "#sellers", tag: "I'm selling", title: "Sell and get paid out in BDT", body: "Listing review, the payout flow, bKash, Nagad, Rocket and bank payouts, limits, timing and fees.", icon: Landmark, tone: "bg-gold-soft text-[#92730F]", ring: "hover:border-gold" },
+              ].map(({ href, tag, title, body, icon: Icon, tone, ring }, i) => (
+                <Link
+                  key={href}
+                  href={href}
+                  data-reveal
+                  style={revealDelay(i * 100)}
+                  className={`group flex items-start gap-4 rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)] sm:p-7 ${ring}`}
+                >
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${tone}`}>
+                    <Icon size={20} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">{tag}</span>
+                    <span className="mt-0.5 block text-lg font-semibold text-ink">{title}</span>
+                    <span className="mt-1 block text-sm leading-relaxed text-ink-soft">{body}</span>
+                  </span>
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-rule text-ink-faint transition group-hover:border-ink group-hover:bg-ink group-hover:text-white">
+                    <ArrowRight size={15} />
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
       {/* CATEGORIES with live counts */}
       <section id="categories" className="scroll-mt-24 border-b border-rule py-16 sm:py-24">
         <Container>
@@ -852,7 +907,7 @@ export default async function DurqoBangladeshPage() {
               dark
               eyebrow="The problems we hear most"
               title="Common Problems, and How Durqo Solves Them"
-              body="Ten things that make buying or selling a digital business hard from Bangladesh, and Durqo's answer to each."
+              body="What makes it hard today, and Durqo's answer to each."
             />
             <div data-reveal className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
               <div className="mono hidden grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] border-b border-white/10 text-[0.68rem] font-semibold uppercase tracking-wider md:grid">
@@ -892,78 +947,225 @@ export default async function DurqoBangladeshPage() {
         </Container>
       </section>
 
-      {/* PAY & GET PAID IN BDT */}
+      {/* MONEY FLOW */}
       <section className="border-b border-rule py-16 sm:py-24">
         <Container>
           <Inner>
             <SectionHead
               eyebrow="Local money, global reach"
               title="Pay and Get Paid the Way You Already Do"
-              body="Buyers pay in BDT. Durqo holds the payment until the buyer approves the handover. Then the seller is paid out in BDT."
+              body="Buyer pays in BDT. Durqo holds it until the handover is approved. Seller is paid in BDT."
             />
-            <div data-reveal className="mb-5">
+            <div data-reveal>
               <MoneyFlow />
             </div>
-            <div className="grid gap-5 md:grid-cols-2">
-              {[
-                {
-                  tag: "For buyers",
-                  title: "Pay for a Business in BDT",
-                  body: "Choose SSLCommerz at checkout and select one of five supported local payment channels.",
-                  icon: Wallet,
-                  list: BUYER_CHANNELS,
-                  iconBg: "bg-brand-soft text-brand-strong",
-                  tagColor: "text-brand-strong",
-                },
-                {
-                  tag: "For sellers",
-                  title: "Get Paid Out in BDT",
-                  body: "Once eligible earnings are available, request a payout through one of four supported local methods.",
-                  icon: Landmark,
-                  list: PAYOUT_METHODS,
-                  iconBg: "bg-gold-soft text-[#92730F]",
-                  tagColor: "text-[#92730F]",
-                },
-              ].map(({ tag, title, body, icon: Icon, list, iconBg, tagColor }, i) => (
-                <div
-                  key={title}
-                  data-reveal
-                  style={revealDelay(i * 120)}
-                  className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(11,19,36,0.04)] sm:p-8"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={`dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl ${iconBg}`}>
-                      <Icon size={20} />
+          </Inner>
+        </Container>
+      </section>
+
+      {/* BUYER GUIDE (visual) */}
+      <section id="buyers" className="scroll-mt-24 border-b border-rule bg-paper-sunk py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <div data-reveal className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <span className="mono inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">
+                  <Wallet size={12} />
+                  For buyers
+                </span>
+                <h2 className="mt-3 text-3xl tracking-tight sm:text-[2.5rem] sm:leading-[1.1]">Buying in BDT, at a Glance</h2>
+              </div>
+              <Button href="/buy" size="lg" className="dq-shine">
+                Browse Businesses
+                <ArrowRight size={16} />
+              </Button>
+            </div>
+
+            {/* Step strip */}
+            <ol data-reveal className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {BUYER_STEPS.map(({ title, icon: Icon }, i) => (
+                <li key={title} className="relative flex flex-col items-center gap-3 rounded-2xl border border-rule bg-paper-raised px-3 py-5 text-center">
+                  <span className="mono absolute left-3 top-3 text-[0.65rem] font-bold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl bg-brand-soft text-brand-strong">
+                    <Icon size={20} />
+                  </span>
+                  <span className="text-sm font-semibold leading-snug text-ink">{title}</span>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-2">
+              {/* Pay with */}
+              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <h3 className="text-lg font-semibold text-ink">Pay with</h3>
+                <div className="mt-4 grid grid-cols-3 gap-2.5">
+                  {BUYER_CHANNELS.map(({ icon: Icon, label, tint }) => (
+                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-2 py-4 text-center text-xs font-semibold text-ink">
+                      <Icon size={22} className={tint} />
+                      {label}
                     </span>
-                    <div>
-                      <p className={`mono text-[0.68rem] font-semibold uppercase tracking-wider ${tagColor}`}>{tag}</p>
-                      <h3 className="text-lg font-semibold text-ink">{title}</h3>
+                  ))}
+                  <span className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-brand px-2 py-4 text-center text-white">
+                    <span className="text-xl font-bold leading-none">৳0</span>
+                    <span className="text-[0.68rem] font-semibold leading-tight">buyer fee</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Checkout amount graphic */}
+              <div data-reveal style={revealDelay(100)} className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <h3 className="text-lg font-semibold text-ink">What you pay at checkout</h3>
+                <div className="mt-5 flex flex-col gap-5">
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span className="font-semibold text-ink">Price up to $2,000</span>
+                      <span className="mono text-xs text-brand-strong">100% at checkout</span>
+                    </div>
+                    <div className="h-9 overflow-hidden rounded-xl bg-paper-sunk">
+                      <div data-reveal className="dq-line flex h-full w-full items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">Full amount in BDT</div>
                     </div>
                   </div>
-                  <p className="mt-4 text-sm leading-relaxed text-ink-soft">{body}</p>
-                  <ul className="mt-5 divide-y divide-rule rounded-2xl border border-rule">
-                    {list.map(({ icon: ItemIcon, label, tint }) => (
-                      <li key={label} className="flex items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-ink">
-                        <span className="flex items-center gap-3">
-                          <span className="grid h-8 w-8 place-items-center rounded-lg bg-paper-sunk">
-                            <ItemIcon size={15} className={tint} />
-                          </span>
-                          {label}
-                        </span>
-                        <CheckCircle2 size={16} className="text-brand" />
-                      </li>
-                    ))}
-                  </ul>
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span className="font-semibold text-ink">Price above $2,000</span>
+                      <span className="mono text-xs text-[#92730F]">$2,000 now + balance</span>
+                    </div>
+                    <div className="flex h-9 gap-1.5">
+                      <div className="flex w-2/5 items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">$2,000 in BDT</div>
+                      <div className="flex flex-1 items-center rounded-xl border-2 border-dashed border-gold bg-gold-soft px-3 text-xs font-semibold text-[#92730F]">Balance: instructions by email</div>
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-4 flex items-center gap-2 text-xs text-ink-soft">
+                  <Eye size={14} className="shrink-0 text-brand-strong" />
+                  Exact BDT amount and rate shown before you confirm.
+                </p>
+              </div>
+            </div>
+
+            {/* Inspection fork */}
+            <div data-reveal className="mt-5 overflow-hidden rounded-3xl bg-[#0B1324] p-6 text-white sm:p-8">
+              <div className="grid items-center gap-6 lg:grid-cols-[auto_auto_1fr]">
+                <div className="flex items-center gap-4">
+                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
+                    <span className="text-center leading-none">
+                      <span className="block text-2xl font-bold">7</span>
+                      <span className="mono block text-[0.55rem] uppercase tracking-wider text-white/60">days</span>
+                    </span>
+                  </span>
+                  <div>
+                    <p className="text-lg font-semibold">Transfer Room inspection</p>
+                    <p className="text-sm text-white/60">Opens after full payment is verified</p>
+                  </div>
+                </div>
+                <ArrowRight size={22} className="hidden text-white/30 lg:block" />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center gap-3 rounded-2xl border border-[#34D399]/30 bg-[#10B981]/10 p-4">
+                    <CheckCircle2 size={22} className="shrink-0 text-[#34D399]" />
+                    <div>
+                      <p className="font-semibold">All good: Approve</p>
+                      <p className="text-xs text-white/60">Sale completes</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl border border-[#F59E0B]/40 bg-[#F59E0B]/10 p-4">
+                    <Lock size={22} className="shrink-0 text-[#FBBF24]" />
+                    <div>
+                      <p className="font-semibold">Problem: Report an issue</p>
+                      <p className="text-xs text-white/70">Payment on hold. Seller not paid until Durqo reviews.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* SELLER GUIDE (visual) */}
+      <section id="sellers" className="scroll-mt-24 border-b border-rule py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <div data-reveal className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <span className="mono inline-flex items-center gap-2 rounded-full bg-gold-soft px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">
+                  <Landmark size={12} />
+                  For sellers
+                </span>
+                <h2 className="mt-3 text-3xl tracking-tight sm:text-[2.5rem] sm:leading-[1.1]">Selling and Getting Paid, at a Glance</h2>
+              </div>
+              <Button href="/sell" size="lg" className="dq-shine">
+                Sell a Business
+                <ArrowRight size={16} />
+              </Button>
+            </div>
+
+            {/* Listing review */}
+            <div data-reveal className="grid gap-3 sm:grid-cols-3">
+              {LISTING_REVIEW.map(({ title, sub, icon: Icon }, i) => (
+                <div key={title} className={`flex items-center gap-4 rounded-2xl p-5 ${i === 2 ? "bg-brand text-white" : "border border-rule bg-paper-raised"}`}>
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${i === 2 ? "bg-white/15" : "bg-gold-soft text-[#92730F]"}`}>
+                    <Icon size={20} />
+                  </span>
+                  <div>
+                    <p className="font-semibold">{title}</p>
+                    <p className={`text-xs ${i === 2 ? "text-white/80" : "text-ink-soft"}`}>{sub}</p>
+                  </div>
                 </div>
               ))}
             </div>
-            <div data-reveal className="mt-5 flex items-start gap-2.5 rounded-2xl border border-rule bg-paper-sunk px-4 py-3.5">
-              <Info size={14} className="mt-0.5 shrink-0 text-ink-faint" />
-              <p className="text-xs leading-relaxed text-ink-soft">
-                Buyer payments and seller payouts follow separate processes. A confirmed buyer payment does not
-                immediately create an available seller balance.
-              </p>
+
+            {/* Payout timeline */}
+            <div data-reveal className="mt-5 rounded-3xl border border-rule bg-paper-raised p-6 sm:p-8">
+              <h3 className="text-lg font-semibold text-ink">From sale to payout</h3>
+              <ol className="relative mt-6 grid grid-cols-3 gap-y-6 sm:grid-cols-6">
+                <span className="absolute left-[8%] right-[8%] top-5 hidden h-0.5 bg-rule sm:block" aria-hidden />
+                <span data-reveal className="dq-line absolute left-[8%] right-[8%] top-5 hidden h-0.5 bg-brand sm:block" aria-hidden />
+                {SELLER_STATUSES.map((st, i) => (
+                  <li key={st} className="relative flex flex-col items-center gap-2 text-center">
+                    <span className={`mono relative z-10 grid h-10 w-10 place-items-center rounded-full text-xs font-bold ring-4 ring-paper-raised ${i === SELLER_STATUSES.length - 1 ? "bg-brand text-white" : "bg-gold-soft text-[#92730F]"}`}>
+                      {i === SELLER_STATUSES.length - 1 ? <CheckCircle2 size={16} /> : i + 1}
+                    </span>
+                    <span className="text-xs font-semibold leading-snug text-ink">{st}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_1.1fr]">
+              {/* Methods + KYC */}
+              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <h3 className="text-lg font-semibold text-ink">Get paid to</h3>
+                <div className="mt-4 grid grid-cols-4 gap-2.5">
+                  {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
+                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-1 py-4 text-center text-xs font-semibold text-ink">
+                      <Icon size={22} className={tint} />
+                      {label}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-4 flex items-center gap-2.5 rounded-xl bg-brand-soft/60 px-3.5 py-3 text-xs font-medium text-ink">
+                  <ShieldCheck size={16} className="shrink-0 text-brand-strong" />
+                  KYC before your first withdrawal. Account name must match your verified name.
+                </p>
+              </div>
+
+              {/* Stat tiles */}
+              <div data-reveal style={revealDelay(100)} className="grid grid-cols-2 gap-3">
+                {SELLER_STATS.map(({ value, label, icon: Icon, dark }) => (
+                  <div key={label} className={`flex flex-col justify-between gap-4 rounded-3xl p-5 ${dark ? "bg-[#0B1324] text-white" : "border border-rule bg-paper-raised"}`}>
+                    <Icon size={20} className={dark ? "text-[#34D399]" : "text-brand-strong"} />
+                    <div>
+                      <p className="text-2xl font-bold tracking-tight sm:text-[1.7rem]">{value}</p>
+                      <p className={`mt-1 text-xs leading-snug ${dark ? "text-white/65" : "text-ink-soft"}`}>{label}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="mt-4 flex items-center gap-2 text-xs text-ink-soft">
+              <Eye size={14} className="shrink-0 text-brand-strong" />
+              Rate, USD deduction and estimated BDT payout shown before you submit.
+            </p>
           </Inner>
         </Container>
       </section>
@@ -976,29 +1178,12 @@ export default async function DurqoBangladeshPage() {
               center
               eyebrow="From payment to payout"
               title="How a Durqo Transaction Works"
-              body="The same structured flow runs behind every sale on Durqo, whether the buyer or seller is in Bangladesh or anywhere else."
+              body="Five steps behind every sale."
             />
             <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_24px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
               <NumberedFlow steps={TRANSACTION_STEPS} />
             </div>
 
-            <div className="mt-16 sm:mt-20">
-              <SectionHead
-                center
-                eyebrow="Step 2, zoomed in"
-                title="What Happens Inside the Transfer Room"
-                body="Every asset on the checklist, such as the domain, code, accounts or documents, moves through this same handover sequence before the sale can close."
-              />
-              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_24px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
-                <NumberedFlow steps={TRANSFER_ROOM_STEPS} />
-              </div>
-              <div className="mt-8 text-center">
-                <Link href="/transfer-room" className="group inline-flex items-center gap-1.5 text-sm font-semibold text-brand-strong hover:underline">
-                  See the full Transfer Room walkthrough
-                  <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-                </Link>
-              </div>
-            </div>
           </Inner>
         </Container>
       </section>
@@ -1010,7 +1195,7 @@ export default async function DurqoBangladeshPage() {
             <SectionHead
               eyebrow="Built for Bangladesh"
               title="Why Buy and Sell Through Durqo?"
-              body="Paying and getting paid in BDT, and trusting a stranger with the handover, are the two biggest hurdles. Durqo's local payment support and tracked process solve both."
+              body="Local payments plus a tracked handover, in one place."
             />
             <div className="grid gap-px overflow-hidden rounded-3xl border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-3">
               {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }, i) => (
@@ -1036,9 +1221,7 @@ export default async function DurqoBangladeshPage() {
                 <DashEyebrow>What it costs</DashEyebrow>
                 <h2 className="text-3xl tracking-tight sm:text-[2.2rem] sm:leading-tight">Marketplace Fees</h2>
                 <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-soft">
-                  Durqo does not charge buyers a marketplace fee. Buyers pay the agreed purchase price, although
-                  disclosed payment-provider, banking or currency-related charges may apply. Sellers are charged a
-                  tiered success fee based on the final sale price, deducted only after a successful sale.
+                  Buyers pay no marketplace fee. Sellers pay a tiered success fee, only after a successful sale.
                 </p>
                 <div className="mt-7 overflow-hidden rounded-2xl border border-rule">
                   <div className="mono grid grid-cols-2 bg-paper-sunk px-5 py-2.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint">
@@ -1086,6 +1269,62 @@ export default async function DurqoBangladeshPage() {
                 </div>
               </div>
             </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* MARKETPLACE COMPARISON */}
+      <section className="border-b border-rule py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <SectionHead
+              eyebrow="Compare marketplaces"
+              title="How Durqo Compares with Major Marketplaces"
+              body="They are bigger and more established. Durqo's edge is the Bangladesh BDT experience."
+            />
+            <div data-reveal className="hidden overflow-hidden rounded-3xl border border-rule bg-paper-raised md:block">
+              <table className="w-full border-collapse text-left">
+                <thead>
+                  <tr className="border-b border-rule bg-paper-sunk">
+                    <th scope="col" className="mono px-5 py-4 text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Feature</th>
+                    {COMPARISON_COMPANIES.map((c) => (
+                      <th key={c.name} scope="col" className={`px-5 py-4 text-sm font-semibold ${c.highlight ? "bg-brand text-white" : "text-ink"}`}>{c.name}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARISON_ROWS.map((row, i) => (
+                    <tr key={row.feature} className={i !== COMPARISON_ROWS.length - 1 ? "border-b border-rule" : ""}>
+                      <th scope="row" className="px-5 py-4 text-sm font-semibold text-ink">{row.feature}</th>
+                      <td className="bg-brand-soft/60 px-5 py-4 text-sm font-semibold text-brand-strong">{row.durqo.text}</td>
+                      <td className="px-5 py-4 text-sm text-ink-soft">{row.flippa.text}</td>
+                      <td className="px-5 py-4 text-sm text-ink-soft">{row.acquire.text}</td>
+                      <td className="px-5 py-4 text-sm text-ink-soft">{row.empireFlippers.text}</td>
+                      <td className="px-5 py-4 text-sm text-ink-soft">{row.motionInvest.text}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-col gap-3 md:hidden">
+              {COMPARISON_COMPANIES.map((c) => (
+                <div key={c.name} data-reveal className={`rounded-2xl border p-5 ${c.highlight ? "border-brand bg-brand-soft/50" : "border-rule bg-paper-raised"}`}>
+                  <h3 className={`text-sm font-semibold ${c.highlight ? "text-brand-strong" : "text-ink"}`}>{c.name}</h3>
+                  <dl className="mt-3 flex flex-col gap-2.5">
+                    {c.rows.map((r) => (
+                      <div key={r.feature}>
+                        <dt className="mono text-[0.62rem] font-semibold uppercase tracking-wider text-ink-faint">{r.feature}</dt>
+                        <dd className="mt-0.5 text-sm leading-relaxed text-ink-soft">{r.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 max-w-[80ch] text-xs leading-relaxed text-ink-faint">
+              Marketplace services, fees and eligibility requirements can change. Review each platform&rsquo;s current terms
+              before making a decision. Reviewed 14 September 2026 against each marketplace&rsquo;s own public pages.
+            </p>
           </Inner>
         </Container>
       </section>
