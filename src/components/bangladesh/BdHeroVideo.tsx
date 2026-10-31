@@ -86,12 +86,22 @@ export default function BdHeroVideo() {
     // First real interaction anywhere unlocks sound.
     const unlock = (e: Event) => {
       if (wrap.current && e.target instanceof Node && wrap.current.contains(e.target)) return;
-      if (v.muted && !userPaused.current) {
-        v.muted = false;
-        setMuted(false);
-        if (v.paused) v.play().catch(() => {});
-      }
-      UNLOCK_EVENTS.forEach((ev) => window.removeEventListener(ev, unlock));
+      if (!v.muted || userPaused.current) return;
+      // Try sound on. If this gesture didn't count (e.g. a scroll on iOS),
+      // the browser pauses or refuses: go back to muted playback and keep
+      // listening for the next tap.
+      v.muted = false;
+      v.play()
+        .then(() => {
+          if (v.paused) throw new Error("paused");
+          setMuted(false);
+          UNLOCK_EVENTS.forEach((ev) => window.removeEventListener(ev, unlock));
+        })
+        .catch(() => {
+          v.muted = true;
+          setMuted(true);
+          if (!userPaused.current) v.play().catch(() => {});
+        });
     };
     // Mobile Safari only lets a page turn sound on inside a "real" gesture
     // (touchend / click), not pointerdown, so listen for all of them.
