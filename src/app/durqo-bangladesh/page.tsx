@@ -1337,10 +1337,6 @@ export default async function DurqoBangladeshPage() {
                 </div>
               ))}
             </div>
-            <p className="mt-4 max-w-[80ch] text-xs leading-relaxed text-ink-faint">
-              Marketplace services, fees and eligibility requirements can change. Review each platform&rsquo;s current terms
-              before making a decision. Reviewed 14 September 2026 against each marketplace&rsquo;s own public pages.
-            </p>
           </Inner>
         </Container>
       </section>
