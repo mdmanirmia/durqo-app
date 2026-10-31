@@ -244,8 +244,8 @@ const COMPARISON_ROWS: { feature: string; durqo: Cell; flippa: Cell; acquire: Ce
     motionInvest: { text: "Mainly content sites and YouTube channels" },
   },
   {
-    feature: "Bangladesh-focused BDT flow",
-    durqo: { text: "Yes - BDT payments and payouts", highlight: true },
+    feature: "BDT payment methods",
+    durqo: { text: "Pay in BDT with Bank Transfer, bKash, Nagad, Rocket, or card, along with USD", highlight: true },
     flippa: { text: "No dedicated BDT payment flow" },
     acquire: { text: "No dedicated BDT payment flow" },
     empireFlippers: { text: "No dedicated BDT payment flow" },
