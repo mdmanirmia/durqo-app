@@ -309,7 +309,6 @@ const PROBLEMS: { audience: "For Buyers" | "For Sellers" | "For Everyone"; probl
   { audience: "For Buyers", problem: "Can the listing numbers be trusted?", solution: "Every listing is checked by hand and its business data verified before it goes live." },
   { audience: "For Buyers", problem: "Paid, but will the assets ever arrive?", solution: "The Transfer Room tracks every asset, with a 7-day inspection." },
   { audience: "For Buyers", problem: "Assets missing or not as promised.", solution: "Report an issue: payment stays on hold, the seller is not paid until Durqo reviews." },
-  { audience: "For Everyone", problem: "Payment and delivery risk on both sides.", solution: "One tracked flow from payment to payout. Escrow.com available on supported deals." },
   { audience: "For Sellers", problem: "A buyer from Facebook, but no reliable way to close.", solution: "Bring them to Durqo and close through the Transfer Room." },
   { audience: "For Sellers", problem: "No idea what the business is worth.", solution: "Get a free, instant valuation estimate." },
 ];
@@ -578,113 +577,100 @@ export default async function DurqoBangladeshPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBPAGE_JSON_LD) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }} />
 
-      {/* HERO: centered message, cinematic film below */}
-      <section className="relative overflow-hidden bg-[#0A1120] pb-16 pt-16 sm:pb-20 sm:pt-20 lg:pt-24">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(16,185,129,0.22),transparent_70%),radial-gradient(40%_40%_at_85%_70%,rgba(59,130,246,0.12),transparent_70%),radial-gradient(35%_35%_at_10%_80%,rgba(244,42,65,0.08),transparent_70%)]" aria-hidden />
+      {/* HERO: text left, film right */}
+      <section className="relative overflow-hidden bg-[#0A1120] py-14 sm:py-20 lg:py-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_60%_at_0%_0%,rgba(16,185,129,0.22),transparent_70%),radial-gradient(45%_55%_at_100%_100%,rgba(59,130,246,0.14),transparent_70%)]" aria-hidden />
         <div
-          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_60%_55%_at_50%_20%,#000_20%,transparent_75%)]"
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_70%_70%_at_25%_35%,#000_20%,transparent_75%)]"
           aria-hidden
         />
         <MouseGlow />
         <Container className="relative">
           <Inner>
-            <div className="mx-auto flex max-w-[860px] flex-col items-center text-center">
-              <Link
-                href="#categories"
-                className="dq-enter group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] py-1 pl-1 pr-3 text-xs text-white/75 backdrop-blur transition hover:border-brand/60 hover:text-white"
-                style={enterDelay(0)}
-              >
-                <span className="mono flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[0.65rem] font-bold text-white">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                  LIVE
-                </span>
-                <span>
-                  <span className="font-semibold text-white">{totalActive}</span> businesses for sale across 16 categories
-                </span>
-                <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
-              </Link>
-              <h1 className="dq-enter mt-7 text-[2.6rem] leading-[1.04] tracking-tight text-white sm:text-6xl lg:text-[4.4rem]" style={enterDelay(100)}>
-                The Global Marketplace to{" "}
-                <span className="bg-gradient-to-r from-[#6EE7B7] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
-              </h1>
-              <p className="dq-enter mt-6 max-w-[60ch] text-[1.08rem] leading-relaxed text-white/70" style={enterDelay(180)}>
-                For Bangladeshi buyers and sellers. Pay in BDT with bKash, Nagad, Rocket, bank or card, hand over every asset
-                in a tracked Transfer Room, and get paid out in BDT.
-              </p>
-              <div className="dq-enter mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row" style={enterDelay(260)}>
-                <Button href="#buyers" size="lg" className="dq-shine shadow-[0_14px_30px_-12px_rgba(16,185,129,0.9)]">
-                  I&rsquo;m Buying
-                  <ArrowRight size={16} />
-                </Button>
-                <Button href="#sellers" variant="on-dark" size="lg">
-                  I&rsquo;m Selling
-                  <ArrowRight size={16} />
-                </Button>
+            <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-14">
+              <div className="min-w-0">
+                <Link
+                  href="#categories"
+                  className="dq-enter group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] py-1 pl-1 pr-3 text-xs text-white/75 backdrop-blur transition hover:border-brand/60 hover:text-white"
+                  style={enterDelay(0)}
+                >
+                  <span className="mono flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[0.65rem] font-bold text-white">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                    LIVE
+                  </span>
+                  <span>
+                    <span className="font-semibold text-white">{totalActive}</span> businesses for sale
+                  </span>
+                  <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+                </Link>
+                <h1 className="dq-enter mt-6 text-[2.5rem] leading-[1.05] tracking-tight text-white sm:text-[3.2rem] lg:text-[3.5rem]" style={enterDelay(100)}>
+                  The Global Marketplace to{" "}
+                  <span className="bg-gradient-to-r from-[#6EE7B7] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
+                </h1>
+                <p className="dq-enter mt-5 max-w-[52ch] text-[1.08rem] leading-relaxed text-white/75" style={enterDelay(180)}>
+                  Built for Bangladeshi buyers and sellers. Pay in BDT, hand over every asset in a tracked Transfer Room, and
+                  get paid out in BDT.
+                </p>
+                <div className="dq-enter mt-8 flex flex-col gap-3 sm:flex-row" style={enterDelay(320)}>
+                  <Button href="#buyers" size="lg" className="dq-shine shadow-[0_14px_30px_-12px_rgba(16,185,129,0.9)]">
+                    I&rsquo;m Buying
+                    <ArrowRight size={16} />
+                  </Button>
+                  <Button href="#sellers" variant="on-dark" size="lg">
+                    I&rsquo;m Selling
+                    <ArrowRight size={16} />
+                  </Button>
+                </div>
+                <div className="dq-enter mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-white/55" style={enterDelay(400)}>
+                  <span className="mono uppercase tracking-wider">Secured by</span>
+                  <span className="flex items-center gap-1.5 font-semibold text-white/80"><StripeIcon size={14} />Stripe</span>
+                  <span className="flex items-center gap-1.5 font-semibold text-white/80"><ShieldCheck size={14} className="text-brand" />SSLCommerz</span>
+                  <span className="flex items-center gap-1.5 font-semibold text-white/80"><EscrowIcon size={9} className="text-[#7BE35A]" /><span className="sr-only">Escrow.com</span></span>
+                </div>
               </div>
-            </div>
-
-            <div className="dq-enter relative mx-auto mt-14 max-w-[1040px]" style={enterDelay(340)}>
-              <BdHeroVideo />
-            </div>
-
-            <div className="dq-enter mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-white/55" style={enterDelay(420)}>
-              <span className="mono uppercase tracking-wider">Payments secured by</span>
-              <span className="flex items-center gap-1.5 font-semibold text-white/80"><StripeIcon size={14} />Stripe</span>
-              <span className="flex items-center gap-1.5 font-semibold text-white/80"><ShieldCheck size={14} className="text-brand" />SSLCommerz</span>
-              <span className="flex items-center gap-1.5 font-semibold text-white/80"><EscrowIcon size={9} className="text-[#7BE35A]" /><span className="sr-only">Escrow.com</span></span>
+              <div className="dq-enter min-w-0" style={enterDelay(260)}>
+                <BdHeroVideo />
+              </div>
             </div>
           </Inner>
         </Container>
       </section>
 
-      {/* PROBLEMS vs SOLUTIONS: comparison table */}
-      <section className="relative overflow-hidden bg-[#0B1324] py-16 sm:py-24">
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-brand/15 blur-3xl" aria-hidden />
-        <div
-          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_20%,transparent_75%)]"
-          aria-hidden
-        />
-        <Container className="relative">
+      {/* PROBLEMS & SOLUTIONS, grouped by audience */}
+      <section className="border-b border-rule py-16 sm:py-24">
+        <Container>
           <Inner>
             <SectionHead
-              dark
-              eyebrow="The problems we hear most"
-              title="Common Problems, and How Durqo Solves Them"
-              body="What makes it hard today, and Durqo's answer to each."
+              center
+              eyebrow="Why Durqo"
+              title="The Problems Bangladeshi Buyers and Sellers Face, Solved"
+              body="Each problem on the left, and how Durqo fixes it on the right."
             />
-            <div data-reveal className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
-              <div className="mono hidden grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] border-b border-white/10 text-[0.68rem] font-semibold uppercase tracking-wider md:grid">
-                <p className="flex items-center gap-2 px-7 py-4 text-[#FDA4AF]">
-                  <XCircle size={14} />
-                  The problem
-                </p>
-                <p className="flex items-center gap-2 border-l border-white/10 bg-brand/[0.08] px-7 py-4 text-[#6EE7B7]">
-                  <CheckCircle2 size={14} />
-                  How Durqo solves it
-                </p>
-              </div>
-              <ol>
-                {PROBLEMS.map(({ audience, problem, solution }, i) => (
-                  <li
-                    key={problem}
-                    data-reveal
-                    style={revealDelay((i % 5) * 60)}
-                    className="group grid border-b border-white/10 transition last:border-b-0 hover:bg-white/[0.03] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
-                  >
-                    <div className="flex gap-4 px-5 pb-3 pt-5 sm:px-7 md:py-6">
-                      <span className="mono mt-0.5 text-xs font-semibold text-white/30">{String(i + 1).padStart(2, "0")}</span>
-                      <div>
-                        <p className="mono mb-1.5 text-[0.62rem] font-semibold uppercase tracking-wider text-white/40">{audience}</p>
-                        <p className="text-[0.92rem] leading-relaxed text-white/60">{problem}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3 border-white/10 bg-brand/[0.06] px-5 pb-5 pt-3 transition group-hover:bg-brand/[0.1] sm:px-7 md:border-l md:py-6">
-                      <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-[#34D399]" />
-                      <p className="text-[0.95rem] font-medium leading-relaxed text-white">{solution}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+            <div className="grid gap-6 lg:grid-cols-2">
+              {(["For Buyers", "For Sellers"] as const).map((aud, gi) => (
+                <div key={aud} data-reveal style={revealDelay(gi * 120)} className="overflow-hidden rounded-3xl border border-rule bg-paper-raised shadow-[0_24px_50px_-40px_rgba(11,19,36,0.5)]">
+                  <div className={`flex items-center gap-3 px-6 py-5 ${gi === 0 ? "bg-brand-soft" : "bg-gold-soft"}`}>
+                    <span className={`grid h-10 w-10 place-items-center rounded-xl ${gi === 0 ? "bg-brand text-white" : "bg-gold text-[#0B1324]"}`}>
+                      {gi === 0 ? <Wallet size={18} /> : <Landmark size={18} />}
+                    </span>
+                    <h3 className="text-xl font-semibold text-ink">{aud}</h3>
+                  </div>
+                  <ul className="divide-y divide-rule">
+                    {PROBLEMS.filter((p) => p.audience === aud).map(({ problem, solution }) => (
+                      <li key={problem} className="px-6 py-5">
+                        <p className="flex items-start gap-3 text-[0.98rem] font-semibold text-ink">
+                          <XCircle size={19} className="mt-0.5 shrink-0 text-[#E11D48]" />
+                          {problem}
+                        </p>
+                        <p className="mt-2 flex items-start gap-3 text-[0.95rem] leading-relaxed text-ink-soft">
+                          <CheckCircle2 size={19} className="mt-0.5 shrink-0 text-brand" />
+                          {solution}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </Inner>
         </Container>
@@ -717,8 +703,8 @@ export default async function DurqoBangladeshPage() {
                   <span className="dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl bg-brand-soft text-brand-strong">
                     <Icon size={20} />
                   </span>
-                  <span className="mt-1 text-sm font-semibold leading-snug text-ink">{title}</span>
-                  <span className="text-xs leading-snug text-ink-soft">{sub}</span>
+                  <span className="mt-1 text-[0.95rem] font-semibold leading-snug text-ink">{title}</span>
+                  <span className="text-sm leading-snug text-ink-soft">{sub}</span>
                 </li>
               ))}
             </ol>
@@ -730,7 +716,7 @@ export default async function DurqoBangladeshPage() {
                 <p className="mt-1 text-sm text-ink-soft">Choose any of these at checkout. Durqo charges buyers no marketplace fee.</p>
                 <div className="mt-4 grid grid-cols-3 gap-2.5">
                   {BUYER_CHANNELS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-2 py-4 text-center text-xs font-semibold text-ink">
+                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-2 py-4 text-center text-sm font-semibold text-ink">
                       <Icon size={22} className={tint} />
                       {label}
                     </span>
@@ -791,14 +777,14 @@ export default async function DurqoBangladeshPage() {
                     <CheckCircle2 size={22} className="shrink-0 text-[#34D399]" />
                     <div>
                       <p className="font-semibold">All good: Approve</p>
-                      <p className="text-xs text-white/60">Sale completes</p>
+                      <p className="text-sm text-white/65">The sale completes.</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 rounded-2xl border border-[#F59E0B]/40 bg-[#F59E0B]/10 p-4">
                     <Lock size={22} className="shrink-0 text-[#FBBF24]" />
                     <div>
                       <p className="font-semibold">Problem: Report an issue</p>
-                      <p className="text-xs text-white/70">Payment on hold. Seller not paid until Durqo reviews.</p>
+                      <p className="text-sm text-white/75">Payment stays on hold. The seller is not paid until Durqo reviews.</p>
                     </div>
                   </div>
                 </div>
@@ -836,7 +822,7 @@ export default async function DurqoBangladeshPage() {
                   </span>
                   <div>
                     <p className="font-semibold">{title}</p>
-                    <p className={`text-xs ${i === 2 ? "text-white/80" : "text-ink-soft"}`}>{sub}</p>
+                    <p className={`text-sm ${i === 2 ? "text-white/85" : "text-ink-soft"}`}>{sub}</p>
                   </div>
                 </div>
               ))}
@@ -854,7 +840,7 @@ export default async function DurqoBangladeshPage() {
                     <span className={`mono relative z-10 grid h-10 w-10 place-items-center rounded-full text-xs font-bold ring-4 ring-paper-raised ${i === SELLER_STATUSES.length - 1 ? "bg-brand text-white" : "bg-gold-soft text-[#92730F]"}`}>
                       {i === SELLER_STATUSES.length - 1 ? <CheckCircle2 size={16} /> : i + 1}
                     </span>
-                    <span className="text-xs font-semibold leading-snug text-ink">{st}</span>
+                    <span className="text-sm font-semibold leading-snug text-ink">{st}</span>
                   </li>
                 ))}
               </ol>
@@ -867,13 +853,13 @@ export default async function DurqoBangladeshPage() {
                 <p className="mt-1 text-sm text-ink-soft">Request a withdrawal from Earnings &amp; Withdrawals in your Seller Dashboard.</p>
                 <div className="mt-4 grid grid-cols-4 gap-2.5">
                   {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-1 py-4 text-center text-xs font-semibold text-ink">
+                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-1 py-4 text-center text-sm font-semibold text-ink">
                       <Icon size={22} className={tint} />
                       {label}
                     </span>
                   ))}
                 </div>
-                <p className="mt-4 flex items-center gap-2.5 rounded-xl bg-brand-soft/60 px-3.5 py-3 text-xs font-medium text-ink">
+                <p className="mt-4 flex items-center gap-2.5 rounded-xl bg-brand-soft/60 px-3.5 py-3 text-sm font-medium text-ink">
                   <ShieldCheck size={16} className="shrink-0 text-brand-strong" />
                   KYC before your first withdrawal. Account name must match your verified name.
                 </p>
@@ -886,7 +872,7 @@ export default async function DurqoBangladeshPage() {
                     <Icon size={20} className={dark ? "text-[#34D399]" : "text-brand-strong"} />
                     <div>
                       <p className="text-2xl font-bold tracking-tight sm:text-[1.7rem]">{value}</p>
-                      <p className={`mt-1 text-xs leading-snug ${dark ? "text-white/65" : "text-ink-soft"}`}>{label}</p>
+                      <p className={`mt-1 text-sm leading-snug ${dark ? "text-white/70" : "text-ink-soft"}`}>{label}</p>
                     </div>
                   </div>
                 ))}
@@ -938,7 +924,7 @@ export default async function DurqoBangladeshPage() {
                       </span>
                     </div>
                     <h3 className="mt-4 text-sm font-semibold leading-snug text-ink sm:text-[0.95rem]">{c.name}</h3>
-                    <p className="mt-1 line-clamp-2 hidden text-xs leading-relaxed text-ink-soft sm:block">{c.description}</p>
+                    <p className="mt-1 line-clamp-2 hidden text-sm leading-relaxed text-ink-soft sm:block">{c.description}</p>
                     <p className="mt-auto flex items-center gap-2 border-t border-rule pt-3 text-xs font-semibold" style={{ marginTop: "1rem" }}>
                       {count > 0 ? (
                         <>
