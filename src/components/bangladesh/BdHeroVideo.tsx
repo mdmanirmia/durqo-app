@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2, ClipboardCheck, Landmark, Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 
 // Oct 30, 2026 (/durqo-bangladesh: "kono video baniye add korte hobe"): the
 // hero's product film. public/video/durqo-bangladesh.mp4 is the merchant-supplied overview (Oct 31: "Durqo_Buyers_Sellers_Problems_v10", ~2m24s, 720p web encode); earlier versions were a ~80s overview (problems, then Durqo's answers),
@@ -92,25 +92,6 @@ export default function BdHeroVideo() {
         </button>
       </div>
 
-      {/* Floating status chips */}
-      <div className="dq-float pointer-events-none absolute -left-4 bottom-20 hidden items-center gap-2 rounded-xl border border-white/10 bg-white/95 px-3 py-2 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] backdrop-blur sm:flex lg:-left-8" aria-hidden>
-        <span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-soft text-brand-strong">
-          <CheckCircle2 size={14} />
-        </span>
-        <span className="text-xs font-semibold text-ink">Paid in BDT</span>
-      </div>
-      <div className="dq-float-alt pointer-events-none absolute -right-3 top-14 hidden items-center gap-2 rounded-xl border border-white/10 bg-white/95 px-3 py-2 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] backdrop-blur sm:flex lg:-right-6" aria-hidden>
-        <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#EEF2FF] text-[#4F46E5]">
-          <ClipboardCheck size={14} />
-        </span>
-        <span className="text-xs font-semibold text-ink">7-day inspection</span>
-      </div>
-      <div className="dq-float pointer-events-none absolute -bottom-5 right-10 hidden items-center gap-2 rounded-xl border border-white/10 bg-white/95 px-3 py-2 shadow-[0_18px_40px_-18px_rgba(0,0,0,0.6)] backdrop-blur sm:flex" style={{ animationDelay: "1.4s" }} aria-hidden>
-        <span className="grid h-7 w-7 place-items-center rounded-lg bg-gold-soft text-[#92730F]">
-          <Landmark size={14} />
-        </span>
-        <span className="text-xs font-semibold text-ink">Payout in BDT</span>
-      </div>
     </div>
   );
 }

@@ -418,9 +418,6 @@ h1 {
 }
 .dq-scene-in { animation: dq-scene-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 
-/* /durqo-bangladesh money-flow strip (MoneyFlow.tsx). */
-@keyframes dq-flow-dot { from { left: -10%; } to { left: 105%; } }
-.dq-flow-dot { animation: dq-flow-dot 2.6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
 
 /* Sitewide: arrow icons inside links and buttons nudge forward on hover. */
 a svg.lucide-arrow-right,
@@ -449,7 +446,6 @@ button:hover svg.lucide-arrow-right {
   .dq-tilt { transform: none !important; }
   .dq-tilt::after { display: none; }
   .dq-scene-in { animation: none !important; }
-  .dq-flow-dot { display: none; }
 }
 
 /* Horizontally-scrollable rows with no visible scrollbar (the /buy category

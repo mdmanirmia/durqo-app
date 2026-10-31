@@ -6,10 +6,7 @@ import {
   Landmark,
   ShieldCheck,
   ClipboardCheck,
-  Layers,
   Handshake,
-  Globe2,
-  MapPin,
   Calculator,
   CheckCircle2,
   Smartphone,
@@ -34,7 +31,6 @@ import { SUCCESS_FEE_TIERS, fmtRate } from "@/lib/fees";
 import type { CSSProperties } from "react";
 import CountUp from "@/components/CountUp";
 import MouseGlow from "@/components/home/MouseGlow";
-import MoneyFlow from "@/components/bangladesh/MoneyFlow";
 import { CATEGORY_ACCENTS } from "@/lib/category-accents";
 import BdHeroVideo from "@/components/bangladesh/BdHeroVideo";
 import ListingCard from "@/components/ListingCard";
@@ -268,24 +264,24 @@ const PAYOUT_METHODS = [
 ];
 
 const BUYER_STEPS = [
-  { title: "Choose a business", icon: Search },
-  { title: "Pick BDT at checkout", icon: Wallet },
-  { title: "See the exact BDT amount", icon: Eye },
-  { title: "Pay through SSLCommerz", icon: CreditCard },
-  { title: "Handover in the Transfer Room", icon: Handshake },
+  { title: "Choose a business", sub: "Browse listings and ask the seller questions.", icon: Search },
+  { title: "Pick BDT at checkout", sub: "Select SSLCommerz to pay in Taka.", icon: Wallet },
+  { title: "See the exact amount", sub: "Rate and BDT total shown before you confirm.", icon: Eye },
+  { title: "Complete the payment", sub: "Durqo verifies it before the next step.", icon: CreditCard },
+  { title: "Receive the assets", sub: "Handover happens in the Transfer Room.", icon: Handshake },
 ];
 
 const LISTING_REVIEW = [
-  { title: "Submit your listing", sub: "Business data and assets", icon: Send },
-  { title: "Checked by hand", sub: "Durqo team verifies the data", icon: ClipboardCheck },
-  { title: "Goes live", sub: "Only after verification", icon: CheckCircle2 },
+  { title: "Submit your listing", sub: "Add your business data, numbers and assets.", icon: Send },
+  { title: "Checked by hand", sub: "Our team manually reviews and verifies your data.", icon: ClipboardCheck },
+  { title: "Goes live", sub: "Published only after verification.", icon: CheckCircle2 },
 ];
 
 const SELLER_STATS = [
   { value: "৳50,000", label: "per day on bKash, Nagad or Rocket (each)", icon: Smartphone, dark: false },
   { value: "৳300,000", label: "per month on each of them. Bank: no MFS limit", icon: Landmark, dark: false },
   { value: "3–5 days", label: "business days to review and process a payout", icon: Clock, dark: true },
-  { value: "After sale", label: "success fee is deducted only after a successful sale", icon: Percent, dark: true },
+  { value: "Exact BDT", label: "rate, USD deduction and BDT payout shown before you submit", icon: Eye, dark: true },
 ];
 
 const SELLER_STATUSES = ["Sale Completed", "Payout Eligible", "Withdrawal Requested", "Under Review", "Processing", "Paid"];
@@ -318,14 +314,7 @@ const PROBLEMS: { audience: "For Buyers" | "For Sellers" | "For Everyone"; probl
   { audience: "For Sellers", problem: "No idea what the business is worth.", solution: "Get a free, instant valuation estimate." },
 ];
 
-const WHY_DURQO_CARDS = [
-  { icon: Layers, title: "16 Digital Business Categories", body: "Websites, e-commerce, SaaS, apps, domains and more." },
-  { icon: Wallet, title: "Buy and Sell in BDT", body: "Pay in BDT. Get paid out in BDT." },
-  { icon: Percent, title: "No Buyer Marketplace Fee", body: "Buyers pay the agreed price. Provider charges may apply." },
-  { icon: Percent, title: "Seller Fee Only After a Sale", body: "No sale, no success fee." },
-  { icon: ShieldCheck, title: "Structured, Tracked Transfers", body: "Transfer Room opens only after full payment is verified." },
-  { icon: ClipboardCheck, title: "7-Day Buyer Inspection", body: "Check every asset before the sale is final." },
-]
+
 
 const RELATED_LINKS = [
   { href: "/buy-and-sell-digital-businesses-in-bdt", label: "Buy & Sell in BDT: The Full Guide" },
@@ -335,15 +324,6 @@ const RELATED_LINKS = [
   { href: "/how-to-sell", label: "How Selling on Durqo Works" },
   { href: "/valuation", label: "Get a Free Business Valuation" },
 ];
-
-const TRANSACTION_STEPS = [
-  { title: "Payment Confirmed", body: "Received and verified.", icon: Wallet },
-  { title: "Transfer Room Opens", body: "Private handover space.", icon: Handshake },
-  { title: "7-Day Inspection", body: "Check every asset.", icon: ClipboardCheck },
-  { title: "Approve or Report", body: "Issue = payment on hold.", icon: CheckCircle2 },
-  { title: "Seller Paid Out", body: "In BDT, after approval.", icon: Landmark },
-]
-
 
 const FAQ_GROUPS: FaqGroup[] = [
   {
@@ -569,53 +549,6 @@ const FAQ_JSON_LD = {
   })),
 };
 
-function NumberedFlow({ steps }: { steps: { title: string; body?: string; icon?: typeof Wallet }[] }) {
-  const n = steps.length;
-  const inset = (0.5 / n) * 100;
-  return (
-    <div>
-      <ol className="flex flex-col gap-6 md:hidden">
-        {steps.map((step, i) => (
-          <li key={step.title} data-reveal style={revealDelay(i * 120)} className="flex gap-4">
-            <div className="flex flex-col items-center">
-              <span className="dq-icon-pop mono grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white shadow-[0_8px_18px_-8px_rgba(16,185,129,0.8)]">
-                {i + 1}
-              </span>
-              {i < n - 1 && <span className="mt-2 w-px flex-1 bg-rule" aria-hidden />}
-            </div>
-            <div className={step.body ? "pb-1" : "pb-1 pt-2"}>
-              <h4 className="flex items-center gap-1.5 text-sm font-semibold text-ink">
-                {step.icon && <step.icon size={14} className="shrink-0 text-brand-strong" />}
-                {step.title}
-              </h4>
-              {step.body && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>}
-            </div>
-          </li>
-        ))}
-      </ol>
-      <div className="relative hidden md:block">
-        <div className="absolute top-6 h-px bg-rule" style={{ left: `${inset}%`, right: `${inset}%` }} aria-hidden />
-        <div data-reveal className="dq-line absolute top-6 h-0.5 -translate-y-px rounded-full bg-gradient-to-r from-brand via-brand to-brand/40" style={{ left: `${inset}%`, right: `${inset}%` }} aria-hidden />
-        <ol className="flex gap-4">
-          {steps.map((step, i) => (
-            <li key={step.title} data-reveal style={revealDelay(i * 150)} className="group flex flex-1 flex-col items-center gap-3 text-center">
-              <span className="dq-icon-pop mono relative z-10 grid h-12 w-12 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white shadow-[0_10px_22px_-10px_rgba(16,185,129,0.9)] transition group-hover:scale-110">
-                {i + 1}
-              </span>
-              <div>
-                <h4 className="flex items-center justify-center gap-1.5 text-sm font-semibold text-ink">
-                  {step.icon && <step.icon size={14} className="shrink-0 text-brand-strong" />}
-                  {step.title}
-                </h4>
-                {step.body && <p className="mt-1 text-xs leading-relaxed text-ink-soft">{step.body}</p>}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </div>
-  );
-}
 
 export default async function DurqoBangladeshPage() {
   // Real catalog numbers, computed exactly like the homepage: sold listings
@@ -645,155 +578,319 @@ export default async function DurqoBangladeshPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(WEBPAGE_JSON_LD) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_JSON_LD) }} />
 
-      {/* HERO: copy left, product film right */}
-      <section className="relative overflow-hidden bg-[#0B1324] bg-[radial-gradient(55%_70%_at_0%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_55%_at_100%_100%,rgba(244,42,65,0.12),transparent_60%),linear-gradient(180deg,#0B1324,#0E1A31)] pb-16 pt-14 sm:pb-20 sm:pt-20 lg:pb-24 lg:pt-24">
-        <MouseGlow />
+      {/* HERO: centered message, cinematic film below */}
+      <section className="relative overflow-hidden bg-[#0A1120] pb-16 pt-16 sm:pb-20 sm:pt-20 lg:pt-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(16,185,129,0.22),transparent_70%),radial-gradient(40%_40%_at_85%_70%,rgba(59,130,246,0.12),transparent_70%),radial-gradient(35%_35%_at_10%_80%,rgba(244,42,65,0.08),transparent_70%)]" aria-hidden />
         <div
-          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.045)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_70%_at_30%_30%,#000_25%,transparent_75%)]"
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:64px_64px] [mask-image:radial-gradient(ellipse_60%_55%_at_50%_20%,#000_20%,transparent_75%)]"
           aria-hidden
         />
-        <div className="dq-glow pointer-events-none absolute -left-24 -top-24 h-80 w-80 rounded-full bg-brand/20 blur-3xl" aria-hidden />
+        <MouseGlow />
         <Container className="relative">
           <Inner>
-            <div className="grid gap-12 lg:grid-cols-[44fr_56fr] lg:items-center lg:gap-14">
-              <div className="min-w-0">
-                <Link
-                  href="#categories"
-                  className="dq-enter group mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] py-1 pl-1 pr-3 text-xs text-white/75 backdrop-blur transition hover:border-brand/60 hover:text-white"
-                  style={enterDelay(0)}
-                >
-                  <span className="mono flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[0.65rem] font-bold text-white">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-                    LIVE
-                  </span>
-                  <span>
-                    <span className="font-semibold text-white">{totalActive}</span> listings across 16 categories
-                  </span>
-                  <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
-                </Link>
-                <div className="dq-enter mono mb-4 flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-white/70" style={enterDelay(60)}>
-                  <span className="flex items-center gap-1.5 text-brand">
-                    <MapPin size={13} />
-                    Bangladesh
-                  </span>
-                  <span className="flex items-center gap-1" aria-hidden="true">
-                    <span className="h-px w-5 bg-white/25" />
-                    <span className="h-1 w-1 animate-pulse rounded-full bg-brand" />
-                    <span className="h-px w-5 bg-white/25" />
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Globe2 size={13} />
-                    The World
-                  </span>
-                </div>
-                <h1 className="dq-enter text-[2.5rem] leading-[1.06] tracking-tight text-white sm:text-5xl lg:text-[3.6rem]" style={enterDelay(120)}>
-                  The Global Marketplace to{" "}
-                  <span className="bg-gradient-to-r from-[#34D399] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
-                </h1>
-                <p className="dq-enter mt-6 max-w-[56ch] text-[1.05rem] leading-relaxed text-white/70" style={enterDelay(200)}>
-                  <span className="font-semibold text-white">Buying?</span> Pay for websites, apps, SaaS and other
-                  online businesses in BDT with bKash, Nagad, Rocket, bank transfer or card.{" "}
-                  <span className="font-semibold text-white">Selling?</span> Reach buyers in Bangladesh and worldwide,
-                  and get paid out in BDT.
+            <div className="mx-auto flex max-w-[860px] flex-col items-center text-center">
+              <Link
+                href="#categories"
+                className="dq-enter group inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] py-1 pl-1 pr-3 text-xs text-white/75 backdrop-blur transition hover:border-brand/60 hover:text-white"
+                style={enterDelay(0)}
+              >
+                <span className="mono flex items-center gap-1.5 rounded-full bg-brand px-2.5 py-1 text-[0.65rem] font-bold text-white">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+                  LIVE
+                </span>
+                <span>
+                  <span className="font-semibold text-white">{totalActive}</span> businesses for sale across 16 categories
+                </span>
+                <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
+              </Link>
+              <h1 className="dq-enter mt-7 text-[2.6rem] leading-[1.04] tracking-tight text-white sm:text-6xl lg:text-[4.4rem]" style={enterDelay(100)}>
+                The Global Marketplace to{" "}
+                <span className="bg-gradient-to-r from-[#6EE7B7] via-brand to-[#2DD4BF] bg-clip-text text-transparent">Buy and Sell in BDT.</span>
+              </h1>
+              <p className="dq-enter mt-6 max-w-[60ch] text-[1.08rem] leading-relaxed text-white/70" style={enterDelay(180)}>
+                For Bangladeshi buyers and sellers. Pay in BDT with bKash, Nagad, Rocket, bank or card, hand over every asset
+                in a tracked Transfer Room, and get paid out in BDT.
+              </p>
+              <div className="dq-enter mt-8 flex w-full flex-col justify-center gap-3 sm:w-auto sm:flex-row" style={enterDelay(260)}>
+                <Button href="#buyers" size="lg" className="dq-shine shadow-[0_14px_30px_-12px_rgba(16,185,129,0.9)]">
+                  I&rsquo;m Buying
+                  <ArrowRight size={16} />
+                </Button>
+                <Button href="#sellers" variant="on-dark" size="lg">
+                  I&rsquo;m Selling
+                  <ArrowRight size={16} />
+                </Button>
+              </div>
+            </div>
+
+            <div className="dq-enter relative mx-auto mt-14 max-w-[1040px]" style={enterDelay(340)}>
+              <BdHeroVideo />
+            </div>
+
+            <div className="dq-enter mt-9 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-xs text-white/55" style={enterDelay(420)}>
+              <span className="mono uppercase tracking-wider">Payments secured by</span>
+              <span className="flex items-center gap-1.5 font-semibold text-white/80"><StripeIcon size={14} />Stripe</span>
+              <span className="flex items-center gap-1.5 font-semibold text-white/80"><ShieldCheck size={14} className="text-brand" />SSLCommerz</span>
+              <span className="flex items-center gap-1.5 font-semibold text-white/80"><EscrowIcon size={9} className="text-[#7BE35A]" /><span className="sr-only">Escrow.com</span></span>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* PROBLEMS vs SOLUTIONS: comparison table */}
+      <section className="relative overflow-hidden bg-[#0B1324] py-16 sm:py-24">
+        <div className="pointer-events-none absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-brand/15 blur-3xl" aria-hidden />
+        <div
+          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_20%,transparent_75%)]"
+          aria-hidden
+        />
+        <Container className="relative">
+          <Inner>
+            <SectionHead
+              dark
+              eyebrow="The problems we hear most"
+              title="Common Problems, and How Durqo Solves Them"
+              body="What makes it hard today, and Durqo's answer to each."
+            />
+            <div data-reveal className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
+              <div className="mono hidden grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] border-b border-white/10 text-[0.68rem] font-semibold uppercase tracking-wider md:grid">
+                <p className="flex items-center gap-2 px-7 py-4 text-[#FDA4AF]">
+                  <XCircle size={14} />
+                  The problem
                 </p>
-                <div className="dq-enter mt-8 flex flex-wrap gap-3" style={enterDelay(280)}>
-                  <Button href="/buy" size="lg" className="dq-shine w-full shadow-[0_14px_30px_-12px_rgba(16,185,129,0.9)] sm:w-auto">
-                    Browse Businesses
-                    <ArrowRight size={16} />
-                  </Button>
-                  <Button href="/sell" variant="on-dark" size="lg" className="w-full sm:w-auto">
-                    Sell a Business
-                  </Button>
+                <p className="flex items-center gap-2 border-l border-white/10 bg-brand/[0.08] px-7 py-4 text-[#6EE7B7]">
+                  <CheckCircle2 size={14} />
+                  How Durqo solves it
+                </p>
+              </div>
+              <ol>
+                {PROBLEMS.map(({ audience, problem, solution }, i) => (
+                  <li
+                    key={problem}
+                    data-reveal
+                    style={revealDelay((i % 5) * 60)}
+                    className="group grid border-b border-white/10 transition last:border-b-0 hover:bg-white/[0.03] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
+                  >
+                    <div className="flex gap-4 px-5 pb-3 pt-5 sm:px-7 md:py-6">
+                      <span className="mono mt-0.5 text-xs font-semibold text-white/30">{String(i + 1).padStart(2, "0")}</span>
+                      <div>
+                        <p className="mono mb-1.5 text-[0.62rem] font-semibold uppercase tracking-wider text-white/40">{audience}</p>
+                        <p className="text-[0.92rem] leading-relaxed text-white/60">{problem}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 border-white/10 bg-brand/[0.06] px-5 pb-5 pt-3 transition group-hover:bg-brand/[0.1] sm:px-7 md:border-l md:py-6">
+                      <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-[#34D399]" />
+                      <p className="text-[0.95rem] font-medium leading-relaxed text-white">{solution}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* BUYER GUIDE (visual) */}
+      <section id="buyers" className="scroll-mt-24 border-b border-rule bg-paper-sunk py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <div data-reveal className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <span className="mono inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">
+                  <Wallet size={12} />
+                  For buyers
+                </span>
+                <h2 className="mt-3 text-3xl tracking-tight sm:text-[2.5rem] sm:leading-[1.1]">How Buying Works in BDT</h2>
+                <p className="mt-3 max-w-[60ch] text-[1rem] leading-relaxed text-ink-soft">Pick a business, pay in Bangladeshi Taka, then receive and check every asset before the sale is final.</p>
+              </div>
+              <Button href="/buy" size="lg" className="dq-shine">
+                Browse Businesses
+                <ArrowRight size={16} />
+              </Button>
+            </div>
+
+            {/* Step strip */}
+            <ol data-reveal className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+              {BUYER_STEPS.map(({ title, sub, icon: Icon }, i) => (
+                <li key={title} className="relative flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper-raised px-3 py-5 text-center">
+                  <span className="mono absolute left-3 top-3 text-[0.65rem] font-bold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl bg-brand-soft text-brand-strong">
+                    <Icon size={20} />
+                  </span>
+                  <span className="mt-1 text-sm font-semibold leading-snug text-ink">{title}</span>
+                  <span className="text-xs leading-snug text-ink-soft">{sub}</span>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-2">
+              {/* Pay with */}
+              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <h3 className="text-lg font-semibold text-ink">Pay with</h3>
+                <p className="mt-1 text-sm text-ink-soft">Choose any of these at checkout. Durqo charges buyers no marketplace fee.</p>
+                <div className="mt-4 grid grid-cols-3 gap-2.5">
+                  {BUYER_CHANNELS.map(({ icon: Icon, label, tint }) => (
+                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-2 py-4 text-center text-xs font-semibold text-ink">
+                      <Icon size={22} className={tint} />
+                      {label}
+                    </span>
+                  ))}
+                  <span className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-brand px-2 py-4 text-center text-white">
+                    <span className="text-xl font-bold leading-none">৳0</span>
+                    <span className="text-[0.68rem] font-semibold leading-tight">buyer fee</span>
+                  </span>
                 </div>
-                <div className="dq-enter mt-7 flex flex-wrap items-center gap-2" style={enterDelay(360)}>
-                  {BUYER_CHANNELS.map(({ icon: Icon, label }, i) => (
-                    <span
-                      key={label}
-                      className="dq-pop mono flex items-center gap-1.5 rounded-full border border-white/12 bg-white/[0.05] px-3 py-1.5 text-[0.68rem] text-white/75"
-                      style={{ animationDelay: `${520 + i * 80}ms` }}
-                    >
-                      <Icon size={12} className="text-brand" />
+              </div>
+
+              {/* Checkout amount graphic */}
+              <div data-reveal style={revealDelay(100)} className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <h3 className="text-lg font-semibold text-ink">What you pay at checkout</h3>
+                <p className="mt-1 text-sm text-ink-soft">Businesses are priced in USD. What you pay up front depends on the price.</p>
+                <div className="mt-5 flex flex-col gap-5">
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span className="font-semibold text-ink">Price up to $2,000</span>
+                      <span className="mono text-xs text-brand-strong">100% at checkout</span>
+                    </div>
+                    <div className="h-9 overflow-hidden rounded-xl bg-paper-sunk">
+                      <div data-reveal className="dq-line flex h-full w-full items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">Full amount in BDT</div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span className="font-semibold text-ink">Price above $2,000</span>
+                      <span className="mono text-xs text-[#92730F]">$2,000 now + balance</span>
+                    </div>
+                    <div className="flex h-9 gap-1.5">
+                      <div className="flex w-2/5 items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">$2,000 in BDT</div>
+                      <div className="flex flex-1 items-center rounded-xl border-2 border-dashed border-gold bg-gold-soft px-3 text-xs font-semibold text-[#92730F]">Balance: instructions by email</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Inspection fork */}
+            <div data-reveal className="mt-5 overflow-hidden rounded-3xl bg-[#0B1324] p-6 text-white sm:p-8">
+              <div className="grid items-center gap-6 lg:grid-cols-[auto_auto_1fr]">
+                <div className="flex items-center gap-4">
+                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
+                    <span className="text-center leading-none">
+                      <span className="block text-2xl font-bold">7</span>
+                      <span className="mono block text-[0.55rem] uppercase tracking-wider text-white/60">days</span>
+                    </span>
+                  </span>
+                  <div>
+                    <p className="text-lg font-semibold">Transfer Room inspection</p>
+                    <p className="text-sm text-white/60">Opens after full payment is verified. Check every asset against what was agreed.</p>
+                  </div>
+                </div>
+                <ArrowRight size={22} className="hidden text-white/30 lg:block" />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center gap-3 rounded-2xl border border-[#34D399]/30 bg-[#10B981]/10 p-4">
+                    <CheckCircle2 size={22} className="shrink-0 text-[#34D399]" />
+                    <div>
+                      <p className="font-semibold">All good: Approve</p>
+                      <p className="text-xs text-white/60">Sale completes</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl border border-[#F59E0B]/40 bg-[#F59E0B]/10 p-4">
+                    <Lock size={22} className="shrink-0 text-[#FBBF24]" />
+                    <div>
+                      <p className="font-semibold">Problem: Report an issue</p>
+                      <p className="text-xs text-white/70">Payment on hold. Seller not paid until Durqo reviews.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Inner>
+        </Container>
+      </section>
+
+      {/* SELLER GUIDE (visual) */}
+      <section id="sellers" className="scroll-mt-24 border-b border-rule py-16 sm:py-24">
+        <Container>
+          <Inner>
+            <div data-reveal className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <span className="mono inline-flex items-center gap-2 rounded-full bg-gold-soft px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">
+                  <Landmark size={12} />
+                  For sellers
+                </span>
+                <h2 className="mt-3 text-3xl tracking-tight sm:text-[2.5rem] sm:leading-[1.1]">How Selling Works in BDT</h2>
+                <p className="mt-3 max-w-[60ch] text-[1rem] leading-relaxed text-ink-soft">Create a free seller account, get your listing checked by our team, sell to buyers anywhere and withdraw in Bangladeshi Taka.</p>
+              </div>
+              <Button href="/sell" size="lg" className="dq-shine">
+                Sell a Business
+                <ArrowRight size={16} />
+              </Button>
+            </div>
+
+            {/* Listing review */}
+            <div data-reveal className="grid gap-3 sm:grid-cols-3">
+              {LISTING_REVIEW.map(({ title, sub, icon: Icon }, i) => (
+                <div key={title} className={`flex items-center gap-4 rounded-2xl p-5 ${i === 2 ? "bg-brand text-white" : "border border-rule bg-paper-raised"}`}>
+                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${i === 2 ? "bg-white/15" : "bg-gold-soft text-[#92730F]"}`}>
+                    <Icon size={20} />
+                  </span>
+                  <div>
+                    <p className="font-semibold">{title}</p>
+                    <p className={`text-xs ${i === 2 ? "text-white/80" : "text-ink-soft"}`}>{sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Payout timeline */}
+            <div data-reveal className="mt-5 rounded-3xl border border-rule bg-paper-raised p-6 sm:p-8">
+              <h3 className="text-lg font-semibold text-ink">From sale to payout</h3>
+              <p className="mt-1 text-sm text-ink-soft">Earnings become available once the sale and handover are complete and any review has finished.</p>
+              <ol className="relative mt-6 grid grid-cols-3 gap-y-6 sm:grid-cols-6">
+                <span className="absolute left-[8%] right-[8%] top-5 hidden h-0.5 bg-rule sm:block" aria-hidden />
+                <span data-reveal className="dq-line absolute left-[8%] right-[8%] top-5 hidden h-0.5 bg-brand sm:block" aria-hidden />
+                {SELLER_STATUSES.map((st, i) => (
+                  <li key={st} className="relative flex flex-col items-center gap-2 text-center">
+                    <span className={`mono relative z-10 grid h-10 w-10 place-items-center rounded-full text-xs font-bold ring-4 ring-paper-raised ${i === SELLER_STATUSES.length - 1 ? "bg-brand text-white" : "bg-gold-soft text-[#92730F]"}`}>
+                      {i === SELLER_STATUSES.length - 1 ? <CheckCircle2 size={16} /> : i + 1}
+                    </span>
+                    <span className="text-xs font-semibold leading-snug text-ink">{st}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_1.1fr]">
+              {/* Methods + KYC */}
+              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
+                <h3 className="text-lg font-semibold text-ink">Get paid to</h3>
+                <p className="mt-1 text-sm text-ink-soft">Request a withdrawal from Earnings &amp; Withdrawals in your Seller Dashboard.</p>
+                <div className="mt-4 grid grid-cols-4 gap-2.5">
+                  {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
+                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-1 py-4 text-center text-xs font-semibold text-ink">
+                      <Icon size={22} className={tint} />
                       {label}
                     </span>
                   ))}
                 </div>
-                <p className="dq-enter mono mt-5 flex items-start gap-1.5 text-xs leading-relaxed text-white/55" style={enterDelay(440)}>
-                  <ShieldCheck size={13} className="mt-0.5 shrink-0 text-brand" />
-                  <span>Payments secured through Stripe and SSLCommerz, with Escrow.com available for extra protection.</span>
+                <p className="mt-4 flex items-center gap-2.5 rounded-xl bg-brand-soft/60 px-3.5 py-3 text-xs font-medium text-ink">
+                  <ShieldCheck size={16} className="shrink-0 text-brand-strong" />
+                  KYC before your first withdrawal. Account name must match your verified name.
                 </p>
               </div>
 
-              <div className="dq-enter min-w-0" style={enterDelay(220)}>
-                <BdHeroVideo />
-              </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* PAYMENT TRUST STRIP */}
-      <section className="border-b border-rule bg-paper-raised">
-        <Container>
-          <Inner>
-            <div className="flex flex-col gap-5 py-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="mono mr-1 text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Pay in BDT</span>
-                {BUYER_CHANNELS.map(({ icon: Icon, label, tint }, i) => (
-                  <span key={label} data-reveal style={revealDelay(i * 60)} className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
-                    <Icon size={14} className={tint} />
-                    {label}
-                  </span>
+              {/* Stat tiles */}
+              <div data-reveal style={revealDelay(100)} className="grid grid-cols-2 gap-3">
+                {SELLER_STATS.map(({ value, label, icon: Icon, dark }) => (
+                  <div key={label} className={`flex flex-col justify-between gap-4 rounded-3xl p-5 ${dark ? "bg-[#0B1324] text-white" : "border border-rule bg-paper-raised"}`}>
+                    <Icon size={20} className={dark ? "text-[#34D399]" : "text-brand-strong"} />
+                    <div>
+                      <p className="text-2xl font-bold tracking-tight sm:text-[1.7rem]">{value}</p>
+                      <p className={`mt-1 text-xs leading-snug ${dark ? "text-white/65" : "text-ink-soft"}`}>{label}</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <span className="mono mr-1 text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">Secured by</span>
-                <span className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
-                  <StripeIcon size={14} />
-                  Stripe
-                </span>
-                <span className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
-                  <ShieldCheck size={14} className="text-brand-strong" />
-                  SSLCommerz
-                </span>
-                <span className="flex items-center gap-1.5 rounded-lg border border-rule bg-paper px-3 py-1.5 text-xs font-semibold text-ink">
-                  <EscrowIcon size={9} className="text-[#42C31D]" />
-                  <span className="sr-only">Escrow.com</span>
-                </span>
-              </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* AUDIENCE SWITCH */}
-      <section className="border-b border-rule py-10 sm:py-12">
-        <Container>
-          <Inner>
-            <div className="grid gap-4 md:grid-cols-2">
-              {[
-                { href: "#buyers", tag: "I'm buying", title: "Buy a digital business in BDT", body: "Payment channels, how much you pay at checkout, step-by-step buying and your 7-day inspection.", icon: Wallet, tone: "bg-brand-soft text-brand-strong", ring: "hover:border-brand" },
-                { href: "#sellers", tag: "I'm selling", title: "Sell and get paid out in BDT", body: "Listing review, the payout flow, bKash, Nagad, Rocket and bank payouts, limits, timing and fees.", icon: Landmark, tone: "bg-gold-soft text-[#92730F]", ring: "hover:border-gold" },
-              ].map(({ href, tag, title, body, icon: Icon, tone, ring }, i) => (
-                <Link
-                  key={href}
-                  href={href}
-                  data-reveal
-                  style={revealDelay(i * 100)}
-                  className={`group flex items-start gap-4 rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_22px_44px_-30px_rgba(11,19,36,0.4)] sm:p-7 ${ring}`}
-                >
-                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${tone}`}>
-                    <Icon size={20} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="mono text-[0.68rem] font-semibold uppercase tracking-wider text-ink-faint">{tag}</span>
-                    <span className="mt-0.5 block text-lg font-semibold text-ink">{title}</span>
-                    <span className="mt-1 block text-sm leading-relaxed text-ink-soft">{body}</span>
-                  </span>
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-rule text-ink-faint transition group-hover:border-ink group-hover:bg-ink group-hover:text-white">
-                    <ArrowRight size={15} />
-                  </span>
-                </Link>
-              ))}
             </div>
           </Inner>
         </Container>
@@ -893,324 +990,6 @@ export default async function DurqoBangladeshPage() {
           </Container>
         </section>
       )}
-
-      {/* PROBLEMS vs SOLUTIONS: comparison table */}
-      <section className="relative overflow-hidden bg-[#0B1324] py-16 sm:py-24">
-        <div className="pointer-events-none absolute -right-40 -top-40 h-[28rem] w-[28rem] rounded-full bg-brand/15 blur-3xl" aria-hidden />
-        <div
-          className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:56px_56px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,#000_20%,transparent_75%)]"
-          aria-hidden
-        />
-        <Container className="relative">
-          <Inner>
-            <SectionHead
-              dark
-              eyebrow="The problems we hear most"
-              title="Common Problems, and How Durqo Solves Them"
-              body="What makes it hard today, and Durqo's answer to each."
-            />
-            <div data-reveal className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03]">
-              <div className="mono hidden grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] border-b border-white/10 text-[0.68rem] font-semibold uppercase tracking-wider md:grid">
-                <p className="flex items-center gap-2 px-7 py-4 text-[#FDA4AF]">
-                  <XCircle size={14} />
-                  The problem
-                </p>
-                <p className="flex items-center gap-2 border-l border-white/10 bg-brand/[0.08] px-7 py-4 text-[#6EE7B7]">
-                  <CheckCircle2 size={14} />
-                  How Durqo solves it
-                </p>
-              </div>
-              <ol>
-                {PROBLEMS.map(({ audience, problem, solution }, i) => (
-                  <li
-                    key={problem}
-                    data-reveal
-                    style={revealDelay((i % 5) * 60)}
-                    className="group grid border-b border-white/10 transition last:border-b-0 hover:bg-white/[0.03] md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]"
-                  >
-                    <div className="flex gap-4 px-5 pb-3 pt-5 sm:px-7 md:py-6">
-                      <span className="mono mt-0.5 text-xs font-semibold text-white/30">{String(i + 1).padStart(2, "0")}</span>
-                      <div>
-                        <p className="mono mb-1.5 text-[0.62rem] font-semibold uppercase tracking-wider text-white/40">{audience}</p>
-                        <p className="text-[0.92rem] leading-relaxed text-white/60">{problem}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-3 border-white/10 bg-brand/[0.06] px-5 pb-5 pt-3 transition group-hover:bg-brand/[0.1] sm:px-7 md:border-l md:py-6">
-                      <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-[#34D399]" />
-                      <p className="text-[0.95rem] font-medium leading-relaxed text-white">{solution}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* MONEY FLOW */}
-      <section className="border-b border-rule py-16 sm:py-24">
-        <Container>
-          <Inner>
-            <SectionHead
-              eyebrow="Local money, global reach"
-              title="Pay and Get Paid the Way You Already Do"
-              body="Buyer pays in BDT. Durqo holds it until the handover is approved. Seller is paid in BDT."
-            />
-            <div data-reveal>
-              <MoneyFlow />
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* BUYER GUIDE (visual) */}
-      <section id="buyers" className="scroll-mt-24 border-b border-rule bg-paper-sunk py-16 sm:py-24">
-        <Container>
-          <Inner>
-            <div data-reveal className="mb-10 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <span className="mono inline-flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-brand-strong">
-                  <Wallet size={12} />
-                  For buyers
-                </span>
-                <h2 className="mt-3 text-3xl tracking-tight sm:text-[2.5rem] sm:leading-[1.1]">Buying in BDT, at a Glance</h2>
-              </div>
-              <Button href="/buy" size="lg" className="dq-shine">
-                Browse Businesses
-                <ArrowRight size={16} />
-              </Button>
-            </div>
-
-            {/* Step strip */}
-            <ol data-reveal className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-              {BUYER_STEPS.map(({ title, icon: Icon }, i) => (
-                <li key={title} className="relative flex flex-col items-center gap-3 rounded-2xl border border-rule bg-paper-raised px-3 py-5 text-center">
-                  <span className="mono absolute left-3 top-3 text-[0.65rem] font-bold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl bg-brand-soft text-brand-strong">
-                    <Icon size={20} />
-                  </span>
-                  <span className="text-sm font-semibold leading-snug text-ink">{title}</span>
-                </li>
-              ))}
-            </ol>
-
-            <div className="mt-5 grid gap-5 lg:grid-cols-2">
-              {/* Pay with */}
-              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <h3 className="text-lg font-semibold text-ink">Pay with</h3>
-                <div className="mt-4 grid grid-cols-3 gap-2.5">
-                  {BUYER_CHANNELS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-2 py-4 text-center text-xs font-semibold text-ink">
-                      <Icon size={22} className={tint} />
-                      {label}
-                    </span>
-                  ))}
-                  <span className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-brand px-2 py-4 text-center text-white">
-                    <span className="text-xl font-bold leading-none">৳0</span>
-                    <span className="text-[0.68rem] font-semibold leading-tight">buyer fee</span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Checkout amount graphic */}
-              <div data-reveal style={revealDelay(100)} className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <h3 className="text-lg font-semibold text-ink">What you pay at checkout</h3>
-                <div className="mt-5 flex flex-col gap-5">
-                  <div>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <span className="font-semibold text-ink">Price up to $2,000</span>
-                      <span className="mono text-xs text-brand-strong">100% at checkout</span>
-                    </div>
-                    <div className="h-9 overflow-hidden rounded-xl bg-paper-sunk">
-                      <div data-reveal className="dq-line flex h-full w-full items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">Full amount in BDT</div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <span className="font-semibold text-ink">Price above $2,000</span>
-                      <span className="mono text-xs text-[#92730F]">$2,000 now + balance</span>
-                    </div>
-                    <div className="flex h-9 gap-1.5">
-                      <div className="flex w-2/5 items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">$2,000 in BDT</div>
-                      <div className="flex flex-1 items-center rounded-xl border-2 border-dashed border-gold bg-gold-soft px-3 text-xs font-semibold text-[#92730F]">Balance: instructions by email</div>
-                    </div>
-                  </div>
-                </div>
-                <p className="mt-4 flex items-center gap-2 text-xs text-ink-soft">
-                  <Eye size={14} className="shrink-0 text-brand-strong" />
-                  Exact BDT amount and rate shown before you confirm.
-                </p>
-              </div>
-            </div>
-
-            {/* Inspection fork */}
-            <div data-reveal className="mt-5 overflow-hidden rounded-3xl bg-[#0B1324] p-6 text-white sm:p-8">
-              <div className="grid items-center gap-6 lg:grid-cols-[auto_auto_1fr]">
-                <div className="flex items-center gap-4">
-                  <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15">
-                    <span className="text-center leading-none">
-                      <span className="block text-2xl font-bold">7</span>
-                      <span className="mono block text-[0.55rem] uppercase tracking-wider text-white/60">days</span>
-                    </span>
-                  </span>
-                  <div>
-                    <p className="text-lg font-semibold">Transfer Room inspection</p>
-                    <p className="text-sm text-white/60">Opens after full payment is verified</p>
-                  </div>
-                </div>
-                <ArrowRight size={22} className="hidden text-white/30 lg:block" />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#34D399]/30 bg-[#10B981]/10 p-4">
-                    <CheckCircle2 size={22} className="shrink-0 text-[#34D399]" />
-                    <div>
-                      <p className="font-semibold">All good: Approve</p>
-                      <p className="text-xs text-white/60">Sale completes</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 rounded-2xl border border-[#F59E0B]/40 bg-[#F59E0B]/10 p-4">
-                    <Lock size={22} className="shrink-0 text-[#FBBF24]" />
-                    <div>
-                      <p className="font-semibold">Problem: Report an issue</p>
-                      <p className="text-xs text-white/70">Payment on hold. Seller not paid until Durqo reviews.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* SELLER GUIDE (visual) */}
-      <section id="sellers" className="scroll-mt-24 border-b border-rule py-16 sm:py-24">
-        <Container>
-          <Inner>
-            <div data-reveal className="mb-10 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <span className="mono inline-flex items-center gap-2 rounded-full bg-gold-soft px-3 py-1 text-[0.68rem] font-semibold uppercase tracking-wider text-[#92730F]">
-                  <Landmark size={12} />
-                  For sellers
-                </span>
-                <h2 className="mt-3 text-3xl tracking-tight sm:text-[2.5rem] sm:leading-[1.1]">Selling and Getting Paid, at a Glance</h2>
-              </div>
-              <Button href="/sell" size="lg" className="dq-shine">
-                Sell a Business
-                <ArrowRight size={16} />
-              </Button>
-            </div>
-
-            {/* Listing review */}
-            <div data-reveal className="grid gap-3 sm:grid-cols-3">
-              {LISTING_REVIEW.map(({ title, sub, icon: Icon }, i) => (
-                <div key={title} className={`flex items-center gap-4 rounded-2xl p-5 ${i === 2 ? "bg-brand text-white" : "border border-rule bg-paper-raised"}`}>
-                  <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${i === 2 ? "bg-white/15" : "bg-gold-soft text-[#92730F]"}`}>
-                    <Icon size={20} />
-                  </span>
-                  <div>
-                    <p className="font-semibold">{title}</p>
-                    <p className={`text-xs ${i === 2 ? "text-white/80" : "text-ink-soft"}`}>{sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Payout timeline */}
-            <div data-reveal className="mt-5 rounded-3xl border border-rule bg-paper-raised p-6 sm:p-8">
-              <h3 className="text-lg font-semibold text-ink">From sale to payout</h3>
-              <ol className="relative mt-6 grid grid-cols-3 gap-y-6 sm:grid-cols-6">
-                <span className="absolute left-[8%] right-[8%] top-5 hidden h-0.5 bg-rule sm:block" aria-hidden />
-                <span data-reveal className="dq-line absolute left-[8%] right-[8%] top-5 hidden h-0.5 bg-brand sm:block" aria-hidden />
-                {SELLER_STATUSES.map((st, i) => (
-                  <li key={st} className="relative flex flex-col items-center gap-2 text-center">
-                    <span className={`mono relative z-10 grid h-10 w-10 place-items-center rounded-full text-xs font-bold ring-4 ring-paper-raised ${i === SELLER_STATUSES.length - 1 ? "bg-brand text-white" : "bg-gold-soft text-[#92730F]"}`}>
-                      {i === SELLER_STATUSES.length - 1 ? <CheckCircle2 size={16} /> : i + 1}
-                    </span>
-                    <span className="text-xs font-semibold leading-snug text-ink">{st}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-
-            <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_1.1fr]">
-              {/* Methods + KYC */}
-              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <h3 className="text-lg font-semibold text-ink">Get paid to</h3>
-                <div className="mt-4 grid grid-cols-4 gap-2.5">
-                  {PAYOUT_METHODS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-1 py-4 text-center text-xs font-semibold text-ink">
-                      <Icon size={22} className={tint} />
-                      {label}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-4 flex items-center gap-2.5 rounded-xl bg-brand-soft/60 px-3.5 py-3 text-xs font-medium text-ink">
-                  <ShieldCheck size={16} className="shrink-0 text-brand-strong" />
-                  KYC before your first withdrawal. Account name must match your verified name.
-                </p>
-              </div>
-
-              {/* Stat tiles */}
-              <div data-reveal style={revealDelay(100)} className="grid grid-cols-2 gap-3">
-                {SELLER_STATS.map(({ value, label, icon: Icon, dark }) => (
-                  <div key={label} className={`flex flex-col justify-between gap-4 rounded-3xl p-5 ${dark ? "bg-[#0B1324] text-white" : "border border-rule bg-paper-raised"}`}>
-                    <Icon size={20} className={dark ? "text-[#34D399]" : "text-brand-strong"} />
-                    <div>
-                      <p className="text-2xl font-bold tracking-tight sm:text-[1.7rem]">{value}</p>
-                      <p className={`mt-1 text-xs leading-snug ${dark ? "text-white/65" : "text-ink-soft"}`}>{label}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <p className="mt-4 flex items-center gap-2 text-xs text-ink-soft">
-              <Eye size={14} className="shrink-0 text-brand-strong" />
-              Rate, USD deduction and estimated BDT payout shown before you submit.
-            </p>
-          </Inner>
-        </Container>
-      </section>
-
-      {/* HOW A DURQO TRANSACTION WORKS + TRANSFER ROOM */}
-      <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
-        <Container>
-          <Inner>
-            <SectionHead
-              center
-              eyebrow="From payment to payout"
-              title="How a Durqo Transaction Works"
-              body="Five steps behind every sale."
-            />
-            <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 shadow-[0_24px_60px_-44px_rgba(11,19,36,0.5)] sm:p-10">
-              <NumberedFlow steps={TRANSACTION_STEPS} />
-            </div>
-
-          </Inner>
-        </Container>
-      </section>
-
-      {/* WHY DURQO */}
-      <section className="border-b border-rule py-16 sm:py-24">
-        <Container>
-          <Inner>
-            <SectionHead
-              eyebrow="Built for Bangladesh"
-              title="Why Buy and Sell Through Durqo?"
-              body="Local payments plus a tracked handover, in one place."
-            />
-            <div className="grid gap-px overflow-hidden rounded-3xl border border-rule bg-rule sm:grid-cols-2 lg:grid-cols-3">
-              {WHY_DURQO_CARDS.map(({ icon: Icon, title, body }, i) => (
-                <div key={title} data-reveal style={revealDelay((i % 3) * 90)} className="group bg-paper-raised p-7 transition hover:bg-paper">
-                  <span className="dq-icon-pop mb-5 grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand-strong transition group-hover:bg-brand group-hover:text-white">
-                    <Icon size={19} />
-                  </span>
-                  <h3 className="text-base font-semibold text-ink">{title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-ink-soft">{body}</p>
-                </div>
-              ))}
-            </div>
-          </Inner>
-        </Container>
-      </section>
 
       {/* FEES + VALUATION */}
       <section className="border-b border-rule bg-paper-sunk py-16 sm:py-24">
