@@ -278,8 +278,8 @@ const LISTING_REVIEW = [
 ];
 
 const SELLER_STATS = [
-  { value: "৳50,000", label: "per day on bKash, Nagad or Rocket (each)", icon: Smartphone, dark: false },
-  { value: "৳300,000", label: "per month on each of them. Bank: no MFS limit", icon: Landmark, dark: false },
+  { value: "BDT 50,000", label: "per day on bKash, Nagad or Rocket (each)", icon: Smartphone, dark: false },
+  { value: "BDT 300,000", label: "per month on each of them. Bank: no MFS limit", icon: Landmark, dark: false },
   { value: "3–5 days", label: "business days to review and process a payout", icon: Clock, dark: true },
   { value: "Exact BDT", label: "rate, USD deduction and BDT payout shown before you submit", icon: Eye, dark: true },
 ];
@@ -494,7 +494,7 @@ const FAQ_GROUPS: FaqGroup[] = [
       },
       {
         question: "What are the withdrawal limits for bKash, Nagad and Rocket?",
-        answer: "Each of bKash, Nagad and Rocket allows up to ৳50,000 per day and ৳300,000 per month. The limits apply to each method on its own and are not combined, and bank transfer does not use these mobile financial service limits.",
+        answer: "Each of bKash, Nagad and Rocket allows up to BDT 50,000 per day and BDT 300,000 per month. The limits apply to each method on its own and are not combined, and bank transfer does not use these mobile financial service limits.",
       },
       {
         question: "How long does a seller payout take?",
@@ -558,7 +558,7 @@ const FAQ_JSON_LD = {
     { q: "When can a seller request a payout?", a: "A seller can request a payout after the sale and agreed asset transfer are completed, any required review has finished and the eligible earnings appear as available in the Seller Dashboard." },
     { q: "Which BDT payout methods does Durqo support?", a: "Supported local payout methods include bank transfer, bKash, Nagad and Rocket, subject to seller eligibility, verification and applicable withdrawal limits." },
     { q: "Does a seller need to verify their identity before withdrawing?", a: "Yes. Identity verification (KYC) is required before a seller's very first withdrawal, regardless of payout method. The account holder name on the withdrawal request must also match the seller's verified legal name, which Durqo checks by hand before approving the payout." },
-    { q: "What are the withdrawal limits for bKash, Nagad and Rocket?", a: "Each of bKash, Nagad and Rocket allows up to ৳50,000 per day and ৳300,000 per month. The limits apply to each method on its own and are not combined, and bank transfer does not use these mobile financial service limits." },
+    { q: "What are the withdrawal limits for bKash, Nagad and Rocket?", a: "Each of bKash, Nagad and Rocket allows up to BDT 50,000 per day and BDT 300,000 per month. The limits apply to each method on its own and are not combined, and bank transfer does not use these mobile financial service limits." },
     { q: "How long does a seller payout take?", a: "Durqo normally reviews and processes a payout request within 3–5 business days. The receiving bank or payment provider may require additional time to credit the seller's account." },
     { q: "What should I do if my payment status is pending?", a: "Do not submit the same payment again immediately. Check your order status and contact support@durqo.com so the transaction can be reviewed." },
     { q: "Where can I get help?", a: "Contact support@durqo.com before repeating a payment, changing payment methods or sending money using different instructions." },
@@ -716,67 +716,81 @@ export default async function DurqoBangladeshPage() {
               </Button>
             </div>
 
-            {/* Step strip */}
-            <ol data-reveal className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+            {/* Step timeline */}
+            <ol data-reveal className="relative grid gap-8 sm:grid-cols-5 sm:gap-4">
+              <span className="pointer-events-none absolute left-[10%] right-[10%] top-8 hidden h-0.5 bg-gradient-to-r from-brand/20 via-brand to-brand/20 sm:block" aria-hidden />
               {BUYER_STEPS.map(({ title, sub, icon: Icon }, i) => (
-                <li key={title} className="relative flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper-raised px-3 py-5 text-center">
-                  <span className="mono absolute left-3 top-3 text-[0.65rem] font-bold text-ink-faint">{String(i + 1).padStart(2, "0")}</span>
-                  <span className="dq-icon-pop grid h-12 w-12 place-items-center rounded-2xl bg-brand-soft text-brand-strong">
-                    <Icon size={20} />
+                <li key={title} className="relative flex items-start gap-4 sm:flex-col sm:items-center sm:text-center">
+                  <span className="relative z-10 grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-paper-raised text-brand-strong shadow-[0_12px_28px_-16px_rgba(11,19,36,0.45)] ring-1 ring-rule">
+                    <Icon size={24} />
+                    <span className="mono absolute -right-2 -top-2 grid h-6 w-6 place-items-center rounded-full bg-brand text-[0.65rem] font-bold text-white ring-2 ring-paper-sunk">{i + 1}</span>
                   </span>
-                  <span className="mt-1 text-[0.95rem] font-semibold leading-snug text-ink">{title}</span>
-                  <span className="text-sm leading-snug text-ink-soft">{sub}</span>
+                  <span className="min-w-0 sm:mt-1">
+                    <span className="block text-base font-semibold leading-snug text-ink">{title}</span>
+                    <span className="mt-1 block text-sm leading-snug text-ink-soft">{sub}</span>
+                  </span>
                 </li>
               ))}
             </ol>
 
-            <div className="mt-5 grid gap-5 lg:grid-cols-2">
+            <div data-reveal className="mt-12 grid overflow-hidden rounded-3xl border border-rule bg-paper-raised shadow-[0_30px_60px_-46px_rgba(11,19,36,0.55)] lg:grid-cols-2">
               {/* Pay with */}
-              <div data-reveal className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <h3 className="text-lg font-semibold text-ink">Pay with</h3>
-                <p className="mt-1 text-sm text-ink-soft">Choose any of these at checkout. Durqo charges buyers no marketplace fee.</p>
-                <div className="mt-4 grid grid-cols-3 gap-2.5">
+              <div className="flex flex-col p-6 sm:p-8">
+                <h3 className="text-xl font-semibold text-ink">Pay with</h3>
+                <p className="mt-1 text-sm text-ink-soft">Pick any of these at checkout through SSLCommerz.</p>
+                <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
                   {BUYER_CHANNELS.map(({ icon: Icon, label, tint }) => (
-                    <span key={label} className="flex flex-col items-center gap-2 rounded-2xl border border-rule bg-paper px-2 py-4 text-center text-sm font-semibold text-ink">
-                      <Icon size={22} className={tint} />
+                    <span key={label} className="flex items-center gap-3 rounded-2xl border border-rule bg-paper px-3.5 py-3 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:border-rule-strong">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-paper-raised ring-1 ring-rule">
+                        <Icon size={18} className={tint} />
+                      </span>
                       {label}
                     </span>
                   ))}
-                  <span className="flex flex-col items-center justify-center gap-1 rounded-2xl bg-brand px-2 py-4 text-center text-white">
-                    <span className="text-xl font-bold leading-none">৳0</span>
-                    <span className="text-[0.68rem] font-semibold leading-tight">buyer fee</span>
-                  </span>
+                </div>
+                <div className="mt-auto pt-6">
+                  <div className="flex items-center gap-4 rounded-2xl bg-[#0B1324] px-5 py-4 text-white">
+                    <span className="text-[2.2rem] font-bold leading-none tracking-tight text-[#34D399]">$0</span>
+                    <span className="text-sm leading-snug text-white/80">
+                      <span className="block font-semibold text-white">Buyer marketplace fee</span>
+                      You pay the agreed price. Disclosed provider charges may apply.
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              {/* Checkout amount graphic */}
-              <div data-reveal style={revealDelay(100)} className="rounded-3xl border border-rule bg-paper-raised p-6 sm:p-7">
-                <h3 className="text-lg font-semibold text-ink">What you pay at checkout</h3>
-                <p className="mt-1 text-sm text-ink-soft">Businesses are priced in USD. What you pay up front depends on the price.</p>
-                <div className="mt-5 flex flex-col gap-5">
-                  <div>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <span className="font-semibold text-ink">Price up to $2,000</span>
-                      <span className="mono text-xs text-brand-strong">100% at checkout</span>
+              {/* What you pay at checkout */}
+              <div className="border-t border-rule bg-paper-sunk/60 p-6 sm:p-8 lg:border-l lg:border-t-0">
+                <h3 className="text-xl font-semibold text-ink">What you pay at checkout</h3>
+                <p className="mt-1 text-sm text-ink-soft">Businesses are priced in USD. The up-front payment depends on the price.</p>
+                <div className="mt-5 flex flex-col gap-3">
+                  <div className="rounded-2xl border border-rule bg-paper-raised p-5">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-sm font-semibold text-ink">Price up to $2,000</p>
+                      <p className="text-2xl font-bold tracking-tight text-brand-strong">100%</p>
                     </div>
-                    <div className="h-9 overflow-hidden rounded-xl bg-paper-sunk">
-                      <div data-reveal className="dq-line flex h-full w-full items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">Full amount in BDT</div>
+                    <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-paper-sunk">
+                      <div data-reveal className="dq-line h-full w-full rounded-full bg-brand" />
                     </div>
+                    <p className="mt-3 text-sm text-ink-soft">Pay the full amount in BDT at checkout.</p>
                   </div>
-                  <div>
-                    <div className="mb-2 flex items-center justify-between text-sm">
-                      <span className="font-semibold text-ink">Price above $2,000</span>
-                      <span className="mono text-xs text-[#92730F]">$2,000 now + balance</span>
+                  <div className="rounded-2xl border border-rule bg-paper-raised p-5">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-sm font-semibold text-ink">Price above $2,000</p>
+                      <p className="text-2xl font-bold tracking-tight text-ink">$2,000 <span className="text-sm font-semibold text-ink-soft">now</span></p>
                     </div>
-                    <div className="flex h-9 gap-1.5">
-                      <div className="flex w-2/5 items-center rounded-xl bg-brand px-3 text-xs font-semibold text-white">$2,000 in BDT</div>
-                      <div className="flex flex-1 items-center rounded-xl border-2 border-dashed border-gold bg-gold-soft px-3 text-xs font-semibold text-[#92730F]">Balance: instructions by email</div>
+                    <div className="mt-3 flex h-2.5 gap-1">
+                      <div className="w-2/5 rounded-full bg-brand" />
+                      <div className="flex-1 rounded-full bg-[repeating-linear-gradient(90deg,#E6C25A_0_6px,transparent_6px_10px)]" />
                     </div>
+                    <p className="mt-3 text-sm text-ink-soft">
+                      Pay the $2,000 equivalent in BDT at checkout. Instructions for the balance arrive by email, and the
+                      handover starts once the full price is verified.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-
           </Inner>
         </Container>
       </section>
