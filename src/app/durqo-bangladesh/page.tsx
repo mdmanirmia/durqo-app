@@ -688,14 +688,13 @@ export default async function DurqoBangladeshPage() {
                       </div>
                       <span className={`ml-auto hidden h-px flex-1 sm:block ${buyer ? "bg-gradient-to-r from-brand/50 to-transparent" : "bg-gradient-to-r from-gold/60 to-transparent"}`} aria-hidden />
                     </div>
-                    <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
-                    <ol className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:flex-1 sm:snap-none sm:flex-col sm:gap-4 sm:overflow-visible sm:px-0 sm:pb-0">
+                                        <ol className="flex flex-col gap-3 sm:flex-1 sm:gap-4">
                       {items.map(({ title, problem, solution }, i) => (
                         <li
                           key={title}
                           data-reveal
                           style={revealDelay(gi * 120 + i * 90)}
-                          className="group w-[86%] shrink-0 snap-start overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition hover:-translate-y-0.5 sm:w-auto hover:border-rule-strong hover:shadow-[0_18px_40px_-28px_rgba(11,19,36,0.45)]"
+                          className="group overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[0_18px_40px_-28px_rgba(11,19,36,0.45)]"
                         >
                           <div className="flex gap-4 px-5 pb-4 pt-5">
                             <span className={`mono grid h-9 w-9 shrink-0 place-items-center rounded-xl text-xs font-bold ${buyer ? "bg-brand-soft text-brand" : "bg-gold-soft text-gold"}`}>
@@ -1021,8 +1020,7 @@ export default async function DurqoBangladeshPage() {
                 </Link>
               }
             />
-            <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
-            <div className="-mx-4 grid snap-x snap-mandatory auto-cols-[46%] grid-flow-col grid-rows-2 gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:auto-cols-auto sm:grid-flow-row sm:grid-cols-2 sm:grid-rows-none sm:snap-none sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
               {sortedCategories.map(({ c, count }, i) => {
                 const Icon = categoryIcon(c.id);
                 const accent = CATEGORY_ACCENTS[c.id] ?? "#10B981";
@@ -1032,7 +1030,7 @@ export default async function DurqoBangladeshPage() {
                     href={`/buy/${c.id}`}
                     data-reveal
                     style={{ ...revealDelay((i % 4) * 60), "--accent": accent } as CSSProperties}
-                    className="group relative flex snap-start flex-col rounded-2xl border border-rule bg-paper-raised p-4 shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--accent)] sm:p-5 hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
+                    className="group relative flex min-w-0 flex-col rounded-2xl border border-rule bg-paper-raised p-4 shadow-[0_1px_2px_rgba(11,19,36,0.04)] transition duration-300 hover:-translate-y-0.5 hover:border-[var(--accent)] sm:p-5 hover:shadow-[0_18px_36px_-24px_rgba(11,19,36,0.35)]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <span
@@ -1085,10 +1083,9 @@ export default async function DurqoBangladeshPage() {
                   </Button>
                 }
               />
-              <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
-              <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:grid sm:snap-none sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-3">
+                            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
                 {featured.map((l, i) => (
-                  <div key={l.id} data-reveal style={revealDelay(i * 110)} className={`w-[86%] shrink-0 snap-start sm:w-auto ${i === 2 ? "sm:hidden lg:block" : ""}`}>
+                  <div key={l.id} data-reveal style={revealDelay(i * 110)} className={`min-w-0 ${i === 2 ? "sm:hidden lg:block" : ""}`}>
                     <div data-tilt className="dq-tilt h-full">
                       <ListingCard listing={l} />
                     </div>
@@ -1311,13 +1308,12 @@ export default async function DurqoBangladeshPage() {
 
             {/* Mobile: Durqo card first, then the others */}
             <div className="md:hidden">
-            <p className="mono mb-3 flex items-center gap-1.5 text-[0.65rem] font-semibold uppercase tracking-wider text-ink-faint sm:hidden">Swipe <ArrowRight size={12} /></p>
-            <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                        <div className="flex flex-col gap-3">
               {COMPARISON_COMPANIES.map((c) => (
                 <div
                   key={c.name}
                   data-reveal
-                  className={`w-[84%] shrink-0 snap-start rounded-2xl border p-5 ${c.highlight ? "border-brand bg-brand-soft/60 shadow-[0_20px_40px_-28px_rgba(16,185,129,0.6)] ring-1 ring-brand" : "border-rule bg-paper-raised"}`}
+                  className={`rounded-2xl border p-5 ${c.highlight ? "border-brand bg-brand-soft/60 shadow-[0_20px_40px_-28px_rgba(16,185,129,0.6)] ring-1 ring-brand" : "border-rule bg-paper-raised"}`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className={`text-base font-semibold ${c.highlight ? "text-ink" : "text-ink-soft"}`}>{c.name}</h3>
