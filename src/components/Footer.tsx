@@ -174,7 +174,6 @@ export default function Footer() {
               <li><Link href="/buyer-faq" className="hover:text-white">Buyer&apos;s FAQ</Link></li>
               <li><Link href="/seller-faq" className="hover:text-white">Seller&apos;s FAQ</Link></li>
               <li><Link href="/payments" className="hover:text-white">Payment &amp; Withdrawal</Link></li>
-              <li><Link href="/buy-and-sell-digital-businesses-in-bdt" className="hover:text-white">Buy &amp; Sell BDT</Link></li>
               <li><Link href="/durqo-bangladesh" className="hover:text-white">Durqo for Bangladesh</Link></li>
               <li><Link href="/transfer-room" className="hover:text-white">The Transfer Room</Link></li>
               <li><Link href="/report-an-issue" className="hover:text-white">Report an Issue</Link></li>
