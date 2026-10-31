@@ -69,8 +69,8 @@ export default function BdHeroVideo() {
         <video
           ref={ref}
           className="block aspect-video w-full"
-          src="/video/durqo-bangladesh.mp4?v=9"
-          poster="/video/durqo-bangladesh-poster.jpg?v=9"
+          src="/video/durqo-bangladesh.mp4?v=10"
+          poster="/video/durqo-bangladesh-poster.jpg?v=10"
           autoPlay
           muted
           loop
