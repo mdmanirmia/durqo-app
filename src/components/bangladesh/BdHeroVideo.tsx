@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, ClipboardCheck, Landmark, Volume2, VolumeX } from "lucide-react";
 
 // Oct 30, 2026 (/durqo-bangladesh: "kono video baniye add korte hobe"): the
-// hero's product film. public/video/durqo-bangladesh.mp4 is a ~80s overview (problems, then Durqo's answers),
+// hero's product film. public/video/durqo-bangladesh.mp4 is the merchant-supplied overview (Oct 31: "Durqo_Buyers_Sellers_Problems_v10", ~2m24s, 720p web encode); earlier versions were a ~80s overview (problems, then Durqo's answers),
 // code-rendered walkthrough of the page's own published flow (pay in BDT ->
 // Transfer Room -> BDT payout); no stock footage, no invented numbers. It
 // plays only while on screen and stays paused on its poster for visitors
@@ -69,8 +69,8 @@ export default function BdHeroVideo() {
         <video
           ref={ref}
           className="block aspect-video w-full"
-          src="/video/durqo-bangladesh.mp4?v=10"
-          poster="/video/durqo-bangladesh-poster.jpg?v=10"
+          src="/video/durqo-bangladesh.mp4?v=11"
+          poster="/video/durqo-bangladesh-poster.jpg?v=11"
           autoPlay
           muted
           loop
