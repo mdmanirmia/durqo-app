@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, TrendingUp } from "lucide
 import Button from "@/components/ui/Button";
 import { valuationCategoryOptions, getCategoryMetricConfig, BUSINESS_AGE_OPTIONS, type ValuationBasis } from "@/lib/valuation";
 import { submitValuationLead, type ValuationLeadOutcome } from "./actions";
+import { trackValuationSubmitted } from "@/lib/analytics";
 
 const CATEGORY_OPTIONS = valuationCategoryOptions();
 
@@ -61,6 +62,7 @@ export default function ValuationForm() {
         businessAgeYears: Number(businessAgeYears) || 0,
         categoryMetricValue: categoryMetric && categoryMetricValue !== "" ? Number(categoryMetricValue) || 0 : undefined,
       });
+      trackValuationSubmitted({ category: categoryId });
       setResult(outcome);
       setStep("result");
     } catch (err) {

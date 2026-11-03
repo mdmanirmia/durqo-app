@@ -61,6 +61,27 @@ function sendMetaPixelEvent(eventName: string, params: Record<string, unknown>, 
   }
 }
 
+// Nov 3, 2026: custom (non-standard) Pixel event — fbq("trackCustom", ...)
+// rather than fbq("track", ...). Same guarded-optional posture as
+// sendMetaPixelEvent() above.
+function sendMetaPixelCustomEvent(eventName: string, params: Record<string, unknown>) {
+  if (typeof window === "undefined" || typeof window.fbq !== "function") return;
+  window.fbq("trackCustom", eventName, params);
+}
+
+// Nov 3, 2026: one combined "Durqo lead" signal for Meta ad optimization.
+// The site owner counts BOTH a new account registration AND a Free
+// Valuation submission as a lead, but a Meta ad set can only optimize for
+// a single event — so both moments fire this one custom event (with a
+// `lead_source` param to tell them apart in reporting), and a Meta custom
+// conversion built on "DurqoLead" is what the Bangladesh Leads ad set
+// optimizes for. Deliberately additive: CompleteRegistration (sign-up)
+// and Lead (listing submitted) keep firing exactly as before, so the
+// other campaigns already optimizing on those events are unaffected.
+function trackDurqoLead(source: "registration" | "valuation", extra: Record<string, unknown> = {}) {
+  sendMetaPixelCustomEvent("DurqoLead", { lead_source: source, ...extra });
+}
+
 export interface GAItem {
   item_id: string;
   item_name: string;
@@ -174,6 +195,24 @@ export function markPurchaseTracked(orderId: string): void {
 export function trackSignUp(role: "buyer" | "seller") {
   sendGAEvent("event", "sign_up", { method: "email", role });
   sendMetaPixelEvent("CompleteRegistration", { content_name: role, status: true });
+  trackDurqoLead("registration", { role });
+}
+
+// Nov 3, 2026: fired once submitValuationLead() (the /valuation server
+// action) has actually succeeded and stored the lead — i.e. right before
+// the estimate is shown, not on the first "Continue" click. Before this,
+// a Free Valuation submission fired no GA4 or Meta event at all.
+// GA4 reuses the existing generate_lead event with a distinct lead_type
+// (same pattern as trackListingSubmitted() below). Meta gets only the
+// combined DurqoLead custom event — NOT the standard "Lead" event, which
+// stays reserved for listing submissions so existing campaigns
+// optimizing on "Lead" keep measuring the same thing.
+export function trackValuationSubmitted(params: { category: string }) {
+  sendGAEvent("event", "generate_lead", {
+    lead_type: "valuation",
+    category: params.category,
+  });
+  trackDurqoLead("valuation", { content_category: params.category });
 }
 
 // Fired once a new listing's full insert (listing row + every dependent
