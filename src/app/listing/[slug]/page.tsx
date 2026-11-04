@@ -718,11 +718,13 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
               <IncomeHistoryPanel data={incomeSeries} images={incomeImageUrls} />
             )}
 
-            {/* Monthly Expenses */}
-            {listing.monthlyExpenses.length > 0 && (
-              <SectionCard title="Monthly Expenses" icon={Coins} bodyClassName="p-0">
-                <div className="flex flex-col">
-                  {listing.monthlyExpenses.map((e, i) => (
+            {/* Monthly Expenses. Nov 4, 2026 ("Monthly Expense data seller
+                dibena oita live howar por No Expense dekhabe and amount 0
+                dekhabe"): always shown; an empty list reads "No Expense, $0". */}
+            <SectionCard title="Monthly Expenses" icon={Coins} bodyClassName="p-0">
+              <div className="flex flex-col">
+                {listing.monthlyExpenses.length > 0 ? (
+                  listing.monthlyExpenses.map((e, i) => (
                     <div
                       key={e.label}
                       className={clsx("mono flex justify-between px-5 py-3 text-sm sm:px-6", i < listing.monthlyExpenses.length - 1 && "border-b border-rule")}
@@ -730,10 +732,15 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
                       <span className="text-ink-soft">{e.label}</span>
                       <span className="text-ink">{fmtUSD(e.amount)}</span>
                     </div>
-                  ))}
-                </div>
-              </SectionCard>
-            )}
+                  ))
+                ) : (
+                  <div className="mono flex justify-between px-5 py-3 text-sm sm:px-6">
+                    <span className="text-ink-soft">No Expense</span>
+                    <span className="text-ink">{fmtUSD(0)}</span>
+                  </div>
+                )}
+              </div>
+            </SectionCard>
 
             {/* Monetization Methods */}
             {listing.monetizationTypeIds.length > 0 && (

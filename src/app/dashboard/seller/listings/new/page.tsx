@@ -1,5 +1,6 @@
 "use client";
 
+import { missingRequiredSections, NO_LOCATION_CATEGORIES, PRODUCT_CATEGORY } from "@/lib/listing-requirements";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useIncomeMonths } from "@/lib/income-months";
@@ -423,6 +424,20 @@ export default function AddNewBusinessPage() {
       return;
     }
 
+    // Nov 4, 2026: Plugins, Themes & Extensions require Niche, Overview,
+    // Proof of Income and Monetization Methods (see listing-requirements.ts).
+    const sectionsError = missingRequiredSections(categoryId, {
+      niches,
+      overview,
+      monthlyIncome,
+      incomeImageCount: incomeImages.length,
+      monetization,
+    });
+    if (sectionsError) {
+      setError(sectionsError);
+      return;
+    }
+
     const supabase = createClient();
     if (!supabase) {
       // Backend isn't connected — preview-only submit.
@@ -495,7 +510,7 @@ export default function AddNewBusinessPage() {
             // only excluding "websites" until a 2026-09-12 audit caught that
             // "domains" hides the same field but wasn't in this list, letting
             // a leftover location value from an earlier category silently save.
-            location: categoryId === "websites" || categoryId === "domains" ? null : location || null,
+            location: NO_LOCATION_CATEGORIES.has(categoryId) ? null : location || null,
             price: Number(price),
             discounted_price: discountedPrice ? Number(discountedPrice) : null,
             overview,
@@ -773,7 +788,7 @@ export default function AddNewBusinessPage() {
             {categoryId === "youtube-channels" && channelLookup === "done" && <p className="mt-1 text-xs text-brand-strong">Channel details fetched - Total Subscribers, Total Views, Total Videos, and Channel Age are filled in automatically from YouTube.</p>}
             {categoryId === "youtube-channels" && channelLookup === "error" && <p className="mt-1 text-xs text-danger">Couldn&apos;t fetch channel details from YouTube - double-check the Channel URL and click away from the field again to retry.</p>}
           </Field>
-          {categoryId !== "websites" && categoryId !== "domains" && (
+          {!NO_LOCATION_CATEGORIES.has(categoryId) && (
             <Field label={categoryId === "youtube-channels" ? "Channel location" : categoryId === "social-media-accounts" ? "Account location" : categoryId === "apps-tools" ? "App location" : "Business location"}>
               <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="City, Country (or Remote)" className={inputCls} />
             </Field>
@@ -859,7 +874,7 @@ export default function AddNewBusinessPage() {
           category.quickStats.includes("age") && (
             <div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label={categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : categoryId === "apps-tools" ? "App Age (years)" : "Business Age (years)"}>
+                <Field label={categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : categoryId === "apps-tools" ? "App Age (years)" : categoryId === PRODUCT_CATEGORY ? "Product Age (Years)" : "Business Age (years)"}>
                   <input
                     type="number"
                     min="0"
@@ -1156,7 +1171,7 @@ export default function AddNewBusinessPage() {
             "Niche" section. */}
         {categoryId !== "ai-apps-tools" && (
           <Section
-            title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
+            title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : categoryId === PRODUCT_CATEGORY ? "Niche (required)" : "Niche"}
             hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits - shown on your published listing." : "Select every niche this business fits - shown on your published listing."}
           >
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
@@ -1181,7 +1196,7 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
-        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : categoryId === "apps-tools" ? "Overview of the App" : categoryId === "domains" ? "Overview of the Domain" : "Overview of the Business"}>
+        <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : categoryId === "apps-tools" ? "Overview of the App" : categoryId === "domains" ? "Overview of the Domain" : categoryId === PRODUCT_CATEGORY ? "Overview of the Product" : "Overview of the Business"}>
           <textarea
             required
             rows={5}
@@ -1192,13 +1207,15 @@ export default function AddNewBusinessPage() {
                 ? "What does the website do, how is it monetized, and why are you selling?"
                 : categoryId === "social-media-accounts"
                   ? "What is the account about, how is it monetized, and why are you selling?"
-                  : "What does the business do, how is it monetized, and why are you selling?"
+                  : categoryId === PRODUCT_CATEGORY
+                    ? "What does the product do, who uses it, how does it earn, and why are you selling?"
+                    : "What does the business do, how is it monetized, and why are you selling?"
             }
             className={`${inputCls} w-full`}
           />
         </Section>
 
-        <Section title="Proof of Income" hint="Monthly income for the last 12 months. Monthly average is calculated automatically.">
+        <Section title={categoryId === PRODUCT_CATEGORY ? "Proof of Income (required)" : "Proof of Income"} hint="Monthly income for the last 12 months. Monthly average is calculated automatically.">
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {MONTHS.map((m, i) => (
               <Field key={m} label={m}>
@@ -1252,7 +1269,7 @@ export default function AddNewBusinessPage() {
         </Section>
 
         {category.hasMonetization && (
-          <Section title="Monetization Methods">
+          <Section title={categoryId === PRODUCT_CATEGORY ? "Monetization Methods (required)" : "Monetization Methods"}>
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
               {/* Social Media Accounts, SaaS, AI Apps & Tools and Android &
                   iOS Apps each see their own curated subset of the shared
@@ -1436,7 +1453,7 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
-        <Section title="Sale Includes">
+        <Section title={categoryId === PRODUCT_CATEGORY ? "Sale Includes (required)" : "Sale Includes"}>
           <div className="flex flex-col gap-6">
             <Field label="Assets included">
               <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={null} />
