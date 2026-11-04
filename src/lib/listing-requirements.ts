@@ -18,9 +18,21 @@ export function missingRequiredSections(
     monthlyIncome: string[];
     incomeImageCount: number;
     monetization: string[];
+    // Nov 4, 2026 ("Google Analytics Data, Google Search Console Data,
+    // SEMrush Data, Ahrefs Data ei gulo data dile obosoi at least 1 ta image
+    // dite hobe"): each data section that has any value entered needs at
+    // least one screenshot in its own gallery. Empty sections need nothing.
+    dataProofs?: { section: string; values: string[]; imageCount: number }[];
   }
 ): string | null {
   const missing: string[] = [];
+  for (const d of data.dataProofs ?? []) {
+    const hasData = d.values.some((v) => {
+      const t = v.trim();
+      return t !== "" && t !== "0";
+    });
+    if (hasData && d.imageCount === 0) missing.push(`${d.section} images (at least one, since you entered ${d.section} data)`);
+  }
   // Nov 4, 2026 ("eita mandatory korar dorkar nei... jokhon data dibe tokhon
   // obossoi image upload korte hobe at least akta"): income itself is
   // optional for every category (no data shows as $0 on the listing), but

@@ -526,6 +526,14 @@ export default function ListingEditForm({
       monthlyIncome,
       incomeImageCount: existingImages.proof_of_income.length + incomeImages.length,
       monetization,
+      dataProofs: category.hasSeoData
+        ? [
+            { section: "Google Analytics", values: [gaTotalUsers, gaNewUsers, gaPageViews, gaEngagementTime], imageCount: existingImages.google_analytics.length + gaImages.length },
+            { section: "Google Search Console", values: [gscClicks, gscImpressions, gscIndexed, gscNonIndexed, gscCtr], imageCount: existingImages.search_console.length + gscImages.length },
+            { section: "SEMrush", values: Object.values(semrush), imageCount: existingImages.semrush.length + semrushImages.length },
+            { section: "Ahrefs", values: Object.values(ahrefs), imageCount: existingImages.ahrefs.length + ahrefsImages.length },
+          ]
+        : [],
     });
     if (sectionsError) {
       setError(sectionsError);
@@ -1179,7 +1187,7 @@ export default function ListingEditForm({
 
       {category.hasSeoData && (
         <>
-          <Section title="Google Analytics Data" hint="Engagement statistics, last 12 months.">
+          <Section title="Google Analytics Data" hint="Engagement statistics, last 12 months. If you enter any data here, upload at least one screenshot.">
             <div className="mb-5 grid gap-4 sm:grid-cols-3">
               <Field label="Total Users"><input value={gaTotalUsers} onChange={(e) => setGaTotalUsers(e.target.value)} className={inputCls} /></Field>
               <Field label="New Users"><input value={gaNewUsers} onChange={(e) => setGaNewUsers(e.target.value)} className={inputCls} /></Field>
@@ -1211,7 +1219,7 @@ export default function ListingEditForm({
             </label>
           </Section>
 
-          <Section title="Google Search Console Data" hint="Engagement statistics, last 12 months.">
+          <Section title="Google Search Console Data" hint="Engagement statistics, last 12 months. If you enter any data here, upload at least one screenshot.">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Total Clicks"><input value={gscClicks} onChange={(e) => setGscClicks(e.target.value)} className={inputCls} /></Field>
               <Field label="Total Impressions"><input value={gscImpressions} onChange={(e) => setGscImpressions(e.target.value)} className={inputCls} /></Field>
@@ -1244,7 +1252,7 @@ export default function ListingEditForm({
             </label>
           </Section>
 
-          <Section title="SEMrush Data">
+          <Section title="SEMrush Data" hint="If you enter any data here, upload at least one screenshot.">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Authority Score"><input value={semrush.authority} onChange={(e) => setSemrush({ ...semrush, authority: e.target.value })} className={inputCls} /></Field>
               <Field label="Total Organic Traffic"><input value={semrush.traffic} onChange={(e) => setSemrush({ ...semrush, traffic: e.target.value })} className={inputCls} /></Field>
@@ -1262,7 +1270,7 @@ export default function ListingEditForm({
             />
           </Section>
 
-          <Section title="Ahrefs Data">
+          <Section title="Ahrefs Data" hint="If you enter any data here, upload at least one screenshot.">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="DR Rating"><input value={ahrefs.dr} onChange={(e) => setAhrefs({ ...ahrefs, dr: e.target.value })} className={inputCls} /></Field>
               <Field label="UR Rating"><input value={ahrefs.ur} onChange={(e) => setAhrefs({ ...ahrefs, ur: e.target.value })} className={inputCls} /></Field>
