@@ -757,7 +757,7 @@ export default function AddNewBusinessPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : categoryId === "apps-tools" ? "App Name" : categoryId === "domains" ? "Domain Name" : "Business title"}>
+          <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : categoryId === "apps-tools" ? "App Name" : categoryId === "domains" ? "Domain Name" : categoryId === PRODUCT_CATEGORY ? "Product title" : "Business title"}>
             <input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Southbound Coffee Co." className={inputCls} />
           </Field>
           <Field label="Category">
@@ -775,7 +775,7 @@ export default function AddNewBusinessPage() {
             (Design & Development New.pdf, Sep 4 2026) — same underlying
             fields/columns, just different copy for that category. */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : categoryId === "apps-tools" ? "App URL" : categoryId === "domains" ? "Domain URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
+          <Field label={categoryId === "youtube-channels" ? "Channel URL" : categoryId === "websites" ? "Website URL" : categoryId === "social-media-accounts" ? "Account URL" : categoryId === "apps-tools" ? "App URL" : categoryId === "domains" ? "Domain URL" : categoryId === PRODUCT_CATEGORY ? "Product URL" : "Business URL"} className={categoryId === "websites" ? "sm:col-span-2" : undefined}>
             <input
               type="url"
               value={businessUrl}
@@ -1171,7 +1171,7 @@ export default function AddNewBusinessPage() {
             "Niche" section. */}
         {categoryId !== "ai-apps-tools" && (
           <Section
-            title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : categoryId === PRODUCT_CATEGORY ? "Niche (required)" : "Niche"}
+            title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
             hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits - shown on your published listing." : "Select every niche this business fits - shown on your published listing."}
           >
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
@@ -1269,7 +1269,7 @@ export default function AddNewBusinessPage() {
         </Section>
 
         {category.hasMonetization && (
-          <Section title={categoryId === PRODUCT_CATEGORY ? "Monetization Methods (required)" : "Monetization Methods"}>
+          <Section title="Monetization Methods">
             <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
               {/* Social Media Accounts, SaaS, AI Apps & Tools and Android &
                   iOS Apps each see their own curated subset of the shared
@@ -1453,7 +1453,7 @@ export default function AddNewBusinessPage() {
           </Section>
         )}
 
-        <Section title={categoryId === PRODUCT_CATEGORY ? "Sale Includes (required)" : "Sale Includes"}>
+        <Section title="Sale Includes">
           <div className="flex flex-col gap-6">
             <Field label="Assets included">
               <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={null} />
