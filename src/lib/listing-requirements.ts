@@ -1,6 +1,6 @@
 // Nov 4, 2026 ("ei gulo te information deya mandatory kore dao: Niche,
 // Overview of the Product, Proof of Income, Monetization Methods, Sale
-// Includes"): per-category required sections, shared by the new-listing form
+// Includes"; Proof of Income relaxed the same day, see below): per-category required sections, shared by the new-listing form
 // and ListingEditForm so the two never drift apart. Sale Includes is already
 // mandatory for every category (checked separately in both forms).
 export const PRODUCT_CATEGORY = "plugins-themes-extensions";
@@ -20,13 +20,18 @@ export function missingRequiredSections(
     monetization: string[];
   }
 ): string | null {
-  if (categoryId !== PRODUCT_CATEGORY) return null;
   const missing: string[] = [];
-  if (data.niches.length === 0) missing.push("Niche");
-  if (!data.overview.trim()) missing.push("Overview of the Product");
-  const hasIncome = data.monthlyIncome.some((v) => v.trim() !== "");
-  if (!hasIncome || data.incomeImageCount === 0) missing.push("Proof of Income (monthly income and at least one proof image)");
-  if (data.monetization.length === 0) missing.push("Monetization Methods");
+  // Nov 4, 2026 ("eita mandatory korar dorkar nei... jokhon data dibe tokhon
+  // obossoi image upload korte hobe at least akta"): income itself is
+  // optional for every category (no data shows as $0 on the listing), but
+  // once any month has income above 0, at least one proof image is required.
+  const hasIncome = data.monthlyIncome.some((v) => Number(v) > 0);
+  if (hasIncome && data.incomeImageCount === 0) missing.push("Proof of Income images (at least one, since you entered monthly income)");
+  if (categoryId === PRODUCT_CATEGORY) {
+    if (data.niches.length === 0) missing.push("Niche");
+    if (!data.overview.trim()) missing.push("Overview of the Product");
+    if (data.monetization.length === 0) missing.push("Monetization Methods");
+  }
   if (missing.length === 0) return null;
   return `Please complete these required sections before saving: ${missing.join(", ")}.`;
 }

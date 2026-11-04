@@ -425,7 +425,7 @@ export default function AddNewBusinessPage() {
     }
 
     // Nov 4, 2026: Plugins, Themes & Extensions require Niche, Overview,
-    // Proof of Income and Monetization Methods (see listing-requirements.ts).
+    // Monetization Methods, plus proof images whenever income is entered (see listing-requirements.ts).
     const sectionsError = missingRequiredSections(categoryId, {
       niches,
       overview,
@@ -1215,7 +1215,7 @@ export default function AddNewBusinessPage() {
           />
         </Section>
 
-        <Section title={categoryId === PRODUCT_CATEGORY ? "Proof of Income (required)" : "Proof of Income"} hint="Monthly income for the last 12 months. Monthly average is calculated automatically.">
+        <Section title="Proof of Income" hint="Monthly income for the last 12 months (leave empty if there is no income yet, it will show as $0). If you enter income, upload at least one proof image.">
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
             {MONTHS.map((m, i) => (
               <Field key={m} label={m}>

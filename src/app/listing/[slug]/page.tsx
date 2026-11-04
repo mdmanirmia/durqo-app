@@ -41,6 +41,7 @@ import { INDUSTRY_MAP } from "@/lib/industries";
 import { INDUSTRY_ID_SPACE_CATEGORIES } from "@/lib/categories";
 import { APP_NICHE_MAP } from "@/lib/app-niches";
 import { MONETIZATION_MAP } from "@/lib/monetization-types";
+import { lastTwelveIncomeMonths } from "@/lib/income-months";
 import { fmtUSD, fmtNumber, fmtDisplayUrl, toHref, youtubeThumbnailUrl } from "@/lib/format";
 import { ONLINE_DEPOSIT_CAP } from "@/lib/payment-terms";
 import { BUSINESS_PLATFORM_MAP } from "@/lib/business-platforms";
@@ -320,7 +321,16 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
   const sellerFlag = countryFlagEmoji(listing.seller.country);
   // Most recent 12 months only; older months can remain stored after an
   // edit (Oct 8, 2026), and the panel is labelled "last 12 months".
-  const incomeSeries = listing.monthlyStats.slice(-12).map((m) => ({ month: m.month, income: m.income }));
+  // Nov 4, 2026 ("onek business er income thakena... sob month er income 0
+  // and graph e o sob month er income 0 dekhabe"): a listing with no income
+  // data still shows Proof of Income, as the last 12 completed months at $0.
+  const recordedIncome = listing.monthlyStats.slice(-12).map((m) => ({ month: m.month, income: m.income }));
+  const incomeSeries = recordedIncome.some((s) => typeof s.income === "number" && s.income > 0)
+    ? recordedIncome
+    : lastTwelveIncomeMonths()
+        .slice()
+        .reverse()
+        .map((m) => ({ month: m.key.slice(0, 7), income: 0 }));
 
   // Websites/E-commerce Quick Stat label overrides (Business Page Layout
   // .docx, Sep 1, 2026 revision): "Monthly Income"/"Monthly Views" are
@@ -714,9 +724,7 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
             )}
 
             {/* Proof of Income */}
-            {incomeSeries.some((s) => s.income) && (
-              <IncomeHistoryPanel data={incomeSeries} images={incomeImageUrls} />
-            )}
+            <IncomeHistoryPanel data={incomeSeries} images={incomeImageUrls} />
 
             {/* Monthly Expenses. Nov 4, 2026 ("Monthly Expense data seller
                 dibena oita live howar por No Expense dekhabe and amount 0
