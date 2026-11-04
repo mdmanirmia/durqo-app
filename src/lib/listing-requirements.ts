@@ -8,7 +8,19 @@ export const PRODUCT_CATEGORY = "plugins-themes-extensions";
 // Categories with no meaningful physical location, so the location field is
 // hidden and saved as null (Websites/Domains since earlier; Plugins, Themes &
 // Extensions since Nov 4, 2026: a template or plugin is a digital file).
-export const NO_LOCATION_CATEGORIES = new Set(["websites", "domains", PRODUCT_CATEGORY]);
+// Nov 4, 2026 ("jei gulor dorkar nei tule dao"): also Android & iOS Apps,
+// Games, Newsletters and AI Apps & Tools, which sell globally through app
+// stores or online with no physical location; the seller's own country is
+// already shown on the seller card.
+export const NO_LOCATION_CATEGORIES = new Set([
+  "websites",
+  "domains",
+  PRODUCT_CATEGORY,
+  "apps-tools",
+  "games",
+  "newsletters",
+  "ai-apps-tools",
+]);
 
 export function missingRequiredSections(
   categoryId: string,

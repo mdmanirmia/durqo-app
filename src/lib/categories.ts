@@ -181,7 +181,9 @@ export const CATEGORIES: CategoryConfig[] = [
     // below, and both listing forms skip the whole Niche/Industry <Section>
     // for this category (categoryId !== "ai-apps-tools" guard) rather than
     // falling back to the generic Niche list.
-    quickStats: ["location", "business_type", "monthly_income", "active_subscribers", "age"],
+    // Nov 4, 2026: "location" dropped (field hidden for this category, see
+    // NO_LOCATION_CATEGORIES in src/lib/listing-requirements.ts).
+    quickStats: ["business_type", "monthly_income", "active_subscribers", "age"],
     hasSeoData: true,
     hasMonetization: true,
     hasSocialStats: true,
@@ -232,7 +234,9 @@ export const CATEGORIES: CategoryConfig[] = [
     // mechanism every other category already uses, no form changes needed.
     // Labeled "Avg. Monthly Income" via quickStatLabelOverrides, same as
     // SaaS/AI Apps & Tools.
-    quickStats: ["location", "monthly_income", "age", "rating", "total_reviews", "total_downloads", "store_price", "platform"],
+    // Nov 4, 2026: "location" dropped again (App Location field hidden, see
+    // NO_LOCATION_CATEGORIES in src/lib/listing-requirements.ts).
+    quickStats: ["monthly_income", "age", "rating", "total_reviews", "total_downloads", "store_price", "platform"],
     hasSeoData: false,
     hasMonetization: true,
     hasSocialStats: true,
