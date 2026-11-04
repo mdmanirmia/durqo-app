@@ -43,7 +43,11 @@ function LoginForm() {
   // a wrong password or a deactivated account.
   const [showResend, setShowResend] = useState(false);
   const [resending, setResending] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
+  // Nov 3, 2026: /auth/callback sends ?verified=1 when the email was
+  // verified but the link opened in another browser/app, so no session.
+  const [notice, setNotice] = useState<string | null>(() =>
+    params.get("verified") === "1" ? "Your email is verified. Log in to continue." : null
+  );
   const [loading, setLoading] = useState(false);
 
   // 2026-09-23 bot-signup cleanup (see TurnstileWidget.tsx): Supabase's

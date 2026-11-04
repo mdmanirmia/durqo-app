@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/safe-redirect";
-import { notifyAdminSellerVerified } from "@/app/register/actions";
+import { notifyAdminUserVerified } from "@/lib/admin-signup-notify";
 
 // Where the email "Confirm your signup" link (and, later, password-reset
 // links) point. Supabase redirects here with either a PKCE `code` or a
@@ -39,6 +39,19 @@ export async function GET(request: Request) {
   }
 
   if (!confirmed) {
+    // Nov 3, 2026: a `code` only ever reaches this route after Supabase has
+    // already verified the email (a bad or expired link comes back with
+    // `error` params instead). The exchange fails when the link is opened in
+    // a different browser or app than the one that registered (e.g. the
+    // Gmail app's built-in browser), because the PKCE verifier cookie lives
+    // in the original browser. The account IS verified in that case, so say
+    // so and ask for a normal log-in, instead of "invalid or expired".
+    if (code && !searchParams.get("error")) {
+      const safe = safeNextPath(explicitNext);
+      return NextResponse.redirect(
+        `${origin}/login?verified=1${safe ? `&next=${encodeURIComponent(safe)}` : ""}`
+      );
+    }
     return NextResponse.redirect(`${origin}/login?error=confirmation_failed`);
   }
 
@@ -59,11 +72,13 @@ export async function GET(request: Request) {
   // single-use, so this fires exactly once per account, right when its
   // email is proven real. Best-effort — a notification failure here must
   // never block the confirmed user from reaching their dashboard.
-  if (user?.email && profile?.role === "seller") {
+  // Nov 3, 2026: buyers and sellers both, and idempotent; the database
+  // trigger from migration 062 usually gets there first.
+  if (user?.email_confirmed_at) {
     try {
-      await notifyAdminSellerVerified(profile.full_name ?? "", user.email);
+      await notifyAdminUserVerified(user.id);
     } catch (err) {
-      console.error("[auth/callback] notifyAdminSellerVerified failed:", err);
+      console.error("[auth/callback] notifyAdminUserVerified failed:", err);
     }
   }
 

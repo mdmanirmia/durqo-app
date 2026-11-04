@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
+import { sweepUnnotifiedVerifiedUsers } from "@/lib/admin-signup-notify";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -60,7 +61,10 @@ export async function GET(request: Request) {
     sweepExpiredTransferInspections(admin),
   ]);
 
-  return NextResponse.json({ comments, messages, transferMessages, transferInspections });
+  // Nov 3, 2026 safety net for the admin "new account" email (migration 062).
+  const verifiedAccountNotices = await sweepUnnotifiedVerifiedUsers().catch(() => 0);
+
+  return NextResponse.json({ comments, messages, transferMessages, transferInspections, verifiedAccountNotices });
 }
 
 type AdminClient = NonNullable<ReturnType<typeof createAdminClient>>;
