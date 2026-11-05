@@ -531,7 +531,11 @@ export default function DashboardShell({
     <main className={v2 ? "dash-bg pb-24 md:pb-14" : "py-6 pb-24 md:py-10 md:pb-10"}>
       {v2 ? (
         <>
-      <div className="relative overflow-hidden bg-[#0B1324] py-5 md:py-6">
+      {/* Nov 4, 2026 ("header and left card fix rakho scroll korar somoi"):
+          on desktop this band sticks right under the site header (72px) and
+          the sidebar sticks under the band, so both stay put while the page
+          content scrolls. Fixed band height keeps the sidebar offset exact. */}
+      <div className="relative z-30 flex items-center overflow-hidden bg-[#0B1324] py-5 md:sticky md:top-[72px] md:h-[88px] md:py-0">
         <span
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_120%_at_12%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_100%_at_95%_10%,rgba(212,167,44,0.12),transparent_65%)]"
@@ -580,7 +584,7 @@ export default function DashboardShell({
         </div>
 
         <div className="grid gap-6 md:grid-cols-[232px_1fr] md:gap-8">
-          <aside className="hidden md:sticky md:top-24 md:flex md:flex-col md:gap-1 md:self-start md:rounded-2xl md:border md:border-white/10 md:bg-gradient-to-b md:from-[#111C30] md:to-[#0B1324] md:p-3 md:shadow-[var(--shadow-card)]">
+          <aside className="hidden md:sticky md:top-[184px] md:flex md:max-h-[calc(100dvh-200px)] md:flex-col md:gap-1 md:self-start md:overflow-y-auto md:[scrollbar-width:thin] md:rounded-2xl md:border md:border-white/10 md:bg-gradient-to-b md:from-[#111C30] md:to-[#0B1324] md:p-3 md:shadow-[var(--shadow-card)]">
             <p className="mono px-3 pb-2 pt-1.5 text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-white/35">Menu</p>
             {nav.map((item) => {
               const active = pathname === item.href;
