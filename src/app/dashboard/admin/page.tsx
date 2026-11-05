@@ -202,7 +202,39 @@ export default async function AdminOverview() {
         {byCountry.length === 0 ? (
           <p className="text-sm text-ink-faint">No users yet.</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-rule">
+          <>
+          {/* Phones: one compact row per country instead of a wide table. */}
+          <ul className="divide-y divide-rule overflow-hidden rounded-xl border border-rule sm:hidden">
+            {byCountry.map((c) => {
+              const max = byCountry.reduce((m, r) => Math.max(m, r.total), 1);
+              const pct = userCount ? Math.round((c.total / userCount) * 100) : 0;
+              return (
+                <li key={c.code ?? "none"} className="px-3.5 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="text-base leading-none">{countryFlagEmoji(c.code) || "🌐"}</span>
+                      <span className="truncate text-sm font-medium text-ink">{c.code ? (countryName(c.code) ?? c.code) : "Not set"}</span>
+                    </span>
+                    <span className="mono shrink-0 text-sm font-semibold">
+                      {c.total} <span className="text-xs font-normal text-ink-faint">({pct}%)</span>
+                    </span>
+                  </div>
+                  <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-paper-sunk">
+                    <div className="flex h-full" style={{ width: `${(c.total / max) * 100}%` }}>
+                      <span className="h-full bg-brand" style={{ width: `${c.total ? (c.buyers / c.total) * 100 : 0}%` }} />
+                      <span className="h-full bg-gold" style={{ width: `${c.total ? (c.sellers / c.total) * 100 : 0}%` }} />
+                      <span className="h-full flex-1 bg-ink-faint/40" />
+                    </div>
+                  </div>
+                  <div className="mono mt-1.5 flex gap-3 text-xs text-ink-faint">
+                    <span>{c.buyers} buyers</span>
+                    <span>{c.sellers} sellers</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden overflow-x-auto rounded-xl border border-rule sm:block">
             <table className="w-full min-w-[560px] text-sm">
               <thead>
                 <tr className="text-left text-xs uppercase tracking-wide text-ink-faint">
@@ -246,6 +278,7 @@ export default async function AdminOverview() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </DashboardShell>
