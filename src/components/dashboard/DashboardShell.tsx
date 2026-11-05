@@ -485,42 +485,74 @@ export default function DashboardShell({
   const bottomItems = nav.slice(0, MOBILE_BOTTOM_SLOTS);
   const hasMore = nav.length > bottomItems.length;
 
-  return (
-    <main className="py-6 pb-24 md:py-10 md:pb-10">
-      <Container maxWidth={wide ? 1600 : undefined}>
-        <div className="mb-5 flex items-center gap-3 md:mb-8">
-          {icon && (
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover shadow-[var(--shadow-card)]">
-              <NavIcon name={icon} size={20} />
-            </div>
-          )}
-          <div className="min-w-0">
-            <p className="eyebrow mb-1.5">Dashboard</p>
-            <h1 className="truncate text-3xl">{title}</h1>
-          </div>
-        </div>
+  // Nov 4, 2026 ("admin, seller and buyer dashboard er look ta valona...
+  // background color and others dekhte sundor and professional"): shell-only
+  // visual refresh shared by every dashboard page. A navy header band with
+  // the role label and page title, a navy sidebar that overlaps the band,
+  // a soft slate page background, and the `.dash-content` wrapper that
+  // gives existing bordered cards and tables a subtle elevation (see
+  // globals.css). No page content, data or behaviour changes.
+  const role = pathname.startsWith("/dashboard/admin")
+    ? "Admin"
+    : pathname.startsWith("/dashboard/seller")
+      ? "Seller"
+      : pathname.startsWith("/dashboard/buyer")
+        ? "Buyer"
+        : null;
 
+  return (
+    <main className="dash-bg pb-24 md:pb-14">
+      <div className="relative overflow-hidden bg-[#0B1324] pb-20 pt-7 md:pb-28 md:pt-10">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_120%_at_12%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_100%_at_95%_10%,rgba(212,167,44,0.12),transparent_65%)]"
+        />
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
+        />
+        <Container maxWidth={wide ? 1600 : undefined}>
+          <div className="relative flex items-center gap-3.5">
+            {icon && (
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.07] text-brand shadow-[0_10px_30px_-12px_rgba(16,185,129,0.6)] backdrop-blur">
+                <NavIcon name={icon} size={21} />
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="mono mb-1.5 inline-flex items-center gap-2 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-brand">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_0_3px_rgba(16,185,129,0.25)]" />
+                {role ? `${role} Dashboard` : "Dashboard"}
+              </p>
+              <h1 className="truncate text-2xl font-semibold tracking-tight text-white md:text-[2rem]">{title}</h1>
+            </div>
+          </div>
+        </Container>
+      </div>
+
+      <Container maxWidth={wide ? 1600 : undefined}>
+        <div className="relative -mt-14 md:-mt-20">
         {/* Mobile-only section switcher — replaces the pill row below md */}
-        <div className="relative mb-6 md:hidden" ref={switcherRef}>
+        <div className="relative mb-5 md:hidden" ref={switcherRef}>
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-haspopup="menu"
-            className="flex w-full items-center justify-between gap-2 rounded-xl border border-rule bg-paper-raised px-4 py-3 text-left text-sm font-semibold text-ink shadow-[var(--shadow-card)]"
+            className="flex w-full items-center justify-between gap-2 rounded-2xl border border-white/10 bg-[#111C30] px-4 py-3 text-left text-sm font-semibold text-white shadow-[0_18px_40px_-20px_rgba(11,19,36,0.8)]"
           >
             <span className="flex items-center gap-2.5">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-                <NavIcon name={activeItem?.icon} size={14} />
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand text-white">
+                <NavIcon name={activeItem?.icon} size={15} />
               </span>
               {activeItem?.label ?? title}
             </span>
-            <ChevronDown size={16} className={clsx("shrink-0 text-ink-faint transition-transform", menuOpen && "rotate-180")} />
+            <ChevronDown size={16} className={clsx("shrink-0 text-white/60 transition-transform", menuOpen && "rotate-180")} />
           </button>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-[232px_1fr]">
-          <aside className="hidden md:flex md:flex-col md:gap-1 md:rounded-2xl md:border md:border-rule md:bg-paper-raised md:p-3 md:shadow-[var(--shadow-card)]">
+        <div className="grid gap-6 md:grid-cols-[244px_1fr] md:gap-8">
+          <aside className="hidden md:sticky md:top-24 md:flex md:flex-col md:gap-1 md:self-start md:rounded-2xl md:border md:border-white/10 md:bg-gradient-to-b md:from-[#111C30] md:to-[#0B1324] md:p-3 md:shadow-[0_30px_60px_-30px_rgba(11,19,36,0.85)]">
+            <p className="mono px-3 pb-2 pt-1.5 text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-white/35">Menu</p>
             {nav.map((item) => {
               const active = pathname === item.href;
               const badge = badgeFor(item);
@@ -529,18 +561,25 @@ export default function DashboardShell({
                   key={item.href}
                   href={item.href}
                   className={clsx(
-                    "flex shrink-0 items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-                    active ? "bg-brand-strong text-white shadow-[var(--shadow-card)]" : "text-ink-soft hover:bg-paper-sunk"
+                    "group flex shrink-0 items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-brand text-white shadow-[0_10px_24px_-12px_rgba(16,185,129,0.9)]"
+                      : "text-white/65 hover:bg-white/[0.06] hover:text-white"
                   )}
                 >
                   <span className="flex items-center gap-2.5">
-                    <span className={clsx("grid h-7 w-7 shrink-0 place-items-center rounded-lg", active ? "bg-white/15" : "bg-paper-sunk")}>
+                    <span
+                      className={clsx(
+                        "grid h-7 w-7 shrink-0 place-items-center rounded-lg transition-colors",
+                        active ? "bg-white/20" : "bg-white/[0.06] group-hover:bg-white/10"
+                      )}
+                    >
                       <NavIcon name={item.icon} size={14} />
                     </span>
                     {item.label}
                   </span>
                   {typeof badge === "number" && (
-                    <span className={clsx("mono rounded-full px-1.5 py-0.5 text-[0.65rem]", active ? "bg-white/20" : "bg-brand-soft text-brand-strong")}>
+                    <span className={clsx("mono rounded-full px-1.5 py-0.5 text-[0.65rem] font-semibold", active ? "bg-white/25 text-white" : "bg-brand/20 text-brand")}>
                       {badge}
                     </span>
                   )}
@@ -549,9 +588,9 @@ export default function DashboardShell({
             })}
             <Link
               href={switchHref}
-              className="mt-3 flex shrink-0 items-center gap-2.5 rounded-xl border border-rule-strong px-3 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:border-brand-strong hover:bg-paper-sunk"
+              className="mt-3 flex shrink-0 items-center gap-2.5 rounded-xl border border-white/10 px-3 py-2.5 text-sm font-medium text-white/70 transition-colors hover:border-brand/60 hover:bg-white/[0.06] hover:text-white"
             >
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-paper-sunk">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-white/[0.06]">
                 <ArrowLeftRight size={14} />
               </span>
               {switchLabel}
@@ -566,7 +605,10 @@ export default function DashboardShell({
               fit its content's min-content by default. Site owner report,
               Sep 11 2026: exactly this, on a listing with a long unbroken
               title on /dashboard/seller. */}
-          <div className="min-w-0">{children}</div>
+          <div className="dash-content min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[0_24px_60px_-36px_rgba(11,19,36,0.45)] sm:p-6 md:p-8">
+            {children}
+          </div>
+        </div>
         </div>
       </Container>
 

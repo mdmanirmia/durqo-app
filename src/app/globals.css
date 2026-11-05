@@ -485,3 +485,24 @@ button:hover svg.lucide-arrow-right {
   background-color: var(--rule-strong);
   border-radius: 9999px;
 }
+
+/* Nov 4, 2026 dashboard shell refresh (DashboardShell.tsx): soft slate page
+   background behind the navy header band, and a light elevation for the
+   bordered cards/tables that dashboard pages already render inside the
+   white content panel. Scoped to dashboards only. */
+.dash-bg {
+  background:
+    radial-gradient(70% 40% at 50% 0%, rgba(16, 185, 129, 0.05), transparent 70%),
+    linear-gradient(180deg, #EEF2F7 0%, #F4F6FA 40%, #F7F8FA 100%);
+}
+@media (prefers-color-scheme: dark) {
+  .dash-bg {
+    background: linear-gradient(180deg, #0A1219 0%, #0B1116 100%);
+  }
+}
+.dash-content :where(.rounded-xl.border, .rounded-2xl.border, .rounded-lg.border.bg-paper-raised) {
+  box-shadow: 0 1px 2px rgba(11, 19, 36, 0.05), 0 6px 18px -12px rgba(11, 19, 36, 0.18);
+}
+.dash-content :where(table thead) {
+  background-color: var(--paper-sunk);
+}
