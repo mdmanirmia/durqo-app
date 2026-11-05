@@ -134,6 +134,11 @@ const ADMIN_VALUATION_LEADS_HREF = "/dashboard/admin/valuation-leads";
 // is what fixed mobile nav across all three at once.
 const MOBILE_BOTTOM_SLOTS = 3;
 
+// Refreshed shell: one width for every dashboard page (the old layout
+// switched between 1280px and 1600px depending on the page, which made the
+// frame jump between sections). 1600px is what the widest tables needed.
+const DASH_MAX_WIDTH = 1600;
+
 export default function DashboardShell({
   title,
   icon,
@@ -526,7 +531,7 @@ export default function DashboardShell({
     <main className={v2 ? "dash-bg pb-24 md:pb-14" : "py-6 pb-24 md:py-10 md:pb-10"}>
       {v2 ? (
         <>
-      <div className="relative overflow-hidden bg-[#0B1324] pb-20 pt-7 md:pb-28 md:pt-10">
+      <div className="relative overflow-hidden bg-[#0B1324] py-7 md:py-9">
         <span
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_120%_at_12%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_100%_at_95%_10%,rgba(212,167,44,0.12),transparent_65%)]"
@@ -535,7 +540,7 @@ export default function DashboardShell({
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-[0.07] [background-image:linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent)]"
         />
-        <Container maxWidth={wide ? 1600 : undefined}>
+        <Container maxWidth={DASH_MAX_WIDTH}>
           <div className="relative flex items-center gap-3.5">
             {icon && (
               <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.07] text-brand shadow-[0_10px_30px_-12px_rgba(16,185,129,0.6)] backdrop-blur">
@@ -553,8 +558,8 @@ export default function DashboardShell({
         </Container>
       </div>
 
-      <Container maxWidth={wide ? 1600 : undefined}>
-        <div className="relative -mt-14 md:-mt-20">
+      <Container maxWidth={DASH_MAX_WIDTH}>
+        <div className="relative pt-6 md:pt-8">
         {/* Mobile-only section switcher — replaces the pill row below md */}
         <div className="relative mb-5 md:hidden" ref={switcherRef}>
           <button
@@ -562,7 +567,7 @@ export default function DashboardShell({
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
             aria-haspopup="menu"
-            className="flex w-full items-center justify-between gap-2 rounded-2xl border border-white/10 bg-[#111C30] px-4 py-3 text-left text-sm font-semibold text-white shadow-[0_18px_40px_-20px_rgba(11,19,36,0.8)]"
+            className="flex w-full items-center justify-between gap-2 rounded-xl border border-white/10 bg-[#111C30] px-4 py-3 text-left text-sm font-semibold text-white shadow-[var(--shadow-card)]"
           >
             <span className="flex items-center gap-2.5">
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand text-white">
@@ -574,8 +579,8 @@ export default function DashboardShell({
           </button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-[244px_1fr] md:gap-8">
-          <aside className="hidden md:sticky md:top-24 md:flex md:flex-col md:gap-1 md:self-start md:rounded-2xl md:border md:border-white/10 md:bg-gradient-to-b md:from-[#111C30] md:to-[#0B1324] md:p-3 md:shadow-[0_30px_60px_-30px_rgba(11,19,36,0.85)]">
+        <div className="grid gap-6 md:grid-cols-[232px_1fr] md:gap-8">
+          <aside className="hidden md:sticky md:top-24 md:flex md:flex-col md:gap-1 md:self-start md:rounded-2xl md:border md:border-white/10 md:bg-gradient-to-b md:from-[#111C30] md:to-[#0B1324] md:p-3 md:shadow-[var(--shadow-card)]">
             <p className="mono px-3 pb-2 pt-1.5 text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-white/35">Menu</p>
             {nav.map((item) => {
               const active = pathname === item.href;
@@ -629,7 +634,7 @@ export default function DashboardShell({
               fit its content's min-content by default. Site owner report,
               Sep 11 2026: exactly this, on a listing with a long unbroken
               title on /dashboard/seller. */}
-          <div className="dash-content min-w-0 rounded-2xl border border-rule bg-paper-raised p-4 shadow-[0_24px_60px_-36px_rgba(11,19,36,0.45)] sm:p-6 md:p-8">
+          <div className="dash-content min-w-0">
             {children}
           </div>
         </div>
