@@ -3,8 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 
 const METHODS = ["passport", "national_id", "driving_license", "birth_certificate"] as const;
 type Method = (typeof METHODS)[number];
@@ -72,19 +71,6 @@ export async function submitVerification(method: Method, documentPaths: string[]
   const host = hdrs.get("host");
   const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
 
-  const admin = createAdminClient();
-  let adminEmails: string[] = [];
-  if (admin) {
-    const { data: adminProfiles } = await admin.from("profiles").select("id").eq("role", "admin");
-    const adminIds = new Set((adminProfiles ?? []).map((p) => p.id as string));
-    if (adminIds.size) {
-      const { data: usersList } = await admin.auth.admin.listUsers();
-      adminEmails = (usersList?.users ?? [])
-        .filter((u) => adminIds.has(u.id) && !!u.email)
-        .map((u) => u.email as string);
-    }
-  }
-
   if (sellerEmail) {
     await sendEmail(
       sellerEmail,
@@ -94,14 +80,17 @@ export async function submitVerification(method: Method, documentPaths: string[]
        <p>- Durqo</p>`
     );
   }
-  if (adminEmails.length) {
-    await sendEmail(
-      adminEmails,
-      `New seller verification request - ${sellerName}`,
-      `<p>${sellerName} (${sellerEmail ?? "no email on file"}) submitted a ${METHOD_LABEL[method]} for identity verification.</p>
-       <p><a href="${origin}/dashboard/admin/verification">Review it in the admin dashboard</a>.</p>`
-    );
-  }
+  // Nov 4, 2026 ("keu verification data submit korle admin er kache email
+  // aschena... support@durqo.com"): this used to go to whichever accounts had
+  // profiles.role = "admin" (so never to the support inbox). It now goes to
+  // ADMIN_EMAIL like every other admin notification.
+  await sendEmail(
+    ADMIN_EMAIL,
+    `New seller verification request - ${sellerName}`,
+    `<p>${sellerName} (${sellerEmail ?? "no email on file"}) submitted a ${METHOD_LABEL[method]} for identity verification.</p>
+     <p>Legal name: ${trimmedLegalName.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`) || "Not given"}</p>
+     <p><a href="${origin}/dashboard/admin/verification">Review it in the admin dashboard</a>.</p>`
+  );
 
   return { ok: true };
 }

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
 import { COUNTRY_MAP } from "@/lib/countries";
 
@@ -162,4 +162,58 @@ export async function cancelOrder(orderId: string) {
   }
 
   return { ok: true };
+}
+
+// Nov 4, 2026 ("keu verification data submit korle admin er kache email
+// aschena... support@durqo.com"): buyer verification documents are submitted
+// through the submit_buyer_verification RPC straight from the browser, which
+// never emailed anyone. Called right after that RPC succeeds; it re-checks
+// with the service-role client that this signed-in buyer really has a
+// just-submitted verification for the order before emailing the admin inbox.
+export async function notifyAdminBuyerVerificationSubmitted(orderId: string) {
+  try {
+    const supabase = await createClient();
+    if (!supabase) return { ok: false };
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return { ok: false };
+
+    const admin = createAdminClient();
+    if (!admin) return { ok: false };
+    const { data: row } = await admin
+      .from("order_verifications")
+      .select("buyer_id, status, submitted_at, document_paths, order_id")
+      .eq("order_id", orderId)
+      .maybeSingle();
+    const fresh = row?.submitted_at && Date.now() - new Date(row.submitted_at as string).getTime() < 15 * 60 * 1000;
+    if (!row || row.buyer_id !== user.id || row.status !== "submitted" || !fresh) return { ok: false };
+
+    const [{ data: profile }, { data: order }] = await Promise.all([
+      admin.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
+      admin.from("orders").select("listing_id").eq("id", orderId).maybeSingle(),
+    ]);
+    const { data: listing } = order?.listing_id
+      ? await admin.from("listings").select("title").eq("id", order.listing_id).maybeSingle()
+      : { data: null };
+
+    const esc = (v: string) => v.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+    const name = esc(((profile?.full_name as string | null) ?? "").trim() || "A buyer");
+    const title = esc((listing?.title as string | undefined) ?? "an order");
+    const docs = Array.isArray(row.document_paths) ? row.document_paths.length : 0;
+    const hdrs = await headers();
+    const host = hdrs.get("host");
+    const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
+
+    await sendEmail(
+      ADMIN_EMAIL,
+      `New buyer verification submitted - ${name}`,
+      `<p>${name} (${esc(user.email ?? "no email on file")}) submitted ${docs} verification document${docs === 1 ? "" : "s"} for their order on "${title}".</p>
+       <p><a href="${origin}/dashboard/admin/orders">Review it in the admin dashboard</a>.</p>`
+    );
+    return { ok: true };
+  } catch (err) {
+    console.error("[buyer] notifyAdminBuyerVerificationSubmitted failed:", err);
+    return { ok: false };
+  }
 }

@@ -13,7 +13,7 @@ import { getBuyerOrders, type OrderRow } from "@/lib/data/orders.client";
 import { uploadBuyerVerificationDocuments, submitBuyerVerification } from "@/lib/data/buyer-verification.client";
 import OrderAmountBreakdown from "@/components/OrderAmountBreakdown";
 import OrderReviewPanel from "@/components/dashboard/OrderReviewPanel";
-import { cancelOrder } from "../actions";
+import { cancelOrder, notifyAdminBuyerVerificationSubmitted } from "../actions";
 
 // Buyer identity/funds verification (KYC policy, Sep 2026) — shown inline
 // under any order an admin has flagged (requestBuyerVerification,
@@ -56,6 +56,8 @@ function BuyerVerificationNotice({ order, onSubmitted }: { order: OrderRow; onSu
         setError(result.message);
         return;
       }
+      // Nov 4, 2026: email the admin inbox (best-effort, never blocks).
+      notifyAdminBuyerVerificationSubmitted(order.id).catch(() => {});
       onSubmitted();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong - please try again.");
