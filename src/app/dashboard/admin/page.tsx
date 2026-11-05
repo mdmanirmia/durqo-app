@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { Users, Tag, Clock, Wallet, ListChecks, ReceiptText } from "lucide-react";
+import { Users, Tag, Clock, Wallet, ListChecks, ReceiptText, ShoppingBag, Store, Globe2 } from "lucide-react";
 import DashboardShell from "@/components/dashboard/DashboardShell";
 import { ADMIN_NAV } from "@/lib/dashboard-nav";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtUSD } from "@/lib/format";
+import { countryFlagEmoji, countryName } from "@/lib/countries";
 import { statusLabel, statusDotClass } from "@/components/ui/Badge";
 
 const LISTING_STATUSES = ["draft", "pending_review", "published", "sold", "archived"] as const;
@@ -17,15 +18,38 @@ export default async function AdminOverview() {
   let listingCounts: Record<string, number> = {};
   let orderCounts: Record<string, number> = {};
   let userCount = 0;
+  // Nov 5, 2026 ("alada box e buyers and sellers dekhao and akta graph or
+  // akta table o korba kon country theke koto jon ache. ei gulo auto
+  // dynamic hobe"): computed from profiles on every load of this page.
+  let buyerCount = 0;
+  let sellerCount = 0;
+  let byCountry: { code: string | null; buyers: number; sellers: number; total: number }[] = [];
   let gmv = 0;
   let pendingCount = 0;
 
   if (admin) {
-    const [{ data: listings }, { data: orders }, { count: profileCount }] = await Promise.all([
+    const [{ data: listings }, { data: orders }, { count: profileCount }, { data: people }] = await Promise.all([
       admin.from("listings").select("status"),
       admin.from("orders").select("status, amount"),
       admin.from("profiles").select("id", { count: "exact", head: true }),
+      admin.from("profiles").select("role, country").range(0, 49999),
     ]);
+
+    const countries = new Map<string, { code: string | null; buyers: number; sellers: number; total: number }>();
+    for (const p of people ?? []) {
+      const role = p.role as string;
+      if (role === "buyer") buyerCount++;
+      if (role === "seller") sellerCount++;
+      const raw = ((p.country as string | null) ?? "").trim().toUpperCase();
+      const key = raw || "__none";
+      const row = countries.get(key) ?? { code: raw || null, buyers: 0, sellers: 0, total: 0 };
+      if (role === "buyer") row.buyers++;
+      if (role === "seller") row.sellers++;
+      row.total++;
+      countries.set(key, row);
+    }
+    // Most users first; "Not set" always last.
+    byCountry = [...countries.values()].sort((a, b) => (a.code === null ? 1 : b.code === null ? -1 : b.total - a.total));
 
     listingCounts = (listings ?? []).reduce<Record<string, number>>((acc, l) => {
       acc[l.status] = (acc[l.status] ?? 0) + 1;
@@ -50,7 +74,7 @@ export default async function AdminOverview() {
         </p>
       )}
 
-      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
         <div className="group rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
           <div className="flex items-start gap-3">
             <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
@@ -59,6 +83,28 @@ export default async function AdminOverview() {
             <div className="min-w-0">
               <div className="mono text-2xl font-semibold">{userCount}</div>
               <div className="text-sm text-ink-faint">Total users</div>
+            </div>
+          </div>
+        </div>
+        <div className="group rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover">
+              <ShoppingBag size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="mono text-2xl font-semibold">{buyerCount}</div>
+              <div className="text-sm text-ink-faint">Buyers</div>
+            </div>
+          </div>
+        </div>
+        <div className="group rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:border-rule-strong hover:shadow-[var(--shadow-lift)]">
+          <div className="flex items-start gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold-soft text-[#92730F]">
+              <Store size={18} />
+            </div>
+            <div className="min-w-0">
+              <div className="mono text-2xl font-semibold">{sellerCount}</div>
+              <div className="text-sm text-ink-faint">Sellers</div>
             </div>
           </div>
         </div>
@@ -138,6 +184,69 @@ export default async function AdminOverview() {
             ))}
           </div>
         </div>
+      </div>
+      {/* Users by country: table + share bar (buyers green, sellers gold). */}
+      <div className="mt-6 rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)]">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+              <Globe2 size={15} />
+            </div>
+            <h2 className="text-lg">Users by country</h2>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-ink-faint">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-brand" />Buyers</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-gold" />Sellers</span>
+          </div>
+        </div>
+        {byCountry.length === 0 ? (
+          <p className="text-sm text-ink-faint">No users yet.</p>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-rule">
+            <table className="w-full min-w-[560px] text-sm">
+              <thead>
+                <tr className="text-left text-xs uppercase tracking-wide text-ink-faint">
+                  <th className="px-4 py-2.5 font-medium">Country</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Buyers</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Sellers</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Total</th>
+                  <th className="w-[38%] px-4 py-2.5 font-medium">Share of all users</th>
+                </tr>
+              </thead>
+              <tbody>
+                {byCountry.map((c) => {
+                  const max = byCountry.reduce((m, r) => Math.max(m, r.total), 1);
+                  const pct = userCount ? Math.round((c.total / userCount) * 100) : 0;
+                  return (
+                    <tr key={c.code ?? "none"} className="border-t border-rule">
+                      <td className="px-4 py-2.5">
+                        <span className="flex items-center gap-2">
+                          <span className="text-base leading-none">{countryFlagEmoji(c.code) || "🌐"}</span>
+                          <span className="text-ink">{c.code ? (countryName(c.code) ?? c.code) : "Not set"}</span>
+                        </span>
+                      </td>
+                      <td className="mono px-4 py-2.5 text-right">{c.buyers}</td>
+                      <td className="mono px-4 py-2.5 text-right">{c.sellers}</td>
+                      <td className="mono px-4 py-2.5 text-right font-semibold">{c.total}</td>
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-2.5 flex-1 overflow-hidden rounded-full bg-paper-sunk">
+                            <div className="flex h-full" style={{ width: `${(c.total / max) * 100}%` }}>
+                              <span className="h-full bg-brand" style={{ width: `${c.total ? (c.buyers / c.total) * 100 : 0}%` }} />
+                              <span className="h-full bg-gold" style={{ width: `${c.total ? (c.sellers / c.total) * 100 : 0}%` }} />
+                              <span className="h-full flex-1 bg-ink-faint/40" />
+                            </div>
+                          </div>
+                          <span className="mono w-10 text-right text-xs text-ink-faint">{pct}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </DashboardShell>
   );
