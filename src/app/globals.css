@@ -509,11 +509,7 @@ button:hover svg.lucide-arrow-right {
 
 /* Nov 4, 2026 ("option select korle jeno change na hoye jai"): keep the
    dashboard frame from shifting sideways between pages that do and don't
-   need a vertical scrollbar, and hide the old frame for the one moment
-   before the opted-in new frame replaces it on a full page load. */
+   need a vertical scrollbar. */
 html:has(.dash-bg) {
   scrollbar-gutter: stable;
-}
-html[data-dash-v2] main.dash-legacy {
-  visibility: hidden;
 }

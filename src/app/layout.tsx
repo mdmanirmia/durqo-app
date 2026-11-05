@@ -126,9 +126,7 @@ const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // suppressHydrationWarning: the inline script below may set
-    // data-dash-v2 on <html> before React hydrates.
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       {GTM_ID && <GoogleTagManager gtmId={GTM_ID} />}
       <body className="antialiased">
         {GTM_ID && (
@@ -141,15 +139,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             />
           </noscript>
         )}
-        {/* Nov 4, 2026: dashboard refresh preview flag (see DashboardShell).
-            Marks <html> before first paint so the old dashboard frame is
-            never flashed to someone who has the new one turned on. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "try{var q=new URLSearchParams(location.search).get('dashboard-preview');if(q==='1')localStorage.setItem('dq_dash_v2','1');if(q==='0')localStorage.removeItem('dq_dash_v2');if(localStorage.getItem('dq_dash_v2')==='1')document.documentElement.setAttribute('data-dash-v2','')}catch(e){}",
-          }}
-        />
         <ScrollRevealInit />
         <Header />
         {children}
