@@ -531,7 +531,7 @@ export default function DashboardShell({
     <main className={v2 ? "dash-bg pb-24 md:pb-14" : "py-6 pb-24 md:py-10 md:pb-10"}>
       {v2 ? (
         <>
-      <div className="relative overflow-hidden bg-[#0B1324] py-7 md:py-9">
+      <div className="relative overflow-hidden bg-[#0B1324] py-5 md:py-6">
         <span
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(55%_120%_at_12%_0%,rgba(16,185,129,0.22),transparent_60%),radial-gradient(40%_100%_at_95%_10%,rgba(212,167,44,0.12),transparent_65%)]"
@@ -543,7 +543,7 @@ export default function DashboardShell({
         <Container maxWidth={DASH_MAX_WIDTH}>
           <div className="relative flex items-center gap-3.5">
             {icon && (
-              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-white/10 bg-white/[0.07] text-brand shadow-[0_10px_30px_-12px_rgba(16,185,129,0.6)] backdrop-blur">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.07] text-brand shadow-[0_10px_30px_-12px_rgba(16,185,129,0.6)] backdrop-blur">
                 <NavIcon name={icon} size={21} />
               </div>
             )}
@@ -552,14 +552,14 @@ export default function DashboardShell({
                 <span className="h-1.5 w-1.5 rounded-full bg-brand shadow-[0_0_0_3px_rgba(16,185,129,0.25)]" />
                 {role ? `${role} Dashboard` : "Dashboard"}
               </p>
-              <h1 className="truncate text-2xl font-semibold tracking-tight text-white md:text-[2rem]">{title}</h1>
+              <h1 className="truncate text-xl font-semibold tracking-tight text-white md:text-2xl">{title}</h1>
             </div>
           </div>
         </Container>
       </div>
 
       <Container maxWidth={DASH_MAX_WIDTH}>
-        <div className="relative pt-6 md:pt-8">
+        <div className="relative pt-5 md:pt-6">
         {/* Mobile-only section switcher — replaces the pill row below md */}
         <div className="relative mb-5 md:hidden" ref={switcherRef}>
           <button

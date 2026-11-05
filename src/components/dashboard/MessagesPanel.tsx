@@ -225,12 +225,15 @@ export default function MessagesPanel({
     <DashboardShell title={title} nav={nav} switchHref={switchHref} switchLabel={switchLabel}>
       <h2 className="mb-4 text-xl">Messages</h2>
 
+      {/* Nov 4, 2026 ("message send option dekha jassena, screen e niche jete
+          hosse"): the panel height follows the window so the reply box stays
+          on screen on shorter laptop displays (was a fixed 520px). */}
       {conversations === null ? (
         <p className="text-sm text-ink-faint">Loading&hellip;</p>
       ) : conversations.length === 0 && !selected ? (
         <p className="text-sm text-ink-faint">No conversations yet - message a seller from any listing page to start one.</p>
       ) : (
-        <div className="grid h-[70vh] overflow-hidden rounded-xl border border-rule sm:h-[520px] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
+        <div className="grid h-[70vh] overflow-hidden rounded-xl border border-rule sm:h-[clamp(380px,calc(100dvh-300px),640px)] sm:grid-cols-[240px_1fr] sm:grid-rows-[minmax(0,1fr)]">
           {/* Conversation list — below sm, hidden once a thread is open
               (mobileShowThread); always visible at sm+ regardless. */}
           <div
