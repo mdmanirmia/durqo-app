@@ -1,6 +1,6 @@
 "use client";
 
-import { missingRequiredSections, NO_LOCATION_CATEGORIES, PRODUCT_CATEGORY } from "@/lib/listing-requirements";
+import { hasAgeInput, validateListing, NO_LOCATION_CATEGORIES, PRODUCT_CATEGORY, type ListingFieldKey } from "@/lib/listing-requirements";
 import { useState, useTransition } from "react";
 import { lastTwelveIncomeMonths } from "@/lib/income-months";
 import { useRouter } from "next/navigation";
@@ -48,20 +48,28 @@ const NO_AUTO_QUICK_STAT_CATEGORY = "domains";
 
 const inputCls = "rounded-md border border-rule-strong bg-paper px-3 py-2.5 text-sm text-ink focus:border-brand-strong focus:outline-none";
 
-function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+function Section({ title, hint, children, invalid }: { title: string; hint?: string; children: React.ReactNode; invalid?: boolean }) {
+  // Nov 4, 2026: `invalid` outlines a required section the seller left
+  // empty (see validateListing in src/lib/listing-requirements.ts).
   return (
-    <section className="border-t border-rule pt-8">
-      <h2 className="text-xl">{title}</h2>
+    <section
+      data-invalid={invalid || undefined}
+      className={`border-t pt-8 ${invalid ? "-mx-3 rounded-xl border-danger bg-danger/5 px-3 pb-4 ring-1 ring-danger" : "border-rule"}`}
+    >
+      <h2 className={`text-xl ${invalid ? "text-danger" : ""}`}>{title}</h2>
       {hint && <p className="mb-4 mt-1 text-sm text-ink-faint">{hint}</p>}
       <div className={hint ? "" : "mt-4"}>{children}</div>
     </section>
   );
 }
 
-function Field({ label, children, className }: { label: string; children: React.ReactNode; className?: string }) {
+function Field({ label, children, className, invalid }: { label: string; children: React.ReactNode; className?: string; invalid?: boolean }) {
   return (
-    <div className={`flex flex-col gap-1.5 ${className ?? ""}`}>
-      <label className="text-sm font-semibold text-ink-soft">{label}</label>
+    <div
+      data-invalid={invalid || undefined}
+      className={`flex flex-col gap-1.5 ${invalid ? "[&_input]:border-danger [&_input]:bg-danger/5 [&_textarea]:border-danger" : ""} ${className ?? ""}`}
+    >
+      <label className={`text-sm font-semibold ${invalid ? "text-danger" : "text-ink-soft"}`}>{label}</label>
       {children}
     </div>
   );
@@ -503,40 +511,52 @@ export default function ListingEditForm({
     await addListingImages(listing.id, kind, fd);
   }
 
+  // Nov 4, 2026: every required field, checked on each render so the red
+  // outlines clear as soon as the seller fills a field in (they only show
+  // after the first submit attempt).
+  const [showErrors, setShowErrors] = useState(false);
+  const ageLabel = categoryId === "domains" ? "Domain Age" : categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : categoryId === "apps-tools" ? "App Age (years)" : categoryId === PRODUCT_CATEGORY ? "Product Age (Years)" : "Business Age (years)";
+  const overviewLabel = categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : categoryId === "apps-tools" ? "Overview of the App" : categoryId === "domains" ? "Overview of the Domain" : categoryId === PRODUCT_CATEGORY ? "Overview of the Product" : "Overview of the Business";
+  const validation = validateListing(categoryId, {
+    title,
+    price,
+    age:
+      categoryId === "domains"
+        ? String(quickStats.domain_age ?? "")
+        : hasAgeInput(categoryId, category.quickStats)
+          ? String(quickStats.age ?? "")
+          : undefined,
+    ageLabel,
+    overview,
+    overviewLabel,
+    assetCount: assetRows.filter((r) => r.name.trim()).length,
+    niches,
+    monthlyIncome,
+    incomeImageCount: existingImages.proof_of_income.length + incomeImages.length,
+    monetization,
+    dataProofs: category.hasSeoData
+      ? [
+          { key: "ga_images", section: "Google Analytics", values: [gaTotalUsers, gaNewUsers, gaPageViews, gaEngagementTime], imageCount: existingImages.google_analytics.length + gaImages.length },
+          { key: "gsc_images", section: "Google Search Console", values: [gscClicks, gscImpressions, gscIndexed, gscNonIndexed, gscCtr], imageCount: existingImages.search_console.length + gscImages.length },
+          { key: "semrush_images", section: "SEMrush", values: Object.values(semrush), imageCount: existingImages.semrush.length + semrushImages.length },
+          { key: "ahrefs_images", section: "Ahrefs", values: Object.values(ahrefs), imageCount: existingImages.ahrefs.length + ahrefsImages.length },
+        ]
+      : [],
+  });
+  const bad = (k: ListingFieldKey) => showErrors && validation.keys.has(k);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    // Mandatory since 2026-09-16 (site owner request) — same rule as the
-    // "new listing" form: no saving an update (seller or admin, this
-    // component is shared by both) with zero named rows in the structured
-    // "Assets included" list. updateListingFull() re-checks this
-    // server-side too; this client-side check just avoids a round trip and
-    // the image-upload work below for a save that would fail anyway.
-    if (!assetRows.some((r) => r.name.trim())) {
-      setError("Add at least one asset in Sale Includes before saving - listings can't be updated without at least one asset listed.");
-      return;
-    }
-
-    // Nov 4, 2026: Plugins, Themes & Extensions require Niche, Overview,
-    // Monetization Methods, plus proof images whenever income is entered (see listing-requirements.ts).
-    const sectionsError = missingRequiredSections(categoryId, {
-      niches,
-      overview,
-      monthlyIncome,
-      incomeImageCount: existingImages.proof_of_income.length + incomeImages.length,
-      monetization,
-      dataProofs: category.hasSeoData
-        ? [
-            { section: "Google Analytics", values: [gaTotalUsers, gaNewUsers, gaPageViews, gaEngagementTime], imageCount: existingImages.google_analytics.length + gaImages.length },
-            { section: "Google Search Console", values: [gscClicks, gscImpressions, gscIndexed, gscNonIndexed, gscCtr], imageCount: existingImages.search_console.length + gscImages.length },
-            { section: "SEMrush", values: Object.values(semrush), imageCount: existingImages.semrush.length + semrushImages.length },
-            { section: "Ahrefs", values: Object.values(ahrefs), imageCount: existingImages.ahrefs.length + ahrefsImages.length },
-          ]
-        : [],
-    });
-    if (sectionsError) {
-      setError(sectionsError);
+    // Required fields (Sale Includes since 2026-09-16; the rest Nov 4, 2026):
+    // outline every missing one in red and list them all in one message.
+    if (validation.message) {
+      setShowErrors(true);
+      setError(validation.message);
+      requestAnimationFrame(() =>
+        document.querySelector("[data-invalid]")?.scrollIntoView({ behavior: "smooth", block: "center" })
+      );
       return;
     }
 
@@ -702,7 +722,7 @@ export default function ListingEditForm({
   const cancelHref = mode === "admin" ? "/dashboard/admin/listings" : "/dashboard/seller";
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-3xl flex-col gap-8">
+    <form noValidate onSubmit={handleSubmit} className="flex max-w-3xl flex-col gap-8">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="mb-1 text-xl">Edit Listing</h2>
@@ -716,7 +736,7 @@ export default function ListingEditForm({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : categoryId === "apps-tools" ? "App Name" : categoryId === "domains" ? "Domain Name" : categoryId === PRODUCT_CATEGORY ? "Product title" : "Business title"}>
+        <Field invalid={bad("title")} label={categoryId === "youtube-channels" ? "Channel Name" : categoryId === "websites" ? "Website title" : categoryId === "social-media-accounts" ? "Account Name" : categoryId === "apps-tools" ? "App Name" : categoryId === "domains" ? "Domain Name" : categoryId === PRODUCT_CATEGORY ? "Product title" : "Business title"}>
           <input required value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} />
         </Field>
         <Field label="Category">
@@ -777,7 +797,7 @@ export default function ListingEditForm({
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Asking price (USD)">
+        <Field invalid={bad("price")} label="Asking price (USD)">
           <input required type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className={inputCls} />
         </Field>
         <Field label="Discounted price (USD, optional)">
@@ -789,7 +809,7 @@ export default function ListingEditForm({
         <Section title="Quick Statistics" hint={`Fields shown are specific to ${category.name}.`}>
           <div className="grid gap-4 sm:grid-cols-2">
             {category.quickStats.map((key: QuickStatKey) => (
-              <Field key={key} label={QUICK_STAT_LABELS[key]}>
+              <Field key={key} invalid={key === "domain_age" && bad("age")} label={QUICK_STAT_LABELS[key]}>
                 <input
                   value={quickStats[key] ?? ""}
                   onChange={(e) => setQuickStats((prev) => ({ ...prev, [key]: e.target.value }))}
@@ -814,7 +834,7 @@ export default function ListingEditForm({
         category.quickStats.includes("age") && (
           <div>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label={categoryId === "websites" ? "Website Age (years)" : categoryId === "social-media-accounts" ? "Account Age (years)" : categoryId === "apps-tools" ? "App Age (years)" : categoryId === PRODUCT_CATEGORY ? "Product Age (Years)" : "Business Age (years)"}>
+              <Field invalid={bad("age")} label={ageLabel}>
                 <input
                   type="number"
                   min="0"
@@ -1075,7 +1095,8 @@ export default function ListingEditForm({
           create form. */}
       {categoryId !== "ai-apps-tools" && (
         <Section
-          title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
+          invalid={bad("niche")}
+            title={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Industry" : "Niche"}
           hint={INDUSTRY_ID_SPACE_CATEGORIES.has(categoryId) ? "Select every industry this business fits - shown on the published listing." : "Select every niche this business fits - shown on the published listing."}
         >
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
@@ -1096,11 +1117,11 @@ export default function ListingEditForm({
         </Section>
       )}
 
-      <Section title={categoryId === "youtube-channels" ? "Overview of the Channel" : categoryId === "websites" ? "Overview of the Website" : categoryId === "social-media-accounts" ? "Overview of the Account" : categoryId === "apps-tools" ? "Overview of the App" : categoryId === "domains" ? "Overview of the Domain" : categoryId === PRODUCT_CATEGORY ? "Overview of the Product" : "Overview of the Business"}>
+      <Section invalid={bad("overview")} title={overviewLabel}>
         <textarea required rows={5} value={overview} onChange={(e) => setOverview(e.target.value)} className={`${inputCls} w-full`} />
       </Section>
 
-      <Section title="Proof of Income" hint="Monthly income for the last 12 months (leave empty if there is no income yet, it will show as $0). If you enter income, upload at least one proof image.">
+      <Section invalid={bad("income_images")} title="Proof of Income" hint="Monthly income for the last 12 months (leave empty if there is no income yet, it will show as $0). If you enter income, upload at least one proof image.">
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {MONTHS.map((m, i) => (
             <Field key={m} label={m}>
@@ -1154,7 +1175,7 @@ export default function ListingEditForm({
       </Section>
 
       {category.hasMonetization && (
-        <Section title="Monetization Methods">
+        <Section invalid={bad("monetization")} title="Monetization Methods">
           <div className="grid max-h-64 grid-cols-2 gap-x-4 gap-y-1 overflow-y-auto rounded-xl border border-rule bg-paper-raised p-4 sm:grid-cols-3">
             {/* Social Media Accounts, SaaS, AI Apps & Tools and Android &
                 iOS Apps each see their own curated subset — see the
@@ -1187,7 +1208,7 @@ export default function ListingEditForm({
 
       {category.hasSeoData && (
         <>
-          <Section title="Google Analytics Data" hint="Engagement statistics, last 12 months. If you enter any data here, upload at least one screenshot.">
+          <Section invalid={bad("ga_images")} title="Google Analytics Data" hint="Engagement statistics, last 12 months. If you enter any data here, upload at least one screenshot.">
             <div className="mb-5 grid gap-4 sm:grid-cols-3">
               <Field label="Total Users"><input value={gaTotalUsers} onChange={(e) => setGaTotalUsers(e.target.value)} className={inputCls} /></Field>
               <Field label="New Users"><input value={gaNewUsers} onChange={(e) => setGaNewUsers(e.target.value)} className={inputCls} /></Field>
@@ -1219,7 +1240,7 @@ export default function ListingEditForm({
             </label>
           </Section>
 
-          <Section title="Google Search Console Data" hint="Engagement statistics, last 12 months. If you enter any data here, upload at least one screenshot.">
+          <Section invalid={bad("gsc_images")} title="Google Search Console Data" hint="Engagement statistics, last 12 months. If you enter any data here, upload at least one screenshot.">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Total Clicks"><input value={gscClicks} onChange={(e) => setGscClicks(e.target.value)} className={inputCls} /></Field>
               <Field label="Total Impressions"><input value={gscImpressions} onChange={(e) => setGscImpressions(e.target.value)} className={inputCls} /></Field>
@@ -1252,7 +1273,7 @@ export default function ListingEditForm({
             </label>
           </Section>
 
-          <Section title="SEMrush Data" hint="If you enter any data here, upload at least one screenshot.">
+          <Section invalid={bad("semrush_images")} title="SEMrush Data" hint="If you enter any data here, upload at least one screenshot.">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="Authority Score"><input value={semrush.authority} onChange={(e) => setSemrush({ ...semrush, authority: e.target.value })} className={inputCls} /></Field>
               <Field label="Total Organic Traffic"><input value={semrush.traffic} onChange={(e) => setSemrush({ ...semrush, traffic: e.target.value })} className={inputCls} /></Field>
@@ -1270,7 +1291,7 @@ export default function ListingEditForm({
             />
           </Section>
 
-          <Section title="Ahrefs Data" hint="If you enter any data here, upload at least one screenshot.">
+          <Section invalid={bad("ahrefs_images")} title="Ahrefs Data" hint="If you enter any data here, upload at least one screenshot.">
             <div className="grid gap-4 sm:grid-cols-3">
               <Field label="DR Rating"><input value={ahrefs.dr} onChange={(e) => setAhrefs({ ...ahrefs, dr: e.target.value })} className={inputCls} /></Field>
               <Field label="UR Rating"><input value={ahrefs.ur} onChange={(e) => setAhrefs({ ...ahrefs, ur: e.target.value })} className={inputCls} /></Field>
@@ -1359,7 +1380,7 @@ export default function ListingEditForm({
         </Section>
       )}
 
-      <Section title="Sale Includes">
+      <Section invalid={bad("assets")} title="Sale Includes">
         <div className="flex flex-col gap-6">
           <Field label="Assets included">
             <AssetListEditor rows={assetRows} setRows={setAssetRows} confirmedAt={assetsConfirmedAt} />
