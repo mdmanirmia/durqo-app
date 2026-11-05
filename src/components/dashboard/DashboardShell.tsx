@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
@@ -485,6 +485,28 @@ export default function DashboardShell({
   const bottomItems = nav.slice(0, MOBILE_BOTTOM_SLOTS);
   const hasMore = nav.length > bottomItems.length;
 
+  // Nov 4, 2026: the refreshed shell (below) is opt-in while the site owner
+  // reviews it on the live site (preview deployments can't sign in because
+  // the login captcha only accepts durqo.com). Visiting any page with
+  // ?dashboard-preview=1 turns it on for this browser, =0 turns it off.
+  const v2 = useSyncExternalStore(
+    (cb) => {
+      window.addEventListener("storage", cb);
+      return () => window.removeEventListener("storage", cb);
+    },
+    () => {
+      try {
+        const q = new URLSearchParams(window.location.search).get("dashboard-preview");
+        if (q === "1") localStorage.setItem("dq_dash_v2", "1");
+        if (q === "0") localStorage.removeItem("dq_dash_v2");
+        return localStorage.getItem("dq_dash_v2") === "1";
+      } catch {
+        return false;
+      }
+    },
+    () => false
+  );
+
   // Nov 4, 2026 ("admin, seller and buyer dashboard er look ta valona...
   // background color and others dekhte sundor and professional"): shell-only
   // visual refresh shared by every dashboard page. A navy header band with
@@ -501,7 +523,9 @@ export default function DashboardShell({
         : null;
 
   return (
-    <main className="dash-bg pb-24 md:pb-14">
+    <main className={v2 ? "dash-bg pb-24 md:pb-14" : "py-6 pb-24 md:py-10 md:pb-10"}>
+      {v2 ? (
+        <>
       <div className="relative overflow-hidden bg-[#0B1324] pb-20 pt-7 md:pb-28 md:pt-10">
         <span
           aria-hidden
@@ -611,6 +635,95 @@ export default function DashboardShell({
         </div>
         </div>
       </Container>
+
+        </>
+      ) : (
+        <>
+      <Container maxWidth={wide ? 1600 : undefined}>
+        <div className="mb-5 flex items-center gap-3 md:mb-8">
+          {icon && (
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-hover shadow-[var(--shadow-card)]">
+              <NavIcon name={icon} size={20} />
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="eyebrow mb-1.5">Dashboard</p>
+            <h1 className="truncate text-3xl">{title}</h1>
+          </div>
+        </div>
+
+        {/* Mobile-only section switcher — replaces the pill row below md */}
+        <div className="relative mb-6 md:hidden" ref={switcherRef}>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+            className="flex w-full items-center justify-between gap-2 rounded-xl border border-rule bg-paper-raised px-4 py-3 text-left text-sm font-semibold text-ink shadow-[var(--shadow-card)]"
+          >
+            <span className="flex items-center gap-2.5">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
+                <NavIcon name={activeItem?.icon} size={14} />
+              </span>
+              {activeItem?.label ?? title}
+            </span>
+            <ChevronDown size={16} className={clsx("shrink-0 text-ink-faint transition-transform", menuOpen && "rotate-180")} />
+          </button>
+        </div>
+
+        <div className="grid gap-8 md:grid-cols-[232px_1fr]">
+          <aside className="hidden md:flex md:flex-col md:gap-1 md:rounded-2xl md:border md:border-rule md:bg-paper-raised md:p-3 md:shadow-[var(--shadow-card)]">
+            {nav.map((item) => {
+              const active = pathname === item.href;
+              const badge = badgeFor(item);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={clsx(
+                    "flex shrink-0 items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                    active ? "bg-brand-strong text-white shadow-[var(--shadow-card)]" : "text-ink-soft hover:bg-paper-sunk"
+                  )}
+                >
+                  <span className="flex items-center gap-2.5">
+                    <span className={clsx("grid h-7 w-7 shrink-0 place-items-center rounded-lg", active ? "bg-white/15" : "bg-paper-sunk")}>
+                      <NavIcon name={item.icon} size={14} />
+                    </span>
+                    {item.label}
+                  </span>
+                  {typeof badge === "number" && (
+                    <span className={clsx("mono rounded-full px-1.5 py-0.5 text-[0.65rem]", active ? "bg-white/20" : "bg-brand-soft text-brand-strong")}>
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+            <Link
+              href={switchHref}
+              className="mt-3 flex shrink-0 items-center gap-2.5 rounded-xl border border-rule-strong px-3 py-2.5 text-sm font-medium text-ink-soft transition-colors hover:border-brand-strong hover:bg-paper-sunk"
+            >
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-paper-sunk">
+                <ArrowLeftRight size={14} />
+              </span>
+              {switchLabel}
+            </Link>
+          </aside>
+
+          {/* min-w-0: without it, this grid item's default min-width:auto
+              lets any unbreakable content deep inside (e.g. a long unbroken
+              listing title, before its own truncate/min-w-0 chain fully
+              resolves) force this column — and with it the whole page —
+              wider than the viewport, since a grid item's box can grow to
+              fit its content's min-content by default. Site owner report,
+              Sep 11 2026: exactly this, on a listing with a long unbroken
+              title on /dashboard/seller. */}
+          <div className="min-w-0">{children}</div>
+        </div>
+      </Container>
+
+        </>
+      )}
 
       {/* Mobile-only bottom tab bar */}
       <nav
