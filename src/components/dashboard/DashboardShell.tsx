@@ -526,6 +526,12 @@ export default function DashboardShell({
       : pathname.startsWith("/dashboard/buyer")
         ? "Buyer"
         : null;
+  // Nov 4, 2026 ("ekhono header change hoye jasse onno page e gele"): only
+  // the three Overview pages pass an icon, so the band used to lose its
+  // icon (and the title jumped left) on every other page. The refreshed
+  // band always shows the role's icon.
+  const headerIcon: DashboardIconName | undefined =
+    icon ?? (role === "Admin" ? "shieldCheck" : role === "Seller" ? "store" : role === "Buyer" ? "shoppingBag" : undefined);
 
   return (
     <main className={v2 ? "dash-bg pb-24 md:pb-14" : "dash-legacy py-6 pb-24 md:py-10 md:pb-10"}>
@@ -546,9 +552,9 @@ export default function DashboardShell({
         />
         <Container maxWidth={DASH_MAX_WIDTH}>
           <div className="relative flex items-center gap-3.5">
-            {icon && (
+            {headerIcon && (
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/[0.07] text-brand shadow-[0_10px_30px_-12px_rgba(16,185,129,0.6)] backdrop-blur">
-                <NavIcon name={icon} size={21} />
+                <NavIcon name={headerIcon} size={21} />
               </div>
             )}
             <div className="min-w-0">
