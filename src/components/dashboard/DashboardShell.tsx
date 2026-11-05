@@ -528,7 +528,7 @@ export default function DashboardShell({
         : null;
 
   return (
-    <main className={v2 ? "dash-bg pb-24 md:pb-14" : "py-6 pb-24 md:py-10 md:pb-10"}>
+    <main className={v2 ? "dash-bg pb-24 md:pb-14" : "dash-legacy py-6 pb-24 md:py-10 md:pb-10"}>
       {v2 ? (
         <>
       {/* Nov 4, 2026 ("header and left card fix rakho scroll korar somoi"):
