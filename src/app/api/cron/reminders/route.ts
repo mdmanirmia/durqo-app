@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email";
 import { getUserEmails } from "@/lib/notifications";
 import { sweepUnnotifiedVerifiedUsers } from "@/lib/admin-signup-notify";
+import { remindUnrepliedMessages } from "@/lib/message-reminders";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -56,7 +57,9 @@ export async function GET(request: Request) {
 
   const [comments, messages, transferMessages, transferInspections] = await Promise.all([
     remindStaleComments(admin, cutoff),
-    remindStaleMessages(admin, cutoff),
+    // Nov 7, 2026: messages now use their own 1-hour rule (shared with the
+    // every-10-minutes Supabase job, see src/lib/message-reminders.ts).
+    remindUnrepliedMessages(admin),
     remindStaleTransferMessages(admin, cutoff),
     sweepExpiredTransferInspections(admin),
   ]);
@@ -120,68 +123,10 @@ async function remindStaleComments(admin: AdminClient, cutoff: string) {
   return { checked: rows.length, reminded };
 }
 
-// Rewritten 2026-09-12 (site owner report: buyer and seller can both send
-// unlimited messages, but this sweep only ever reminded a seller who hadn't
-// replied — a buyer sitting on an unread reply from the seller, or a seller
-// whose own message the buyer never opened, got no reminder at all). Now
-// driven entirely by `read_at` (migration 040) rather than a "seller hasn't
-// replied" heuristic: whichever party the last message in a thread was sent
-// TO is who might not have seen it, regardless of whether that's the buyer
-// or the seller for this particular listing.
-async function remindStaleMessages(admin: AdminClient, cutoff: string) {
-  const { data: rows, error } = await admin
-    .from("messages")
-    .select("id, listing_id, sender_id, recipient_id, created_at, read_at, reminder_sent_at")
-    .not("listing_id", "is", null)
-    .order("created_at", { ascending: true });
-  if (error || !rows) return { checked: 0, reminded: 0, error: error?.message };
-
-  const threads = new Map<string, (typeof rows)[number][]>();
-  for (const r of rows) {
-    const key = `${r.listing_id}:${[r.sender_id, r.recipient_id].sort().join(",")}`;
-    const list = threads.get(key);
-    if (list) list.push(r);
-    else threads.set(key, [r]);
-  }
-
-  const listingIds = [...new Set(rows.map((r) => r.listing_id as string))];
-  const { data: listings } = await admin.from("listings").select("id, title, seller_id").in("id", listingIds);
-  const listingById = new Map((listings ?? []).map((l) => [l.id, l]));
-  const recipientEmails = await getUserEmails(admin, [...new Set(rows.map((r) => r.recipient_id as string))]);
-
-  let reminded = 0;
-  for (const thread of threads.values()) {
-    const last = thread[thread.length - 1];
-    if (last.reminder_sent_at || last.read_at || last.created_at >= cutoff) continue;
-
-    const listing = listingById.get(last.listing_id as string);
-    if (!listing) continue;
-    const recipientId = last.recipient_id as string;
-    const recipientEmail = recipientEmails[recipientId];
-    const isSeller = recipientId === listing.seller_id;
-    const dashboardPath = isSeller ? "/dashboard/seller/messages" : "/dashboard/buyer/messages";
-
-    if (recipientEmail) {
-      try {
-        await sendEmail(
-          recipientEmail,
-          `Reminder: you have an unread message about "${listing.title}"`,
-          `<p>You have a message about "${listing.title}" that's been waiting more than 3 hours to be read.</p>
-           <p><a href="https://www.durqo.com${dashboardPath}">Read it on Durqo</a></p>`
-        );
-        reminded++;
-      } catch (err) {
-        console.warn("[cron/reminders] message reminder email failed:", err);
-      }
-    }
-    await admin.from("messages").update({ reminder_sent_at: new Date().toISOString() }).eq("id", last.id);
-  }
-  return { checked: rows.length, reminded };
-}
 
 // New 2026-09-12, alongside migration 042's reminder_sent_at column on
 // asset_transfer_messages — same bidirectional, read_at-driven shape as
-// remindStaleMessages() above, but for Deal Messages inside a Transfer Room.
+// remindUnrepliedMessages() (src/lib/message-reminders.ts), but for Deal Messages inside a Transfer Room.
 // A room only ever has two participants (buyer_id/seller_id), so the
 // recipient of any message is simply whichever of the two isn't the sender —
 // there's no separate recipient_id column to read here.
