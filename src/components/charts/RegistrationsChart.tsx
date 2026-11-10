@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState, useSyncExternalStore } from "react";
-import { ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
-import { UserPlus, ShoppingBag, Store, Users } from "lucide-react";
+import { ComposedChart, Bar, Line, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { UserPlus, CalendarDays } from "lucide-react";
 
 // Nov 9, 2026 ("admin dashboard e akta graph add korba per day user
 // registration and total users, buyers and sellers thakbe graph e. daily,
@@ -184,39 +184,53 @@ export default function RegistrationsChart({ points }: { points: SignupPoint[] }
 
   const per = unit === "hour" ? "hour" : unit === "day" ? "day" : "month";
 
+  // Nov 9, 2026 ("table er height ta arekta choto and design ta aro sundor
+  // koro"): shorter plot, segmented range picker, one compact stats strip,
+  // gradient bars + soft area for total users, and a custom tooltip.
+  const stats = [
+    { label: "New sign-ups", value: summary.newUsers, dot: "bg-ink" },
+    { label: "New buyers", value: summary.newBuyers, dot: "bg-brand" },
+    { label: "New sellers", value: summary.newSellers, dot: "bg-gold" },
+    { label: "Total users", value: summary.totalUsers, dot: "bg-[#0B1324]", sub: `${summary.totalBuyers} buyers · ${summary.totalSellers} sellers` },
+  ];
+
   return (
-    <div className="rounded-2xl border border-rule bg-paper-raised p-5 shadow-[var(--shadow-card)]">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="overflow-hidden rounded-2xl border border-rule bg-paper-raised shadow-[var(--shadow-card)]">
+      <div className="flex flex-col gap-4 border-b border-rule px-5 pb-4 pt-5 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand-hover">
-            <UserPlus size={15} />
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand to-[#059669] text-white shadow-[0_8px_20px_-10px_rgba(16,185,129,0.9)]">
+            <UserPlus size={16} />
           </div>
           <div>
-            <h2 className="text-lg">User registrations</h2>
-            <p className="text-xs text-ink-faint">New sign-ups per {per}, with running totals</p>
+            <h2 className="text-lg leading-tight">User registrations</h2>
+            <p className="text-xs text-ink-faint">New sign-ups per {per} · local time</p>
+          </div>
+        </div>
+
+        {/* Segmented range picker (scrolls sideways on phones). */}
+        <div className="-mx-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="inline-flex gap-0.5 rounded-xl border border-rule bg-paper-sunk p-1">
+            {PRESETS.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => setPreset(p.id)}
+                className={`flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
+                  preset === p.id
+                    ? "bg-paper-raised text-ink shadow-[0_1px_3px_rgba(11,19,36,0.12)] ring-1 ring-rule"
+                    : "text-ink-faint hover:text-ink"
+                }`}
+              >
+                {p.id === "custom" && <CalendarDays size={12} />}
+                {p.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Range picker: a scrollable chip row on phones. */}
-      <div className="-mx-1 mb-4 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:flex-wrap sm:overflow-visible">
-        {PRESETS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            onClick={() => setPreset(p.id)}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-              preset === p.id
-                ? "border-brand-strong bg-brand-strong text-white"
-                : "border-rule-strong text-ink-soft hover:border-ink-faint hover:text-ink"
-            }`}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
       {preset === "custom" && (
-        <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
+        <div className="flex flex-wrap items-center gap-2 border-b border-rule bg-paper px-5 py-3 text-sm">
           <label className="flex items-center gap-2 text-ink-soft">
             From
             <input
@@ -224,7 +238,7 @@ export default function RegistrationsChart({ points }: { points: SignupPoint[] }
               value={customFrom}
               max={customTo}
               onChange={(e) => setCustomFrom(e.target.value)}
-              className="rounded-lg border border-rule-strong bg-paper px-2.5 py-1.5 text-ink"
+              className="rounded-lg border border-rule-strong bg-paper-raised px-2.5 py-1.5 text-ink"
             />
           </label>
           <label className="flex items-center gap-2 text-ink-soft">
@@ -235,89 +249,114 @@ export default function RegistrationsChart({ points }: { points: SignupPoint[] }
               min={customFrom}
               max={toInput(new Date())}
               onChange={(e) => setCustomTo(e.target.value)}
-              className="rounded-lg border border-rule-strong bg-paper px-2.5 py-1.5 text-ink"
+              className="rounded-lg border border-rule-strong bg-paper-raised px-2.5 py-1.5 text-ink"
             />
           </label>
         </div>
       )}
 
       {!mounted ? (
-        <div className="h-[420px] animate-pulse rounded-xl bg-paper-sunk sm:h-[460px]" />
+        <div className="m-5 h-[300px] animate-pulse rounded-xl bg-paper-sunk" />
       ) : (
-      <>
-      {/* Totals for the selected range */}
-      <div className="mb-5 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-        {[
-          { icon: UserPlus, label: "New sign-ups", value: summary.newUsers, chip: "bg-brand-soft text-brand-hover" },
-          { icon: ShoppingBag, label: "New buyers", value: summary.newBuyers, chip: "bg-brand-soft text-brand-hover" },
-          { icon: Store, label: "New sellers", value: summary.newSellers, chip: "bg-gold-soft text-[#92730F]" },
-          { icon: Users, label: "Total users (end of range)", value: summary.totalUsers, chip: "bg-paper-sunk text-ink" },
-        ].map((s) => (
-          <div key={s.label} className="flex items-center gap-2.5 rounded-xl border border-rule bg-paper px-3 py-2.5">
-            <span className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg ${s.chip}`}>
-              <s.icon size={15} />
-            </span>
-            <span className="min-w-0">
-              <span className="mono block text-lg font-semibold leading-tight">{s.value}</span>
-              <span className="block truncate text-xs text-ink-faint">{s.label}</span>
-            </span>
+        <>
+          {/* One compact strip of totals for the selected range */}
+          <div className="grid grid-cols-2 border-b border-rule lg:grid-cols-4">
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className={`px-5 py-3 ${i % 2 === 1 ? "border-l border-rule" : ""} ${i >= 2 ? "border-t border-rule lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}
+              >
+                <div className="flex items-center gap-1.5 text-xs text-ink-faint">
+                  <span className={`h-2 w-2 rounded-full ${s.dot}`} />
+                  {s.label}
+                </div>
+                <div className="mono mt-0.5 text-xl font-semibold text-ink">{s.value}</div>
+                {s.sub && <div className="mono truncate text-[0.68rem] text-ink-faint">{s.sub}</div>}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
 
-      <div className="h-[300px] w-full sm:h-[340px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={data} margin={{ top: 8, right: 4, left: -8, bottom: 0 }}>
-            <CartesianGrid stroke="var(--color-rule)" vertical={false} />
-            <XAxis
-              dataKey="label"
-              tick={{ fontSize: 11, fill: "var(--color-ink-faint)" }}
-              axisLine={{ stroke: "var(--color-rule)" }}
-              tickLine={false}
-              minTickGap={18}
-            />
-            <YAxis
-              yAxisId="new"
-              allowDecimals={false}
-              tick={{ fontSize: 11, fill: "var(--color-ink-faint)" }}
-              axisLine={false}
-              tickLine={false}
-              width={36}
-            />
-            <YAxis
-              yAxisId="total"
-              orientation="right"
-              allowDecimals={false}
-              tick={{ fontSize: 11, fill: "var(--color-ink-faint)" }}
-              axisLine={false}
-              tickLine={false}
-              width={40}
-            />
-            <Tooltip
-              cursor={{ fill: "rgba(16,185,129,0.06)" }}
-              labelFormatter={(_, payload) => (payload?.[0]?.payload as { full?: string } | undefined)?.full ?? ""}
-              contentStyle={{
-                borderRadius: 12,
-                border: "1px solid var(--color-rule)",
-                background: "var(--color-paper-raised)",
-                fontSize: 12,
-              }}
-            />
-            <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} iconSize={10} />
-            <Bar yAxisId="new" dataKey="New buyers" stackId="new" fill="#10B981" radius={[0, 0, 0, 0]} maxBarSize={28} />
-            <Bar yAxisId="new" dataKey="New sellers" stackId="new" fill="#D4A72C" radius={[4, 4, 0, 0]} maxBarSize={28} />
-            <Line yAxisId="total" type="monotone" dataKey="Total users" stroke="#0B1324" strokeWidth={2} dot={false} />
-            <Line yAxisId="total" type="monotone" dataKey="Total buyers" stroke="#059669" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
-            <Line yAxisId="total" type="monotone" dataKey="Total sellers" stroke="#B8860B" strokeWidth={1.5} strokeDasharray="4 3" dot={false} />
-          </ComposedChart>
-        </ResponsiveContainer>
-      </div>
-      </>
+          <div className="px-3 pb-3 pt-4 sm:px-4">
+            <div className="mb-2 flex flex-wrap items-center justify-end gap-x-4 gap-y-1 px-2 text-[0.7rem] text-ink-faint">
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px] bg-brand" />New buyers</span>
+              <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-[3px] bg-gold" />New sellers</span>
+              <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 rounded bg-[#0B1324]" />Total users</span>
+              <span className="flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dashed border-[#059669]" />Total buyers</span>
+              <span className="flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dashed border-[#B8860B]" />Total sellers</span>
+            </div>
+            <div className="h-[210px] w-full sm:h-[230px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <ComposedChart data={data} margin={{ top: 6, right: 0, left: -14, bottom: 0 }} barCategoryGap="22%">
+                  <defs>
+                    <linearGradient id="rg-buyers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#34D399" />
+                      <stop offset="100%" stopColor="#10B981" />
+                    </linearGradient>
+                    <linearGradient id="rg-sellers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#F0C75E" />
+                      <stop offset="100%" stopColor="#D4A72C" />
+                    </linearGradient>
+                    <linearGradient id="rg-total" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#0B1324" stopOpacity={0.12} />
+                      <stop offset="100%" stopColor="#0B1324" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke="var(--color-rule)" strokeDasharray="3 4" vertical={false} />
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fontSize: 10.5, fill: "var(--color-ink-faint)" }}
+                    axisLine={false}
+                    tickLine={false}
+                    minTickGap={22}
+                    dy={4}
+                  />
+                  <YAxis yAxisId="new" allowDecimals={false} tick={{ fontSize: 10.5, fill: "var(--color-ink-faint)" }} axisLine={false} tickLine={false} width={34} />
+                  <YAxis yAxisId="total" orientation="right" allowDecimals={false} tick={{ fontSize: 10.5, fill: "var(--color-ink-faint)" }} axisLine={false} tickLine={false} width={34} />
+                  <Tooltip cursor={{ fill: "rgba(16,185,129,0.07)", radius: 6 }} content={<ChartTooltip />} />
+                  <Area yAxisId="total" type="monotone" dataKey="Total users" stroke="#0B1324" strokeWidth={2} fill="url(#rg-total)" dot={false} activeDot={{ r: 4, strokeWidth: 0 }} />
+                  <Bar yAxisId="new" dataKey="New buyers" stackId="new" fill="url(#rg-buyers)" maxBarSize={22} />
+                  <Bar yAxisId="new" dataKey="New sellers" stackId="new" fill="url(#rg-sellers)" radius={[5, 5, 0, 0]} maxBarSize={22} />
+                  <Line yAxisId="total" type="monotone" dataKey="Total buyers" stroke="#059669" strokeWidth={1.5} strokeDasharray="4 4" dot={false} activeDot={{ r: 3, strokeWidth: 0 }} />
+                  <Line yAxisId="total" type="monotone" dataKey="Total sellers" stroke="#B8860B" strokeWidth={1.5} strokeDasharray="4 4" dot={false} activeDot={{ r: 3, strokeWidth: 0 }} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+            <p className="px-2 pt-1 text-[0.68rem] text-ink-faint">Bars: new sign-ups (left axis) · Lines: running totals (right axis)</p>
+          </div>
+        </>
       )}
-      <p className="mt-2 text-xs text-ink-faint">
-        Bars (left axis): new buyers and sellers per {per}. Lines (right axis): total users, buyers and sellers. Times in your
-        local time zone.
-      </p>
+    </div>
+  );
+}
+
+type TipRow = { payload?: { full?: string; [k: string]: unknown } };
+function ChartTooltip({ active, payload }: { active?: boolean; payload?: TipRow[] }) {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload ?? {};
+  const n = (k: string) => Number(d[k] ?? 0);
+  return (
+    <div className="min-w-[180px] rounded-xl bg-[#0B1324] px-3.5 py-3 text-xs text-white shadow-[0_18px_40px_-16px_rgba(11,19,36,0.8)]">
+      <p className="mb-2 font-semibold text-white/90">{d.full}</p>
+      <div className="space-y-1">
+        <Row color="bg-brand" label="New buyers" value={n("New buyers")} />
+        <Row color="bg-gold" label="New sellers" value={n("New sellers")} />
+        <div className="my-1.5 border-t border-white/10" />
+        <Row color="bg-white" label="Total users" value={n("Total users")} />
+        <Row color="bg-[#34D399]" label="Total buyers" value={n("Total buyers")} />
+        <Row color="bg-[#F0C75E]" label="Total sellers" value={n("Total sellers")} />
+      </div>
+    </div>
+  );
+}
+
+function Row({ color, label, value }: { color: string; label: string; value: number }) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="flex items-center gap-1.5 text-white/70">
+        <span className={`h-2 w-2 rounded-full ${color}`} />
+        {label}
+      </span>
+      <span className="mono font-semibold">{value}</span>
     </div>
   );
 }
