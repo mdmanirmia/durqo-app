@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtUSD } from "@/lib/format";
 import { countryFlagEmoji, countryName } from "@/lib/countries";
+import RegistrationsChart, { type SignupPoint } from "@/components/charts/RegistrationsChart";
 import { statusLabel, statusDotClass } from "@/components/ui/Badge";
 
 const LISTING_STATUSES = ["draft", "pending_review", "published", "sold", "archived"] as const;
@@ -24,6 +25,8 @@ export default async function AdminOverview() {
   let buyerCount = 0;
   let sellerCount = 0;
   let byCountry: { code: string | null; buyers: number; sellers: number; total: number }[] = [];
+  // Nov 9, 2026: sign-up timeline for the User registrations chart.
+  let signups: SignupPoint[] = [];
   let gmv = 0;
   let pendingCount = 0;
 
@@ -32,8 +35,13 @@ export default async function AdminOverview() {
       admin.from("listings").select("status"),
       admin.from("orders").select("status, amount"),
       admin.from("profiles").select("id", { count: "exact", head: true }),
-      admin.from("profiles").select("role, country").range(0, 49999),
+      admin.from("profiles").select("role, country, created_at").range(0, 49999),
     ]);
+
+    signups = (people ?? []).map((p) => ({
+      t: new Date(p.created_at as string).getTime(),
+      r: p.role === "buyer" ? "buyer" : p.role === "seller" ? "seller" : "other",
+    }));
 
     const countries = new Map<string, { code: string | null; buyers: number; sellers: number; total: number }>();
     for (const p of people ?? []) {
@@ -143,6 +151,10 @@ export default async function AdminOverview() {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mb-6">
+        <RegistrationsChart points={signups} />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
