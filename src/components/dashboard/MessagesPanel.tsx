@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, Send } from "lucide-react";
 import DashboardShell, { DashboardNavItem } from "./DashboardShell";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -322,9 +322,31 @@ export default function MessagesPanel({
                           >
                             {m.body}
                           </div>
-                          <span className="mt-0.5 text-[0.65rem] text-ink-faint">
+                          {/* Nov 15, 2026 ("message send korar por seen na howa
+                              porjonto Unseen dekhabe status and seen korle Seen
+                              dekhabe... grammar or word thik kore"): the latest
+                              message I sent always shows its status: "Sent"
+                              (one tick) until the other person opens the
+                              conversation, then "Seen" (two green ticks). It
+                              flips live via the read_at realtime update above. */}
+                          <span className="mt-0.5 flex items-center gap-1 text-[0.65rem] text-ink-faint">
                             {timeLabel(m.createdAt)}
-                            {isLastMineMessage && m.readAt && " · Seen"}
+                            {isLastMineMessage && (
+                              <>
+                                <span aria-hidden>·</span>
+                                {m.readAt ? (
+                                  <span className="flex items-center gap-0.5 font-medium text-brand-hover" title={`Seen ${timeLabel(m.readAt)}`}>
+                                    <CheckCheck size={12} strokeWidth={2.5} />
+                                    Seen
+                                  </span>
+                                ) : (
+                                  <span className="flex items-center gap-0.5" title="Sent, not seen yet">
+                                    <Check size={12} strokeWidth={2.5} />
+                                    Sent
+                                  </span>
+                                )}
+                              </>
+                            )}
                           </span>
                         </div>
                       );
