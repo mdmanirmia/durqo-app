@@ -519,8 +519,8 @@ html:has(.dash-bg) {
    professional"): homepage section backgrounds only, no content changes.
    Restrained system in the style of high-end product sites:
    - mostly pure white and one cool off-white (#F6F8FB), never flat grey;
-   - texture (grid / dots) only through a soft radial mask so it fades out
-     instead of tiling edge to edge;
+   - no grid lines ("square square dorra kata valo lagsena"); the only
+     texture is one faint, fading dot field;
    - colour as large, very soft light sources (emerald / indigo / gold);
    - gradient hairlines between light sections instead of grey borders;
    - the two navy bands get depth (glows, masked grid, a lit top edge).
@@ -536,12 +536,9 @@ html:has(.dash-bg) {
   position: relative;
   isolation: isolate;
 }
-.hbg-hero::before,
 .hbg-hero::after,
 .hbg-navy::before,
-.hbg-navy-deep::before,
 .hbg-soft-b::before,
-.hbg-mint::before,
 .hbg-soft-a::after,
 .hbg-soft-b::after,
 .hbg-soft-c::after,
@@ -552,22 +549,13 @@ html:has(.dash-bg) {
   z-index: -1;
 }
 
-/* Hero: luminous white with a masked grid and two soft light sources. */
+/* Hero: luminous white with soft light sources. */
 .hbg-hero {
   background:
     radial-gradient(36% 70% at 78% 38%, rgba(16, 185, 129, 0.16), transparent 70%),
     radial-gradient(30% 60% at 4% 0%, rgba(99, 102, 241, 0.09), transparent 70%),
     radial-gradient(25% 40% at 60% 105%, rgba(212, 167, 44, 0.1), transparent 70%),
     linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
-}
-.hbg-hero::before {
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(11, 19, 36, 0.055) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(11, 19, 36, 0.055) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(70% 75% at 50% 0%, #000 30%, transparent 80%);
-  mask-image: radial-gradient(70% 75% at 50% 0%, #000 30%, transparent 80%);
 }
 .hbg-hero::after {
   left: 0;
@@ -629,37 +617,19 @@ html:has(.dash-bg) {
   background: linear-gradient(90deg, transparent, rgba(11, 19, 36, 0.1), transparent);
 }
 
-/* How it works: a calm emerald-lit room with a faded grid. */
+/* How it works: a calm emerald-lit room. */
 .hbg-mint {
   background:
     radial-gradient(55% 70% at 50% 0%, rgba(16, 185, 129, 0.13), transparent 70%),
     linear-gradient(180deg, #f4faf7 0%, #f6f8fb 100%);
 }
-.hbg-mint::before {
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(16, 185, 129, 0.09) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 185, 129, 0.09) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(60% 70% at 50% 30%, #000 10%, transparent 75%);
-  mask-image: radial-gradient(60% 70% at 50% 30%, #000 10%, transparent 75%);
-}
 
-/* Commitment band: deep navy, glows and a masked grid. */
+/* Commitment band: deep navy with glows. */
 .hbg-navy-deep {
   background:
     radial-gradient(40% 55% at 0% 0%, rgba(16, 185, 129, 0.2), transparent 65%),
     radial-gradient(40% 55% at 100% 100%, rgba(99, 102, 241, 0.16), transparent 65%),
     linear-gradient(180deg, #0a1120, #0e182c);
-}
-.hbg-navy-deep::before {
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(70% 80% at 30% 40%, #000 10%, transparent 80%);
-  mask-image: radial-gradient(70% 80% at 30% 40%, #000 10%, transparent 80%);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -675,7 +645,6 @@ html:has(.dash-bg) {
   .hbg-mint {
     background-image: radial-gradient(45% 60% at 70% 30%, rgba(16, 185, 129, 0.12), transparent 70%);
   }
-  .hbg-hero::before,
   .hbg-soft-b::before {
     opacity: 0.4;
   }

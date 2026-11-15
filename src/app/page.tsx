@@ -942,11 +942,7 @@ export default async function Home() {
           <div data-reveal className="relative rounded-[28px] bg-gradient-to-br from-brand/50 via-white/10 to-[#3B82F6]/40 p-px">
             <div className="relative overflow-hidden rounded-[27px] bg-[radial-gradient(70%_90%_at_50%_0%,rgba(16,185,129,0.22),transparent_60%),linear-gradient(180deg,#0B1324,#0E1A30)] px-6 py-14 text-center sm:px-10 sm:py-20">
               <MouseGlow />
-              {/* Faint grid that fades toward the edges. */}
-              <div
-                className="pointer-events-none absolute inset-0 [background-image:linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)] [background-size:44px_44px] [mask-image:radial-gradient(ellipse_60%_70%_at_50%_40%,#000_20%,transparent_75%)]"
-                aria-hidden
-              />
+              {/* Nov 15, 2026: faint grid removed ("square square dorra kata valo lagsena"). */}
               <div className="dq-glow pointer-events-none absolute -bottom-32 left-1/2 h-72 w-[38rem] -translate-x-1/2 rounded-full bg-brand/15 blur-3xl" aria-hidden />
 
               {/* Decorative category tiles floating at the sides (desktop
