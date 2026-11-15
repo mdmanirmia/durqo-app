@@ -425,7 +425,7 @@ export default async function Home() {
       <HomeFx />
 
       {/* HERO */}
-      <section className="hbg-hero relative overflow-hidden border-b border-rule py-14 sm:py-20">
+      <section className="hbg-hero relative overflow-hidden py-14 sm:py-20">
         <div
           className="dq-glow pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
           aria-hidden
@@ -568,7 +568,7 @@ export default async function Home() {
       </section>
 
       {/* CATEGORIES */}
-      <section className="hbg-soft-a relative border-b border-rule py-14 sm:py-16">
+      <section className="hbg-soft-a relative py-14 sm:py-16">
         <Container>
           <div data-reveal className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -620,7 +620,7 @@ export default async function Home() {
       </section>
 
       {/* BUSINESSES GAINING ATTENTION */}
-      <section className="hbg-soft-b relative border-b border-rule py-14 sm:py-16">
+      <section className="hbg-soft-b relative py-14 sm:py-16">
         <Container>
           <div data-reveal className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -762,7 +762,7 @@ export default async function Home() {
       {/* HOW IT WORKS — Oct 19, 2026: the static 3-step row became an
           animated product tour (DealTour) that plays one deal from browsing
           to payout. Same #how-it-works anchor the header nav links to. */}
-      <section id="how-it-works" className="hbg-mint relative scroll-mt-20 overflow-hidden border-b border-rule py-16 sm:py-20">
+      <section id="how-it-works" className="hbg-mint relative scroll-mt-20 overflow-hidden py-16 sm:py-20">
         <Container>
           <div data-reveal className="mb-10 text-center sm:mb-12">
             <DashEyebrow center>How it works</DashEyebrow>

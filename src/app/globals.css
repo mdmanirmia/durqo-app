@@ -515,67 +515,153 @@ html:has(.dash-bg) {
 }
 
 /* Nov 15, 2026 ("home page er background color gulo aro sundor kora jai
-   kina jeno dekhte premium lage"): homepage section backgrounds only.
-   Soft aurora hero, layered light gradients with faint dot/grid textures
-   instead of flat greys, and glowing navy bands. No content changes. */
+   kina jeno dekhte premium lage", then "aro chinta kore premium koro and
+   professional"): homepage section backgrounds only, no content changes.
+   Restrained system in the style of high-end product sites:
+   - mostly pure white and one cool off-white (#F6F8FB), never flat grey;
+   - texture (grid / dots) only through a soft radial mask so it fades out
+     instead of tiling edge to edge;
+   - colour as large, very soft light sources (emerald / indigo / gold);
+   - gradient hairlines between light sections instead of grey borders;
+   - the two navy bands get depth (glows, masked grid, a lit top edge).
+   Decorative layers live in ::before/::after behind content (isolate). */
+.hbg-hero,
+.hbg-ribbon,
+.hbg-navy,
+.hbg-navy-deep,
+.hbg-soft-a,
+.hbg-soft-b,
+.hbg-soft-c,
+.hbg-mint {
+  position: relative;
+  isolation: isolate;
+}
+.hbg-hero::before,
+.hbg-hero::after,
+.hbg-navy::before,
+.hbg-navy-deep::before,
+.hbg-soft-b::before,
+.hbg-mint::before,
+.hbg-soft-a::after,
+.hbg-soft-b::after,
+.hbg-soft-c::after,
+.hbg-mint::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Hero: luminous white with a masked grid and two soft light sources. */
 .hbg-hero {
-  background-color: #f6f8fb;
-  background-image:
-    radial-gradient(42% 60% at 8% 0%, rgba(16, 185, 129, 0.16), transparent 70%),
-    radial-gradient(38% 55% at 92% 8%, rgba(99, 102, 241, 0.1), transparent 70%),
-    radial-gradient(30% 45% at 70% 100%, rgba(212, 167, 44, 0.12), transparent 70%),
-    radial-gradient(rgba(11, 19, 36, 0.07) 1px, transparent 1px),
-    linear-gradient(180deg, #ffffff 0%, #f3f6fa 100%);
-  background-size: auto, auto, auto, 22px 22px, auto;
-}
-.hbg-ribbon {
-  background: linear-gradient(90deg, #ffffff 0%, #f7faf9 50%, #ffffff 100%);
-}
-.hbg-navy {
-  background-color: #0b1324;
-  background-image:
-    radial-gradient(40% 140% at 12% 0%, rgba(16, 185, 129, 0.22), transparent 60%),
-    radial-gradient(35% 140% at 88% 100%, rgba(212, 167, 44, 0.14), transparent 60%),
-    linear-gradient(180deg, #0b1324, #101c33);
-}
-.hbg-navy-deep {
-  background-color: #0b1324;
-  background-image:
-    radial-gradient(45% 55% at 0% 0%, rgba(16, 185, 129, 0.18), transparent 65%),
-    radial-gradient(40% 50% at 100% 100%, rgba(99, 102, 241, 0.14), transparent 65%),
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(180deg, #0b1324, #0f1a30);
-  background-size: auto, auto, 48px 48px, 48px 48px, auto;
-}
-.hbg-soft-a {
   background:
-    radial-gradient(45% 60% at 100% 0%, rgba(16, 185, 129, 0.06), transparent 70%),
-    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    radial-gradient(36% 70% at 78% 38%, rgba(16, 185, 129, 0.16), transparent 70%),
+    radial-gradient(30% 60% at 4% 0%, rgba(99, 102, 241, 0.09), transparent 70%),
+    radial-gradient(25% 40% at 60% 105%, rgba(212, 167, 44, 0.1), transparent 70%),
+    linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
+}
+.hbg-hero::before {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(11, 19, 36, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 19, 36, 0.055) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(70% 75% at 50% 0%, #000 30%, transparent 80%);
+  mask-image: radial-gradient(70% 75% at 50% 0%, #000 30%, transparent 80%);
+}
+.hbg-hero::after {
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.45), rgba(11, 19, 36, 0.12), transparent);
+}
+
+/* Category ribbon: clean white. */
+.hbg-ribbon {
+  background: #ffffff;
+}
+
+/* Navy stats band: depth + a lit top edge. */
+.hbg-navy {
+  background:
+    radial-gradient(35% 160% at 15% 0%, rgba(16, 185, 129, 0.2), transparent 60%),
+    radial-gradient(30% 160% at 85% 100%, rgba(99, 102, 241, 0.16), transparent 60%),
+    linear-gradient(180deg, #0a1120, #0e1a30);
+}
+.hbg-navy::before {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.7), rgba(240, 199, 94, 0.5), transparent);
+}
+
+/* Light sections: pure white, or the cool off-white with a faded dot field. */
+.hbg-soft-a,
+.hbg-soft-c {
+  background: #ffffff;
 }
 .hbg-soft-b {
-  background-color: #f5f7fb;
-  background-image:
-    radial-gradient(40% 55% at 0% 100%, rgba(212, 167, 44, 0.08), transparent 70%),
-    radial-gradient(rgba(11, 19, 36, 0.05) 1px, transparent 1px),
-    linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);
-  background-size: auto, 24px 24px, auto;
+  background: linear-gradient(180deg, #f6f8fb 0%, #f2f5f9 100%);
+}
+.hbg-soft-b::before {
+  inset: 0;
+  background-image: radial-gradient(rgba(11, 19, 36, 0.09) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(60% 60% at 50% 0%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(60% 60% at 50% 0%, #000 0%, transparent 75%);
 }
 .hbg-soft-c {
   background:
-    radial-gradient(40% 60% at 15% 50%, rgba(11, 19, 36, 0.05), transparent 70%),
-    radial-gradient(40% 60% at 85% 50%, rgba(16, 185, 129, 0.08), transparent 70%),
+    radial-gradient(35% 55% at 90% 20%, rgba(16, 185, 129, 0.07), transparent 70%),
     #ffffff;
 }
-.hbg-mint {
-  background-color: #f1f8f5;
-  background-image:
-    radial-gradient(50% 60% at 50% 0%, rgba(16, 185, 129, 0.14), transparent 70%),
-    linear-gradient(rgba(16, 185, 129, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(16, 185, 129, 0.06) 1px, transparent 1px),
-    linear-gradient(180deg, #f3faf7 0%, #eef4f8 100%);
-  background-size: auto, 40px 40px, 40px 40px, auto;
+/* Gradient hairline at the top of light sections. */
+.hbg-soft-a::after,
+.hbg-soft-b::after,
+.hbg-soft-c::after,
+.hbg-mint::after {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(11, 19, 36, 0.1), transparent);
 }
+
+/* How it works: a calm emerald-lit room with a faded grid. */
+.hbg-mint {
+  background:
+    radial-gradient(55% 70% at 50% 0%, rgba(16, 185, 129, 0.13), transparent 70%),
+    linear-gradient(180deg, #f4faf7 0%, #f6f8fb 100%);
+}
+.hbg-mint::before {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.09) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(60% 70% at 50% 30%, #000 10%, transparent 75%);
+  mask-image: radial-gradient(60% 70% at 50% 30%, #000 10%, transparent 75%);
+}
+
+/* Commitment band: deep navy, glows and a masked grid. */
+.hbg-navy-deep {
+  background:
+    radial-gradient(40% 55% at 0% 0%, rgba(16, 185, 129, 0.2), transparent 65%),
+    radial-gradient(40% 55% at 100% 100%, rgba(99, 102, 241, 0.16), transparent 65%),
+    linear-gradient(180deg, #0a1120, #0e182c);
+}
+.hbg-navy-deep::before {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(70% 80% at 30% 40%, #000 10%, transparent 80%);
+  mask-image: radial-gradient(70% 80% at 30% 40%, #000 10%, transparent 80%);
+}
+
 @media (prefers-color-scheme: dark) {
   .hbg-hero,
   .hbg-ribbon,
@@ -587,6 +673,10 @@ html:has(.dash-bg) {
   }
   .hbg-hero,
   .hbg-mint {
-    background-image: radial-gradient(45% 60% at 10% 0%, rgba(16, 185, 129, 0.12), transparent 70%);
+    background-image: radial-gradient(45% 60% at 70% 30%, rgba(16, 185, 129, 0.12), transparent 70%);
+  }
+  .hbg-hero::before,
+  .hbg-soft-b::before {
+    opacity: 0.4;
   }
 }
