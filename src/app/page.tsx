@@ -425,7 +425,7 @@ export default async function Home() {
       <HomeFx />
 
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-rule bg-paper-sunk bg-[radial-gradient(60%_80%_at_85%_0%,rgba(255,255,255,0.9),transparent_70%)] py-14 sm:py-20">
+      <section className="hbg-hero relative overflow-hidden border-b border-rule py-14 sm:py-20">
         <div
           className="dq-glow pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand/10 blur-3xl"
           aria-hidden
@@ -520,7 +520,7 @@ export default async function Home() {
           marketplace supports, scrolling continuously (pauses on hover; off
           entirely for reduced motion). The list is rendered twice so the
           loop is seamless; the second copy is hidden from screen readers. */}
-      <section className="border-b border-rule bg-paper-raised py-4" aria-label="Business categories on Durqo">
+      <section className="hbg-ribbon border-b border-rule py-4" aria-label="Business categories on Durqo">
         <div className="dq-marquee-wrap overflow-hidden">
           <div className="dq-marquee flex w-max">
             {[0, 1].map((copy) => (
@@ -547,7 +547,7 @@ export default async function Home() {
       </section>
 
       {/* STATS BAR */}
-      <section className="bg-brand-strong bg-[linear-gradient(180deg,#0B1324,#101C33)] py-7 sm:py-9">
+      <section className="hbg-navy relative overflow-hidden py-7 sm:py-9">
         <Container>
           <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-4 sm:divide-x sm:divide-white/10">
             {statsBar.map(({ icon: Icon, value, label }, i) => (
@@ -568,7 +568,7 @@ export default async function Home() {
       </section>
 
       {/* CATEGORIES */}
-      <section className="border-b border-rule bg-paper-raised py-14 sm:py-16">
+      <section className="hbg-soft-a relative border-b border-rule py-14 sm:py-16">
         <Container>
           <div data-reveal className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -620,7 +620,7 @@ export default async function Home() {
       </section>
 
       {/* BUSINESSES GAINING ATTENTION */}
-      <section className="border-b border-rule py-14 sm:py-16">
+      <section className="hbg-soft-b relative border-b border-rule py-14 sm:py-16">
         <Container>
           <div data-reveal className="mb-8 flex flex-wrap items-end justify-between gap-4">
             <div>
@@ -660,7 +660,7 @@ export default async function Home() {
           chart card. The seller panel's checklist states Durqo's real,
           published fee policy (see /sell and /terms — Success Fee section)
           rather than a generic reassurance line. */}
-      <section className="py-12 sm:py-16">
+      <section className="hbg-soft-c relative py-12 sm:py-16">
         <Container>
           <div className="grid gap-6 lg:grid-cols-2">
             <div data-reveal className="relative overflow-hidden rounded-2xl bg-brand-strong p-6 sm:p-8">
@@ -762,7 +762,7 @@ export default async function Home() {
       {/* HOW IT WORKS — Oct 19, 2026: the static 3-step row became an
           animated product tour (DealTour) that plays one deal from browsing
           to payout. Same #how-it-works anchor the header nav links to. */}
-      <section id="how-it-works" className="scroll-mt-20 overflow-hidden border-b border-rule bg-paper-sunk py-16 sm:py-20">
+      <section id="how-it-works" className="hbg-mint relative scroll-mt-20 overflow-hidden border-b border-rule py-16 sm:py-20">
         <Container>
           <div data-reveal className="mb-10 text-center sm:mb-12">
             <DashEyebrow center>How it works</DashEyebrow>
@@ -789,7 +789,7 @@ export default async function Home() {
           column gap doesn't push past 100% width); mobile stacks to one
           column, with the card grid dropping to a single column below the
           `sm` breakpoint so nothing feels cramped. */}
-      <section className="relative overflow-hidden bg-brand-strong bg-[linear-gradient(180deg,#0B1324,#0F1A30)] py-14 sm:py-16 lg:py-20">
+      <section className="hbg-navy-deep relative overflow-hidden py-14 sm:py-16 lg:py-20">
         <MouseGlow />
         {/* Decorative background — purely cosmetic, kept at very low
             opacity so it never competes with the real content above it. */}
@@ -898,7 +898,7 @@ export default async function Home() {
           methods the marketplace actually supports today (see /payments and
           /seller-payouts), shown as brand-colored wordmarks in text, not
           third-party logo files. */}
-      <section className="py-12 sm:py-14">
+      <section className="hbg-soft-a relative py-12 sm:py-14">
         <Container>
           <div className="grid gap-6 lg:grid-cols-2">
             {PAY_ROWS.map((row, r) => (
@@ -937,7 +937,7 @@ export default async function Home() {
 
       {/* FINAL CTA — trimmed to a compact ~280-320px band on desktop
           (Sep 6 2026 refinement pass); content and both buttons unchanged. */}
-      <section className="pb-14 pt-2 sm:pb-20">
+      <section className="hbg-soft-a pb-14 pt-2 sm:pb-20">
         <Container>
           <div data-reveal className="relative rounded-[28px] bg-gradient-to-br from-brand/50 via-white/10 to-[#3B82F6]/40 p-px">
             <div className="relative overflow-hidden rounded-[27px] bg-[radial-gradient(70%_90%_at_50%_0%,rgba(16,185,129,0.22),transparent_60%),linear-gradient(180deg,#0B1324,#0E1A30)] px-6 py-14 text-center sm:px-10 sm:py-20">

@@ -513,3 +513,80 @@ button:hover svg.lucide-arrow-right {
 html:has(.dash-bg) {
   scrollbar-gutter: stable;
 }
+
+/* Nov 15, 2026 ("home page er background color gulo aro sundor kora jai
+   kina jeno dekhte premium lage"): homepage section backgrounds only.
+   Soft aurora hero, layered light gradients with faint dot/grid textures
+   instead of flat greys, and glowing navy bands. No content changes. */
+.hbg-hero {
+  background-color: #f6f8fb;
+  background-image:
+    radial-gradient(42% 60% at 8% 0%, rgba(16, 185, 129, 0.16), transparent 70%),
+    radial-gradient(38% 55% at 92% 8%, rgba(99, 102, 241, 0.1), transparent 70%),
+    radial-gradient(30% 45% at 70% 100%, rgba(212, 167, 44, 0.12), transparent 70%),
+    radial-gradient(rgba(11, 19, 36, 0.07) 1px, transparent 1px),
+    linear-gradient(180deg, #ffffff 0%, #f3f6fa 100%);
+  background-size: auto, auto, auto, 22px 22px, auto;
+}
+.hbg-ribbon {
+  background: linear-gradient(90deg, #ffffff 0%, #f7faf9 50%, #ffffff 100%);
+}
+.hbg-navy {
+  background-color: #0b1324;
+  background-image:
+    radial-gradient(40% 140% at 12% 0%, rgba(16, 185, 129, 0.22), transparent 60%),
+    radial-gradient(35% 140% at 88% 100%, rgba(212, 167, 44, 0.14), transparent 60%),
+    linear-gradient(180deg, #0b1324, #101c33);
+}
+.hbg-navy-deep {
+  background-color: #0b1324;
+  background-image:
+    radial-gradient(45% 55% at 0% 0%, rgba(16, 185, 129, 0.18), transparent 65%),
+    radial-gradient(40% 50% at 100% 100%, rgba(99, 102, 241, 0.14), transparent 65%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(180deg, #0b1324, #0f1a30);
+  background-size: auto, auto, 48px 48px, 48px 48px, auto;
+}
+.hbg-soft-a {
+  background:
+    radial-gradient(45% 60% at 100% 0%, rgba(16, 185, 129, 0.06), transparent 70%),
+    linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+}
+.hbg-soft-b {
+  background-color: #f5f7fb;
+  background-image:
+    radial-gradient(40% 55% at 0% 100%, rgba(212, 167, 44, 0.08), transparent 70%),
+    radial-gradient(rgba(11, 19, 36, 0.05) 1px, transparent 1px),
+    linear-gradient(180deg, #f5f7fb 0%, #eef2f7 100%);
+  background-size: auto, 24px 24px, auto;
+}
+.hbg-soft-c {
+  background:
+    radial-gradient(40% 60% at 15% 50%, rgba(11, 19, 36, 0.05), transparent 70%),
+    radial-gradient(40% 60% at 85% 50%, rgba(16, 185, 129, 0.08), transparent 70%),
+    #ffffff;
+}
+.hbg-mint {
+  background-color: #f1f8f5;
+  background-image:
+    radial-gradient(50% 60% at 50% 0%, rgba(16, 185, 129, 0.14), transparent 70%),
+    linear-gradient(rgba(16, 185, 129, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, #f3faf7 0%, #eef4f8 100%);
+  background-size: auto, 40px 40px, 40px 40px, auto;
+}
+@media (prefers-color-scheme: dark) {
+  .hbg-hero,
+  .hbg-ribbon,
+  .hbg-soft-a,
+  .hbg-soft-b,
+  .hbg-soft-c,
+  .hbg-mint {
+    background: var(--paper);
+  }
+  .hbg-hero,
+  .hbg-mint {
+    background-image: radial-gradient(45% 60% at 10% 0%, rgba(16, 185, 129, 0.12), transparent 70%);
+  }
+}
