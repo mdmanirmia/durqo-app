@@ -733,15 +733,22 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
             <SectionCard title="Monthly Expenses" icon={Coins} bodyClassName="p-0">
               <div className="flex flex-col">
                 {listing.monthlyExpenses.length > 0 ? (
-                  listing.monthlyExpenses.map((e, i) => (
-                    <div
-                      key={e.label}
-                      className={clsx("mono flex justify-between px-5 py-3 text-sm sm:px-6", i < listing.monthlyExpenses.length - 1 && "border-b border-rule")}
-                    >
-                      <span className="text-ink-soft">{e.label}</span>
-                      <span className="text-ink">{fmtUSD(e.amount)}</span>
+                  <>
+                    {listing.monthlyExpenses.map((e) => (
+                      <div key={e.label} className="mono flex justify-between border-b border-rule px-5 py-3 text-sm sm:px-6">
+                        <span className="text-ink-soft">{e.label}</span>
+                        <span className="text-ink">{fmtUSD(e.amount)}</span>
+                      </div>
+                    ))}
+                    {/* Nov 16, 2026 ("monthly expense e total monthly expense add
+                        kore dekhabao"): sum of every expense row. */}
+                    <div className="flex items-center justify-between bg-paper px-5 py-4 sm:px-6">
+                      <span className="font-semibold text-ink">Total Monthly Expenses</span>
+                      <span className="mono text-lg font-semibold text-ink">
+                        {fmtUSD(listing.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0))}
+                      </span>
                     </div>
-                  ))
+                  </>
                 ) : (
                   <div className="mono flex justify-between px-5 py-3 text-sm sm:px-6">
                     <span className="text-ink-soft">No Expense</span>
