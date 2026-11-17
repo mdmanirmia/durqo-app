@@ -256,6 +256,9 @@ function HeadlineWords({ words, start }: { words: string[]; start: number }) {
   );
 }
 
+// Listings shown first on the homepage (by slug), in this order.
+const PINNED_HOME_SLUGS = ["leatherdot-bangladesh"];
+
 export default async function Home() {
   const [listings, sellerAndBuyerCount] = await Promise.all([getPublishedListings(), getSellerAndBuyerCount()]);
 
@@ -272,13 +275,24 @@ export default async function Home() {
     const expenseTotal = l.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
     return l.monthlyExpenses.length > 0 ? revenue - expenseTotal : revenue;
   };
-  const featured = [...listings]
-    .sort((a, b) => {
-      const profitDiff = (featuredProfit(b) ?? -1) - (featuredProfit(a) ?? -1);
-      if (profitDiff !== 0) return profitDiff;
-      return (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price);
-    })
-    .slice(0, 3);
+  // Nov 16, 2026 ("Home page e ei list ta first e rekhe other list dao"):
+  // listings pinned to the front of both homepage lists (hero showcase and
+  // "Businesses gaining attention"), as long as they're published and not
+  // sold. Everything after them keeps the automatic ranking.
+  const pinned = PINNED_HOME_SLUGS.map((slug) => listings.find((l) => l.slug === slug && l.status !== "sold")).filter(
+    (l): l is (typeof listings)[number] => Boolean(l)
+  );
+  const pinnedIds = new Set(pinned.map((l) => l.id));
+  const featured = [
+    ...pinned,
+    ...[...listings]
+      .filter((l) => !pinnedIds.has(l.id))
+      .sort((a, b) => {
+        const profitDiff = (featuredProfit(b) ?? -1) - (featuredProfit(a) ?? -1);
+        if (profitDiff !== 0) return profitDiff;
+        return (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price);
+      }),
+  ].slice(0, 3);
 
   // getPublishedListings() intentionally includes sold listings too (so
   // Sold badges/social proof can render on cards/tables sitewide — see that
@@ -367,7 +381,7 @@ export default async function Home() {
   // first and latest of the last 12 recorded months and only appears with at
   // least two real data points; "Last 12 months" only when ~a year of
   // history really exists.
-  const showcaseSlides: ShowcaseSlide[] = rankedSpotlight.slice(0, 4).map((l) => {
+  const showcaseSlides: ShowcaseSlide[] = [...pinned, ...rankedSpotlight.filter((l) => !pinnedIds.has(l.id))].slice(0, 4).map((l) => {
     const revenue = (l.quickStats.monthly_income as number | undefined) ?? 0;
     const expenseTotal = l.monthlyExpenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
     const series = l.monthlyStats
