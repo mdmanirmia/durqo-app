@@ -860,19 +860,53 @@ function MobileStickyAction({
   );
 }
 
+// Nov 21, 2026 ("24 hour er majhe asset transfer start na korle report
+// issue ta kora jabe"): besides the inspection window, the buyer can report
+// once payment has been confirmed for 24 hours and the seller still hasn't
+// started the transfer (stage still "room_unlocked"). Mirrors the check in
+// transfer_report_issue (migration 064). Re-evaluated every minute so the
+// button unlocks on its own at the 24-hour mark.
+const NO_START_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 function ReportIssueButton({ data, room, onOpen }: { data: TransferRoomData; room: TransferRoomState; onOpen: () => void }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => setNow(Date.now()), 60_000);
+    return () => window.clearInterval(t);
+  }, []);
   if (data.viewerSide !== "buyer") return null;
-  const enabled = room.stage === "inspection_active";
+
+  const unlockedMs = room.unlockedAt ? new Date(room.unlockedAt).getTime() : null;
+  const waitingForSeller = room.stage === "room_unlocked" && unlockedMs !== null;
+  const opensAt = waitingForSeller ? unlockedMs + NO_START_WINDOW_MS : null;
+  const enabled = room.stage === "inspection_active" || (opensAt !== null && now >= opensAt);
+
+  let hint: string | null = null;
+  if (!enabled && opensAt !== null) {
+    const mins = Math.max(1, Math.ceil((opensAt - now) / 60_000));
+    const left = mins >= 60 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`;
+    hint = `If the seller hasn't started the transfer, you can report an issue in ${left}.`;
+  } else if (enabled && room.stage === "room_unlocked") {
+    hint = "The seller hasn't started the transfer within 24 hours of your payment. You can report it to Durqo now.";
+  }
+
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      disabled={!enabled}
-      className="flex w-full items-center justify-center gap-1.5 rounded-md border border-danger/40 px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-40"
-      title={enabled ? undefined : "Issues can only be reported during the inspection window."}
-    >
-      <AlertTriangle size={15} /> Report an Issue
-    </button>
+    <div className="flex flex-col gap-1.5">
+      <button
+        type="button"
+        onClick={onOpen}
+        disabled={!enabled}
+        className="flex w-full items-center justify-center gap-1.5 rounded-md border border-danger/40 px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger-soft disabled:cursor-not-allowed disabled:opacity-40"
+        title={
+          enabled
+            ? undefined
+            : "Issues can be reported during the inspection window, or if the seller hasn't started the transfer within 24 hours of payment."
+        }
+      >
+        <AlertTriangle size={15} /> Report an Issue
+      </button>
+      {hint && <p className="text-center text-xs text-ink-faint">{hint}</p>}
+    </div>
   );
 }
 
