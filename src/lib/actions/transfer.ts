@@ -133,6 +133,84 @@ export async function reportIssue(orderId: string, roomId: string, itemId: strin
   });
   if (error) throw new Error(error.message);
   revalidateRoom(orderId);
+
+  // Nov 21, 2026 ("keu report korle admin er kache email notification jabe
+  // with in details"): best-effort, detailed email to the admin inbox. The
+  // report itself already succeeded above; a failure here never surfaces.
+  try {
+    await emailAdminAboutIssue(orderId, roomId, itemId, category, explanation);
+  } catch (err) {
+    console.error("[transfer] reportIssue admin email failed:", err);
+  }
+}
+
+const ISSUE_CATEGORY_LABEL: Record<string, string> = {
+  not_received: "Never received this asset",
+  not_working: "Doesn't work as described",
+  incomplete: "Incomplete transfer",
+  misrepresented: "Misrepresented on the listing",
+  credentials_invalid: "Login/credentials don't work",
+  other: "Other",
+};
+
+async function emailAdminAboutIssue(orderId: string, roomId: string, itemId: string | null, category: string, explanation: string) {
+  const admin = createAdminClient();
+  if (!admin) return;
+  const esc = (v: string) => v.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+  const fmtTime = (iso: string | null | undefined) =>
+    iso ? `${new Date(iso).toUTCString().replace(" GMT", "")} UTC` : "Not yet";
+
+  const [{ data: room }, { data: order }, { data: item }, { data: items }] = await Promise.all([
+    admin.from("asset_transfer_rooms").select("buyer_id, seller_id, unlocked_at, inspection_started_at, inspection_deadline_at").eq("id", roomId).maybeSingle(),
+    admin.from("orders").select("listing_id, amount, created_at").eq("id", orderId).maybeSingle(),
+    itemId ? admin.from("asset_transfer_items").select("name").eq("id", itemId).maybeSingle() : Promise.resolve({ data: null }),
+    admin.from("asset_transfer_items").select("name, status").eq("room_id", roomId),
+  ]);
+  if (!room) return;
+
+  const [{ data: listing }, { data: people }, emails] = await Promise.all([
+    order?.listing_id ? admin.from("listings").select("title, slug").eq("id", order.listing_id).maybeSingle() : Promise.resolve({ data: null }),
+    admin.from("profiles").select("id, full_name").in("id", [room.buyer_id as string, room.seller_id as string]),
+    getUserEmails(admin, [room.buyer_id as string, room.seller_id as string]),
+  ]);
+  const nameOf = (id: string) => ((people ?? []).find((p) => p.id === id)?.full_name as string | undefined)?.trim() || "Unknown";
+  const buyerName = nameOf(room.buyer_id as string);
+  const sellerName = nameOf(room.seller_id as string);
+  const title = (listing?.title as string | undefined) ?? "a listing";
+
+  // Which situation the report was filed in (mirrors transfer_report_issue).
+  const when = room.inspection_started_at
+    ? "During the buyer's inspection window"
+    : "Seller had not started the transfer within 24 hours of payment";
+
+  const hdrs = await headers();
+  const host = hdrs.get("host");
+  const origin = host ? `${host.includes("localhost") ? "http" : "https"}://${host}` : "https://www.durqo.com";
+  const row = (k: string, v: string) =>
+    `<tr><td style="padding:6px 12px 6px 0;color:#6B7280;vertical-align:top;white-space:nowrap">${k}</td><td style="padding:6px 0;color:#0B1324">${v}</td></tr>`;
+  const assetList = (items ?? []).length
+    ? (items ?? []).map((i) => `${esc(String(i.name))} <span style="color:#6B7280">(${esc(String(i.status).replace(/_/g, " "))})</span>`).join("<br/>")
+    : "None listed";
+
+  await sendEmail(
+    ADMIN_EMAIL,
+    `Issue reported - "${title}" (${buyerName} vs ${sellerName})`,
+    `<p><strong>${esc(buyerName)}</strong> (buyer) reported an issue on the asset transfer for <strong>${esc(title)}</strong>. The transfer is now in <strong>Admin Review</strong> and the payment stays held until you resolve it.</p>
+     <table style="border-collapse:collapse;font-size:14px;margin:12px 0">
+       ${row("Category", esc(ISSUE_CATEGORY_LABEL[category] ?? category))}
+       ${row("Asset", item?.name ? esc(String(item.name)) : "General issue with this order")}
+       ${row("When", esc(when))}
+       ${row("Buyer", `${esc(buyerName)} &lt;${esc(emails[room.buyer_id as string] ?? "no email")}&gt;`)}
+       ${row("Seller", `${esc(sellerName)} &lt;${esc(emails[room.seller_id as string] ?? "no email")}&gt;`)}
+       ${row("Order", `${esc(orderId)}${order?.amount != null ? ` · $${Number(order.amount).toLocaleString("en-US")}` : ""}`)}
+       ${row("Payment confirmed", esc(fmtTime(room.unlocked_at as string | null)))}
+       ${row("Inspection", room.inspection_started_at ? esc(`${fmtTime(room.inspection_started_at as string)} → deadline ${fmtTime(room.inspection_deadline_at as string | null)}`) : "Not started")}
+       ${row("Assets in this transfer", assetList)}
+     </table>
+     <p style="margin:12px 0 4px;color:#6B7280">Buyer's explanation:</p>
+     <blockquote style="margin:0 0 16px;padding:10px 14px;border-left:3px solid #EF4444;background:#FEF2F2;color:#0B1324">${esc(explanation).replace(/\n/g, "<br/>")}</blockquote>
+     <p><a href="${origin}/dashboard/admin/transfers/${roomId}" style="display:inline-block;padding:10px 18px;background:#0B1324;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">Review in admin dashboard</a></p>`
+  );
 }
 
 export async function proposeAmendment(orderId: string, roomId: string, itemId: string | null, field: string, proposedValue: string) {
