@@ -35,7 +35,7 @@ function ago(iso: string, now: number) {
 }
 
 export default function TopViewedListings({ data, now }: { data: Record<Range, ViewedRow[]>; now: number }) {
-  const [range, setRange] = useState<Range>("30d");
+  const [range, setRange] = useState<Range>("all");
   const rows = data[range];
   const max = rows.reduce((m, r) => Math.max(m, r.views), 1);
 
@@ -48,7 +48,11 @@ export default function TopViewedListings({ data, now }: { data: Record<Range, V
           </div>
           <div>
             <h2 className="text-lg leading-tight">Top 10 most viewed listings</h2>
-            <p className="text-xs text-ink-faint">Listing page views (sellers viewing their own listing and admins are not counted)</p>
+            <p className="text-xs text-ink-faint">
+              {range === "all"
+                ? "Since launch: Google Analytics history (Sep 15 to Nov 20) plus tracked views from Nov 21"
+                : "Tracked listing page views (sellers viewing their own listing and admins are not counted)"}
+            </p>
           </div>
         </div>
         <div className="inline-flex shrink-0 gap-0.5 self-start rounded-xl border border-rule bg-paper-sunk p-1 sm:self-auto">
