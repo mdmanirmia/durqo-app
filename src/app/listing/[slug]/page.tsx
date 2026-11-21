@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import ListingViewTracker from "@/components/listings/ListingViewTracker";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
@@ -516,6 +517,8 @@ export default async function ListingDetail({ params }: { params: Promise<{ slug
 
   return (
     <main className="py-8 sm:py-10">
+      {/* Nov 21, 2026: listing page view counter (admin "Most viewed listings"). */}
+      {!isPreview && !isListingSeller && <ListingViewTracker listingId={listing.id} />}
       <Container>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />

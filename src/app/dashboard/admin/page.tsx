@@ -7,10 +7,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { fmtUSD } from "@/lib/format";
 import { countryFlagEmoji, countryName } from "@/lib/countries";
 import RegistrationsChart, { type SignupPoint } from "@/components/charts/RegistrationsChart";
+import TopViewedListings, { type ViewedRow } from "@/components/admin/TopViewedListings";
+import { CATEGORY_MAP } from "@/lib/categories";
 import { statusLabel, statusDotClass } from "@/components/ui/Badge";
 
 const LISTING_STATUSES = ["draft", "pending_review", "published", "sold", "archived"] as const;
 const ORDER_STATUSES = ["requested", "awaiting_payment", "in_escrow", "in_durqo", "completed", "cancelled"] as const;
+
+// Request time for this server render (the page is dynamic per request).
+function requestTime() {
+  return Date.now();
+}
 
 export default async function AdminOverview() {
   await requireAdmin();
@@ -27,6 +34,9 @@ export default async function AdminOverview() {
   let byCountry: { code: string | null; buyers: number; sellers: number; total: number }[] = [];
   // Nov 9, 2026: sign-up timeline for the User registrations chart.
   let signups: SignupPoint[] = [];
+  // Nov 21, 2026: most viewed listings (migration 065), for 3 periods.
+  const viewed: Record<"7d" | "30d" | "all", ViewedRow[]> = { "7d": [], "30d": [], all: [] };
+  const renderedAt = requestTime();
   let gmv = 0;
   let pendingCount = 0;
 
@@ -37,6 +47,43 @@ export default async function AdminOverview() {
       admin.from("profiles").select("id", { count: "exact", head: true }),
       admin.from("profiles").select("role, country, created_at").range(0, 49999),
     ]);
+
+    const day = 24 * 60 * 60 * 1000;
+    const periods: ["7d" | "30d" | "all", string | null][] = [
+      ["7d", new Date(renderedAt - 7 * day).toISOString()],
+      ["30d", new Date(renderedAt - 30 * day).toISOString()],
+      ["all", null],
+    ];
+    const tops = await Promise.all(
+      periods.map(([, since]) => admin.rpc("admin_top_viewed_listings", { p_since: since, p_limit: 10 }))
+    );
+    const ids = [...new Set(tops.flatMap((t) => ((t.data ?? []) as { listing_id: string }[]).map((r) => r.listing_id)))];
+    const { data: viewedListings } = ids.length
+      ? await admin.from("listings").select("id, title, slug, category_id, status").in("id", ids)
+      : { data: [] };
+    const byId = new Map((viewedListings ?? []).map((l) => [l.id as string, l]));
+    periods.forEach(([key], i) => {
+      viewed[key] = ((tops[i].data ?? []) as {
+        listing_id: string;
+        views: number;
+        unique_visitors: number;
+        signed_in_viewers: number;
+        last_viewed_at: string;
+      }[]).map((r) => {
+        const l = byId.get(r.listing_id);
+        return {
+          listingId: r.listing_id,
+          title: (l?.title as string | undefined) ?? "Deleted listing",
+          slug: (l?.slug as string | undefined) ?? null,
+          category: CATEGORY_MAP[(l?.category_id as string) ?? ""]?.name ?? (l?.category_id as string | undefined) ?? "",
+          status: (l?.status as string | undefined) ?? "deleted",
+          views: Number(r.views),
+          uniqueVisitors: Number(r.unique_visitors),
+          signedInViewers: Number(r.signed_in_viewers),
+          lastViewedAt: r.last_viewed_at,
+        };
+      });
+    });
 
     signups = (people ?? []).map((p) => ({
       t: new Date(p.created_at as string).getTime(),
@@ -155,6 +202,10 @@ export default async function AdminOverview() {
 
       <div className="mb-6">
         <RegistrationsChart points={signups} />
+      </div>
+
+      <div className="mb-6">
+        <TopViewedListings data={viewed} now={renderedAt} />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
