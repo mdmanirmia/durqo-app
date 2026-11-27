@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
-import { fmtBDTWhole, fmtUSD } from "@/lib/format";
+import { fmtBDTWhole, fmtUSD, fmtUSD2 } from "@/lib/format";
 import { getUsdToBdtWithdrawalRate } from "@/lib/currency";
 
 const PAYOUT_METHODS = ["bank_transfer", "bkash", "rocket", "nagad", "paypal", "wise"] as const;
@@ -141,7 +141,7 @@ export async function requestWithdrawal(
       sellerEmail,
       "We've received your withdrawal request",
       `<p>Hi ${sellerName},</p>
-       <p>Your payout request has been submitted${netAmount !== null ? ` for ${fmtUSD(netAmount)} (after the Success Fee)` : ""}. We normally review and process eligible payout requests within 3–5 business days.</p>
+       <p>Your payout request has been submitted${netAmount !== null ? ` for ${bdtAmount !== null ? `${fmtUSD2(netAmount)} (${fmtBDTWhole(bdtAmount)})` : fmtUSD(netAmount)} (after the Success Fee)` : ""}. We normally review and process eligible payout requests within 3–5 business days.</p>
        <p>Your bank or payout provider may require additional time to credit the funds.</p>
        <p>- Durqo</p>`
     );

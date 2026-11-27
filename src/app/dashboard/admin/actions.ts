@@ -790,7 +790,12 @@ export async function setWithdrawalStatus(
   const { data: userLookup } = await admin.auth.admin.getUserById(request.seller_id);
   const sellerEmail = userLookup?.user?.email;
   const sellerName = sellerProfile?.full_name || "there";
-  const netAmountLabel = `$${Math.round(Number(request.net_amount)).toLocaleString("en-US")}`;
+  // Nov 27, 2026: bKash/Rocket/Nagad requests are paid in taka, so the
+  // seller's emails state the saved taka amount too (migration 068).
+  const netAmountLabel =
+    request.bdt_amount != null
+      ? `$${Number(request.net_amount).toFixed(2)} (৳${Math.round(Number(request.bdt_amount)).toLocaleString("en-US")})`
+      : `$${Math.round(Number(request.net_amount)).toLocaleString("en-US")}`;
   const note = adminNote?.trim();
 
   const EMAIL_COPY: Partial<Record<WithdrawalDecision, { subject: string; html: string }>> = {
