@@ -64,7 +64,7 @@ export default function VerificationPage() {
         Verified sellers get a badge on every listing and rank higher in search. Choose one document to verify - this only needs to be done once.
       </p>
       <p className="mb-6 max-w-[60ch] text-sm text-ink-soft">
-        Identity verification (KYC) is also required before your first withdrawal. When you request a payout, the account holder name you enter must match the legal name below - our team checks this by hand before approving a withdrawal.
+        Verifying also unlocks withdrawals: once approved, you can withdraw your earnings with no separate payout approval. When you request a payout, the account holder name you enter must match the legal name below - our team checks this by hand before approving a withdrawal.
       </p>
 
       {status === null && <p className="text-sm text-ink-faint">Loading&hellip;</p>}
@@ -86,7 +86,7 @@ export default function VerificationPage() {
           <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-brand-strong" />
           <div>
             <div className="font-semibold text-brand-strong">Verified</div>
-            <p className="mt-1 text-sm text-ink-soft">Your identity has been verified. The verified badge now shows on your listings.</p>
+            <p className="mt-1 text-sm text-ink-soft">Your identity has been verified. The verified badge now shows on your listings, and you can request withdrawals from your Earnings page.</p>
           </div>
         </div>
       )}

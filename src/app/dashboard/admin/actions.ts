@@ -586,13 +586,20 @@ export async function setVerificationStatus(userId: string, decision: Verificati
   const { data: profile } = await admin.from("profiles").select("full_name").eq("id", userId).single();
 
   const trimmedReason = reason?.trim() || null;
+  const now = new Date().toISOString();
+  // Nov 27, 2026 ("verified holei payout korte parbe"): approving a seller's
+  // documents now also grants payout access, and rejecting removes it, so a
+  // verified seller can withdraw without a second click. The separate
+  // "Payout access" button stays on the review screen to revoke it later.
   const { error } = await admin
     .from("profiles")
     .update({
       verification_status: decision,
       is_verified: decision === "verified",
-      verification_reviewed_at: new Date().toISOString(),
+      verification_reviewed_at: now,
       verification_rejection_reason: decision === "rejected" ? trimmedReason : null,
+      payout_verified: decision === "verified",
+      payout_verified_at: decision === "verified" ? now : null,
     })
     .eq("id", userId);
   if (error) throw new Error(error.message);
@@ -600,6 +607,7 @@ export async function setVerificationStatus(userId: string, decision: Verificati
   revalidatePath("/dashboard/admin/verification");
   revalidatePath("/dashboard/admin");
   revalidatePath("/dashboard/seller/verification");
+  revalidatePath("/dashboard/seller/earnings");
 
   // Best-effort: let the seller know the outcome. Looks up this one user
   // directly by id (getUserById) rather than scanning a listUsers() page —
@@ -613,7 +621,7 @@ export async function setVerificationStatus(userId: string, decision: Verificati
     const subject = decision === "verified" ? "You're verified on Durqo" : "Your verification wasn't approved";
     const html =
       decision === "verified"
-        ? `<p>Hi ${sellerName},</p><p>Your identity has been verified. The verified badge is now live on your listings.</p><p>- Durqo</p>`
+        ? `<p>Hi ${sellerName},</p><p>Your identity has been verified. The verified badge is now live on your listings, and you can request withdrawals from your Earnings dashboard whenever you have a balance available.</p><p>- Durqo</p>`
         : `<p>Hi ${sellerName},</p><p>We weren't able to verify your documents this time.${
             trimmedReason ? ` Reason: ${trimmedReason}` : " Please make sure the photo is clear and legible."
           }</p><p>Please review and resubmit from your seller dashboard.</p><p>- Durqo</p>`;

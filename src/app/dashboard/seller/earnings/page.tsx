@@ -298,12 +298,11 @@ export default function SellerEarningsPage() {
         <div className="mb-6 flex items-start gap-3 rounded-xl border border-gold/30 bg-gold-soft px-5 py-4">
           <Info size={18} className="mt-0.5 shrink-0 text-gold" />
           <p className="text-sm text-ink-soft">
-            Identity verification (KYC) is required before your first withdrawal - this is separate from the optional public Verified badge. Submit your
-            identity documents from the{" "}
+            Verify your identity to withdraw. Submit your identity documents from the{" "}
             <a href="/dashboard/seller/verification" className="font-semibold text-brand-strong hover:underline">
               Verification page
-            </a>{" "}
-            and our team will review them.
+            </a>
+            . Once our team approves them, you can request withdrawals right away, with no separate payout approval needed.
           </p>
         </div>
       )}
