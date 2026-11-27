@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendEmail, ADMIN_EMAIL } from "@/lib/email";
-import { fmtUSD } from "@/lib/format";
+import { fmtBDTWhole, fmtUSD } from "@/lib/format";
 import { getUsdToBdtWithdrawalRate } from "@/lib/currency";
 
 const PAYOUT_METHODS = ["bank_transfer", "bkash", "rocket", "nagad", "paypal", "wise"] as const;
@@ -105,6 +105,8 @@ export async function requestWithdrawal(
   const sellerName = profile?.full_name || "A seller";
   const sellerEmail = user.email;
   const netAmount = request ? Number((request as { net_amount: number }).net_amount) : null;
+  const bdtRaw = request ? (request as { bdt_amount: number | null }).bdt_amount : null;
+  const bdtAmount = bdtRaw != null ? Number(bdtRaw) : null;
   
   const hdrs = await headers();
   const host = hdrs.get("host");
@@ -125,7 +127,7 @@ export async function requestWithdrawal(
   await sendEmail(
     ADMIN_EMAIL,
     `New withdrawal request - ${sellerName}`,
-    `<p>${sellerName} (${sellerEmail ?? "no email on file"}) requested a withdrawal${netAmount !== null ? ` of ${fmtUSD(netAmount)}` : ""}.</p>
+    `<p>${sellerName} (${sellerEmail ?? "no email on file"}) requested a withdrawal${netAmount !== null ? ` of ${fmtUSD(netAmount)}` : ""}${bdtAmount !== null ? ` (pay ${fmtBDTWhole(bdtAmount)} via ${payoutMethod})` : ""}.</p>
      <p><a href="${origin}/dashboard/admin/withdrawals">Review it in the admin dashboard</a>.</p>`
   );
 

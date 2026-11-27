@@ -77,6 +77,8 @@ export default async function AdminWithdrawals({
       grossAmount: Number(r.gross_amount),
       successFeeAmount: Number(r.success_fee_amount),
       netAmount: Number(r.net_amount),
+      bdtAmount: r.bdt_amount != null ? Number(r.bdt_amount) : null,
+      bdtRate: r.bdt_rate != null ? Number(r.bdt_rate) : null,
       orderCount: r.order_count,
       escrowComOrderCount: escrowComCountByRequest.get(r.id) ?? 0,
       payoutMethod: r.payout_method,

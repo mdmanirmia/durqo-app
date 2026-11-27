@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { AlertTriangle, Wallet } from "lucide-react";
-import { fmtUSD } from "@/lib/format";
+import { fmtUSD, fmtUSD2, fmtBDTWhole } from "@/lib/format";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import PayoutMethodIcon from "@/components/ui/PayoutMethodIcon";
 import EmptyState from "@/components/ui/EmptyState";
@@ -24,6 +24,10 @@ export interface AdminWithdrawalRow {
   grossAmount: number;
   successFeeAmount: number;
   netAmount: number;
+  // Nov 27, 2026 (migration 068): bKash/Rocket/Nagad requests store the taka
+  // amount and rate the seller was shown, so admin pays exactly that.
+  bdtAmount: number | null;
+  bdtRate: number | null;
   orderCount: number;
   escrowComOrderCount: number;
   payoutMethod: string;
@@ -236,7 +240,14 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                   <td className="mono px-4 py-3">
                     <div>{fmtUSD(r.grossAmount)}</div>
                     <div className="text-xs text-ink-faint">-{fmtUSD(r.successFeeAmount)} fee</div>
-                    <div className="font-semibold">{fmtUSD(r.netAmount)}</div>
+                    <div className="font-semibold">{r.bdtAmount !== null ? fmtUSD2(r.netAmount) : fmtUSD(r.netAmount)}</div>
+                    {r.bdtAmount !== null && (
+                      <div className="mt-1.5 inline-block rounded-md border border-brand/30 bg-brand-soft px-2 py-1">
+                        <div className="text-[11px] font-medium text-brand-strong">Pay in BDT</div>
+                        <div className="text-base font-bold text-brand-strong">{fmtBDTWhole(r.bdtAmount)}</div>
+                        {r.bdtRate !== null && <div className="text-[11px] text-ink-faint">@ ৳{r.bdtRate.toFixed(2)} / $1</div>}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
@@ -321,7 +332,13 @@ export default function AdminWithdrawalsTable({ rows }: { rows: AdminWithdrawalR
                   <div className="text-xs text-ink-faint">Gross / Fee / Net</div>
                   <div className="mono">{fmtUSD(r.grossAmount)}</div>
                   <div className="mono text-xs text-ink-faint">-{fmtUSD(r.successFeeAmount)} fee</div>
-                  <div className="mono font-semibold">{fmtUSD(r.netAmount)}</div>
+                  <div className="mono font-semibold">{r.bdtAmount !== null ? fmtUSD2(r.netAmount) : fmtUSD(r.netAmount)}</div>
+                  {r.bdtAmount !== null && (
+                    <div className="mt-1 text-sm font-bold text-brand-strong">
+                      Pay {fmtBDTWhole(r.bdtAmount)}
+                      {r.bdtRate !== null && <span className="ml-1 text-[11px] font-normal text-ink-faint">@ ৳{r.bdtRate.toFixed(2)}</span>}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <div className="text-xs text-ink-faint">Payout to</div>
