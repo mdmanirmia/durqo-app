@@ -38,7 +38,9 @@ const MFS_METHODS: readonly string[] = ["bkash", "rocket", "nagad"];
 // reaches the client. A thrown error can still occur for a genuinely
 // unexpected failure (e.g. a network blip) — the caller's try/catch
 // around the await handles that with a generic fallback.
-export type RequestWithdrawalResult = { ok: true; netAmount: number | null } | { ok: false; message: string };
+export type RequestWithdrawalResult =
+  | { ok: true; netAmount: number | null; bdtAmount: number | null }
+  | { ok: false; message: string; newBdtRate?: number };
 
 // Exposes today's bKash/Rocket/Nagad withdrawal rate to the client (site
 // owner, Sep 11 2026): src/lib/currency.ts is "server-only", so the
@@ -67,7 +69,8 @@ export async function getMfsWithdrawalRate() {
 export async function requestWithdrawal(
   payoutMethod: PayoutMethod,
   payoutDetails: string,
-  payoutAccountHolderName: string
+  payoutAccountHolderName: string,
+  shownBdtRate: number | null = null
 ): Promise<RequestWithdrawalResult> {
   if (!PAYOUT_METHODS.includes(payoutMethod)) return { ok: false, message: "Invalid payout method" };
   if (!payoutDetails.trim()) return { ok: false, message: "Payout details are required" };
@@ -88,7 +91,26 @@ export async function requestWithdrawal(
   // is the market rate minus ৳1.50 (getUsdToBdtWithdrawalRate() in
   // src/lib/currency.ts), not the plain market rate — a deliberate
   // product decision, the mirror image of the +6 BDT checkout margin.
-  const bdtRate = MFS_METHODS.includes(payoutMethod) ? (await getUsdToBdtWithdrawalRate()).rate : null;
+  //
+  // Nov 27, 2026 ("same amount BDT withdraw te jeita dekhabe admin e o oita
+  // e dekhabe"): the taka amount saved on the request (migration 068) must be
+  // the one the seller saw on the button. So the rate the page displayed is
+  // sent along and used as-is, as long as it still matches today's rate
+  // (within ৳0.50, which only absorbs rounding). If the rate has moved since
+  // the page loaded, nothing is submitted: the seller gets the new rate and
+  // amount on screen and confirms again.
+  let bdtRate: number | null = null;
+  if (MFS_METHODS.includes(payoutMethod)) {
+    const current = (await getUsdToBdtWithdrawalRate()).rate;
+    if (shownBdtRate === null || !Number.isFinite(shownBdtRate) || Math.abs(shownBdtRate - current) > 0.5) {
+      return {
+        ok: false,
+        message: `The exchange rate has just updated to ৳${current.toFixed(2)} per $1. Please check the new BDT amount and submit again.`,
+        newBdtRate: current,
+      };
+    }
+    bdtRate = shownBdtRate;
+  }
 
   const { data: request, error } = await supabase
     .rpc("create_withdrawal_request", {
@@ -140,7 +162,7 @@ export async function requestWithdrawal(
   // request. The caller uses this to tell the seller exactly what was
   // withdrawn, since it may not match the balance shown before they
   // clicked "Request".
-  return { ok: true, netAmount };
+  return { ok: true, netAmount, bdtAmount };
 }
 
 // NOTE: getMfsWithdrawalRate() above never throws (getUsdToBdtWithdrawalRate()

@@ -225,7 +225,7 @@ export default function SellerEarningsPage() {
     setNotice(null);
     setSubmitting(true);
     try {
-      const result = await requestWithdrawal(methodId, buildPayoutDetails(), buildAccountHolderName());
+      const result = await requestWithdrawal(methodId, buildPayoutDetails(), buildAccountHolderName(), isMfs ? mfsRate : null);
       // requestWithdrawal() returns { ok: false, message } for every
       // expected failure (bad input, no session, or one of
       // create_withdrawal_request()'s own validation messages — e.g. the
@@ -235,6 +235,9 @@ export default function SellerEarningsPage() {
       // Action error gets redacted to in production (see the comment on
       // RequestWithdrawalResult in ./actions.ts).
       if (!result.ok) {
+        // Rate moved since the page loaded: show the new amount on the
+        // button so the seller confirms exactly what will be saved.
+        if (result.newBdtRate !== undefined) setMfsRate(result.newBdtRate);
         setError(result.message);
         return;
       }
@@ -248,7 +251,7 @@ export default function SellerEarningsPage() {
       // buttons) — state the real amount so it's never a surprise.
       setNotice(
         result.netAmount !== null
-          ? `Your payout request for ${fmtUSD(result.netAmount)} has been submitted. We normally review and process eligible payout requests within 3–5 business days.`
+          ? `Your payout request for ${result.bdtAmount !== null ? `${fmtUSD2(result.netAmount)} (${fmtBDTWhole(result.bdtAmount)})` : fmtUSD(result.netAmount)} has been submitted. We normally review and process eligible payout requests within 3–5 business days.`
           : "Your payout request has been submitted. We normally review and process eligible payout requests within 3–5 business days."
       );
       reload();
@@ -454,7 +457,10 @@ export default function SellerEarningsPage() {
                     <td className="mono px-4 py-3">{w.orderCount}</td>
                     <td className="mono px-4 py-3">{fmtUSD(w.grossAmount)}</td>
                     <td className="mono px-4 py-3 text-ink-faint">-{fmtUSD(w.successFeeAmount)}</td>
-                    <td className="mono px-4 py-3 font-semibold">{fmtUSD(w.netAmount)}</td>
+                    <td className="mono px-4 py-3 font-semibold">
+                      {w.bdtAmount !== null ? fmtUSD2(w.netAmount) : fmtUSD(w.netAmount)}
+                      {w.bdtAmount !== null && <div className="text-xs font-semibold text-brand-strong">{fmtBDTWhole(w.bdtAmount)}</div>}
+                    </td>
                     <td className="px-4 py-3 text-ink-soft">
                       <div className="flex items-center gap-1.5">
                         <PayoutMethodIcon method={w.payoutMethod} size={12} />
@@ -523,7 +529,8 @@ export default function SellerEarningsPage() {
                   </div>
                   <div>
                     <div className="text-xs text-ink-faint">Net</div>
-                    <div className="mono font-semibold">{fmtUSD(w.netAmount)}</div>
+                    <div className="mono font-semibold">{w.bdtAmount !== null ? fmtUSD2(w.netAmount) : fmtUSD(w.netAmount)}</div>
+                    {w.bdtAmount !== null && <div className="mono text-xs font-semibold text-brand-strong">{fmtBDTWhole(w.bdtAmount)}</div>}
                   </div>
                   <div>
                     <div className="text-xs text-ink-faint">Processing</div>

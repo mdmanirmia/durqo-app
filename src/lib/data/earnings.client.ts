@@ -22,6 +22,8 @@ export interface WithdrawalRow {
   grossAmount: number;
   successFeeAmount: number;
   netAmount: number;
+  // Taka amount saved with bKash/Rocket/Nagad requests (migration 068).
+  bdtAmount: number | null;
   orderCount: number;
   payoutMethod: string;
   payoutDetails: string;
@@ -108,6 +110,7 @@ export async function getMyWithdrawals(): Promise<WithdrawalRow[]> {
     grossAmount: Number(w.gross_amount),
     successFeeAmount: Number(w.success_fee_amount),
     netAmount: Number(w.net_amount),
+    bdtAmount: w.bdt_amount != null ? Number(w.bdt_amount) : null,
     orderCount: w.order_count,
     payoutMethod: w.payout_method,
     payoutDetails: w.payout_details,
